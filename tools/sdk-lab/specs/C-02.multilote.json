@@ -1,0 +1,15 @@
+{
+  // PLANTILLA. Requiere C-01 resuelto y un SKU con control de lotes y dos lotes con existencia.
+  // Un movimiento de 150 con DOS capas (R001/100 y R002/50) sobre el mismo aIdMovimiento.
+  "id": "C-02",
+  "concepto": "<CCODIGOCONCEPTO_TRASPASO>",
+  "referencia": "LAB-C02",
+  "movimientos": [
+    {
+      "producto": "<SKU_CON_LOTES>", "almacen": "<ALMACEN_ORIGEN>", "unidades": 150, "referencia": "LAB-C02",
+      "capas": [ { "lote": "<LOTE_1>", "unidades": 100 }, { "lote": "<LOTE_2>", "unidades": 50 } ]
+    }
+  ],
+  "calcular": true,
+  "afectar": false
+}

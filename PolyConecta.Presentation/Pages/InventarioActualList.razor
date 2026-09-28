@@ -1,0 +1,126 @@
+@page "/inventario"
+@* Ventas consulta la misma lista sin salir de su módulo. *@
+@page "/ventas/inventario"
+@inject InventoryState Inv
+@implements IDisposable
+
+<div class="o_control_panel">
+    <div class="d-flex align-items-center gap-3">
+        <OdooBreadcrumb Items="@(new List<OdooBreadcrumb.Crumb> { new("Inventario Actual") })" />
+    </div>
+    <OdooSearchPanel TItem="StockQuant"
+                     View="@SearchViews.InventarioActual"
+                     @bind-Texto="searchText"
+                     @bind-FiltrosActivos="filtros"
+                     @bind-AgrupacionesActivas="agrupaciones" />
+    <div class="d-flex align-items-center gap-2">
+        <div class="btn-group btn-group-sm o_view_switcher">
+            <button class="btn-view active" disabled><i class="bi bi-list-ul"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="p-4">
+    <table class="table table-hover align-middle bg-white shadow-sm">
+        <thead class="table-light">
+            <tr>
+                <th>Ubicación</th>
+                <th>Producto</th>
+                <th>Lote</th>
+                <th class="text-end">Cantidad</th>
+                <th>Unidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var fila in Renglones)
+            {
+                if (fila.Grupo is { } g)
+                {
+                    var abierto = abiertos.Contains(g.Ruta);
+                    <tr class="o_group_row" style="cursor:pointer;" @onclick="() => AlternarGrupo(g.Ruta)">
+                        <td colspan="3" style="padding-left:@(12 + g.Nivel * 20)px;">
+                            <i class="bi @(abierto ? "bi-caret-down-fill" : "bi-caret-right-fill") me-1"></i>
+                            @g.Etiqueta <span class="text-muted">(@g.Cantidad)</span>
+                        </td>
+                        <td class="text-end">@(g.Unidad != null ? g.Total.ToString("N1") : "")</td>
+                        <td class="text-muted">@g.Unidad</td>
+                    </tr>
+                }
+                else
+                {
+                    var q = fila.Quant!;
+                    <tr>
+                        <td>@q.Ubicacion</td>
+                        <td><span class="fw-semibold">[@q.Producto.Clave]</span> @q.Producto.Nombre</td>
+                        <td class="font-monospace small">@q.Lote</td>
+                        <td class="text-end">@q.Cantidad.ToString("N1")</td>
+                        <td class="text-muted">@q.Producto.Unidad</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <OdooPager Count="@Filtradas.Count" />
+</div>
+
+@code {
+    private string searchText = "";
+    private List<string> filtros = new();
+    private List<string> agrupaciones = new(SearchViews.InventarioActual.AgrupacionesPorDefecto);
+
+    /// <summary>Grupos expandidos, identificados por su ruta de claves. Como en Odoo, abren plegados.</summary>
+    private readonly HashSet<string> abiertos = new();
+
+    private record Grupo(string Ruta, string Etiqueta, int Nivel, int Cantidad, decimal Total, string? Unidad);
+    private record Renglon(Grupo? Grupo, StockQuant? Quant);
+
+    private List<StockQuant> Filtradas => SearchViews.InventarioActual
+        .Aplicar(Inv.Existencias(), searchText, filtros)
+        .OrderBy(q => q.Ubicacion)
+        .ThenBy(q => q.Producto.Clave)
+        .ThenBy(q => q.Lote)
+        .ToList();
+
+    /// <summary>
+    /// Aplana la agrupación anidada en renglones: encabezado de grupo y, si está abierto, su
+    /// contenido. El total solo se muestra cuando todo el grupo comparte unidad.
+    /// </summary>
+    private List<Renglon> Renglones
+    {
+        get
+        {
+            var claves = agrupaciones
+                .Select(e => SearchViews.InventarioActual.Agrupaciones.FirstOrDefault(a => a.Etiqueta == e))
+                .Where(a => a != null)
+                .ToList();
+
+            var res = new List<Renglon>();
+            void Agregar(IEnumerable<StockQuant> items, int nivel, string ruta)
+            {
+                if (nivel == claves.Count)
+                {
+                    res.AddRange(items.Select(q => new Renglon(null, q)));
+                    return;
+                }
+                foreach (var g in items.GroupBy(claves[nivel]!.Clave).OrderBy(g => g.Key))
+                {
+                    var rutaGrupo = ruta + "/" + g.Key;
+                    var unidades = g.Select(q => q.Producto.Unidad).Distinct().ToList();
+                    res.Add(new Renglon(new Grupo(rutaGrupo, g.Key, nivel, g.Count(), g.Sum(q => q.Cantidad),
+                        unidades.Count == 1 ? unidades[0] : null), null));
+                    if (abiertos.Contains(rutaGrupo)) Agregar(g, nivel + 1, rutaGrupo);
+                }
+            }
+            Agregar(Filtradas, 0, "");
+            return res;
+        }
+    }
+
+    private void AlternarGrupo(string ruta)
+    {
+        if (!abiertos.Remove(ruta)) abiertos.Add(ruta);
+    }
+
+    protected override void OnInitialized() => Inv.OnChange += StateHasChanged;
+    public void Dispose() => Inv.OnChange -= StateHasChanged;
+}

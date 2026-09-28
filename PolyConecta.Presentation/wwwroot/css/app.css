@@ -111,6 +111,52 @@ body {
     border-bottom-color: white;
 }
 
+.o_main_navbar .o_header_dropdown {
+    position: relative;
+    height: 100%;
+}
+.o_main_navbar .o_header_dropdown > button {
+    color: rgba(255,255,255,0.85);
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    padding: 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+    height: 100%;
+}
+.o_main_navbar .o_header_dropdown > button.active {
+    color: white;
+    font-weight: 700;
+    border-bottom-color: white;
+}
+.o_main_navbar .o_header_dropdown_menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1050;
+    min-width: 190px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    padding: 0.3rem 0;
+}
+.o_main_navbar .o_header_dropdown_menu a {
+    display: block;
+    height: auto;
+    color: #374151;
+    padding: 0.35rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 400;
+    border-bottom: 0;
+}
+.o_main_navbar .o_header_dropdown_menu a:hover { background: #F2F6F9; }
+.o_main_navbar .o_header_dropdown_menu a.active {
+    color: var(--brand-primary, #017E84);
+    font-weight: 600;
+}
+
 .o_main_navbar .o_company_name {
     font-weight: 500;
     font-size: 0.85rem;
@@ -722,3 +768,10 @@ body {
 
 .o_search_menu_item:hover { background: #F2F6F9; }
 .o_search_menu_item.active { color: var(--brand-primary, #017E84); font-weight: 600; }
+
+/* --- Filas de grupo (lista agrupada) --- */
+.o_group_row > td {
+    background: #F8F9FA;
+    font-weight: 600;
+    font-size: 0.85rem;
+}

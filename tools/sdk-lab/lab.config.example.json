@@ -1,0 +1,18 @@
+{
+  // Ruta de la SDK de CONTPAQi Comercial en el VPS (Win32).
+  "sdkPath": "C:\\Program Files (x86)\\Compac\\COMERCIAL",
+
+  // Copia de laboratorio. NUNCA la empresa viva. El último segmento de la ruta debe coincidir con labDatabase.
+  "labCompanyPath": "C:\\Compac\\Empresas\\adPOLYEMPAQUES_LAB",
+  "labDatabase": "adPOLYEMPAQUES_LAB",
+
+  // Instancia SQL Server del VPS (verifica el nombre real; en el bridge es <host>\\COMPAC01).
+  "sqlServer": "localhost\\COMPAC01",
+  "sqlUser": "sdklab_ro",
+  "sqlPasswordEnv": "SDKLAB_SQL_PASSWORD",
+
+  // Bases que el laboratorio se niega a tocar aunque alguien las configure por error.
+  "forbiddenDatabases": ["adPolyempaques", "adPOLYEMPAQUES"],
+
+  "evidenceDir": "evidence"
+}

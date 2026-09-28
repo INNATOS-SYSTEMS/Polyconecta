@@ -25,10 +25,18 @@
                 <button type="button" class="o_search_facet_remove" title="Quitar filtro" @onclick="() => QuitarGrupo(grupo.Key)"><i class="bi bi-x"></i></button>
             </span>
         }
+        @if (AgrupacionesActivas.Count > 0)
+        {
+            <span class="o_search_facet" title="Agrupar por">
+                <span class="o_search_facet_field"><i class="bi bi-stack"></i></span>
+                <span class="o_search_facet_value">@string.Join(" > ", AgrupacionesActivas)</span>
+                <button type="button" class="o_search_facet_remove" title="Quitar agrupación" @onclick="() => AgrupacionesActivasChanged.InvokeAsync(new List<string>())"><i class="bi bi-x"></i></button>
+            </span>
+        }
         <input type="text" placeholder="@Placeholder" value="@Texto" @oninput="OnInput" />
     </div>
 
-    @if (View.Filtros.Count > 0)
+    @if (View.Filtros.Count > 0 || PuedeAgrupar)
     {
         <button class="btn btn-sm btn-light border" @onclick="() => menuAbierto = !menuAbierto" title="Filtros del modelo">
             <i class="bi bi-funnel"></i>
@@ -51,6 +59,17 @@
                     var activo = FiltrosActivos.Contains(filtro.Nombre);
                     <button class="o_search_menu_item @(activo ? "active" : "")" @onclick="() => Alternar(filtro.Nombre)">
                         <i class="bi @(activo ? "bi-check-square-fill" : "bi-square")"></i> @filtro.Nombre
+                    </button>
+                }
+            }
+            @if (PuedeAgrupar)
+            {
+                <div class="o_search_menu_title border-top mt-1">Agrupar por</div>
+                @foreach (var agrupacion in View.Agrupaciones)
+                {
+                    var activa = AgrupacionesActivas.Contains(agrupacion.Etiqueta);
+                    <button class="o_search_menu_item @(activa ? "active" : "")" @onclick="() => AlternarAgrupacion(agrupacion.Etiqueta)">
+                        <i class="bi @(activa ? "bi-check-square-fill" : "bi-square")"></i> @agrupacion.Etiqueta
                     </button>
                 }
             }
@@ -77,9 +96,15 @@
     [Parameter] public List<string> FiltrosActivos { get; set; } = new();
     [Parameter] public EventCallback<List<string>> FiltrosActivosChanged { get; set; }
 
+    /// <summary>Agrupaciones aplicadas, en orden de anidamiento. Solo las listas que las enlazan agrupan.</summary>
+    [Parameter] public List<string> AgrupacionesActivas { get; set; } = new();
+    [Parameter] public EventCallback<List<string>> AgrupacionesActivasChanged { get; set; }
+
     private bool menuAbierto;
 
-    private string Placeholder => FacetasContexto.Count > 0 || FiltrosActivos.Count > 0
+    private bool PuedeAgrupar => AgrupacionesActivasChanged.HasDelegate && View.Agrupaciones.Count > 0;
+
+    private string Placeholder => FacetasContexto.Count > 0 || FiltrosActivos.Count > 0 || AgrupacionesActivas.Count > 0
         ? ""
         : $"Buscar por {View.EtiquetasCampos}...";
 
@@ -93,6 +118,13 @@
         var lista = new List<string>(FiltrosActivos);
         if (!lista.Remove(nombre)) lista.Add(nombre);
         return FiltrosActivosChanged.InvokeAsync(lista);
+    }
+
+    private Task AlternarAgrupacion(string etiqueta)
+    {
+        var lista = new List<string>(AgrupacionesActivas);
+        if (!lista.Remove(etiqueta)) lista.Add(etiqueta);
+        return AgrupacionesActivasChanged.InvokeAsync(lista);
     }
 
     private Task QuitarGrupo(string campo)

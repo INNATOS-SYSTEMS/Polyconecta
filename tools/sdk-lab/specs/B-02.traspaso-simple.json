@@ -1,0 +1,14 @@
+{
+  // PLANTILLA. Completar tras B-01 (concepto de traspaso) y B-05 (cómo se expresan origen y destino).
+  // Hipótesis a contrastar (admMovimientos.CTIPOTRASPASO: 2 = origen, 3 = destino; admConceptos.CIDDOCUMENTODE = 34 "Traspasos"):
+  // un traspaso son DOS movimientos, uno por almacén. Si CONTPAQi lo resuelve con uno solo, documentar lo observado.
+  "id": "B-02",
+  "concepto": "<CCODIGOCONCEPTO_TRASPASO>",
+  "serie": "",
+  "referencia": "LAB-B02",
+  "movimientos": [
+    { "producto": "<SKU_CON_EXISTENCIA>", "almacen": "<ALMACEN_ORIGEN>",  "unidades": 10, "referencia": "LAB-B02-ORIGEN" },
+    { "producto": "<SKU_CON_EXISTENCIA>", "almacen": "<ALMACEN_DESTINO>", "unidades": 10, "referencia": "LAB-B02-DESTINO" }
+  ],
+  "afectar": false
+}

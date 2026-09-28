@@ -1,9 +1,6 @@
 namespace PolyConecta.Presentation.Services;
 
-/// <summary>
-/// Clasificación de producto — dimensión primaria del Visor de Disponibilidad (SPEC-007 FR-002).
-/// El visor agrupa por clasificación, no por nivel de producción.
-/// </summary>
+/// <summary>Clasificación de producto: filtro y agrupación del Inventario Actual.</summary>
 public enum ProductClass
 {
     Bolsa,
@@ -36,45 +33,8 @@ public class LotBalance
     public string? ComprometidoPor { get; set; }
 }
 
-/// <summary>Producción u arribo esperado: alimenta la cifra "entrante" y el "disponible a fecha".</summary>
-public class IncomingStock
-{
-    public string Clave { get; set; } = "";
-    public string Ubicacion { get; set; } = "";
-    public decimal Cantidad { get; set; }
-    public DateTime FechaEstimada { get; set; }
-    public string Origen { get; set; } = "";
-}
-
-/// <summary>Las cinco cifras de disponibilidad de SPEC-007 FR-001 para un SKU en una ubicación.</summary>
-public record AvailabilityRow(
-    ProductRef Producto,
-    string Ubicacion,
-    decimal Fisico,
-    decimal Reservado,
-    decimal EnWip,
-    decimal Entrante,
-    DateTime? PrimerArribo)
-{
-    public decimal Disponible => Fisico - Reservado - EnWip;
-    public decimal DisponibleAFecha(DateTime fecha) => Disponible + Entrante;
-}
-
-/// <summary>
-/// Sustitución ejecutada por una persona (SPEC-007 FR-006/FR-007). No es una regla de equivalencia:
-/// es evidencia acumulada. El sistema nunca sustituye por su cuenta.
-/// </summary>
-public class SubstitutionDecision
-{
-    public string ClaveVendida { get; set; } = "";
-    public string ClaveSustituta { get; set; } = "";
-    public string Lote { get; set; } = "";
-    public decimal Cantidad { get; set; }
-    public string Motivo { get; set; } = "";
-    public string Autor { get; set; } = "";
-    public DateTime Fecha { get; set; }
-    public string DocumentoFolio { get; set; } = "";
-}
+/// <summary>Renglón del Inventario Actual: la existencia de un lote en una ubicación.</summary>
+public record StockQuant(ProductRef Producto, string Ubicacion, string Lote, decimal Cantidad);
 
 public class InventoryState
 {
@@ -93,16 +53,6 @@ public class InventoryState
         ProductClass.RolloMaestro => "Rollos maestros",
         ProductClass.MateriaPrima => "Materia prima",
         _ => "Scrap"
-    };
-
-    public static string ClassIcon(ProductClass c) => c switch
-    {
-        ProductClass.Bolsa => "bi-bag",
-        ProductClass.RolloImpreso => "bi-palette",
-        ProductClass.RolloLiso => "bi-circle",
-        ProductClass.RolloMaestro => "bi-record-circle",
-        ProductClass.MateriaPrima => "bi-droplet-half",
-        _ => "bi-trash3"
     };
 
     /// <summary>Ubicaciones excluidas del material vendible (SPEC-007 FR-011).</summary>
@@ -141,16 +91,16 @@ public class InventoryState
         new() { Lote = "MP32-2609",   Clave = "MP0032",   Ubicacion = AlmacenMateriaPrima, Cantidad = 45.75m },
 
         // Rollos maestros — PIM. R006 ya comprometido por otro pedido: demuestra físico != disponible.
-        new() { Lote = "R004-IV310-26", Clave = "PT3413 C455", Ubicacion = "PIM/Stock/Rollos", Cantidad = 100m },
-        new() { Lote = "R005-IV310-26", Clave = "PT3413 C455", Ubicacion = "PIM/Stock/Rollos", Cantidad = 100m },
-        new() { Lote = "R006-IV310-26", Clave = "PT3413 C455", Ubicacion = "PIM/Stock/Rollos", Cantidad = 110m, Estado = LotStatus.Reservado, ComprometidoPor = "IV308-26" },
+        new() { Lote = "R004-IV310-26", Clave = "PT3413 C455", Ubicacion = "PIM/Stock/PT", Cantidad = 100m },
+        new() { Lote = "R005-IV310-26", Clave = "PT3413 C455", Ubicacion = "PIM/Stock/PT", Cantidad = 100m },
+        new() { Lote = "R006-IV310-26", Clave = "PT3413 C455", Ubicacion = "PIM/Stock/PT", Cantidad = 110m, Estado = LotStatus.Reservado, ComprometidoPor = "IV308-26" },
         // Rollo de otra especificación: candidato a sustitución, decisión de AC.
-        new() { Lote = "R011-IV295-26", Clave = "PT3413 C460", Ubicacion = "PIM/Stock/Rollos", Cantidad = 145m },
-        new() { Lote = "R012-IV295-26", Clave = "PT3413 C460", Ubicacion = "PIM/Stock/Rollos", Cantidad = 95m },
+        new() { Lote = "R011-IV295-26", Clave = "PT3413 C460", Ubicacion = "PIM/Stock/PT", Cantidad = 145m },
+        new() { Lote = "R012-IV295-26", Clave = "PT3413 C460", Ubicacion = "PIM/Stock/PT", Cantidad = 95m },
         new() { Lote = "R003-IV310-26.S", Clave = "PT3413 C455", Ubicacion = "PIM/Stock/Cuarentena", Cantidad = 105m, Estado = LotStatus.Cuarentena },
 
         // Rollo liso
-        new() { Lote = "R021-IV288-26", Clave = "PT3413 C470", Ubicacion = "PIM/Stock/Rollos", Cantidad = 260m },
+        new() { Lote = "R021-IV288-26", Clave = "PT3413 C470", Ubicacion = "PIM/Stock/PT", Cantidad = 260m },
 
         // Rollos impresos — SC
         new() { Lote = "R001-IV310-26", Clave = "PT3413 C4235", Ubicacion = "SC/Stock/MP", Cantidad = 100m },
@@ -162,21 +112,7 @@ public class InventoryState
         new() { Lote = "IV302-26-C07", Clave = "PT1113 C580", Ubicacion = "SC/Stock/PT", Cantidad = 4500m }
     };
 
-    public List<IncomingStock> Entrantes { get; } = new()
-    {
-        new() { Clave = "PT3413 C455",  Ubicacion = "PIM/Stock/Rollos", Cantidad = 500m, FechaEstimada = new DateTime(2026, 9, 23), Origen = "EXT-2026-0001" },
-        new() { Clave = "PT3413 C4235", Ubicacion = "SC/Stock/MP",      Cantidad = 500m, FechaEstimada = new DateTime(2026, 9, 25), Origen = "IMP-2026-0001" }
-    };
-
-    public List<SubstitutionDecision> Sustituciones { get; } = new()
-    {
-        // Evidencia histórica: el visor la muestra como referencia, nunca como recomendación.
-        new() { ClaveVendida = "PT3413 C455", ClaveSustituta = "PT3413 C460", Lote = "R008-IV270-26", Cantidad = 90m,
-                Motivo = "Mismo calibre, ancho 380 aceptado por el cliente para bolsa camiseta.",
-                Autor = "Alejandro Porras", Fecha = new DateTime(2026, 7, 14), DocumentoFolio = "IV270-26" }
-    };
-
-    // ---------------------------------------------------------------- proyección de disponibilidad
+    // ---------------------------------------------------------------- existencias
 
     public IEnumerable<string> Ubicaciones =>
         Lotes.Select(l => l.Ubicacion).Distinct().OrderBy(u => u);
@@ -194,12 +130,6 @@ public class InventoryState
     public decimal Disponible(string clave, string? ubicacion = null) =>
         LotesDe(clave, ubicacion).Where(l => l.Estado == LotStatus.Libre && EsVendible(l.Ubicacion)).Sum(l => l.Cantidad);
 
-    public decimal Entrante(string clave, string? ubicacion = null, DateTime? antesDe = null) =>
-        Entrantes.Where(e => Coincide(e.Clave, clave)
-                          && (ubicacion == null || e.Ubicacion == ubicacion)
-                          && (antesDe == null || e.FechaEstimada <= antesDe))
-                 .Sum(e => e.Cantidad);
-
     public List<LotBalance> LotesDe(string clave, string? ubicacion = null) =>
         Lotes.Where(l => Coincide(l.Clave, clave) && (ubicacion == null || l.Ubicacion == ubicacion)).ToList();
 
@@ -212,32 +142,13 @@ public class InventoryState
 
     private static bool Coincide(string a, string b) => string.Equals(a?.Trim(), b?.Trim(), StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>Filas del visor para una clasificación: un renglón por SKU y ubicación con existencia.</summary>
-    public List<AvailabilityRow> Filas(ProductClass? clase = null, string? planta = null, string? texto = null)
-    {
-        var filas = new List<AvailabilityRow>();
-        foreach (var prod in Catalogo)
-        {
-            if (clase != null && prod.Clasificacion != clase) continue;
-            if (!string.IsNullOrWhiteSpace(texto)
-                && !prod.Clave.Contains(texto, StringComparison.OrdinalIgnoreCase)
-                && !prod.Nombre.Contains(texto, StringComparison.OrdinalIgnoreCase)) continue;
-
-            foreach (var ubi in LotesDe(prod.Clave).Select(l => l.Ubicacion).Distinct())
-            {
-                if (!string.IsNullOrWhiteSpace(planta) && !ubi.StartsWith(planta, StringComparison.OrdinalIgnoreCase)) continue;
-                var arribos = Entrantes.Where(e => Coincide(e.Clave, prod.Clave) && e.Ubicacion == ubi).ToList();
-                filas.Add(new AvailabilityRow(
-                    prod, ubi,
-                    Fisico(prod.Clave, ubi),
-                    Reservado(prod.Clave, ubi),
-                    EnWip(prod.Clave, ubi),
-                    arribos.Sum(a => a.Cantidad),
-                    arribos.OrderBy(a => a.FechaEstimada).Select(a => (DateTime?)a.FechaEstimada).FirstOrDefault()));
-            }
-        }
-        return filas;
-    }
+    /// <summary>Existencias del Inventario Actual: un renglón por lote y ubicación.</summary>
+    public List<StockQuant> Existencias() => Lotes
+        .Where(l => l.Cantidad > 0)
+        .Select(l => (Lote: l, Producto: GetProducto(l.Clave)))
+        .Where(x => x.Producto != null)
+        .Select(x => new StockQuant(x.Producto!, x.Lote.Ubicacion, x.Lote.Lote, x.Lote.Cantidad))
+        .ToList();
 
     // ---------------------------------------------------------------- reservas (SPEC-007 US-4)
 
@@ -271,17 +182,6 @@ public class InventoryState
         }
         Notify();
     }
-
-    public void RegistrarSustitucion(SubstitutionDecision d)
-    {
-        d.Fecha = d.Fecha == default ? DateTime.Today : d.Fecha;
-        Sustituciones.Add(d);
-        Notify();
-    }
-
-    /// <summary>Cuántas veces se sustituyó antes este par. Informativo — nunca preselecciona (FR-007).</summary>
-    public int VecesSustituido(string claveVendida, string claveSustituta) =>
-        Sustituciones.Count(s => Coincide(s.ClaveVendida, claveVendida) && Coincide(s.ClaveSustituta, claveSustituta));
 
     // ---------------------------------------------------------------- movimientos WIP (SPEC-008)
 

@@ -54,6 +54,7 @@
                     <th style="width:15%;">Clave</th>
                     <th>Producto</th>
                     <th class="text-center" style="width: 110px;">Cantidad</th>
+                    <th class="text-center" style="width: 110px;" title="Disponible en ubicaciones vendibles (CONTPAQi)">Existencia</th>
                     <th class="text-center" style="width: 80px;">Unidad</th>
                     <th class="text-end" style="width: 140px;">Precio Unitario</th>
                     <th class="text-end" style="width: 110px;">Subtotal</th>
@@ -72,6 +73,10 @@
                             </button>
                         </td>
                         <td class="text-center">@linea.Cantidad.ToString("N1")</td>
+                        @{
+                            var existencia = Inv.Disponible(linea.Clave);
+                        }
+                        <td class="text-center fw-semibold @(existencia < linea.Cantidad ? "text-danger" : "text-primary")" title="Disponible en ubicaciones vendibles (CONTPAQi)">@existencia.ToString("N1")</td>
                         <td class="text-center small text-muted">@linea.Unidad</td>
                         <td class="text-end text-muted">$@linea.PrecioUnitario.ToString("N2")</td>
                         <td class="text-end fw-semibold">$@linea.Subtotal.ToString("N2")</td>

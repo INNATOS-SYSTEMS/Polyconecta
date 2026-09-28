@@ -19,6 +19,9 @@ public class SearchView<T>
     public List<SearchFilter<T>> Filtros { get; init; } = new();
     public List<SearchGroupBy<T>> Agrupaciones { get; init; } = new();
 
+    /// <summary>Etiquetas de las agrupaciones con las que abre la lista, en orden de anidamiento.</summary>
+    public List<string> AgrupacionesPorDefecto { get; init; } = new();
+
     /// <summary>Campo de referencia: el respaldo cuando no hay campos declarados.</summary>
     public Func<T, string?>? Referencia { get; init; }
 
@@ -210,29 +213,31 @@ public static class SearchViews
         Agrupaciones = { new("Centro de trabajo", i => i.CentroTrabajo), new("Tipo", i => i.Tipo) }
     };
 
-    public static readonly SearchView<AvailabilityRow> Disponibilidad = new()
+    /// <summary>Inventario Actual: existencias por lote, agrupadas por ubicación y producto.</summary>
+    public static readonly SearchView<StockQuant> InventarioActual = new()
     {
-        Referencia = r => r.Producto.Clave,
+        Referencia = q => q.Producto.Clave,
         Campos =
         {
-            new("Clave", r => r.Producto.Clave),
-            new("Producto", r => r.Producto.Nombre),
-            new("Ubicación", r => r.Ubicacion)
+            new("Producto", q => q.Producto.Clave + " " + q.Producto.Nombre),
+            new("Ubicación", q => q.Ubicacion),
+            new("Lote", q => q.Lote)
         },
-        Filtros =
-        {
-            new("Con disponible", "Disponibilidad", r => r.Disponible > 0),
-            new("Sin disponible", "Disponibilidad", r => r.Disponible <= 0),
-            new("Con reservas", "Compromiso", r => r.Reservado > 0),
-            new("En WIP", "Compromiso", r => r.EnWip > 0),
-            new("Con producción entrante", "Entrante", r => r.Entrante > 0),
-            new("PIM", "Planta", r => r.Ubicacion.StartsWith("PIM", StringComparison.OrdinalIgnoreCase)),
-            new("Santa Cruz", "Planta", r => r.Ubicacion.StartsWith("SC", StringComparison.OrdinalIgnoreCase))
-        },
+        Filtros = Enum.GetValues<ProductClass>()
+            .Select(c => new SearchFilter<StockQuant>(InventoryState.ClassLabel(c), "Clasificación", q => q.Producto.Clasificacion == c))
+            .Concat(new SearchFilter<StockQuant>[]
+            {
+                new("PIM", "Planta", q => q.Ubicacion.StartsWith("PIM", StringComparison.OrdinalIgnoreCase)),
+                new("Santa Cruz", "Planta", q => q.Ubicacion.StartsWith("SC", StringComparison.OrdinalIgnoreCase))
+            })
+            .ToList(),
         Agrupaciones =
         {
-            new("Clasificación", r => InventoryState.ClassLabel(r.Producto.Clasificacion)),
-            new("Ubicación", r => r.Ubicacion)
-        }
+            new("Ubicación", q => q.Ubicacion),
+            new("Producto", q => q.Producto.Clave + " " + q.Producto.Nombre),
+            new("Clasificación", q => InventoryState.ClassLabel(q.Producto.Clasificacion)),
+            new("Lote", q => q.Lote)
+        },
+        AgrupacionesPorDefecto = { "Ubicación", "Producto" }
     };
 }

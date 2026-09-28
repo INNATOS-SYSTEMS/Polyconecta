@@ -22,3 +22,8 @@ Thumbs.db
 
 ./scripts/screenshots/
 scripts/screenshots/package-lock.json
+
+## sdk-lab (artefactos locales y evidencia de pruebas contra el SDK real)
+tools/sdk-lab/dist/
+tools/sdk-lab/evidence/
+tools/sdk-lab/lab.config.json

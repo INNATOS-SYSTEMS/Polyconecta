@@ -10,12 +10,34 @@
         {
             <span class="o_module_name">@CurrentModule.Name</span>
         }
-        @if (CurrentModule.Items.Count > 1)
+        @if (CurrentModule.Items.Count > 1 || CurrentModule.Items.Any(i => i.Children != null))
         {
             <nav class="o_header_menu">
                 @foreach (var item in CurrentModule.Items)
                 {
-                    <a href="@item.Route" class="@(IsActive(item.Route) ? "active" : "")">@item.Label</a>
+                    if (item.Children == null)
+                    {
+                        <a href="@item.Route" class="@(IsActive(item.Route) ? "active" : "")">@item.Label</a>
+                    }
+                    else
+                    {
+                        var abierto = menuAbierto == item.Label;
+                        <div class="o_header_dropdown">
+                            <button type="button" class="@(item.Children.Any(c => IsActive(c.Route)) ? "active" : "")"
+                                    @onclick="() => menuAbierto = abierto ? null : item.Label">
+                                @item.Label
+                            </button>
+                            @if (abierto)
+                            {
+                                <div class="o_header_dropdown_menu">
+                                    @foreach (var hijo in item.Children)
+                                    {
+                                        <a href="@hijo.Route" class="@(IsActive(hijo.Route) ? "active" : "")" @onclick="() => menuAbierto = null">@hijo.Label</a>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
                 }
             </nav>
         }
@@ -31,25 +53,54 @@
 </header>
 
 @code {
-    private record ModuleInfo(string Name, List<(string Label, string Route)> Items);
+    private record MenuItem(string Label, string Route, List<MenuItem>? Children = null);
+    private record ModuleInfo(string Name, List<MenuItem> Items);
+
+    /// <summary>
+    /// Inventario absorbe lo que era Logística: las operaciones de almacén cuelgan de un solo
+    /// menú "Operaciones" y la existencia vive en "Inventario".
+    /// </summary>
+    private static readonly ModuleInfo Inventario = new("Inventario", new()
+    {
+        new("Inventario", "/inventario", new() { new("Inventario Actual", "/inventario") }),
+        new("Operaciones", "/entregas", new()
+        {
+            new("Entrega", "/entregas"),
+            new("Recolección", "/recolecciones"),
+            new("Traslado", "/traslados"),
+            new("Recepción", "/recepcion")
+        })
+    });
+
+    private static readonly ModuleInfo Ventas = new("Ventas", new()
+    {
+        new("Pedidos", "/pedidos"), new("Inventario", "/ventas/inventario")
+    });
+
+    private static readonly ModuleInfo Fabricacion = new("Fabricación", new()
+    {
+        new("Fabricación", "/fabricacion"), new("Producción", "/captura-masiva"), new("Incidencias", "/incidencias")
+    });
 
     private static readonly List<(string Prefix, ModuleInfo Info)> ModuleMap = new()
     {
-        ("/pedidos", new("Ventas", new() { ("Pedidos", "/pedidos"), ("Disponibilidad", "/disponibilidad") })),
-        ("/disponibilidad", new("Inventario", new() { ("Disponibilidad", "/disponibilidad"), ("Recolecciones", "/recolecciones") })),
-        ("/fabricacion", new("Fabricación", new() { ("Fabricación", "/fabricacion"), ("Captura Masiva", "/captura-masiva"), ("Incidencias", "/incidencias") })),
-        ("/captura-masiva", new("Fabricación", new() { ("Fabricación", "/fabricacion"), ("Captura Masiva", "/captura-masiva"), ("Incidencias", "/incidencias") })),
-        ("/incidencias", new("Fabricación", new() { ("Fabricación", "/fabricacion"), ("Captura Masiva", "/captura-masiva"), ("Incidencias", "/incidencias") })),
-        ("/calidad", new("Calidad", new() { ("Calidad", "/calidad") })),
-        ("/traslados", new("Logística", new() { ("Traslados", "/traslados"), ("Recepción", "/recepcion"), ("Entregas", "/entregas"), ("Recolecciones", "/recolecciones") })),
-        ("/recepcion", new("Logística", new() { ("Traslados", "/traslados"), ("Recepción", "/recepcion"), ("Entregas", "/entregas"), ("Recolecciones", "/recolecciones") })),
-        ("/recolecciones", new("Logística", new() { ("Traslados", "/traslados"), ("Recepción", "/recepcion"), ("Entregas", "/entregas"), ("Recolecciones", "/recolecciones") })),
-        ("/entregas", new("Logística", new() { ("Traslados", "/traslados"), ("Recepción", "/recepcion"), ("Entregas", "/entregas"), ("Recolecciones", "/recolecciones") })),
+        ("/pedidos", Ventas),
+        ("/ventas", Ventas),
+        ("/inventario", Inventario),
+        ("/fabricacion", Fabricacion),
+        ("/captura-masiva", Fabricacion),
+        ("/incidencias", Fabricacion),
+        ("/calidad", new("Calidad", new() { new("Calidad", "/calidad") })),
+        ("/traslados", Inventario),
+        ("/recepcion", Inventario),
+        ("/recolecciones", Inventario),
+        ("/entregas", Inventario),
     };
 
     private static readonly ModuleInfo Empty = new("", new());
 
     private ModuleInfo CurrentModule = Empty;
+    private string? menuAbierto;
 
     protected override void OnInitialized()
     {
@@ -60,6 +111,7 @@
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         UpdateModule();
+        menuAbierto = null;
         InvokeAsync(StateHasChanged);
     }
 
