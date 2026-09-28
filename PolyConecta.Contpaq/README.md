@@ -1,26 +1,26 @@
-# PolyConecta.Contpaq (Capa de Integración ERP & Bridge Win32)
+# PolyConecta.Contpaq (bridge de CONTPAQi)
 
-**Propósito**: Servicio ejecutable Win32 (.NET 8 x86) dedicado a la integración bidireccional segura con **CONTPAQi Comercial Premium v10+**. Aísla las llamadas SDK nativas (`MGW_SDK.dll`) y ejecuta lecturas SQL directas en modo `NOLOCK`.
+Servicio .NET 8 **x86** que aísla toda la comunicación con CONTPAQi Comercial Premium. Es el único componente que habla con el ERP (Principio II de la constitución). Se despliega en Windows, junto a la instalación de CONTPAQi.
 
----
+## Qué hace
 
-## 🎯 Responsabilidades y Reglas de la Capa
+- **Escribe** documentos y movimientos con el SDK nativo (`ContpaqiSdkGateway`, `ContpaqiSdkNative`), con circuit breaker y en un solo hilo.
+- **Lee** catálogos y existencias por SQL directo con `NOLOCK` (`SqlReadRepository`). Nunca hace `INSERT` ni `UPDATE` en tablas `adm*`.
+- **Outbox propio** en SQLite (`bridge_outbox.db`), con reintentos y dead letter queue.
+- **API y dashboard** en el puerto `5005`: transacciones, catálogos, DLQ, logs y métricas (`Api/Controllers`), con un `DashboardHub` en vivo y `CorrelationMiddleware` para trazar solicitudes de extremo a extremo.
+- **Webhooks** de notificación de resultado (`WebhookDispatcher`).
 
-1. **Aislamiento de Proceso x86**:
-   * Corre como proceso independiente de 32 bits (`win-x86`) en la **Sesión 2 interactiva** de Windows para interactuar con la sesión gráfica abierta de CONTPAQi.
-   * Evita fallos de memoria CLR/Borland (`0xc0000005`) aislando `fInicializaSDK()` y `fTerminaSDK()`.
+## Advertencias
 
-2. **Procesador Outbox & Resiliencia**:
-   * Consume mensajes de la cola Outbox (`bridge_outbox.db`) y ejecuta transacciones de alta de documentos (`fAltaDocumento`) y afectación de capas de inventario (`fAltaMovimientoSeriesCapas`).
-   * Manejo automático de reintentos y cola Dead Letter Queue (DLQ).
+- `appsettings.json` **versiona una cadena de conexión con credenciales** (`sa`). Hay que rotarla, moverla a variables de entorno y limpiar el historial de git (deuda técnica 1 en [05-arquitectura-tecnica.md](../docs/diseno/05-arquitectura-tecnica.md)).
+- El contrato de movimientos (WIP, varios lotes, fraccionamiento, backorder, enlace Remisión ↔ Pedido) **no está verificado** contra un CONTPAQi real. Se valida con la [matriz de pruebas](../docs/contpaq/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md) usando `tools/sdk-lab`.
+- El caso G-01 (documento huérfano cuando falla el movimiento) está pendiente.
 
-3. **Lecturas SQL Directas**:
-   * Consulta catálogos y existencias de la base de datos de Polyempaques (`admProductos`, `admAlmacenes`, `admCapasProducto`) mediante SQL directo en modo `NOLOCK`.
+## Construir y desplegar
 
----
+```bash
+./scripts/build.sh    # paquete win-x86
+./scripts/deploy.sh   # despliegue al VPS Windows
+```
 
-## 🔗 Dependencias Permitidas
-
-* **Dependencias de Salida**: 
-  * `PolyConecta.Domain` (Value Objects y contratos de eventos).
-  * `PolyConecta.Infrastructure` (Esquema de Outbox).
+Referencias obligatorias: [Referencia_SDK_CONTPAQi.md](../docs/contpaq/Referencia_SDK_CONTPAQi.md) y [Referencia_BD_CONTPAQi.md](../docs/contpaq/Referencia_BD_CONTPAQi.md).

@@ -3,6 +3,8 @@
 **Fecha:** Septiembre 2026  
 **Versión:** 1.0 (Definición de Arquitectura Operativa)
 
+> **Nota (28-sep-2026):** propuesta preliminar, se conserva como registro. La refinó el [informe de validación](INFORME_VALIDACION_DIAGRAMA_OPERATIVO.md) y después las [decisiones de diseño](../diseno/decisiones.md). El diseño vigente está en [`docs/diseno/`](../diseno/).
+
 ---
 
 ## 1. Resumen Ejecutivo y Diagnóstico (As-Is vs. To-Be)

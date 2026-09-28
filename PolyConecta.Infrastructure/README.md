@@ -1,22 +1,18 @@
-# PolyConecta.Infrastructure (Capa de Infraestructura & Persistencia)
+# PolyConecta.Infrastructure
 
-**Propósito**: Encapsula el acceso a datos relacionales (EF Core `PolyDbContext`), el mapeo inmutable de tablas, la ejecución de migraciones y la infraestructura del patrón Outbox para la integración con CONTPAQi.
+Persistencia y outbox. Depende solo de `PolyConecta.Domain`.
 
----
+## Contenido actual
 
-## 🎯 Responsabilidades y Reglas de la Capa
+| Carpeta | Contenido |
+| :--- | :--- |
+| `Persistence/` | `PolyDbContext`, configuraciones de entidades y `IDataSeeder` |
+| `Repositories/` | Implementaciones de los contratos del dominio |
+| `Outbox/` | `OutboxPublisher` e `IOutboxProcessor`: encolan eventos para el bridge de CONTPAQi |
+| `Common/` | `IUnitOfWork` |
 
-1. **Persistencia & EF Core**:
-   * `PolyDbContext`: Mapeo de entidades del dominio a esquemas relacionales relacionales.
-   * Configuraciones de entidades y datos semilla (`PolyLocationConfiguration`, `RawMaterialCatalogConfiguration`).
-   * Aplicación del **Quality Gate Hard-Stop**: Regla de persisencia que bloquea activamente los movimientos de inventario de lotes almacenados en Cuarentena (`PIM/Cuarentena`).
+El proveedor de Npgsql (PostgreSQL) está referenciado pero **no se usa**: la API registra `UseInMemoryDatabase`. Tampoco hay migraciones todavía.
 
-2. **Publicador de Outbox (`OutboxPublisher`)**:
-   * Encolamiento durable de eventos de negocio (`RollCreated`, `StockTransferred`) para procesamiento asíncrono hacia CONTPAQi.
+## Destino
 
----
-
-## 🔗 Dependencias Permitidas
-
-* **Dependencias de Salida**: 
-  * `PolyConecta.Domain` (Implementa interfaces y persiste entidades del dominio).
+PostgreSQL con migraciones, outbox transaccional en la misma unidad de trabajo que el cambio de negocio y semillas de catálogos (almacenes, ubicaciones y tipos de operación de [03-almacenes-y-operaciones.md](../docs/diseno/03-almacenes-y-operaciones.md)). El motor de persistencia está pendiente de un ADR (T-09 en [preguntas abiertas](../docs/diseno/preguntas-abiertas.md)).

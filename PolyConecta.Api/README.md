@@ -1,31 +1,21 @@
-# PolyConecta.Api (Capa API Gateway & Backend Host)
+# PolyConecta.Api
 
-**Propósito**: Capa de entrada HTTP y API Gateway ASP.NET Core que expone los endpoints RESTful para la interfaz de usuario, procesa peticiones HTTP, gestiona el middleware de excepciones y sirve la documentación Swagger/OpenAPI en el puerto `9020`.
+API REST en ASP.NET Core. Depende de `PolyConecta.Domain` y `PolyConecta.Infrastructure`.
 
----
+- Base: `http://localhost:9020/api/v1`
+- Swagger: `http://localhost:9020/swagger` (el contrato se genera en vivo; no hay un OpenAPI versionado)
 
-## 🎯 Responsabilidades y Reglas de la Capa
+## Contenido actual
 
-1. **Puerto por Defecto**:
-   * **Swagger API (PolyConecta.Api)**: `http://localhost:9020/swagger`
-   * **REST API Endpoints Base**: `http://localhost:9020/api/v1`
+| Controlador | Endpoints |
+| :--- | :--- |
+| `OrdersController` | `POST /orders/master` (orden raíz y sus hijas), `GET /orders/master/{id}`, `PATCH /orders/{id}/status` |
+| `RollsController` | `POST /rolls/capture` (pesaje como `StockLot`), `GET /rolls/{folio}` |
+| `LocationsController` | `GET /locations`, `POST /transfers/move` (con hard-stop de calidad) |
+| `RawMaterialsController` | `GET` y `POST /raw-materials`, `POST /raw-materials/{id}/mappings` (códigos de proveedor) |
 
-2. **Controladores RESTful (`/api/v1/...`)**:
-   * `OrdersController`: Creación de Órdenes Maestras (`OM`) y actualización de estados en Sub-Órdenes (`OF`).
-   * `RollsController`: Registro y pesaje de rollos de extrusión a pie de máquina.
-   * `LocationsController`: Consulta de almacenes y ejecución de traspasos de stock entre ubicaciones.
-   * `RawMaterialsController`: Gestión del Catálogo Maestro de Insumos y mapeo de equivalencias de proveedores.
+Además: `ProblemDetailsMiddleware`, respuestas envueltas en `ApiResponse` y `PagedResult`, y contratos CQRS en `Application/`. Corre sobre **EF InMemory**. Hoy la presentación no consume esta API.
 
-3. **Middleware & Configuración**:
-   * Habilitación de CORS para permitir peticiones desde la SPA (puerto 9000).
-   * Manejo de referencias circulares en JSON (`ReferenceHandler.IgnoreCycles`).
-   * Especificación y UI de Swagger/OpenAPI (`/swagger`).
-   * Filtros de excepción global y validación de DTOs.
+## Destino
 
----
-
-## 🔗 Dependencias Permitidas
-
-* **Dependencias de Salida**: 
-  * `PolyConecta.Domain` (Entidades, Value Objects, Servicios de Dominio).
-  * `PolyConecta.Infrastructure` (DbContext, Outbox Publisher).
+Un contrato por caso de uso (confirmar, autorizar, validar, cerrar…), autenticación con permisos por rol, paginación y filtros declarativos. Ver el [plan de construcción](../docs/PLAN_CONSTRUCCION.md), fase 1.

@@ -1,1 +1,0 @@
-{"client_app_id": "app1", "command_type": "DOCUMENT_CREATE", "payload": {"codigo_concepto": "4", "codigo_cliente_proveedor": "CLI001", "fecha": "09/12/2026", "movimientos": [{"codigo_producto": "PROD01", "unidades": 1, "precio": 100.0, "codigo_almacen": "1"}]}}

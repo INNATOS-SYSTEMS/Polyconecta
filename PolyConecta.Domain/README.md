@@ -1,26 +1,17 @@
-# PolyConecta.Domain (Capa de Dominio & Reglas de Negocio Puras)
+# PolyConecta.Domain
 
-**Propósito**: Corazón del sistema. Define las entidades de negocio canónicas, objetos de valor (Value Objects), servicios de dominio y contratos de repositorios sin ninguna dependencia de frameworks externos, bases de datos o HTTP.
+Núcleo del sistema: entidades de negocio, value objects, servicios de dominio y contratos de repositorio. **No depende de ningún otro proyecto** ni de frameworks de persistencia, HTTP o UI.
 
----
+## Contenido actual
 
-## 🎯 Responsabilidades y Reglas de la Capa
+| Carpeta | Contenido |
+| :--- | :--- |
+| `Entities/` | `Product`, `StockLot`, `ManufacturingOrder` (autorreferenciado con `ParentId`), `Bom`/`BomLine`, `StockLocation`, `PolyLocation`, `StockPicking`/`StockMove`, `QualityCheck`/`StockScrap`, `RawMaterialCatalog`/`SupplierProductMapping`, `MassBalanceAudit`, `LotGenealogy`, `OutboxMessage` |
+| `Services/` | `MassBalanceService` (tolerancia por defecto: 2 %), interfaces de servicios de dominio |
+| `Repositories/` | Contratos de repositorio (órdenes, materiales, proveedores, outbox) |
+| `ValueObjects/` | `Folio` |
+| `Events/` | `IDomainEventPublisher` |
 
-1. **Entidades Puramente Inmutables**:
-   * `MasterOrder` & `SubOrder`: Jerarquía de 3 niveles de órdenes de producción.
-   * `RolloMaestro`: Identidad física del rollo, cálculo de peso neto ($\text{Neto} = \text{Bruto} - \text{Tara}$), calibre y métricas de calidad.
-   * `PolyLocation`: Representación de plantas (`PIM`, `STC`, `MTM`) y almacenes virtuales (`PIM/Stock/MP`, `PIM/Produccion`, `PIM/Stock/PT`, `PIM/Cuarentena`).
-   * `RawMaterialCatalog` & `SupplierProductMapping`: Catálogo estandarizado de materias primas y mapeos a SKUs de proveedores.
-   * `MassBalanceAudit`: Regla de auditoría de balance de masa ($\text{Varianza} \le 2.0\%$).
+## Destino
 
-2. **Value Objects**:
-   * `Folio`: Generación e inmutabilidad de folios de extrusión (`EX-01-YYMMDD-HHMMSS`).
-
-3. **Regla de Arquitectura Limpia**:
-   * **CERO dependencias externas**: No contiene referencias a Entity Framework, ASP.NET Core, SQL Server, PostgreSQL ni bibliotecas de UI.
-
----
-
-## 🔗 Dependencias Permitidas
-
-* **Dependencias de Salida**: **Ninguna**. Es el núcleo independiente del sistema.
+El modelo objetivo y la lista exacta de lo que falta están en [docs/diseno/04-modelo-de-dominio.md](../docs/diseno/04-modelo-de-dominio.md). En particular, `Bom`/`BomLine` con capas A/B/C, las banderas `SalesApproved`/`CreditApproved` en la orden y el value object `Folio` responden a decisiones ya sustituidas (D-07, D-15 y numeración centralizada).

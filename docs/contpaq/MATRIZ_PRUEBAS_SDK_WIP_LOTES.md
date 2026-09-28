@@ -2,7 +2,7 @@
 
 **Proyecto:** PolyConecta · **Fecha:** 21 de septiembre de 2026 · **Estatus:** Pendiente de ejecución
 
-**Propósito:** Verificar contra una instalación real de CONTPAQi Comercial Premium que el SDK soporta las operaciones que asumen [SPEC-007](../../.specify/features/007-procurement-rules-and-authorization/spec.md) y [SPEC-008](../../.specify/features/008-wip-component-recollection/spec.md). **Ninguna de las dos specs debe pasar a implementación productiva antes de cerrar los bloques B, C y D de esta matriz** — son supuestos, no hechos verificados.
+**Propósito:** Verificar contra una instalación real de CONTPAQi Comercial Premium que el SDK soporta las operaciones que asumen SPEC-007 (abastecimiento, hoy [02-flujo-y-reglas.md §2](../diseno/02-flujo-y-reglas.md)) y SPEC-008 (recolección a WIP, hoy [§4](../diseno/02-flujo-y-reglas.md)). Las referencias `SPEC-00X FR-NNN` de esta matriz corresponden a los identificadores `[00X-FR-NNN]` de esos documentos. **Ninguna de las dos specs debe pasar a implementación productiva antes de cerrar los bloques B, C y D de esta matriz** — son supuestos, no hechos verificados.
 
 **Código bajo prueba:** `PolyConecta.Contpaq/Infrastructure/Sdk/ContpaqiSdkGateway.cs` (creación de documento), `ContpaqiSdkNative.cs` (interop).
 

@@ -5,6 +5,8 @@
 **Versión:** 1.0 (Definición Operativa Validada End-to-End)  
 **Estatus:** Aprobado y Consensuado con Operación  
 
+> **Nota (28-sep-2026):** este informe se conserva tal como se aprobó. Decisiones posteriores modificaron los puntos 1, 5, 6, 7, 8, 9, 10, 11, 13 y 14 de la matriz de la sección 4; el detalle está en [`docs/diseno/decisiones.md`](../diseno/decisiones.md) y el diseño vigente en [`docs/diseno/`](../diseno/).
+
 ---
 
 ## 1. Resumen Ejecutivo
