@@ -22,7 +22,7 @@ El proyecto está al **inicio de la construcción**. Existe un prototipo navegab
 PolyConecta.Domain/          Entidades y reglas de negocio, sin dependencias
 PolyConecta.Infrastructure/  EF Core, repositorios, outbox
 PolyConecta.Api/             API REST (:9020)
-PolyConecta.Presentation/    Prototipo Blazor Server (:9000), estado en memoria
+PolyConecta.Presentation/    Prototipo Blazor Server (:9000), estado en memoria; se reemplaza por Angular
 PolyConecta.Contpaq/         Bridge x86 hacia CONTPAQi (:5005)
 tests/                       Pruebas de dominio, integración y bridge
 tools/sdk-lab/               Laboratorio para probar el SDK contra un CONTPAQi real

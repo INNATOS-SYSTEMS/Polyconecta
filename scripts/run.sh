@@ -86,12 +86,12 @@ echo "   Using .NET installation: ${DOTNET_ROOT}"
 echo "   Found .NET SDK version: $("$DOTNET_BIN" --version)"
 
 # Step 2: Build complete solution
-echo "🛠️  Step 2: Building full solution (PolyConecta.slnx)..."
-"$DOTNET_BIN" build PolyConecta.slnx -c Debug
+echo "🛠️  Step 2: Building full solution (Polyconecta.slnx)..."
+"$DOTNET_BIN" build Polyconecta.slnx -c Debug
 
 # Step 3: Run test suites
 echo "🧪 Step 3: Running domain unit & integration test suites..."
-"$DOTNET_BIN" test PolyConecta.slnx --no-build --verbosity quiet
+"$DOTNET_BIN" test Polyconecta.slnx --no-build --verbosity quiet
 
 echo "================================================================="
 echo "✅ Build & Tests Succeeded! Launching PolyConecta Solution Layers..."

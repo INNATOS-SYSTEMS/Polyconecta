@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/tests/">
     <Project Path="tests/PolyConecta.Domain.Tests/PolyConecta.Domain.Tests.csproj" />
+    <Project Path="tests/Contpaq.Bridge.Tests/Contpaq.Bridge.Tests.csproj" />
     <Project Path="tests/PolyConecta.IntegrationTests/PolyConecta.IntegrationTests.csproj" />
   </Folder>
   <Project Path="PolyConecta.Api/PolyConecta.Api.csproj" />

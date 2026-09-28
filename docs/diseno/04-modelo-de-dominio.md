@@ -83,10 +83,10 @@ erDiagram
 | Entidad | Propósito | Campos clave |
 | :--- | :--- | :--- |
 | `LegalEntity` | Razón social | `name`, `tax_id` |
-| `Plant` | Planta | `code` (`PIM`, `STC`, `MTM`), `legal_entity_id` |
+| `Plant` | Planta | `code` (`PIM`, `SC`, `MTM`), `legal_entity_id` |
 | `WorkCenter` | Máquina o estación | `code`, `plant_id`, `process_type`, `capacity_kg_per_hour` |
-| `Operator` | Operador de piso (no es usuario del sistema) | `code`, `name`, `plant_id` |
-| `StockLocation` | Ubicación | `code` (`PIM/Stock/MP`), `plant_id`, `usage` (`Internal`, `Wip`, `Production`, `Transit`, `Quarantine`, `Customer`, `Vendor`), `erp_warehouse_id` |
+| `Operator` | Operador de máquina: es un dato de planeación y producción, no un usuario del sistema (D-39) | `code`, `name`, `plant_id` |
+| `StockLocation` | Ubicación | `code` (`PIM/Stock/MP`), `plant_id`, `usage` (`Internal`, `Wip`, `Production`, `Transit`, `Quarantine`, `Customer`, `Vendor`), `erp_warehouse_id`: el almacén que se reserva en `admAlmacenes` al inicializar, para **toda** ubicación (D-43) |
 | `OperationType` | Catálogo de operaciones | `code`, origen y destino por defecto, `requires_quality_release`, `triggers_erp_document_type` |
 
 ### Catálogo de productos
@@ -157,9 +157,9 @@ Sin precios ni impuestos: eso vive en CONTPAQi.
 | `ScrapEntry` | Kg de scrap por producto y motivo |
 | `MassBalanceAudit` | Un único registro al cierre: entrada, rollos buenos, cuarentena, scrap, varianza, tolerancia aplicada y resultado |
 | `LotGenealogy` | Qué lote padre se consumió en qué lote hijo |
-| `Incident` | Paro: fecha, centro de trabajo, tipo, comentarios, hora de inicio y de fin |
+| `Incident` | Paro: fecha, centro de trabajo, tipo, comentarios, hora de inicio y de fin. Lo captura el Supervisor de turno |
 
-Estados de `ManufacturingOrder` en el prototipo: `Borrador → Planeado → En progreso → Hecho`. La recolección añade el estado "Lista para producir". La enumeración definitiva está en [preguntas-abiertas.md](preguntas-abiertas.md).
+Estados de `ManufacturingOrder` (D-42): `Borrador → Confirmada → En progreso → Por cerrar → Hecha`, y `Cancelada`. El prototipo todavía usa `Borrador / Planeado / En progreso / Hecho`.
 
 ### Inventario
 
@@ -173,9 +173,9 @@ Estados de `ManufacturingOrder` en el prototipo: `Borrador → Planeado → En p
 
 | Entidad | Propósito |
 | :--- | :--- |
-| `User` | Persona con credenciales, activa o archivada |
+| `User` | Persona con credenciales propias de PolyConecta (ASP.NET Identity, D-32), activa o archivada |
 | `Role` | Conjunto nombrado de permisos |
-| `RoleAssignment` | Usuario × Rol × Planta |
+| `RoleAssignment` | Usuario × Rol × Planta, con bandera de suplente (D-38) |
 | `Permission` | Rol × tipo de documento × acción |
 | `RecordRule` | Filtro de fila reutilizable por rol |
 | `StateTransitionLog` | Quién, qué, cuándo y con qué rol, sobre qué documento |

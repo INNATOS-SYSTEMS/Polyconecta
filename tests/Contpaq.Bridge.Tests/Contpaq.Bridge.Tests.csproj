@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Contpaq.Bridge\Contpaq.Bridge.csproj" />
+    <ProjectReference Include="..\..\PolyConecta.Contpaq\PolyConecta.Contpaq.csproj" />
   </ItemGroup>
 
 </Project>

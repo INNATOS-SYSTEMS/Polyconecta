@@ -19,10 +19,10 @@
 | Capa | Hoy | Destino |
 | :--- | :--- | :--- |
 | **Domain** | Entidades Odoo-native parciales (`ManufacturingOrder` autorreferenciado, `StockLot`) | Modelo objetivo de [04-modelo-de-dominio.md](diseno/04-modelo-de-dominio.md): `PlanningLine`, ficha técnica, `QualityControl`, abastecimiento, WIP y recolección, numeración centralizada |
-| **Infrastructure** | EF Core con Npgsql referenciado, pero la API corre en **InMemory**; outbox definido | PostgreSQL con migraciones, repositorios reales, outbox transaccional, `IUnitOfWork` |
+| **Infrastructure** | EF Core con Npgsql referenciado, pero la API corre en **InMemory**; outbox definido | **SQL Server** (D-49) con migraciones, repositorios reales, outbox transaccional, `IUnitOfWork` |
 | **Api** | 4 controladores (Orders, Rolls, RawMaterials, Locations) | Contrato por caso de uso, auth, paginación y filtrado declarativo, ProblemDetails |
 | **Contpaq (bridge)** | Gateway x86 con outbox SQLite, circuit breaker, dashboard | Contrato de movimientos corregido según la matriz, idempotencia, DLQ recuperable, lectura de existencias |
-| **Presentation** | Blazor Server sobre estado en memoria (`OperationalFlowState`, `InventoryState`…) | Blazor consumiendo la API; vistas de búsqueda declarativas; permisos por rol en UI |
+| **Presentation** | Prototipo Blazor Server sobre estado en memoria (`OperationalFlowState`, `InventoryState`…) | **Angular** (D-48): réplica 1:1 del prototipo y después conexión a la API, con vistas de búsqueda declarativas y permisos por rol |
 | **Transversal** | Sin CI, secretos en `appsettings.json` | CI, gestión de secretos, observabilidad, despliegue repetible, migración desde Excel |
 
 ## 3. Fases
@@ -32,20 +32,23 @@
 | # | Trabajo | Capa | Salida |
 | :--- | :--- | :--- | :--- |
 | 0.1 | Ejecutar la matriz del SDK con `tools/sdk-lab` — orden: **F** (solo lectura, desde el día 1) → A → **B (punto de control)** → C-02/C-03 → D → E → G | Bridge | Registro de resultados completo y decisión sobre WIP y lotes |
-| 0.2 | Responder [P-01 a P-04](diseno/preguntas-abiertas.md) (autenticación, titulares, revocación, segregación) | Producto | Decisión escrita |
-| 0.3 | Decidir motor de persistencia (recomendación: PostgreSQL, ya referenciado) | Infra | ADR |
-| 0.4 | **Sacar secretos del repositorio**: `PolyConecta.Contpaq/appsettings.json` versiona un usuario `sa` con contraseña y el host del VPS. Rotar la credencial, moverla a variables de entorno y limpiar el historial | Transversal | Repo sin secretos |
+| 0.2 | ~~Responder autenticación, revocación y segregación~~ — hecho el 28-sep (D-32 a D-34). Falta el dato de titulares y suplentes (P-02) | Producto | Decisión escrita |
+| 0.3 | ~~Decidir motor de persistencia~~ — SQL Server (D-49). Cambiar Npgsql por el proveedor de SQL Server | Infra | Decisión registrada |
+| 0.4 | **Secretos**: la cadena ya salió del código (variable `BridgeConfig__SqlConnectionString`). Falta **rotar la contraseña de `sa`**, crear el login de solo lectura del bridge y definir la variable en el VPS. El historial no se reescribe (D-51) | Transversal | Credencial rotada |
 | 0.5 | Corregir **G-01** del gateway (documento huérfano tras fallo de movimiento) | Bridge | Prueba unitaria + G-01 verde |
 | 0.6 | Correr la POC en navegador real y registrar la línea base | Presentation | Línea base honesta |
 | 0.7 | ~~Reconciliar documentos~~ — hecho el 28-sep: `docs/diseno/` y [decisiones.md](diseno/decisiones.md) | Docs | Un solo relato |
+| 0.8 | Verificar alta de almacenes por SDK (T-10) y el registro de consumo, remisión y compra con ubicaciones virtuales como almacenes (T-11) | Bridge | Decisión sobre la reserva inicial en `admAlmacenes` |
+| 0.9 | ~~Corregir `Contpaq.Bridge.Tests` y el nombre de la solución en `run.sh`~~ — hecho el 28-sep | Transversal | Las 17 pruebas corren |
+| 0.10 | Réplica 1:1 del prototipo en Angular (`.specify/features/011-angular-presentation/`), en paralelo con la Fase 0 | Presentation | Paridad con las 18 pantallas |
 
-**Compuerta G0:** resultados de la matriz A, B, C-02, C-03 y F + respuestas 0.2 + ADR 0.3. Sin ella no se congela el modelo de WIP/lotes ni el de seguridad.
+**Compuerta G0:** resultados de la matriz A, B, C-02, C-03 y F, más T-10 y T-11. Las decisiones de producto y de persistencia ya están tomadas. Sin G0 no se congela el modelo de WIP, lotes y almacenes.
 
 ### Fase 1 — Plataforma (semanas 3–6)
 
-- Persistencia real: migraciones, semillas de catálogos (almacenes, ubicaciones, rutas base), `IUnitOfWork`, outbox transaccional. Reemplazar `UseInMemoryDatabase`.
-- Identidad y permisos según [01-modulos-y-roles.md](diseno/01-modulos-y-roles.md) (autenticación decidida en 0.2; roles y matriz; reglas de fila por planta).
-- Casos de uso implementados sobre la API; la Presentation deja de mutar modelos en memoria.
+- Persistencia real en SQL Server: migraciones, semillas de catálogos (almacenes, ubicaciones, rutas base), reserva inicial de ubicaciones en `admAlmacenes`, `IUnitOfWork`, outbox transaccional. Reemplazar `UseInMemoryDatabase`.
+- Identidad con usuarios propios (ASP.NET Identity) y permisos según [01-modulos-y-roles.md](diseno/01-modulos-y-roles.md): roles, matriz, suplentes y reglas de fila por planta.
+- Casos de uso implementados sobre la API; la réplica en Angular se conecta a ella y deja de mutar el estado en el navegador.
 - CI mínimo: build + `PolyConecta.Domain.Tests` + `IntegrationTests` + `Contpaq.Bridge.Tests` en cada PR.
 - Observabilidad: correlación de extremo a extremo (ya hay `CorrelationMiddleware` en el bridge) y logs estructurados en API.
 
@@ -86,8 +89,8 @@
 ```
 Matriz F ─────────────────────────────► Visor (F2) ─► Rutas (F3)
 Matriz A ─► B ─► (C-02/03) ─► D ─► E ──► Recolección WIP (F4)
-P-01..P-04 ───────► Identidad (F1) ─► Firmas (F2) ─► Búsqueda
-ADR persistencia ─► Migraciones (F1) ─► todo lo demás
+D-32..D-38 ───────► Identidad (F1) ─► Firmas (F2) ─► Búsqueda
+SQL Server (D-49) ─► Migraciones (F1) ─► todo lo demás
 Prueba Remisión↔Pedido ─► Spec de logística (F5)
 ```
 

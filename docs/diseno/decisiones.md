@@ -6,7 +6,7 @@ Decisiones tomadas **después** del informe de validación del diagrama operativ
 
 ## 1. Qué cambió del informe de validación
 
-El informe enumera 17 puntos. Estos siguen vigentes sin cambios: 2 (código de PT por especificación), 3 (estados del pedido), 4 (ficha multinivel), 12 (scrap clasificado), 15 (traspaso en 2 pasos), 16 (registro dual en bolseo) y 17 (4 reglas universales). Los demás se modificaron así:
+El informe enumera 17 puntos. Estos siguen vigentes sin cambios: 2 (código de PT por especificación), 3 (estados del pedido), 4 (ficha multinivel), 12 (scrap clasificado), 16 (registro dual en bolseo) y 17 (4 reglas universales). Los demás se modificaron así:
 
 | Punto del informe | Qué decía | Qué rige ahora | Decisión |
 | :--- | :--- | :--- | :--- |
@@ -14,10 +14,11 @@ El informe enumera 17 puntos. Estos siguen vigentes sin cambios: 2 (código de P
 | 6 · OT en Excel | Cero Excel; ingesta vía SDK | Sigue sin Excel, pero la ficha se captura en PolyConecta, no se ingiere | D-01 |
 | 7 · Controles de firma | Botones "Validar" separados de Ventas y Crédito | Botón único "Autorizar" con dos firmas de personas distintas | D-15 |
 | 8 y 9 · Jerarquía | OM → OF → WO, tres niveles | Una sola orden autorreferenciada; la planeación sustituye a la WO | D-05, D-06 |
-| 10 · BoM de extrusión | Excel obligatorio con capas A/B/C | Lista plana editable de componentes; si sigue el Excel está por confirmar | D-07 |
+| 10 · BoM de extrusión | Excel obligatorio con capas A/B/C | Lista plana de componentes capturada a mano, sin Excel | D-07, D-41 |
 | 11 · Slots y calidad | Inspección precargada por slot | Los slots siguen; la calidad es un documento propio | D-09 |
 | 13 · Balance de masa | Descuento consolidado desde MP al cierre | Descuento consolidado **desde WIP** al cierre; se suma la invariante de entrada | D-22 |
-| 14 · Nomenclatura de lotes | `IV214-26-R001` | `R001-IV310-26`; se conserva la regla `.S` | D-10 |
+| 14 · Nomenclatura de lotes | `IV214-26-R001` | `R001-IV310-26` (rollo) y `C001-IV310-26` (bulto o caja en SC); se conserva la regla `.S` | D-10, D-45 |
+| 15 · Traspaso interplanta | CONTPAQi registra el traspaso solo al validar la recepción | Sigue en dos pasos, pero el tránsito es un almacén en CONTPAQi: la salida registra origen → tránsito y la recepción, tránsito → destino | D-43 |
 
 ## 2. Decisiones
 
@@ -50,7 +51,27 @@ El informe enumera 17 puntos. Estos siguen vigentes sin cambios: 2 (código de P
 | D-25 | 2026-09-22 | La recolección es una operación de traslado más (`PIM-REC-OUT` / `PIM-REC-RET`), no un documento especial. | Validada | Recolección, revisión del 22-sep |
 | D-26 | 2026-09-23 | Las vistas de búsqueda declarativas se implementan en todos los modelos a la vez. | Validada | Búsqueda ① |
 | D-27 | 2026-09-23 | El alcance por planta es una regla de fila, no un filtro. Un filtro nunca amplía lo que restringe una regla de fila. | Validada | Búsqueda ② |
-| D-28 | 2026-09-23 | Seguridad Usuario × Rol × Planta en dos capas. Nadie aporta dos firmas del mismo pedido. Las acciones prohibidas se muestran deshabilitadas con su razón. | Propuesta | Usuarios, roles y permisos |
-| D-29 | 2026-09-15 | La presentación se construye en Blazor Server con render interactivo (no WASM ni HTML estático), aprovechando el `ChatterHub` de SignalR. | Adoptada | Consolidación del shell |
+| D-28 | 2026-09-23 | Seguridad Usuario × Rol × Planta en dos capas. Nadie aporta dos firmas del mismo pedido. Las acciones prohibidas se muestran deshabilitadas con su razón. | Validada (28-sep) | Usuarios, roles y permisos |
+| D-29 | 2026-09-15 | La presentación se construye en Blazor Server con render interactivo (no WASM ni HTML estático), aprovechando el `ChatterHub` de SignalR. | Sustituida por D-48 | Consolidación del shell |
 | D-30 | 2026-09-23 | Se retiran los duplicados legados del dominio (`MasterOrder`, `SubOrder`, `RolloMaestro`). | Adoptada | Redefinición de dominio |
 | D-31 | 2026-09-28 | La documentación se compacta en `docs/diseno/` y se retiran las specs de feature y el roadmap. Las futuras specs parten de estos documentos. | Adoptada | Este registro |
+| D-32 | 2026-09-28 | **Autenticación con usuarios propios** de PolyConecta (ASP.NET Identity). Se puede migrar a SSO más adelante. | Validada | P-01 |
+| D-33 | 2026-09-28 | Pueden **revocar** una autorización cualquiera de los dos firmantes o el Administrador, mientras ningún documento generado haya avanzado (ninguna OF confirmada, ninguna entrega validada). Después se cancela documento por documento. | Validada | P-03 |
+| D-34 | 2026-09-28 | Hay una persona que ejerce Comercial y Cobranza. **RF-4 se mantiene**: la segunda firma la da un suplente designado del otro rol. | Validada | P-04 |
+| D-35 | 2026-09-28 | Un Planner **solo ve las órdenes de su planta**. Consecuencia: el Planner de SC no abre la OF de origen que está en PIM; la ve en el pedido o se la consulta a PIM. | Validada | P-05 |
+| D-36 | 2026-09-28 | El alcance del Almacenista es **por planta** (MP, WIP y PT de su planta). | Validada | P-06 |
+| D-37 | 2026-09-28 | La **sustitución** de producto no requiere segunda autorización: AC decide y el sistema exige motivo y registra la evidencia. | Validada | P-07 |
+| D-38 | 2026-09-28 | Cada rol puede tener un **suplente designado** de antemano. Todo queda atribuido a quien actúa. | Validada | P-08 |
+| D-39 | 2026-09-28 | **No hay handheld, terminal de báscula ni escáner**: todo se captura en el sistema web. El operador anota en diarios y el Planner los vacía. El operador no usa el sistema. | Validada | P-09 |
+| D-40 | 2026-09-28 | Nuevo rol **Supervisor de turno**: captura las incidencias (paros). | Validada | P-10 |
+| D-41 | 2026-09-28 | **No hay importación de componentes desde Excel**: el Planner los captura a mano. Se retira el botón Importar. | Validada | P-11 |
+| D-42 | 2026-09-28 | Estados de la orden de fabricación, estilo Odoo: `Borrador → Confirmada → En progreso → Por cerrar → Hecha`, y `Cancelada`. "Por cerrar" separa la producción terminada del cierre técnico. | Validada | P-12 |
+| D-43 | 2026-09-28 | **Convención `SC`** para Santa Cruz (planta, ubicaciones y tipos de operación). **Las ubicaciones las define PolyConecta**; al inicializar se reservan **todas** como almacenes en `admAlmacenes`, incluidas las virtuales. Consecuencia: la salida a tránsito sí escribe en CONTPAQi. | Validada | P-13 |
+| D-44 | 2026-09-28 | El catálogo de centros de trabajo lo **levantan los Planners**; los códigos actuales son ejemplos. | Validada | P-14 |
+| D-45 | 2026-09-28 | El lote final de Santa Cruz se nombra `C{3 dígitos}-{folio del pedido}` (`C001-IV310-26`), con `.S` en cuarentena. | Validada | P-15 |
+| D-46 | 2026-09-28 | La **tolerancia** del balance de masa la define Producción. Es configurable y no tiene valor por defecto hasta que Producción la fije. | Validada | P-16 |
+| D-47 | 2026-09-28 | **Montemorelos, todo en Fase 2.** Se modelan la planta y la entidad legal, pero no hay rutas ni documentos intercompany. | Validada | P-17 |
+| D-48 | 2026-09-28 | **La presentación se hace en Angular.** Primero una réplica 1:1 del prototipo; después se conecta a la API. Sustituye a D-29. | Validada | P-18 |
+| D-49 | 2026-09-28 | La **base de datos** de PolyConecta es **SQL Server** (una base propia, separada de las de CONTPAQi). | Validada | T-09 |
+| D-50 | 2026-09-28 | La constitución pasa a la versión 1.5.0: principios I, II, IV, V, VI y IX alineados con D-39, D-43 y D-47. | Adoptada | D-39, D-43, D-47 |
+| D-51 | 2026-09-28 | La contraseña de `sa` se rota y el historial de git **no** se reescribe. La cadena de conexión sale del repositorio a la variable de entorno `BridgeConfig__SqlConnectionString` y el bridge usa un login de solo lectura. | Validada | Seguridad |

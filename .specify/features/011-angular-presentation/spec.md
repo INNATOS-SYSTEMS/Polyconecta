@@ -4,7 +4,10 @@
 > **Fecha**: 28 de Septiembre de 2026  
 > **Proyecto Origen**: `PolyConecta.Presentation` (Blazor Server .NET 8)  
 > **Proyecto Destino**: `PolyConecta.Web.Angular` (Angular 18+ SPA Standalone)  
-> **Ubicación de Referencia**: `/Users/emilio/Development/Sandbox/Polyconecta/docs/sdd/ESPECIFICACION_MIGRACION_ANGULAR_PRESENTATION.md`  
+> **Ubicación de Referencia**: `.specify/features/011-angular-presentation/spec.md`  
+> **Decisión**: D-48 en `docs/diseno/decisiones.md`: primero réplica 1:1 y después conexión a la API.
+
+> **Nota de consolidación (28-sep-2026).** Se corrigieron cuatro premisas para alinear esta spec con el diseño vigente: (1) el prototipo Blazor **no consume** `PolyConecta.Api`, todo su estado vive en memoria; (2) no hay handheld ni terminal de báscula (D-39); (3) Recepción es el paso 2 del traspaso interplanta, no una recepción de proveedor; (4) Recolección es el traslado de MP a WIP. El resto del texto se conserva como lo escribió su autor.
 
 ---
 
@@ -14,8 +17,8 @@ El objetivo de esta especificación es definir los requisitos técnicos, la arqu
 
 ### 1.1 Premisas Clave
 1. **Diseño e Interfaz Intactos (Odoo Design System)**: Mantenimiento exacto del estilo visual profesional Odoo (pantalla de inicio con App Launcher, Smart Buttons con contadores, barra de estado de pipeline, tabla de captura de líneas, cajón de Chatter en tiempo real, modales de lotes y barra de búsqueda con filtros/agrupadores).
-2. **Paridad Funcional Completa**: Migración sin pérdida de funciones de las 18 páginas operativas (Ventas, Fabricación Extrusión/Impresión/Bolseo, Logística de Traslados/Entregas/Recepciones/Recolecciones, Control de Calidad por Lote, Inventario Actual, Dashboard y Terminales de Planta Handheld).
-3. **Cero Rompimiento Backend**: Mantener compatibilidad con los contratos REST expuestos por `PolyConecta.Api` (puerto `9020`).
+2. **Paridad Funcional Completa**: Migración sin pérdida de funciones de las 18 páginas operativas (Ventas, Fabricación Extrusión/Impresión/Bolseo, Logística de Traslados/Entregas/Recepciones/Recolecciones, Control de Calidad por Lote, Inventario Actual, Dashboard y captura de planta: incidencias y producción).
+3. **Réplica primero, API después (D-48)**: la réplica 1:1 conserva el comportamiento del prototipo con estado en el navegador, igual que hoy lo tiene Blazor en memoria del servidor. La conexión a `PolyConecta.Api` (puerto `9020`) es una etapa posterior: hoy el prototipo no consume la API.
 
 ---
 
@@ -27,12 +30,11 @@ El cambio de **Blazor Server** a **Angular SPA** transforma la arquitectura de d
 [ ANTES: Blazor Server Architecture ]
 Browser Client <---(WebSocket / SignalR UI Diffs)---> PolyConecta.Presentation (Port 9000, .NET 8)
                                                              |
-                                                     (REST API Clients)
-                                                             v
-                                                   PolyConecta.Api (Port 9020)
+                                          (estado en memoria del servidor: OperationalFlowState,
+                                           StockOperationState, InventoryState; NO llama a la API)
 
 [ DESPUÉS: Angular SPA Architecture ]
-Browser Client / Handheld Terminal (SPA Angular estática)
+Browser Client (SPA Angular estática, escritorio)
        │
        ├───(REST HTTP JSON / RxJS)─────────> PolyConecta.Api (Port 9020)
        │                                            │
@@ -84,8 +86,8 @@ src/app/shared/components/odoo/
 | **Control de Calidad** | `CalidadList.razor`<br>`CalidadFormView.razor` | `CalidadListComponent`<br>`CalidadFormViewComponent` | Revisiones de calidad por lote de fabricación, estatus Aprobado/Rechazado y almacén de falla. |
 | **Logística - Traslados** | `TrasladosList.razor`<br>`TrasladoFormView.razor` | `TrasladosListComponent`<br>`TrasladoFormViewComponent` | Movimientos interplanta de materia prima y producto terminado con lotes. |
 | **Logística - Entregas** | `EntregasList.razor`<br>`EntregaFormView.razor` | `EntregasListComponent`<br>`EntregaFormViewComponent` | Despacho a clientes, vinculación de pedido y control de peso/báscula. |
-| **Logística - Recepción/Recolección** | `RecepcionList.razor` / `RecepcionFormView.razor`<br>`RecoleccionesList.razor` / `RecoleccionFormView.razor` | `RecepcionComponents`<br>`RecoleccionComponents` | Recepciones de materia prima de proveedor y recolecciones logísticas. |
-| **Planta / Handheld** | `IncidenciasPage.razor`<br>`CapturaMasivaPage.razor` | `IncidenciasComponent`<br>`CapturaMasivaComponent` | Terminales para operadores de planta: registro rápido de paros/fallas y pesaje masivo de rollos/lotes. |
+| **Logística - Recepción/Recolección** | `RecepcionList.razor` / `RecepcionFormView.razor`<br>`RecoleccionesList.razor` / `RecoleccionFormView.razor` | `RecepcionComponents`<br>`RecoleccionComponents` | Recepción: paso 2 del traspaso interplanta (tránsito → SC). Recolección: traslado de MP a WIP solicitado por la OF y validado por Almacén. |
+| **Planta** | `IncidenciasPage.razor`<br>`CapturaMasivaPage.razor` | `IncidenciasComponent`<br>`CapturaMasivaComponent` | Captura en escritorio: paros por el Supervisor de turno y vaciado de pesajes por el Planner. |
 | **Inventario** | `InventarioActualList.razor` | `InventarioActualListComponent` | Consulta de existencias por almacén, lote, clave y estatus de calidad. |
 
 ---
@@ -109,7 +111,7 @@ PolyConecta.Web.Angular/
 │   │   │   ├── calidad/
 │   │   │   ├── logistica/
 │   │   │   ├── inventario/
-│   │   │   └── planta-handheld/
+│   │   │   └── planta/
 │   │   ├── app.routes.ts
 │   │   └── app.config.ts
 │   ├── assets/
@@ -152,11 +154,11 @@ Para ejecutar esta migración con la máxima eficiencia y sin margen de error, s
   3. Implementar `CalidadListComponent` y `CalidadFormViewComponent`.
 * **Criterio de Aceptación**: Flujo de ventas a fabricación encadenada navegable y funcional 1:1 con la versión Blazor.
 
-### 🤖 Agente 5: Módulos de Logística, Inventario y Planta Handheld + QA E2E
+### 🤖 Agente 5: Módulos de Logística, Inventario y Planta + QA E2E
 * **Misión**: 
   1. Implementar vistas de Traslados, Entregas, Recepciones y Recolecciones.
   2. Implementar vistas de Inventario y terminales de Planta (`IncidenciasComponent`, `CapturaMasivaComponent`).
-  3. Ejecutar pruebas de integración visual y responsive para pantallas handheld de báscula.
+  3. Ejecutar pruebas de integración visual de las pantallas de captura de planta.
 * **Criterio de Aceptación**: Todas las 18 páginas operativas funcionando al 100% en Angular SPA.
 
 ---

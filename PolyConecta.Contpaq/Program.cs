@@ -33,7 +33,12 @@ builder.Host.UseSerilog();
 
 var config = builder.Configuration;
 var sqliteConn = config["BridgeConfig:SqliteConnectionString"] ?? "Data Source=bridge_outbox.db";
-var sqlConn = config["BridgeConfig:SqlConnectionString"] ?? "Server=localhost;Database=admAquaciel;User Id=sa;Password=Password123!;TrustServerCertificate=True;";
+// La cadena de conexion a CONTPAQi nunca se versiona: se toma de la variable de entorno
+// BridgeConfig__SqlConnectionString (o de dotnet user-secrets en desarrollo).
+var sqlConn = config["BridgeConfig:SqlConnectionString"];
+if (string.IsNullOrWhiteSpace(sqlConn))
+    throw new InvalidOperationException(
+        "Falta BridgeConfig:SqlConnectionString. Definela en la variable de entorno BridgeConfig__SqlConnectionString.");
 var port = int.TryParse(config["BridgeConfig:DashboardPort"], out var p) ? p : 5005;
 
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");

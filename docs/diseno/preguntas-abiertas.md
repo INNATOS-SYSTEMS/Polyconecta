@@ -1,29 +1,16 @@
 # Preguntas abiertas
 
-Lo que no se ha decidido y bloquea o condiciona la construcción. Cuando se resuelva una, pásala a [decisiones.md](decisiones.md) y bórrala de aquí.
+Lo que no se ha decidido o verificado y condiciona la construcción. Cuando se resuelva una, pásala a [decisiones.md](decisiones.md) y bórrala de aquí. Las preguntas P-01 a P-18 y T-09 se resolvieron el 28-sep-2026 (D-32 a D-51); aquí solo queda lo que falta.
 
-## Operación y producto
+## Datos pendientes de la operación
 
-| # | Pregunta | Bloquea |
-| :---: | :--- | :--- |
-| P-01 | **Autenticación**: ¿usuarios propios de PolyConecta, directorio corporativo (AD/LDAP/SSO) o los de CONTPAQi? | Identidad (Fase 1) |
-| P-02 | **Titulares**: ¿quiénes son hoy Comercial, Crédito y Cobranza, Almacenista, Calidad y Tráfico? | Asignación de roles |
-| P-03 | **Revocar autorización**: ¿puede cualquiera de los dos firmantes, solo el Administrador, o nadie una vez generados los documentos? | Firmas (Fase 2) |
-| P-04 | ¿Alguien ejerce hoy Comercial y Cobranza a la vez? Si existe, la regla RF-4 lo bloquea. | Firmas |
-| P-05 | ¿Un Planner puede ver las órdenes de la otra planta en solo lectura, o no debe verlas? | Reglas de fila |
-| P-06 | ¿El alcance del Almacenista es por planta o por almacén (MP distinto de PT)? | Reglas de fila |
-| P-07 | ¿Sustituir un producto requiere una segunda autorización? | Abastecimiento |
-| P-08 | **Suplencias**: si falta el titular de un rol, ¿hay suplente designado o reasigna el Administrador? | Identidad |
-| P-09 | ¿La terminal de báscula tendrá login propio para atribuir el pesaje a quien lo captura? | Captura de pesaje |
-| P-10 | ¿Quién captura y consulta las incidencias? Hoy es una propuesta de diseño. | Incidencias |
-| P-11 | ¿Se mantiene la **importación de componentes desde Excel** (punto 10 del informe) ahora que la lista es plana y editable? | Orden de fabricación |
-| P-12 | ¿Cuál es la enumeración definitiva de estados de la orden de fabricación? (el prototipo usa Borrador / Planeado / En progreso / Hecho; la recolección habla de "Lista para producir") | Modelo de dominio |
-| P-13 | **Convención de nombres**: prefijo `STC` o `SC` para Santa Cruz, `PIM/Stock/Rollos` o `PIM/Stock/PT`, `TRANSIT/PIM-STC` o `TRANS/PIM-SC` | Catálogo de ubicaciones |
-| P-14 | ¿Cuál es el catálogo real de centros de trabajo? (la arquitectura dice `WC-EXT-01`; los mockups, `COEXT-001`) | Planeación |
-| P-15 | ¿Qué formato tiene el lote final en Santa Cruz (`IV214-26-C01` en la arquitectura) bajo la convención nueva `R001-IV310-26`? | Numeración |
-| P-16 | ¿Cuál es el valor por defecto de la tolerancia del balance de masa? (el código usa 2 %) | Cierre técnico |
-| P-17 | **Montemorelos**: la constitución (Principio V) pide disparar una cotización a la Razón Social 2 al elegir esa ruta en la Fase 1, pero difiere el intercompany completo a la Fase 2. ¿Qué entra en la Fase 1? | Logística |
-| P-18 | **Tecnología de la presentación**: `docs/sdd/ESPECIFICACION_MIGRACION_ANGULAR_PRESENTATION.md` (28-sep, fuera de esta consolidación) propone replicar la UI en Angular, contra D-29 (Blazor Server). Además supone que la presentación ya consume la API, y hoy no es así. ¿Se adopta? | Presentación |
+La decisión ya está tomada; falta el dato.
+
+| # | Qué falta | Quién lo entrega | Bloquea |
+| :---: | :--- | :--- | :--- |
+| P-02 | **Titulares** de Comercial, Crédito y Cobranza, Almacenista, Calidad, Tráfico y Supervisor de turno, con su planta y el suplente de cada rol (D-38) | Dirección | Configurar usuarios. No bloquea la construcción |
+| P-14 | **Catálogo de centros de trabajo**: código, proceso, planta y capacidad (D-44) | Planners de PIM y SC | Planeación de órdenes |
+| P-16 | **Tolerancia** del balance de masa (D-46) | Producción | Cierre técnico en operación real |
 
 ## Técnicas (se resuelven con la matriz del SDK)
 
@@ -31,7 +18,7 @@ Todas se verifican con [MATRIZ_PRUEBAS_SDK_WIP_LOTES.md](../contpaq/MATRIZ_PRUEB
 
 | # | Pregunta | Bloque | Si falla |
 | :---: | :--- | :---: | :--- |
-| T-01 | ¿El SDK hace traspaso entre almacenes con lote (MP ↔ WIP)? | B | WIP pasa a ser ubicación interna de PolyConecta; se revierte D-22 |
+| T-01 | ¿El SDK hace traspaso entre almacenes con lote (MP ↔ WIP, origen ↔ tránsito)? | B | WIP y tránsito pasan a ser ubicaciones internas de PolyConecta; se revierten D-22 y parte de D-43 |
 | T-02 | ¿Admite varios lotes por movimiento y fraccionar cantidad? | C-02, C-03 | Solo se reserva el lote completo; un movimiento por lote |
 | T-03 | ¿Admite devolución parcial con cantidad manual? | D-02 | Devolución total o nada |
 | T-04 | ¿Soporta backorder? | E | El backorder vive solo en PolyConecta |
@@ -39,11 +26,17 @@ Todas se verifican con [MATRIZ_PRUEBAS_SDK_WIP_LOTES.md](../contpaq/MATRIZ_PRUEB
 | T-06 | ¿Leer existencias directo alcanza o hace falta una proyección? | F-04, F-05 | Proyección propia de existencias |
 | T-07 | ¿La remisión creada por SDK puede enlazarse al pedido de origen? | nuevo caso | El pedido queda "pendiente de surtir" en CONTPAQi |
 | T-08 | Corregir el documento huérfano cuando falla el movimiento | G-01 | — |
-| T-09 | ¿Qué motor de persistencia se usa? (recomendación: PostgreSQL, ya referenciado) | ADR | — |
+| T-10 | ¿El SDK puede **dar de alta almacenes**? `docs/contpaq/Referencia_SDK_CONTPAQi.md` no documenta ninguna función para eso; hay que verificarlo en la documentación oficial (Principio VII) | nuevo caso | Los almacenes se crean a mano en CONTPAQi una sola vez al inicializar, con los códigos que dicta PolyConecta |
+| T-11 | Si `Produccion`, `Customers` y `Vendors` son almacenes en CONTPAQi (D-43), ¿cómo se registran el consumo, la remisión y la compra? ¿Como traspasos hacia esos almacenes o como documentos de salida y entrada desde el almacén real? | nuevo caso | Se excluyen esas tres ubicaciones de la reserva en `admAlmacenes` |
+
+## Técnicas internas
+
+| # | Qué falta |
+| :---: | :--- |
+| I-01 | La spec de Angular (`.specify/features/011-angular-presentation/`) parte de una réplica del estado en memoria. Hay que definir cuándo y cómo se conecta a la API (D-48). |
 
 ## Interfaz
 
 | # | Pregunta |
 | :---: | :--- |
 | U-01 | Render agrupado en las listas: las agrupaciones ya se declaran, pero falta dibujarlas. |
-| U-02 | Los favoritos por usuario dependen del modelo de usuarios (P-01). |

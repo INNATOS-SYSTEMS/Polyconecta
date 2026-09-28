@@ -12,7 +12,7 @@ Servicio .NET 8 **x86** que aísla toda la comunicación con CONTPAQi Comercial 
 
 ## Advertencias
 
-- `appsettings.json` **versiona una cadena de conexión con credenciales** (`sa`). Hay que rotarla, moverla a variables de entorno y limpiar el historial de git (deuda técnica 1 en [05-arquitectura-tecnica.md](../docs/diseno/05-arquitectura-tecnica.md)).
+- **La cadena de conexión a CONTPAQi no se versiona.** El bridge la lee de la variable de entorno `BridgeConfig__SqlConnectionString` y no arranca si falta. En desarrollo, usa `dotnet user-secrets set "BridgeConfig:SqlConnectionString" "..." --project PolyConecta.Contpaq`. La contraseña de `sa` que quedó en el historial de git **debe rotarse**, y el bridge debe usar un login de solo lectura (D-51).
 - El contrato de movimientos (WIP, varios lotes, fraccionamiento, backorder, enlace Remisión ↔ Pedido) **no está verificado** contra un CONTPAQi real. Se valida con la [matriz de pruebas](../docs/contpaq/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md) usando `tools/sdk-lab`.
 - El caso G-01 (documento huérfano cuando falla el movimiento) está pendiente.
 
