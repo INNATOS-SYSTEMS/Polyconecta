@@ -90,3 +90,10 @@ El informe enumera 17 puntos. Estos siguen vigentes sin cambios: 2 (código de P
 | D-64 | 2026-09-29 | La construcción se organiza en **6 módulos** por dependencia de datos: Plataforma, Catálogos e Inventario, Ventas, Producción, Calidad y Logística. La conversión en Santa Cruz es parte de Producción, no un módulo aparte. | Validada | Roadmap |
 | D-65 | 2026-09-29 | Cada módulo tiene **dos cierres**: *cerrado en PolyConecta* (con el simulador) y *cerrado integrado* (contra CONTPAQi de laboratorio). | Validada | Roadmap |
 | D-66 | 2026-09-29 | La construcción avanza por **dos caminos** con un líder cada uno: integración CONTPAQi y PolyConecta independiente. | Validada | Roadmap |
+| D-67 | 2026-09-29 | Toda la solución .NET, **incluido el bridge x86**, usa **.NET 10 LTS** (soporte hasta el 14-nov-2028). El bridge migra después de pasar `sdk-lab` (bloques F y G) contra `MGW_SDK.dll` en el laboratorio; si falla, se queda temporalmente en .NET 8 y se registra. | Validada | P-20 |
+| D-68 | 2026-09-29 | La presentación usa **Angular 22**, con la versión de TypeScript que exige (6.0). | Validada | Versiones |
+| D-69 | 2026-09-29 | El frontend se construye con **Node 24 LTS**. | Validada | Versiones |
+| D-70 | 2026-09-29 | La base de PolyConecta usa **SQL Server 2022**. | Validada | Versiones |
+| D-71 | 2026-09-29 | Las pruebas .NET usan **xUnit v3**, con una sola versión en todos los proyectos. | Validada | Versiones |
+| D-72 | 2026-09-29 | Se **quita MediatR** (estaba referenciado sin uso): los casos de uso son servicios inyectados con decoradores propios. **FluentAssertions se sustituye por AwesomeAssertions**, fork libre con la misma API. Motivo: las versiones nuevas de ambas son de licencia comercial. | Validada | Versiones |
+| D-73 | 2026-09-29 | **Política de versiones**: versiones exactas y centralizadas (`Directory.Packages.props`, `global.json`, `.nvmrc` y `package.json` sin `^` ni `~`). Los parches y versiones menores se actualizan una vez al mes en un PR propio; una versión mayor solo cambia por decisión registrada. | Validada | Versiones |

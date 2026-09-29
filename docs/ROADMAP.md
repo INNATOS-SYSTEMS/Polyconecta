@@ -65,7 +65,7 @@ Estados de cada columna: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bl
 
 | Módulo | Preguntas abiertas ([preguntas-abiertas.md](diseno/preguntas-abiertas.md)) |
 | :--- | :--- |
-| 0 · Plataforma | P-20 (versión de .NET); P-02 (titulares), solo para configurar usuarios |
+| 0 · Plataforma | P-02 (titulares), solo para configurar usuarios |
 | 1 · Catálogos e Inventario | T-01, T-02, T-05, T-06, T-10, T-11 |
 | 2 · Ventas | P-19 (precio del pedido libre), T-12 |
 | 3 · Producción | P-14 (centros de trabajo), P-16 (tolerancia), T-01, T-03, T-04 |
@@ -81,7 +81,9 @@ Estados de cada columna: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bl
 | A-3 | Ejecutar la matriz del SDK: F (solo lectura) → A → B → C-02/C-03 → D → E → G | 1 | ⬜ |
 | A-4 | Escribir el contrato `bridge-v1` a partir de la API actual del bridge y del catálogo de comandos (CT-18) | 1 y 2 | ⬜ |
 | A-5 | Bridge en modo simulado (CT-21) | 1 | ⬜ |
-| A-6 | Decidir la versión de .NET (P-20) | 2 | ⬜ |
+| A-6 | ~~Decidir versiones~~ — ratificadas el 29-sep (D-67 a D-73) | 1 y 2 | ✅ |
+| A-9 | Migrar PolyConecta a .NET 10, EF Core SQL Server, xUnit v3 y AwesomeAssertions; quitar Npgsql, EF InMemory de producción y MediatR; centralizar versiones (D-73) | 2 | ⬜ |
+| A-10 | Verificar el bridge en .NET 10 `win-x86` con `sdk-lab` (F y G) y migrarlo (D-67) | 1 | ⬜ |
 | A-7 | Ejecutar la spec 001 (réplica en Angular) | 2 | ⬜ |
 | A-8 | Crear la spec del módulo 0 (Plataforma) | 2 | ⬜ |
 
@@ -102,5 +104,5 @@ Estados de cada columna: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bl
 - **Concurrencia de reservas**: CONTPAQi no conoce las reservas; dos pedidos no pueden comprometer el mismo lote. Requiere bloqueo optimista o restricción única en la base.
 - **Deriva del contrato**: si los caminos cambian el contrato por separado, la integración falla al final. Por eso los cambios requieren a los dos líderes y la misma suite corre en los dos lados (CT-22, CT-23).
 - **Base de laboratorio distinta de producción**: hay que refrescar el laboratorio cuando cambie el catálogo real.
-- **Fin de soporte de .NET 8** (10-nov-2026): ver P-20.
+- **Fin de soporte de .NET 8** (10-nov-2026): la migración a .NET 10 (A-9, A-10) debe cerrarse antes de esa fecha.
 - **Capacidad**: el roadmap no fija semanas; el avance se mide con el tablero, no con fechas comprometidas.

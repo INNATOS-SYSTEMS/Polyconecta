@@ -41,15 +41,23 @@ flowchart LR
 
 ## 2. Stack
 
-| Pieza | Tecnología | Regla |
+| Pieza | Versión ratificada | Regla |
 | :--- | :--- | :--- |
-| Runtime backend | .NET LTS | **CT-04** Todos los proyectos .NET usan la misma versión LTS. Pendiente: migrar de .NET 8 (sin soporte desde el 10-nov-2026) a .NET 10 (P-20) |
-| Base de datos | SQL Server (D-49) | **CT-05** Base propia, separada de las de CONTPAQi; en producción, en una instancia o servidor distinto al de CONTPAQi |
-| Acceso a datos | EF Core con migraciones | **CT-06** El esquema solo cambia por migraciones versionadas en el repositorio; nunca a mano |
-| Identidad | ASP.NET Identity (D-32) | Usuarios propios; roles y reglas de fila según [01-modulos-y-roles.md](01-modulos-y-roles.md) |
-| Frontend | Angular (D-48) | Componentes standalone; versiones fijadas sin `^` ni `~` |
-| Tiempo real | SignalR | Chatter y avisos de sincronización |
-| Bridge | .NET x86, SQLite, SDK de CONTPAQi | Proceso aparte en Windows; único usuario del SDK (Principio II) |
+| Runtime y SDK .NET | **.NET 10 LTS** (D-67) | **CT-04** Todos los proyectos .NET usan la misma versión, **incluido el bridge x86** (`win-x86`). El bridge migra después de verificar `sdk-lab` contra `MGW_SDK.dll` en el laboratorio |
+| Web API | ASP.NET Core 10 | — |
+| Base de datos | **SQL Server 2022** (D-49, D-70) | **CT-05** Base propia, separada de las de CONTPAQi; en producción, en una instancia o servidor distinto al de CONTPAQi |
+| Acceso a datos | EF Core 10 con el proveedor de SQL Server | **CT-06** El esquema solo cambia por migraciones versionadas en el repositorio; nunca a mano |
+| Identidad | ASP.NET Core Identity 10 (D-32) | Usuarios propios; roles y reglas de fila según [01-modulos-y-roles.md](01-modulos-y-roles.md) |
+| Casos de uso | Servicios de `PolyConecta.Application`, sin MediatR (D-72) | La lógica transversal (transacción, auditoría, validación) va en decoradores propios |
+| Frontend | **Angular 22** con TypeScript 6.0 (D-68) | Componentes standalone |
+| Build del frontend | **Node 24 LTS** (D-69) | — |
+| Estilos | Bootstrap 5.3.2 y Bootstrap Icons 1.11.3 | Iguales al prototipo mientras dure la paridad de la spec 001 |
+| Tiempo real | SignalR (`@microsoft/signalr`) | Chatter y avisos de sincronización |
+| Pruebas .NET | **xUnit v3** + AwesomeAssertions (D-71, D-72) | Una sola versión en todos los proyectos de prueba |
+| Pruebas extremo a extremo | Playwright | — |
+| Bridge | .NET 10 `win-x86`, SQLite, SDK de CONTPAQi | Proceso aparte en Windows; único usuario del SDK (Principio II) |
+
+- **CT-36** **Política de versiones (D-73).** Las versiones se fijan exactas y centralizadas: `global.json` (SDK de .NET), `Directory.Packages.props` (paquetes NuGet), `.nvmrc` (Node) y `package.json` sin `^` ni `~`. Parches y versiones menores se actualizan una vez al mes en un PR propio, con todas las pruebas en verde. Una versión mayor solo cambia por decisión registrada. No se usan paquetes con licencia comercial sin decisión registrada.
 
 ## 3. Capas y módulos
 

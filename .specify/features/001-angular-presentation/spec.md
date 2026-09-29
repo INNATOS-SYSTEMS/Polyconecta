@@ -122,7 +122,7 @@ Como usuario, necesito que los mensajes del chatter de un documento aparezcan en
 
 **Proyecto y plataforma**
 
-- **FR-001**: El proyecto MUST vivir en `PolyConecta.Web.Angular/` en la raíz del repositorio, con componentes standalone, y fijar versiones exactas en `package.json` (sin `^` ni `~`). Se usa la última versión mayor estable de Angular disponible al crear el proyecto y no se actualiza durante la feature.
+- **FR-001**: El proyecto MUST vivir en `PolyConecta.Web.Angular/` en la raíz del repositorio, con componentes standalone, **Angular 22** (D-68), TypeScript 6.0 y **Node 24 LTS** (D-69, fijado en `.nvmrc`). Las versiones van exactas en `package.json`, sin `^` ni `~` (CT-36); la versión mayor no cambia durante la feature.
 - **FR-002**: El estilo MUST ser idéntico al del prototipo: `PolyConecta.Presentation/wwwroot/css/app.css` copiado sin cambios, Bootstrap 5.3.2, Bootstrap Icons 1.11.3 y la fuente Inter, con las mismas versiones que carga `App.razor`.
 - **FR-003**: El servidor de desarrollo MUST correr en `http://localhost:4200`. `scripts/run.sh --with-angular` MUST levantarlo junto al resto sin afectar el comportamiento actual de `run.sh`.
 
@@ -198,7 +198,7 @@ Son las mismas del prototipo, tipadas en TypeScript bajo `src/app/core/models/`:
 - **SC-003**: Cada regla de FR-008 tiene al menos una prueba unitaria que pasa.
 - **SC-004**: Los 9 documentos de FR-012 se crean en modo libre y cumplen su regla.
 - **SC-005**: Un mensaje del chatter aparece en otra pestaña en menos de 1 segundo con la API corriendo.
-- **SC-006**: El prototipo Blazor y las pruebas .NET existentes (17) siguen pasando sin cambios.
+- **SC-006**: El prototipo Blazor y las pruebas .NET existentes (17) siguen pasando. Si la migración a .NET 10 (A-9) ocurre durante esta feature, se verifica sobre la versión migrada.
 
 ---
 
@@ -230,7 +230,7 @@ Por fases. Una fase empieza cuando la anterior cumple su salida. Dentro de las f
 
 ## Assumptions
 
-- Node.js 24 está instalado. Angular CLI se usa con `npx` y no se instala globalmente.
+- Node.js 24 LTS está instalado (24.16 o posterior, lo que exige Angular 22). Angular CLI se usa con `npx` y no se instala globalmente.
 - El umbral de 1 % de píxeles absorbe diferencias de antialiasing entre motores de render. Si resulta insuficiente, se ajusta por decisión registrada, no por un agente.
 - La réplica no tiene autenticación; cualquier usuario ve todas las acciones, igual que en el prototipo.
 - El chatter no persiste mensajes: al reiniciar la API se pierden, igual que hoy al reiniciar Blazor.
