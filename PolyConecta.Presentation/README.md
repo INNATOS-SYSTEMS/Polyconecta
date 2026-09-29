@@ -19,4 +19,4 @@ Prototipo navegable en **Blazor Server** (.NET 8) que demuestra el flujo operati
 
 El recorrido completo de [02-flujo-y-reglas.md](../docs/diseno/02-flujo-y-reglas.md): pedido con autorización de dos firmas, órdenes autorreferenciadas con componentes, subproductos, producción y planeación; recolección a WIP con backorder y devolución; calidad con hard-stop; traslado y recepción en dos pasos; y entrega. El estado de cada módulo está en [01-modulos-y-roles.md](../docs/diseno/01-modulos-y-roles.md).
 
-**Esta capa se reemplaza por Angular** (D-48): primero una réplica 1:1 y después la conexión a la API. La spec está en `.specify/features/011-angular-presentation/`. Mientras tanto, este prototipo es la referencia de comportamiento.
+**Esta capa se reemplaza por Angular** (D-48): primero una réplica 1:1 y después la conexión a la API. La spec está en `.specify/features/001-angular-presentation/`. Este proyecto no se modifica: es el oráculo de paridad de la réplica (D-60). Mientras tanto, este prototipo es la referencia de comportamiento.

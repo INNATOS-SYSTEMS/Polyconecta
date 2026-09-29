@@ -13,10 +13,11 @@ La fuente de verdad para construir. Léelo en este orden:
 | [03-almacenes-y-operaciones.md](diseno/03-almacenes-y-operaciones.md) | Almacenes, ubicaciones, tipos de operación, escrituras en CONTPAQi y centros de trabajo |
 | [04-modelo-de-dominio.md](diseno/04-modelo-de-dominio.md) | Modelo de entidades objetivo y diferencia con el código actual |
 | [05-arquitectura-tecnica.md](diseno/05-arquitectura-tecnica.md) | Proyectos de la solución, estado real y deuda técnica |
+| [06-constitucion-tecnica.md](diseno/06-constitucion-tecnica.md) | Reglas de construcción: topología, stack, capas, datos y paridad, contrato del bridge, pruebas y cierre de módulos |
 | [decisiones.md](diseno/decisiones.md) | Registro de decisiones y qué cambió del informe de validación |
 | [preguntas-abiertas.md](diseno/preguntas-abiertas.md) | Lo que falta decidir o verificar |
 
-El orden de construcción está en [PLAN_CONSTRUCCION.md](PLAN_CONSTRUCCION.md).
+El orden de construcción, por módulos y caminos, con su tablero de avance, está en [ROADMAP.md](ROADMAP.md).
 
 ## 2. Hechos, `assesment/` y `references/`
 

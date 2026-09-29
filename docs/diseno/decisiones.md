@@ -81,3 +81,12 @@ El informe enumera 17 puntos. Estos siguen vigentes sin cambios: 2 (código de P
 | D-55 | 2026-09-28 | Se puede crear una **recolección libre** (MP → WIP sin OF). El material queda en WIP como **saldo sin asignar** y se liga a una OF después, al confirmarla. | Validada | D-24 |
 | D-56 | 2026-09-28 | Una **recepción libre** solo puede recibir lotes que ya estén en tránsito (`TRANS/*`). Se mantiene la invariante de tránsito: no se recibe material que no salió de otra planta. | Validada | D-52 |
 | D-57 | 2026-09-28 | La constitución pasa a la versión 1.6.0 con el **Principio X, documentos libres** (D-52). | Adoptada | D-52 |
+| D-58 | 2026-09-29 | El chatter de la réplica en Angular usa un `ChatterHub` en `PolyConecta.Api` (copia del hub del prototipo, que no se toca), con CORS para Angular. | Validada | Spec 001 |
+| D-59 | 2026-09-29 | La réplica habilita el botón **"Nuevo"** con formularios de creación libre en 9 documentos (Principio X). Es la única diferencia permitida con el prototipo. | Validada | Spec 001 |
+| D-60 | 2026-09-29 | El prototipo Blazor **se conserva** como referencia hasta que la presentación en Angular se conecte a la API, y no se modifica. | Validada | Spec 001 |
+| D-61 | 2026-09-29 | La spec 001 se ejecuta **por fases con agentes en paralelo**, cada uno dueño exclusivo de sus carpetas, con reglas de autonomía y registro de bloqueos. | Validada | Spec 001 |
+| D-62 | 2026-09-29 | PolyConecta guarda sus datos en **tablas propias** con su modelo de dominio. La paridad con CONTPAQi vive en columnas `erp_*` y en un catálogo de mapeo, no en tablas espejo de `adm*`. | Validada | Constitución técnica |
+| D-63 | 2026-09-29 | El único punto de contacto entre PolyConecta y la integración es el **contrato HTTP del bridge**, versionado, con un **bridge en modo simulado** que lo cumple sin SDK. | Validada | Constitución técnica |
+| D-64 | 2026-09-29 | La construcción se organiza en **6 módulos** por dependencia de datos: Plataforma, Catálogos e Inventario, Ventas, Producción, Calidad y Logística. La conversión en Santa Cruz es parte de Producción, no un módulo aparte. | Validada | Roadmap |
+| D-65 | 2026-09-29 | Cada módulo tiene **dos cierres**: *cerrado en PolyConecta* (con el simulador) y *cerrado integrado* (contra CONTPAQi de laboratorio). | Validada | Roadmap |
+| D-66 | 2026-09-29 | La construcción avanza por **dos caminos** con un líder cada uno: integración CONTPAQi y PolyConecta independiente. | Validada | Roadmap |

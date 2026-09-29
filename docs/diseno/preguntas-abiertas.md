@@ -12,6 +12,7 @@ La decisión ya está tomada; falta el dato.
 | P-14 | **Catálogo de centros de trabajo**: código, proceso, planta y capacidad (D-44) | Planners de PIM y SC | Planeación de órdenes |
 | P-16 | **Tolerancia** del balance de masa (D-46) | Producción | Cierre técnico en operación real |
 | P-19 | **Precio del pedido libre** (D-53): D-04 dice que PolyConecta no modela precios, pero un pedido dado de alta en CONTPAQi normalmente los lleva. ¿Se toma de la lista de precios de CONTPAQi, lo captura AC o el pedido entra sin precio y Facturación lo completa en CONTPAQi? | Dirección y Facturación | Pedido libre |
+| P-20 | **Versión de .NET**: .NET 8 deja de tener soporte el 10-nov-2026. Propuesta: migrar toda la solución a .NET 10 (LTS) antes del módulo 0, incluido el bridge x86, verificando `MGW_SDK.dll` en el laboratorio (CT-04) | Líderes de los dos caminos | Módulo 0 |
 
 ## Técnicas (se resuelven con la matriz del SDK)
 
@@ -35,7 +36,7 @@ Todas se verifican con [MATRIZ_PRUEBAS_SDK_WIP_LOTES.md](../contpaq/MATRIZ_PRUEB
 
 | # | Qué falta |
 | :---: | :--- |
-| I-01 | La spec de Angular (`.specify/features/011-angular-presentation/`) parte de una réplica del estado en memoria. Hay que definir cuándo y cómo se conecta a la API (D-48). |
+| I-01 | La spec 001 (`.specify/features/001-angular-presentation/`) deja la réplica con estado en el navegador. Falta la feature que la conecta a la API y adopta el modelo de `04-modelo-de-dominio.md` (D-48, D-60). |
 
 ## Interfaz
 

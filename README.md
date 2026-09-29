@@ -6,7 +6,7 @@ PolyConecta lleva el pedido desde CONTPAQi hasta la entrega. Genera las órdenes
 
 ## Estado
 
-El proyecto está al **inicio de la construcción**. Existe un prototipo navegable que demuestra el flujo completo con estado en memoria, un bridge de CONTPAQi funcional y un dominio parcial. El diseño está consolidado y validado con la operación; lo que falta decidir está en [preguntas abiertas](docs/diseno/preguntas-abiertas.md). El orden de trabajo está en el [plan de construcción](docs/PLAN_CONSTRUCCION.md), que empieza por verificar el SDK de CONTPAQi y desbloquear decisiones.
+El proyecto está al **inicio de la construcción**. Existe un prototipo navegable que demuestra el flujo completo con estado en memoria, un bridge de CONTPAQi funcional y un dominio parcial. El diseño está consolidado y validado con la operación; lo que falta decidir está en [preguntas abiertas](docs/diseno/preguntas-abiertas.md). La construcción avanza módulo a módulo por dos caminos (integración con CONTPAQi y PolyConecta independiente), según la [constitución técnica](docs/diseno/06-constitucion-tecnica.md) y el [roadmap](docs/ROADMAP.md), que tiene el tablero de avance por módulo.
 
 ## Por dónde empezar
 

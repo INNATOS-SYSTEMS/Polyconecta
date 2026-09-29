@@ -18,4 +18,4 @@ Además: `ProblemDetailsMiddleware`, respuestas envueltas en `ApiResponse` y `Pa
 
 ## Destino
 
-Un contrato por caso de uso (confirmar, autorizar, validar, cerrar…), autenticación con permisos por rol, paginación y filtros declarativos. Ver el [plan de construcción](../docs/PLAN_CONSTRUCCION.md), fase 1.
+Un contrato por caso de uso (confirmar, autorizar, validar, cerrar…), autenticación con permisos por rol, paginación y filtros declarativos. Los casos de uso pasan a `PolyConecta.Application` (CT-08) y se construyen por módulo según el [roadmap](../docs/ROADMAP.md).
