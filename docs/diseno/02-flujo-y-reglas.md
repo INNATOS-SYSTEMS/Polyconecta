@@ -6,11 +6,34 @@ Los identificadores entre corchetes (`[007-FR-013]`) conservan la numeración de
 
 ---
 
+## 0. Principio de documento libre (D-52)
+
+Todo documento operativo existe en dos modos:
+
+- **Ligado**: lo genera otro documento (el motor de abastecimiento, una OF, un traslado validado). Guarda su origen y se navega a él por smart button.
+- **Libre**: se crea con **"Nuevo"**, sin origen.
+
+El origen es una **referencia opcional, no una precondición**. En los dos modos aplican las mismas reglas: estados, permisos, hard-stop de calidad, balance de masa, escrituras en CONTPAQi y documentos derivados. Por ejemplo, una OF libre con componentes genera su recolección y sus controles de calidad igual que una OF ligada.
+
+| Documento | Modo ligado: lo genera… | Modo libre: para qué | Lo crea | Restricción del modo libre |
+| :--- | :--- | :--- | :--- | :--- |
+| Pedido de venta | La sincronización desde CONTPAQi | Capturar el pedido en PolyConecta; el bridge lo da de alta en CONTPAQi (D-53) | Atención a Clientes | Precio por definir (P-19); alta por SDK por verificar (T-12) |
+| Orden de fabricación | El motor al autorizar un pedido, o su OF de origen | Producir sin pedido (para stock) | Planner | Sus lotes usan el folio de la OF raíz (D-54) |
+| Recolección | Confirmar una OF | Adelantar MP a WIP | Almacenista | Queda como saldo sin asignar y se liga a una OF después (D-55) |
+| Control de calidad | Confirmar una OF (un control por lote) | Inspeccionar o volver a liberar lotes existentes | Calidad | Solo sobre lotes existentes |
+| Traslado | El motor (regla de traspaso) o la decisión de AC | Mover a otra planta lotes disponibles | Almacenista, Tráfico | Hard-stop: solo lotes liberados |
+| Recepción | Validar un traslado | Recibir lotes que están en tránsito | Almacenista | Solo desde `TRANS/*` (D-56) |
+| Entrega | El motor al autorizar un pedido | Despachar lotes disponibles | Tráfico | Hard-stop; sin pedido, la remisión no se liga a un pedido |
+| Devolución (`REC-RET`) | Cancelar o cerrar una OF | Devolver a MP un saldo de WIP | Almacenista | Cantidad re-pesada a mano |
+| Incidencia | — (siempre es libre) | Registrar un paro | Supervisor de turno | — |
+
+---
+
 ## 1. Pedido de venta
 
 ### Origen y captura
 
-- El pedido **nace en CONTPAQi**. Atención a Clientes (AC) lo captura ahí; PolyConecta no da de alta pedidos a mano.
+- El pedido entra de **dos formas** (D-53): Atención a Clientes (AC) lo captura en CONTPAQi y PolyConecta lo sincroniza, o AC lo captura **libre en PolyConecta** y el bridge lo da de alta en CONTPAQi. En los dos casos CONTPAQi sigue siendo el sistema de registro, y la sincronización no debe duplicar un pedido que escribió PolyConecta (T-12).
 - Si el cliente requiere un producto nuevo o una especificación distinta, AC o Facturación **da de alta antes el código de PT en CONTPAQi**. Cada especificación de cliente tiene su propio código de PT, para que la remisión y la factura coincidan 1:1 con lo producido.
 - El pedido es **maestro + detalle**: PolyConecta lo refleja como `SalesOrder` con sus `SalesOrderLine` (producto + cantidad + unidad). Precio, IVA y totales se quedan en CONTPAQi.
 - La **ficha técnica vive en PolyConecta**, no en CONTPAQi. Ni los campos de usuario del documento ni los del producto alcanzan para ella. Se liga al producto por su código ERP y AC la captura en PolyConecta: bloque Rollo (`RollSpecification`) y bloque PT (`PtSpecification`), siempre ambos.
@@ -23,7 +46,7 @@ Los identificadores entre corchetes (`[007-FR-013]`) conservan la numeración de
 
 | Transición | Quién | Efecto |
 | :--- | :--- | :--- |
-| Sincronización | Sistema | Crea el pedido en Borrador |
+| Sincronización o "Nuevo" | Sistema o Atención a Clientes | Crea el pedido en Borrador |
 | Confirmar | Atención a Clientes | Pasa a Confirmado |
 | Autorizar (1.ª firma) | Comercial **o** Cobranza | Registra la firma; sigue en Confirmado |
 | Autorizar (2.ª firma) | El otro rol, **otra persona** | Pasa a Autorizado y dispara el motor de abastecimiento |
@@ -104,7 +127,7 @@ Fuera de alcance por ahora: la compra de materia prima (`MP-STOCK` solo consume;
 - Hay **un solo tipo de orden**, `ManufacturingOrder`, **autorreferenciado** mediante `OriginOrderId`. Sustituye la jerarquía tripartita OM → OF → WO del informe de validación.
 - La orden sin origen es la **raíz**: el proceso que se entrega al cliente, que no siempre es bolseo. Su smart button enlaza al pedido; las demás enlazan a su orden de origen.
 - Cadena típica (D-05): `Pedido → OF-BOL (raíz) → OF-IMP (origen = BOL) → OF-EXT (origen = IMP)`.
-- Cada línea de pedido genera sus propias órdenes (1:1 por línea, no por pedido).
+- Cada línea de pedido genera sus propias órdenes (1:1 por línea, no por pedido). Una OF también puede crearse **libre**, sin pedido, para producir para stock (D-52).
 - Todas las órdenes usan **el mismo formulario** con cuatro pestañas: Componentes, Subproductos, Producción y Planeación.
 - **Estados** (D-42, estilo Odoo): `Borrador → Confirmada → En progreso → Por cerrar → Hecha`, y `Cancelada`. *Por cerrar* es la producción terminada que espera el cierre técnico (balance de masa y declaración de saldo en WIP).
 
@@ -128,6 +151,7 @@ Aplican igual a extrusión, impresión y bolseo:
 - Los operadores anotan en diarios físicos a pie de máquina y el **Planner hace el vaciado** en PolyConecta. **No hay handheld, terminal de báscula ni escáner**: todo se captura en el sistema web (D-39). La orden sigue abierta durante toda la corrida.
 - Al confirmar la orden se **precargan los slots** (uno por rollo proyectado) y sus inspecciones pendientes.
 - **Nomenclatura de lote**: `R{secuencial de 3 dígitos}-{folio del pedido}` para rollos (`R001-IV310-26`) y `C{secuencial}-{folio del pedido}` para bultos o cajas de Santa Cruz (`C001-IV310-26`, D-45). Sustituye al formato `IV214-26-R001` del informe de validación.
+- Si la OF **no tiene pedido**, se usa el folio de la OF raíz con `/` cambiado por `-`: `R001-BOL-2026-0007` (D-54). En el nombre de un lote siempre se usa guion medio.
 - **Regla de cuarentena `.S`**: un lote rechazado se renombra con sufijo `.S`, pasa a la ubicación de cuarentena de su planta y **libera su secuencial** para el rollo de reposición.
 - El nombre del lote es un campo calculado que actualiza la propia operación de dominio; nunca se edita a mano.
 
@@ -181,6 +205,7 @@ stateDiagram-v2
 
 - `[008-FR-001]` WIP es un **almacén contable, uno por planta**. La liga con la OF es un atributo lógico de la reserva, no una subdivisión física.
 - `[008-FR-002]` Toda OF con componentes nace con **una** recolección en Borrador, cuyas líneas siguen a los componentes mientras siga en Borrador. Al liberarse, quedan fijas.
+- Almacén también puede crear una **recolección libre**, sin OF (D-55). El material queda en WIP como saldo sin asignar y se liga a una OF al confirmarla. Un saldo sin asignar solo sale de WIP por asignación, devolución o scrap.
 - `[008-FR-002c]` Confirmar la OF libera la recolección a Almacén, que la valida **cuando el material sale físicamente**.
 - `[008-FR-003]` **Solo Almacén valida.** El Planner solicita, pero no surte.
 - `[008-FR-004]` El Almacenista declara **lote y cantidad** por línea. El sistema no asigna lotes sin confirmación.
@@ -200,7 +225,7 @@ stateDiagram-v2
 ### Traslado interplanta en dos pasos
 
 1. **Traslado** (`PIM-TR-OUT`): se valida la salida en PIM y el material queda en `TRANS/PIM-SC`. **Se registra en CONTPAQi el traspaso origen → tránsito**, porque el tránsito también es un almacén en CONTPAQi (D-43).
-2. **Recepción** (`SC-TR-IN`): Santa Cruz valida la llegada, lote por lote, y puede ser parcial (demanda contra cantidad entregada). **Al validar se registra el traspaso tránsito → destino.**
+2. **Recepción** (`SC-TR-IN`): Santa Cruz valida la llegada, lote por lote, y puede ser parcial (demanda contra cantidad entregada). **Al validar se registra el traspaso tránsito → destino.** Una recepción libre (sin traslado de origen) solo puede recibir lotes que ya estén en tránsito (D-56).
 
 Invariante: todo material que sale de una planta hacia otra permanece en `TRANS/*` hasta que el destino valida la entrada.
 

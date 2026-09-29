@@ -1,15 +1,13 @@
 <!--
 Sync Impact Report:
-- Version change: 1.4.0 → 1.5.0
-- Modified principles:
-  - Principle I: Removed "Handheld Workflows" from the Odoo 19 benchmark scope.
-  - Principle II: "handheld capturing" generalized to shop-floor capture.
-  - Principle IV: Quality gate now applies to every inter-plant transfer and customer dispatch, not only PIM operation codes.
-  - Principle V: Santa Cruz plant code is `SC` (was `STC`). Montemorelos routing and any intercompany document are deferred to Phase 2 (the Phase 1 quotation trigger is removed).
-  - Principle VI: There are no handheld devices, scale terminals or scanners. All shop-floor capture is done by the Planner (and shift Supervisor for incidents) in the PolyConecta web application. Montemorelos moved to exclusions.
-  - Principle IX: Removed barcode/handheld scanner interfaces from mandatory patterns.
+- Version change: 1.5.0 → 1.6.0
+- Added principles:
+  - Principle X: Free Documents (every operational document can be created on its own with "New"; origin is an optional reference, never a precondition; the document's rules apply regardless of origin).
+- Modified principles: None.
 - Removed sections: None.
-- Follow-up TODOs: None. Source decisions: docs/diseno/decisiones.md D-32 to D-51 (2026-09-28).
+- Follow-up TODOs: None. Source decisions: docs/diseno/decisiones.md D-52 to D-56 (2026-09-28).
+
+Previous amendment (1.4.0 → 1.5.0, 2026-09-28): Principles I, II, IV, V, VI and IX aligned with no handheld devices, `SC` plant code and Montemorelos deferred to Phase 2 (D-32 to D-51).
 -->
 
 # PolyConecta Project Constitution
@@ -64,10 +62,13 @@ All user interfaces, interaction models, visual layouts, and operational workflo
 - **Navigation & View Patterns:** Dynamic Kanban, List, and Form views with status pipeline headers and smart action buttons (*Smart Buttons* for direct traceability to related records).
 - **MRP & Shop Floor Philosophy:** Work Center scheduling, 2-step location-based inventory movements, multi-level BOMs, and capture screens designed for zero latency and minimal cognitive overhead in plant operations.
 
+### X. Free Documents
+Following Odoo's document philosophy, every operational document (sales order, manufacturing order, stock operation, quality control, incident) MUST be creatable on its own through a "New" action, without a source document. The origin (the document that generated it) is an optional reference, navigable through smart buttons, and never a precondition for existence. A document's rules MUST apply identically with or without origin: states and transitions, role permissions, the quality hard-stop, mass balance, CONTPAQi postings and the documents it derives. Any restriction on free creation MUST be stated explicitly per document type and justified by an invariant (for example, a free reception can only receive lots already in transit).
+
 ## Governance & Amendment Policy
 
 - This Constitution governs all technical architecture, specification design (`.specify`), planning (`plan.md`), and task execution (`tasks.md`) in PolyConecta.
 - Amendments require formal approval from the Steering Committee.
 - Semantic versioning applies (MAJOR for principle redefinition, MINOR for scope/governance updates, PATCH for wording fixes).
 
-**Version**: 1.5.0 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-09-28
+**Version**: 1.6.0 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-09-28

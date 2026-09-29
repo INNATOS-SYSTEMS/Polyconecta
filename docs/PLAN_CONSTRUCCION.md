@@ -38,7 +38,7 @@
 | 0.5 | Corregir **G-01** del gateway (documento huérfano tras fallo de movimiento) | Bridge | Prueba unitaria + G-01 verde |
 | 0.6 | Correr la POC en navegador real y registrar la línea base | Presentation | Línea base honesta |
 | 0.7 | ~~Reconciliar documentos~~ — hecho el 28-sep: `docs/diseno/` y [decisiones.md](diseno/decisiones.md) | Docs | Un solo relato |
-| 0.8 | Verificar alta de almacenes por SDK (T-10) y el registro de consumo, remisión y compra con ubicaciones virtuales como almacenes (T-11) | Bridge | Decisión sobre la reserva inicial en `admAlmacenes` |
+| 0.8 | Verificar alta de almacenes por SDK (T-10), el registro de consumo, remisión y compra con ubicaciones virtuales como almacenes (T-11) y el alta de pedidos por SDK (T-12) | Bridge | Decisión sobre la reserva inicial en `admAlmacenes` |
 | 0.9 | ~~Corregir `Contpaq.Bridge.Tests` y el nombre de la solución en `run.sh`~~ — hecho el 28-sep | Transversal | Las 17 pruebas corren |
 | 0.10 | Réplica 1:1 del prototipo en Angular (`.specify/features/011-angular-presentation/`), en paralelo con la Fase 0 | Presentation | Paridad con las 18 pantallas |
 
@@ -57,7 +57,7 @@
 ### Fase 2 — Comercial y autorización (semanas 6–9)
 
 - Pedido multi-línea (`SalesOrderLine` con `PackagingUnit`; hoy solo hay una línea).
-- Ingesta del pedido (maestro + detalle) desde CONTPAQi por el bridge, lectura vía SQL. La ficha técnica se captura en PolyConecta (D-01).
+- Ingesta del pedido (maestro + detalle) desde CONTPAQi por el bridge, lectura vía SQL, y alta del pedido libre en CONTPAQi (D-53, sujeto a T-12 y P-19). La ficha técnica se captura en PolyConecta (D-01).
 - Autorización de dos firmas con botón único, revocación (P-03), numeración centralizada de referencias.
 - Visor de disponibilidad: **depende de F** y del resultado de A-05 (si CONTPAQi clasifica productos, el visor lee; si no, PolyConecta mantiene su clasificación).
 
@@ -81,6 +81,8 @@
 
 - Bolseo e impresión con registro dual millares/kg y factor real; cierre del pedido en `Hecho`.
 - Piloto por planta, migración de los Excel vigentes, capacitación y operación en paralelo antes de apagar el proceso manual.
+
+**Transversal en todas las fases:** cada documento se construye con sus dos modos, ligado y libre ("Nuevo"), según el Principio X y [02-flujo-y-reglas.md §0](diseno/02-flujo-y-reglas.md).
 
 **Transversal (se cuela donde estorbe menos):** vistas de búsqueda declarativas para todos los modelos de una vez — después de identidad y permisos, ya que los favoritos dependen de usuarios y las reglas de fila no pueden ampliarse con filtros.
 

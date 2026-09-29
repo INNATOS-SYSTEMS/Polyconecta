@@ -11,6 +11,7 @@ La decisión ya está tomada; falta el dato.
 | P-02 | **Titulares** de Comercial, Crédito y Cobranza, Almacenista, Calidad, Tráfico y Supervisor de turno, con su planta y el suplente de cada rol (D-38) | Dirección | Configurar usuarios. No bloquea la construcción |
 | P-14 | **Catálogo de centros de trabajo**: código, proceso, planta y capacidad (D-44) | Planners de PIM y SC | Planeación de órdenes |
 | P-16 | **Tolerancia** del balance de masa (D-46) | Producción | Cierre técnico en operación real |
+| P-19 | **Precio del pedido libre** (D-53): D-04 dice que PolyConecta no modela precios, pero un pedido dado de alta en CONTPAQi normalmente los lleva. ¿Se toma de la lista de precios de CONTPAQi, lo captura AC o el pedido entra sin precio y Facturación lo completa en CONTPAQi? | Dirección y Facturación | Pedido libre |
 
 ## Técnicas (se resuelven con la matriz del SDK)
 
@@ -28,6 +29,7 @@ Todas se verifican con [MATRIZ_PRUEBAS_SDK_WIP_LOTES.md](../contpaq/MATRIZ_PRUEB
 | T-08 | Corregir el documento huérfano cuando falla el movimiento | G-01 | — |
 | T-10 | ¿El SDK puede **dar de alta almacenes**? `docs/contpaq/Referencia_SDK_CONTPAQi.md` no documenta ninguna función para eso; hay que verificarlo en la documentación oficial (Principio VII) | nuevo caso | Los almacenes se crean a mano en CONTPAQi una sola vez al inicializar, con los códigos que dicta PolyConecta |
 | T-11 | Si `Produccion`, `Customers` y `Vendors` son almacenes en CONTPAQi (D-43), ¿cómo se registran el consumo, la remisión y la compra? ¿Como traspasos hacia esos almacenes o como documentos de salida y entrada desde el almacén real? | nuevo caso | Se excluyen esas tres ubicaciones de la reserva en `admAlmacenes` |
+| T-12 | ¿El SDK da de alta un **pedido** con sus líneas y devuelve su folio, para que la sincronización lo reconozca y no lo vuelva a importar como pedido nuevo (idempotencia por `erp_document_id`)? | nuevo caso | El pedido libre queda solo interno en PolyConecta hasta resolverlo |
 
 ## Técnicas internas
 

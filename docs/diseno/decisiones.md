@@ -47,7 +47,7 @@ El informe enumera 17 puntos. Estos siguen vigentes sin cambios: 2 (código de P
 | D-21 | 2026-09-21 | El visor de disponibilidad agrupa por clasificación y es solo de consulta. | Validada | Abastecimiento ④ |
 | D-22 | 2026-09-21 | **WIP es un almacén contable en CONTPAQi.** La recolección MP→WIP genera traspaso; el consumo al cierre se descuenta desde WIP. Modifica la regla 7.2 de la arquitectura de almacenes. | Validada | Recolección ⑥ |
 | D-23 | 2026-09-21 | El Almacenista declara y valida lo que sale; el Planner solo solicita. | Validada | Recolección ⑦ |
-| D-24 | 2026-09-21 | La recolección nace con la OF en borrador y se libera al confirmarla. Admite parcialidades con backorder y devolución re-pesada a mano. No hay arrastre de saldo entre OF. WIP es uno por planta. | Validada | Recolección ⑧–⑬ |
+| D-24 | 2026-09-21 | La recolección nace con la OF en borrador y se libera al confirmarla *(matizado por D-55: también puede crearse libre)*. Admite parcialidades con backorder y devolución re-pesada a mano. No hay arrastre de saldo entre OF. WIP es uno por planta. | Validada | Recolección ⑧–⑬ |
 | D-25 | 2026-09-22 | La recolección es una operación de traslado más (`PIM-REC-OUT` / `PIM-REC-RET`), no un documento especial. | Validada | Recolección, revisión del 22-sep |
 | D-26 | 2026-09-23 | Las vistas de búsqueda declarativas se implementan en todos los modelos a la vez. | Validada | Búsqueda ① |
 | D-27 | 2026-09-23 | El alcance por planta es una regla de fila, no un filtro. Un filtro nunca amplía lo que restringe una regla de fila. | Validada | Búsqueda ② |
@@ -75,3 +75,9 @@ El informe enumera 17 puntos. Estos siguen vigentes sin cambios: 2 (código de P
 | D-49 | 2026-09-28 | La **base de datos** de PolyConecta es **SQL Server** (una base propia, separada de las de CONTPAQi). | Validada | T-09 |
 | D-50 | 2026-09-28 | La constitución pasa a la versión 1.5.0: principios I, II, IV, V, VI y IX alineados con D-39, D-43 y D-47. | Adoptada | D-39, D-43, D-47 |
 | D-51 | 2026-09-28 | La contraseña de `sa` se rota y el historial de git **no** se reescribe. La cadena de conexión sale del repositorio a la variable de entorno `BridgeConfig__SqlConnectionString` y el bridge usa un login de solo lectura. | Validada | Seguridad |
+| D-52 | 2026-09-28 | **Principio de documento libre.** Todo documento operativo puede crearse con "Nuevo", sin documento de origen. El origen es una referencia opcional, no una precondición. Las reglas del documento (estados, permisos, hard-stop, balance de masa, escrituras en CONTPAQi y documentos derivados) aplican igual con o sin origen. | Validada | Filosofía de Odoo |
+| D-53 | 2026-09-28 | El **pedido de venta** puede crearse libre en PolyConecta y **el bridge lo da de alta en CONTPAQi**, que sigue siendo el sistema de registro. El pedido capturado en CONTPAQi sigue entrando por sincronización. Sustituye a "PolyConecta no da de alta pedidos a mano". | Validada | D-52 |
+| D-54 | 2026-09-28 | Los lotes de una OF **sin pedido** usan el folio de la **OF raíz**, cambiando `/` por `-`: `R001-BOL-2026-0007`, `C001-BOL-2026-0007`. Con pedido no cambia (`R001-IV310-26`). En el nombre de un lote siempre se usa guion medio. | Validada | D-10, D-45 |
+| D-55 | 2026-09-28 | Se puede crear una **recolección libre** (MP → WIP sin OF). El material queda en WIP como **saldo sin asignar** y se liga a una OF después, al confirmarla. | Validada | D-24 |
+| D-56 | 2026-09-28 | Una **recepción libre** solo puede recibir lotes que ya estén en tránsito (`TRANS/*`). Se mantiene la invariante de tránsito: no se recibe material que no salió de otra planta. | Validada | D-52 |
+| D-57 | 2026-09-28 | La constitución pasa a la versión 1.6.0 con el **Principio X, documentos libres** (D-52). | Adoptada | D-52 |

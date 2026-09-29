@@ -33,6 +33,7 @@ flowchart LR
     end
 
     ERP -- "① pedido sincronizado" --> PED
+    PED -. "① alta de pedido libre" .-> ERP
     PED -- "autoriza: genera OF por el faltante" --> OF
     PED -- "hay existencia: entrega directa" --> ENT
     OF -- "solicita MP" --> REC
@@ -58,7 +59,7 @@ flowchart LR
 
 ### Estado de cada módulo
 
-"En prototipo" significa que la pantalla y el flujo existen en `PolyConecta.Presentation` sobre estado en memoria. Ningún módulo está construido todavía sobre la API ni sobre persistencia real. La presentación definitiva será en Angular (D-48).
+"En prototipo" significa que la pantalla y el flujo existen en `PolyConecta.Presentation` sobre estado en memoria. En todas las pantallas del prototipo falta habilitar el botón **"Nuevo"** para el modo libre (D-52). Ningún módulo está construido todavía sobre la API ni sobre persistencia real. La presentación definitiva será en Angular (D-48).
 
 | Módulo | Estado | Lo que falta |
 | :--- | :--- | :--- |
@@ -82,7 +83,7 @@ PolyConecta solo escribe en CONTPAQi cuando un documento **se valida o se cierra
 
 | # | Documento en CONTPAQi | Módulo | Cuándo | Lo dispara |
 | :---: | :--- | :--- | :--- | :--- |
-| ① | Entra el pedido (lectura) | Pedido de venta | Sincronización tras la captura en CONTPAQi | Sistema |
+| ① | Entra el pedido (lectura) **o** alta del pedido libre (escritura, D-53) | Pedido de venta | Sincronización tras la captura en CONTPAQi, o al confirmar un pedido creado en PolyConecta | Sistema / Atención a Clientes |
 | ② | Traspaso MP → WIP (y su inverso) | Recolección | Al validar la salida o la devolución | Almacenista |
 | ③ | Consumo de MP + entrada de PT | Orden de fabricación | Al cierre técnico, descontando desde WIP | Planner |
 | ④ | Traspaso origen → tránsito | Traslado | Al validar la salida en PIM | Almacenista o Tráfico |
@@ -128,20 +129,20 @@ La seguridad tiene dos capas que no se mezclan:
 
 | Módulo | AC | Comercial | Cobranza | Planner | Almacenista | Calidad | Tráfico | Supervisor | Admin |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Pedido de venta | **Confirma, cancela** | **Firma 1/2, revoca** | **Firma 2/2, revoca** | Lee | — | — | Lee | — | **Confirma, cancela, revoca** |
-| Orden de fabricación | Lee | — | — | **Edita, confirma, planea, cierra** | Lee | Lee | — | Lee | **Todo** |
-| Recolección | — | — | — | **Solicita, devuelve**; no valida | **Declara lotes, valida** | Lee | **Valida** | — | **Valida** |
+| Pedido de venta | **Crea, confirma, cancela** | **Firma 1/2, revoca** | **Firma 2/2, revoca** | Lee | — | — | Lee | — | **Confirma, cancela, revoca** |
+| Orden de fabricación | Lee | — | — | **Crea, edita, confirma, planea, cierra** | Lee | Lee | — | Lee | **Todo** |
+| Recolección | — | — | — | **Solicita, devuelve**; no valida | **Crea, declara lotes, valida** | Lee | **Valida** | — | **Valida** |
 | Captura de producción | — | — | — | **Captura** | — | Lee | — | Lee | **Captura** |
-| Control de calidad | — | — | — | Lee | — | **Aprueba, rechaza** | — | — | Registra; no levanta rechazos |
+| Control de calidad | — | — | — | Lee | — | **Crea, aprueba, rechaza** | — | — | Registra; no levanta rechazos |
 | Incidencias | — | — | — | Lee | — | Lee | — | **Captura** | Lee |
-| Traslado | **Decide** | — | — | Lee | **Valida** | — | **Valida** | — | **Valida** |
-| Recepción | — | — | — | **Recibe** (SC) | **Valida** | — | **Valida** | — | **Valida** |
+| Traslado | **Decide** | — | — | Lee | **Crea, valida** | — | **Crea, valida** | — | **Valida** |
+| Recepción | — | — | — | **Recibe** (SC) | **Crea, valida** | — | **Valida** | — | **Valida** |
 | Conversión SC | — | — | — | **Planea, cierra** | — | **Libera** | — | Lee | **Edita** |
-| Entrega a cliente | Lee | — | — | — | Lee | — | **Valida** | — | **Valida** |
+| Entrega a cliente | Lee | — | — | — | Lee | — | **Crea, valida** | — | **Valida** |
 | Inventario | **Consulta, sustituye** | — | — | **Re-lotifica** | **Re-lotifica** | Lee | — | — | **Todo** |
 | Configuración | Lee | Lee | Lee | Lee | Lee | Lee | Lee | Lee | **Configura** |
 
-La revocación de una autorización solo procede mientras ningún documento generado haya avanzado (D-33). La sustitución de producto la decide AC sin segunda autorización, con motivo obligatorio (D-37).
+**Crea** = puede usar "Nuevo" para el modo libre (D-52); en [02-flujo-y-reglas.md §0](02-flujo-y-reglas.md) están el propósito y la restricción de cada documento. La revocación de una autorización solo procede mientras ningún documento generado haya avanzado (D-33). La sustitución de producto la decide AC sin segunda autorización, con motivo obligatorio (D-37).
 
 ### Reglas de fila y segregación (capa 2)
 

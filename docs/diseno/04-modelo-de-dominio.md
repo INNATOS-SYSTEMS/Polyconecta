@@ -5,6 +5,7 @@ Modelo **objetivo** de `PolyConecta.Domain`. Consolida la redefinición del domi
 ## 1. Principios de modelado
 
 - **Mixins, no campos repetidos.** Toda entidad de negocio hereda `AuditableEntity` (id técnico inmutable, creado y modificado por quién y cuándo) y `ArchivableEntity` (`is_active`, verdadero por defecto).
+- **Origen opcional (D-52).** Ningún documento exige un documento de origen para existir. Las referencias al origen (`sales_order_line_id`, `origin_order_id`, el origen de un `StockPicking`) son anulables, y las reglas del documento no dependen de que estén llenas.
 - **No se borra lo referenciado.** Un registro de negocio que otro referencia se archiva; no se elimina.
 - **Estados cerrados con transiciones nombradas.** Todo documento con ciclo de vida tiene un estado enumerado cerrado y cambia solo mediante operaciones con precondiciones, nunca editando el campo. Cada transición se registra en `StateTransitionLog`: entidad, id, estado origen y destino, usuario, rol ejercido, fecha y nota.
 - **Delegación 1:1 para especializaciones.** Los atributos físicos por categoría viven en entidades delegadas de `Product` (`RawMaterialCatalog`, `RollSpecification`, `PtSpecification`), no como columnas nulas en `Product`.
@@ -121,7 +122,7 @@ El PT no siempre es una bolsa: puede ser el mismo rollo vendido tal cual, por es
 | Entidad | Propósito |
 | :--- | :--- |
 | `Customer` | Sincronizado de solo lectura desde CONTPAQi |
-| `SalesOrder` | `erp_document_id` (Contpaq ID, solo lectura), `customer_id`, `customer_po`, `agent`, `promise_date`, `state` (`Draft`, `Confirmed`, `Authorized`, `InProgress`, `Done`, `Cancelled`) |
+| `SalesOrder` | `erp_document_id` (Contpaq ID, solo lectura; lo asigna la sincronización o el alta del pedido libre, D-53), `origin` (`Sync` o `Manual`), `customer_id`, `customer_po`, `agent`, `promise_date`, `state` (`Draft`, `Confirmed`, `Authorized`, `InProgress`, `Done`, `Cancelled`) |
 | `SalesOrderLine` | `erp_document_line_id`, `product_id`, `requested_qty`, `requested_packaging_unit_id`, `requested_qty_kg` (calculado), `target_production_kg`, `tolerance_percentage_override`, ruta forzada opcional |
 | `AuthorizationSignature` | Firma de un pedido: rol (`Comercial` o `Cobranza`), usuario, fecha. Hay una por rol y los dos usuarios deben ser distintos |
 
@@ -146,12 +147,12 @@ Sin precios ni impuestos: eso vive en CONTPAQi.
 
 | Entidad | Propósito |
 | :--- | :--- |
-| `ManufacturingOrder` | Orden única y autorreferenciada: `name` (`BOL/2026/0001`), `origin_order_id` (nulo en la raíz), `sales_order_line_id` (en la raíz), `plant_id`, `process_type` (`Extrusion`, `Printing`, `Bagging`), `product_id`, `target_qty`, `unit`, `state` |
+| `ManufacturingOrder` | Orden única y autorreferenciada: `name` (`BOL/2026/0001`), `origin_order_id` (nulo en la raíz), `sales_order_line_id` (opcional, solo en la raíz; nulo en producción para stock), `plant_id`, `process_type` (`Extrusion`, `Printing`, `Bagging`), `product_id`, `target_qty`, `unit`, `state` |
 | `ComponentLine` | Lista plana de componentes: clave, producto, cantidad, unidad |
 | `SubProductLine` | Producto de scrap que resulta del proceso: cantidad, unidad, producido, almacén destino |
 | `PlanningLine` | Centro de trabajo, cantidad, unidad, inicio, fin y operador |
 | `ProductionSlot` | Un slot por rollo proyectado, precargado al confirmar la orden |
-| `StockLot` | `name` calculado (`R001-IV310-26`, sufijo `.S` en cuarentena), `sequence_number`, pesos bruto, tara y neto, `state` (`Available`, `Quarantine`, `Consumed`, `ScrappedOut`), `current_location_id` |
+| `StockLot` | `name` calculado (`R001-IV310-26`, o `R001-BOL-2026-0007` si la OF no tiene pedido; sufijo `.S` en cuarentena), `sequence_number`, pesos bruto, tara y neto, `state` (`Available`, `Quarantine`, `Consumed`, `ScrappedOut`), `current_location_id` |
 | `QualityControl` | Documento `QC/2026/000X`: orden, auditor, proceso y `state` (`Planeado`, `Aprobado`, `Parcial`, `Rechazado`) |
 | `QualityControlLine` | Producto, lote, cantidad planeada, cantidad real y resultado aprueba o falla |
 | `ScrapEntry` | Kg de scrap por producto y motivo |
@@ -167,7 +168,7 @@ Estados de `ManufacturingOrder` (D-42): `Borrador → Confirmada → En progreso
 | :--- | :--- |
 | `StockPicking` | Operación (recolección, devolución, traslado, recepción o entrega) con `operation_type_id`, origen, destino, estado y enlace al backorder |
 | `StockMove` | Línea: producto, lote, cantidad solicitada y cantidad hecha acumulada |
-| `WipBalance` | Saldo vivo por OF y SKU en WIP; bloquea el cierre técnico si queda saldo |
+| `WipBalance` | Saldo vivo por SKU en WIP, asignado a una OF o **sin asignar** (recolección libre, D-55); bloquea el cierre técnico de la OF si le queda saldo |
 
 ### Seguridad y auditoría
 

@@ -13,6 +13,7 @@
 - Una decisión nueva va a `docs/diseno/decisiones.md`; una duda sin resolver, a `docs/diseno/preguntas-abiertas.md`. No dejes decisiones solo en una spec, un commit o una conversación.
 - Las specs de Spec Kit (`.specify/features/`) son temporales: al terminar la feature, integra en `docs/diseno/` lo que haya cambiado y borra la spec.
 - Una tarea está hecha cuando se ejecutó y se verificó en navegador o con pruebas, no cuando compila.
+- Todo documento se diseña con sus dos modos: ligado (lo genera otro documento) y libre ("Nuevo", sin origen). El origen nunca es precondición (Principio X de la constitución).
 - El prototipo en `PolyConecta.Presentation/Services/` es referencia de comportamiento, no de modelo: el modelo es `docs/diseno/04-modelo-de-dominio.md`.
 - La interfaz sigue los patrones de Odoo 19 (skills `odoo-design-system` y `odoo-model-philosophy` en `.agents/skills/`).
 - La documentación se escribe en español.
