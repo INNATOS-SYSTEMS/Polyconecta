@@ -110,7 +110,7 @@ sequenceDiagram
 
 ## 7. Centros de trabajo
 
-El catálogo real lo **levantan los Planners** (D-44, dato pendiente P-14). Como referencia, la capacidad instalada que se documentó al inicio:
+El catálogo real lo **levantan los Planners** (D-44; dato de puesta en marcha, D-75). Como referencia, la capacidad instalada que se documentó al inicio:
 
 | Planta | Proceso | Máquinas | Capacidad nominal | Setup típico |
 | :--- | :--- | :---: | :--- | :--- |

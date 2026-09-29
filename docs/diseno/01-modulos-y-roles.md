@@ -75,7 +75,7 @@ flowchart LR
 | Inventario actual | En prototipo | Proyección de las cinco cifras (físico, reservado, WIP, disponible, entrante) |
 | Usuarios, roles y permisos | Pendiente | Todo (sección 3) |
 | Búsqueda y filtros | Parcial | Solo existe la faceta de contexto; falta la vista declarativa en todos los modelos |
-| Chatter | En prototipo | Persistencia y atribución por usuario |
+| Chatter | En prototipo | Persistencia en la base con registro automático de cambios de estado (D-78) y atribución por usuario |
 
 ## 2. Puntos de contacto con CONTPAQi
 
@@ -112,14 +112,14 @@ La seguridad tiene dos capas que no se mezclan:
 | Rol | Responsabilidad | Titulares conocidos |
 | :--- | :--- | :--- |
 | Atención a Clientes | Captura y confirma el pedido; elige la ruta por línea; decide traspasos y sustituciones | Celia Villarreal |
-| Comercial | Firma la autorización comercial | por confirmar (P-02) |
-| Crédito y Cobranza | Firma la autorización de crédito | por confirmar (P-02) |
+| Comercial | Firma la autorización comercial | por confirmar (dato de puesta en marcha, D-75) |
+| Crédito y Cobranza | Firma la autorización de crédito | por confirmar (dato de puesta en marcha, D-75) |
 | Planner | Configura componentes, confirma y planea la OF, vacía los diarios de piso y hace el cierre técnico | Roosvelt (PIM), Diana (SC) |
-| Almacenista | Declara y valida lo que sale o entra del almacén de su planta | por confirmar (P-02) |
-| Calidad | Aprueba o rechaza lotes; es el único que levanta el hard-stop | por confirmar (P-02) |
-| Logística / Tráfico | Valida entregas a cliente y salidas a flete | por confirmar (P-02) |
-| Supervisor de turno | Captura las incidencias (paros de máquina) | por confirmar (P-02) |
-| Administrador | Configura catálogos, ubicaciones, tipos de operación, usuarios y suplentes | por confirmar (P-02) |
+| Almacenista | Declara y valida lo que sale o entra del almacén de su planta | por confirmar (dato de puesta en marcha, D-75) |
+| Calidad | Aprueba o rechaza lotes; es el único que levanta el hard-stop | por confirmar (dato de puesta en marcha, D-75) |
+| Logística / Tráfico | Valida entregas a cliente y salidas a flete | por confirmar (dato de puesta en marcha, D-75) |
+| Supervisor de turno | Captura las incidencias (paros de máquina) | por confirmar (dato de puesta en marcha, D-75) |
+| Administrador | Configura catálogos, ubicaciones, tipos de operación, usuarios y suplentes | por confirmar (dato de puesta en marcha, D-75) |
 
 **Los operadores de máquina no usan el sistema** (D-39). Anotan en los diarios de piso y el Planner los vacía. Se registran como dato (`Operator`) en la planeación y la producción, no como usuarios.
 

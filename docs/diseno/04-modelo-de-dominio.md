@@ -126,7 +126,7 @@ El PT no siempre es una bolsa: puede ser el mismo rollo vendido tal cual, por es
 | `SalesOrderLine` | `erp_document_line_id`, `product_id`, `requested_qty`, `requested_packaging_unit_id`, `requested_qty_kg` (calculado), `target_production_kg`, `tolerance_percentage_override`, ruta forzada opcional |
 | `AuthorizationSignature` | Firma de un pedido: rol (`Comercial` o `Cobranza`), usuario, fecha. Hay una por rol y los dos usuarios deben ser distintos |
 
-Sin precios ni impuestos: eso vive en CONTPAQi.
+`SalesOrderLine` tiene además `unit_price` y `currency`, que solo se llenan en el pedido libre (D-74). IVA, descuentos y totales viven en CONTPAQi.
 
 ### Abastecimiento
 
@@ -180,6 +180,7 @@ Estados de `ManufacturingOrder` (D-42): `Borrador → Confirmada → En progreso
 | `Permission` | Rol × tipo de documento × acción |
 | `RecordRule` | Filtro de fila reutilizable por rol |
 | `StateTransitionLog` | Quién, qué, cuándo y con qué rol, sobre qué documento |
+| `ChatterMessage` | Mensaje, nota interna o registro automático de cambio de estado, por documento: autor, tipo, cuerpo y fecha (D-78) |
 
 ### Configuración de interfaz
 

@@ -161,7 +161,7 @@ Como usuario, necesito que los mensajes del chatter de un documento aparezcan en
 
 | Documento | Campos mínimos al crear | Regla del modo libre |
 | :--- | :--- | :--- |
-| Pedido de venta | Cliente, líneas (producto, cantidad, unidad) | Al confirmar recibe un Contpaq ID simulado (D-53). Sin precio (D-04; P-19 abierta) |
+| Pedido de venta | Cliente, líneas (producto, cantidad, unidad, precio unitario y moneda) | Al confirmar recibe un Contpaq ID simulado (D-53). El precio solo existe en pedidos libres (D-74) |
 | Orden de fabricación | Proceso, producto, cantidad, unidad | Sin pedido. Sus lotes usan el folio de la OF raíz con `/` → `-` (D-54). Al confirmarla genera su recolección y sus controles igual que una ligada |
 | Recolección | Planta, líneas (producto, cantidad) | MP → WIP sin OF; el saldo queda sin asignar (D-55) |
 | Control de calidad | Lote(s) existentes | Solo sobre lotes existentes; aprobar o rechazar tiene los mismos efectos que en un control ligado |

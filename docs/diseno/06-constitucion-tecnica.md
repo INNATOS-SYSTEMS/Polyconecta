@@ -52,7 +52,7 @@ flowchart LR
 | Frontend | **Angular 22** con TypeScript 6.0 (D-68) | Componentes standalone |
 | Build del frontend | **Node 24 LTS** (D-69) | — |
 | Estilos | Bootstrap 5.3.2 y Bootstrap Icons 1.11.3 | Iguales al prototipo mientras dure la paridad de la spec 001 |
-| Tiempo real | SignalR (`@microsoft/signalr`) | Chatter y avisos de sincronización |
+| Tiempo real | SignalR (`@microsoft/signalr`) | Chatter y avisos de sincronización. Los mensajes del chatter se guardan en la base (D-78) |
 | Pruebas .NET | **xUnit v3** + AwesomeAssertions (D-71, D-72) | Una sola versión en todos los proyectos de prueba |
 | Pruebas extremo a extremo | Playwright | — |
 | Bridge | .NET 10 `win-x86`, SQLite, SDK de CONTPAQi | Proceso aparte en Windows; único usuario del SDK (Principio II) |
@@ -121,10 +121,20 @@ flowchart LR
 | Contrato | Suite de CT-23 | CI (simulador) y laboratorio (real) |
 | Extremo a extremo | Flujo del módulo en la interfaz, con Playwright | CI |
 
-- **CT-27** Cada PR corre build y todas las pruebas de CI. No se integra a `main` con pruebas en rojo.
+- **CT-27** Cada PR corre build y todas las pruebas de CI en **GitHub Actions** (D-76), incluida SQL Server 2022 en contenedor. No se integra a `main` con pruebas en rojo.
 - **CT-28** Una regla de negocio sin prueba no está construida.
 
 ## 8. Seguridad y operación
+
+- **CT-37** **Ambientes (D-77)**:
+
+| Ambiente | Bridge | Para qué |
+| :--- | :--- | :--- |
+| Local | Simulado | Desarrollo de los dos caminos |
+| CI | Simulado | Build y pruebas en cada PR |
+| Laboratorio | Real, empresa `_LAB` | Camino 1 y cierre integrado de cada módulo |
+| Producción | Real | Operación; su hosting y respaldos están pendientes (H-01, H-02) |
+
 
 - **CT-29** Ningún secreto se versiona. La configuración sensible va por variables de entorno o `user-secrets` (D-51).
 - **CT-30** Mínimo privilegio: el bridge lee CONTPAQi con un login de solo lectura; la API usa en SQL Server un login sin permisos de DDL, y las migraciones se aplican con otro.

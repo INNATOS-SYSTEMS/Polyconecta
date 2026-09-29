@@ -17,7 +17,7 @@ El origen es una **referencia opcional, no una precondición**. En los dos modos
 
 | Documento | Modo ligado: lo genera… | Modo libre: para qué | Lo crea | Restricción del modo libre |
 | :--- | :--- | :--- | :--- | :--- |
-| Pedido de venta | La sincronización desde CONTPAQi | Capturar el pedido en PolyConecta; el bridge lo da de alta en CONTPAQi (D-53) | Atención a Clientes | Precio por definir (P-19); alta por SDK por verificar (T-12) |
+| Pedido de venta | La sincronización desde CONTPAQi | Capturar el pedido en PolyConecta; el bridge lo da de alta en CONTPAQi (D-53) | Atención a Clientes | AC captura precio unitario y moneda (D-74); alta por SDK por verificar (T-12) |
 | Orden de fabricación | El motor al autorizar un pedido, o su OF de origen | Producir sin pedido (para stock) | Planner | Sus lotes usan el folio de la OF raíz (D-54) |
 | Recolección | Confirmar una OF | Adelantar MP a WIP | Almacenista | Queda como saldo sin asignar y se liga a una OF después (D-55) |
 | Control de calidad | Confirmar una OF (un control por lote) | Inspeccionar o volver a liberar lotes existentes | Calidad | Solo sobre lotes existentes |
@@ -35,7 +35,7 @@ El origen es una **referencia opcional, no una precondición**. En los dos modos
 
 - El pedido entra de **dos formas** (D-53): Atención a Clientes (AC) lo captura en CONTPAQi y PolyConecta lo sincroniza, o AC lo captura **libre en PolyConecta** y el bridge lo da de alta en CONTPAQi. En los dos casos CONTPAQi sigue siendo el sistema de registro, y la sincronización no debe duplicar un pedido que escribió PolyConecta (T-12).
 - Si el cliente requiere un producto nuevo o una especificación distinta, AC o Facturación **da de alta antes el código de PT en CONTPAQi**. Cada especificación de cliente tiene su propio código de PT, para que la remisión y la factura coincidan 1:1 con lo producido.
-- El pedido es **maestro + detalle**: PolyConecta lo refleja como `SalesOrder` con sus `SalesOrderLine` (producto + cantidad + unidad). Precio, IVA y totales se quedan en CONTPAQi.
+- El pedido es **maestro + detalle**: PolyConecta lo refleja como `SalesOrder` con sus `SalesOrderLine` (producto + cantidad + unidad). IVA, descuentos y totales se quedan en CONTPAQi. El **precio unitario** solo existe en PolyConecta en el pedido libre, donde lo captura AC para enviarlo a CONTPAQi (D-74); en los pedidos sincronizados queda vacío.
 - La **ficha técnica vive en PolyConecta**, no en CONTPAQi. Ni los campos de usuario del documento ni los del producto alcanzan para ella. Se liga al producto por su código ERP y AC la captura en PolyConecta: bloque Rollo (`RollSpecification`) y bloque PT (`PtSpecification`), siempre ambos.
 - Se mantiene la meta de **cero archivos OT en Excel**.
 - La meta de producción (`target_production_kg`) y la tolerancia se capturan **por línea de pedido**, no en el catálogo.

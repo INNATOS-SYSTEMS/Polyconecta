@@ -27,7 +27,7 @@ El informe enumera 17 puntos. Estos siguen vigentes sin cambios: 2 (código de P
 | D-01 | 2026-09-18 | La ficha técnica (bloques Rollo y PT) vive en PolyConecta, ligada al producto por su código ERP. Ni los campos de usuario del documento ni los del producto de CONTPAQi alcanzan. | Validada | Redefinición de dominio, rev. 1 y 2 |
 | D-02 | 2026-09-18 | El pedido es maestro + detalle (`SalesOrderLine`). La meta de producción y la tolerancia van por línea, no en el catálogo. `PtSpecification` siempre referencia una `RollSpecification`. | Validada | Rev. 2 |
 | D-03 | 2026-09-18 | La unidad base es siempre KG; la unidad de venta es configurable por producto (`PackagingUnit`) y elegible por línea. | Validada | Rev. 3, CFDI S-26234 |
-| D-04 | 2026-09-18 | Precio, IVA y totales no se modelan en PolyConecta. | Validada | Rev. 3 |
+| D-04 | 2026-09-18 | Precio, IVA y totales no se modelan en PolyConecta *(modificada por D-74: el pedido libre lleva precio unitario)*. | Validada | Rev. 3 |
 | D-05 | 2026-09-19 | Una sola `ManufacturingOrder` autorreferenciada (`OriginOrderId`). La raíz es el proceso que se entrega al cliente. Todas las órdenes usan el mismo formulario. | Validada | Rev. 4, mockups y reunión del 18-sep |
 | D-06 | 2026-09-19 | La `WorkOrder` deja de ser documento y pasa a `PlanningLine` embebida en la orden, repartible entre máquinas y días. | Validada | Rev. 4 |
 | D-07 | 2026-09-19 | Los componentes son una lista plana editable (clave, producto, cantidad, unidad), sin capas A/B/C. | Validada | Rev. 4 |
@@ -97,3 +97,8 @@ El informe enumera 17 puntos. Estos siguen vigentes sin cambios: 2 (código de P
 | D-71 | 2026-09-29 | Las pruebas .NET usan **xUnit v3**, con una sola versión en todos los proyectos. | Validada | Versiones |
 | D-72 | 2026-09-29 | Se **quita MediatR** (estaba referenciado sin uso): los casos de uso son servicios inyectados con decoradores propios. **FluentAssertions se sustituye por AwesomeAssertions**, fork libre con la misma API. Motivo: las versiones nuevas de ambas son de licencia comercial. | Validada | Versiones |
 | D-73 | 2026-09-29 | **Política de versiones**: versiones exactas y centralizadas (`Directory.Packages.props`, `global.json`, `.nvmrc` y `package.json` sin `^` ni `~`). Los parches y versiones menores se actualizan una vez al mes en un PR propio; una versión mayor solo cambia por decisión registrada. | Validada | Versiones |
+| D-74 | 2026-09-29 | En el **pedido libre**, AC captura **precio unitario y moneda** por línea, y el bridge los envía a CONTPAQi. IVA, descuentos y totales los calcula CONTPAQi. En pedidos sincronizados el precio queda vacío: vive en CONTPAQi. Modifica D-04. | Validada | P-19 |
+| D-75 | 2026-09-29 | Titulares y suplentes (P-02), catálogo de centros de trabajo (P-14) y tolerancia del balance de masa (P-16) son **datos de puesta en marcha**. No bloquean la construcción: se construye con catálogos editables y datos de ejemplo, y los datos reales se cargan antes del piloto de cada módulo. | Validada | P-02, P-14, P-16 |
+| D-76 | 2026-09-29 | La integración continua corre en **GitHub Actions**. | Validada | CT-27 |
+| D-77 | 2026-09-29 | **Ambientes**: local y CI con el bridge simulado; laboratorio con el bridge real contra la empresa `_LAB`; producción. No hay ambiente de pruebas aparte hasta el piloto. | Validada | Constitución técnica |
+| D-78 | 2026-09-29 | El **chatter se guarda en la base**: mensajes, notas internas y registro automático de cambios de estado, por documento. Se construye en el módulo 0. | Validada | Constitución técnica |

@@ -23,7 +23,7 @@ El orden sigue la dependencia de datos: cada módulo usa lo que cerró el anteri
 
 | # | Módulo | Qué incluye | Diseño |
 | :---: | :--- | :--- | :--- |
-| 0 | **Plataforma** | Base SQL Server y migraciones, mixins de auditoría y archivado, `StateTransitionLog`, numeración centralizada, identidad, roles, permisos y suplentes, outbox y despachador, mapeo ERP, estado de sincronización, vistas de búsqueda, chatter | [01 §3](diseno/01-modulos-y-roles.md), [04 §1](diseno/04-modelo-de-dominio.md), [06](diseno/06-constitucion-tecnica.md) |
+| 0 | **Plataforma** | Base SQL Server y migraciones, mixins de auditoría y archivado, `StateTransitionLog`, numeración centralizada, identidad, roles, permisos y suplentes, outbox y despachador, mapeo ERP, estado de sincronización, vistas de búsqueda con agrupaciones en las listas, chatter guardado en la base (D-78) | [01 §3](diseno/01-modulos-y-roles.md), [04 §1](diseno/04-modelo-de-dominio.md), [06](diseno/06-constitucion-tecnica.md) |
 | 1 | **Catálogos e Inventario** | Productos (sincronizados), ficha técnica, unidades de venta, clasificación, plantas, ubicaciones y su alta en CONTPAQi, lotes, existencias (las cinco cifras), reservas, re-lotificación | [03](diseno/03-almacenes-y-operaciones.md), [04 §3](diseno/04-modelo-de-dominio.md) |
 | 2 | **Ventas** | Pedido sincronizado y libre, confirmación, autorización de dos firmas, revocación, motor de abastecimiento (rutas MTSO/MTO, simulación, reserva), visor de disponibilidad | [02 §1–2](diseno/02-flujo-y-reglas.md) |
 | 3 | **Producción** | Orden de fabricación autorreferenciada para extrusión, impresión y bolseo; componentes, subproductos, planeación, centros de trabajo, recolección a WIP y devolución, captura de producción, registro dual millares/kg, incidencias, cierre técnico y balance de masa | [02 §3–4](diseno/02-flujo-y-reglas.md) |
@@ -65,14 +65,26 @@ Estados de cada columna: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bl
 
 | Módulo | Preguntas abiertas ([preguntas-abiertas.md](diseno/preguntas-abiertas.md)) |
 | :--- | :--- |
-| 0 · Plataforma | P-02 (titulares), solo para configurar usuarios |
+| 0 · Plataforma | ninguna propia |
 | 1 · Catálogos e Inventario | T-01, T-02, T-05, T-06, T-10, T-11 |
-| 2 · Ventas | P-19 (precio del pedido libre), T-12 |
-| 3 · Producción | P-14 (centros de trabajo), P-16 (tolerancia), T-01, T-03, T-04 |
+| 2 · Ventas | T-12 |
+| 3 · Producción | T-01, T-03, T-04 |
 | 4 · Calidad | ninguna propia |
 | 5 · Logística | T-07 (remisión ligada al pedido) |
 
-## 6. Trabajo de arranque
+Para el **piloto** de cualquier módulo hacen falta además el hosting de producción y los respaldos (H-01, H-02).
+
+## 6. Puesta en marcha
+
+Son datos de la operación que no bloquean la construcción (D-75): cada módulo se construye con catálogos editables y datos de ejemplo. Los datos reales se cargan **antes del piloto** del módulo que los usa.
+
+| Dato | Módulo | Quién lo entrega | Estado |
+| :--- | :--- | :--- | :---: |
+| Titulares y suplentes de cada rol, con su planta (ex P-02) | 0 · Plataforma | Dirección | ⬜ |
+| Catálogo de centros de trabajo: código, proceso, planta y capacidad (ex P-14) | 3 · Producción | Planners de PIM y SC | ⬜ |
+| Tolerancia del balance de masa (ex P-16) | 3 · Producción | Producción | ⬜ |
+
+## 7. Trabajo de arranque
 
 | # | Trabajo | Camino | Estado |
 | :---: | :--- | :---: | :---: |
@@ -84,10 +96,12 @@ Estados de cada columna: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bl
 | A-6 | ~~Decidir versiones~~ — ratificadas el 29-sep (D-67 a D-73) | 1 y 2 | ✅ |
 | A-9 | Migrar PolyConecta a .NET 10, EF Core SQL Server, xUnit v3 y AwesomeAssertions; quitar Npgsql, EF InMemory de producción y MediatR; centralizar versiones (D-73) | 2 | ⬜ |
 | A-10 | Verificar el bridge en .NET 10 `win-x86` con `sdk-lab` (F y G) y migrarlo (D-67) | 1 | ⬜ |
+| A-11 | Pipeline de GitHub Actions: build, pruebas .NET y Angular, suite de contrato contra el simulador y SQL Server 2022 en contenedor (D-76, CT-27) | 1 y 2 | ⬜ |
+| A-12 | Definir el hosting de producción y los respaldos (H-01, H-02) | — | ⬜ |
 | A-7 | Ejecutar la spec 001 (réplica en Angular) | 2 | ⬜ |
 | A-8 | Crear la spec del módulo 0 (Plataforma) | 2 | ⬜ |
 
-## 7. Ramas de contingencia de la matriz del SDK
+## 8. Ramas de contingencia de la matriz del SDK
 
 | Si falla… | Consecuencia | Costo |
 | :--- | :--- | :--- |
@@ -99,7 +113,7 @@ Estados de cada columna: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bl
 | **T-10** (alta de almacenes) | Los almacenes se crean a mano en CONTPAQi una vez | Aceptable |
 | **T-12** (alta de pedido) | El pedido libre queda interno hasta resolverlo | Ventas se cierra integrado sin el modo libre hacia CONTPAQi |
 
-## 8. Riesgos fuera de la matriz
+## 9. Riesgos fuera de la matriz
 
 - **Concurrencia de reservas**: CONTPAQi no conoce las reservas; dos pedidos no pueden comprometer el mismo lote. Requiere bloqueo optimista o restricción única en la base.
 - **Deriva del contrato**: si los caminos cambian el contrato por separado, la integración falla al final. Por eso los cambios requieren a los dos líderes y la misma suite corre en los dos lados (CT-22, CT-23).
