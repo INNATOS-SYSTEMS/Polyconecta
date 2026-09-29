@@ -27,12 +27,11 @@ Registro de lo que dijo y mostró la operación. **No se editan**; si una decisi
 | [INFORME OPERATIVO AS-IS.md](assesment/INFORME%20OPERATIVO%20AS-IS.md) | Diagnóstico de la operación actual por área |
 | [INFORME OPERATIVO TO-BE.md](assesment/INFORME%20OPERATIVO%20TO-BE.md) | Propuesta preliminar del sistema |
 | [INFORME_VALIDACION_DIAGRAMA_OPERATIVO.md](assesment/INFORME_VALIDACION_DIAGRAMA_OPERATIVO.md) | Flujo validado con la operación y matriz de 17 ajustes |
-| [polyconecta_flujo_tobe_secuencia.html](assesment/polyconecta_flujo_tobe_secuencia.html) | Diagrama de secuencia del TO-BE (generado desde el `.json`) |
 | [references/notes/](references/notes/) | Notas de la reunión de descripción de flujos (18-sep-2026) |
 | [references/documents/](references/documents/) | CFDI real de referencia (S-26234) |
-| [references/](references/) | Referencias de UX de Odoo (smart buttons, vista de lista) y logotipo |
-| [mockups/](mockups/) | 19 mockups de pantallas validados con la operación |
+| [references/poly_empaques_logo_blanco.svg](references/poly_empaques_logo_blanco.svg) | Logotipo |
 
+Los mockups de pantallas, el diagrama de secuencia generado y las capturas de UX de Odoo se retiraron el 28-sep-2026. Lo que se decidió a partir de ellos está en `diseno/` (D-05 a D-13), y siguen en el historial de git.
 ## 3. Referencia técnica de CONTPAQi, `contpaq/`
 
 | Documento | Qué es |

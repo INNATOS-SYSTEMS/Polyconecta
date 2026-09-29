@@ -103,7 +103,7 @@ Fuera de alcance por ahora: la compra de materia prima (`MP-STOCK` solo consume;
 
 - Hay **un solo tipo de orden**, `ManufacturingOrder`, **autorreferenciado** mediante `OriginOrderId`. Sustituye la jerarquía tripartita OM → OF → WO del informe de validación.
 - La orden sin origen es la **raíz**: el proceso que se entrega al cliente, que no siempre es bolseo. Su smart button enlaza al pedido; las demás enlazan a su orden de origen.
-- Cadena típica observada en los mockups: `Pedido → OF-BOL (raíz) → OF-IMP (origen = BOL) → OF-EXT (origen = IMP)`.
+- Cadena típica (D-05): `Pedido → OF-BOL (raíz) → OF-IMP (origen = BOL) → OF-EXT (origen = IMP)`.
 - Cada línea de pedido genera sus propias órdenes (1:1 por línea, no por pedido).
 - Todas las órdenes usan **el mismo formulario** con cuatro pestañas: Componentes, Subproductos, Producción y Planeación.
 - **Estados** (D-42, estilo Odoo): `Borrador → Confirmada → En progreso → Por cerrar → Hecha`, y `Cancelada`. *Por cerrar* es la producción terminada que espera el cierre técnico (balance de masa y declaración de saldo en WIP).

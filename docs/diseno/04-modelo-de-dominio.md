@@ -1,6 +1,6 @@
 # Modelo de dominio
 
-Modelo **objetivo** de `PolyConecta.Domain`. Consolida la redefinición del dominio (con su revisión 4 del 18–19 de septiembre, basada en la transcripción de la reunión y los mockups reales) con las entidades de abastecimiento, recolección, roles y búsqueda. La sección 5 compara este modelo con lo que existe hoy en el código.
+Modelo **objetivo** de `PolyConecta.Domain`. Consolida la redefinición del dominio (con su revisión 4 del 18–19 de septiembre, basada en la transcripción de la reunión y en los mockups de pantallas, ya retirados del repositorio) con las entidades de abastecimiento, recolección, roles y búsqueda. La sección 5 compara este modelo con lo que existe hoy en el código.
 
 ## 1. Principios de modelado
 

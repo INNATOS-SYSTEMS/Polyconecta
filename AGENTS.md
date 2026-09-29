@@ -3,7 +3,7 @@
 ## Fuentes de verdad
 
 - **Diseño vigente**: `docs/diseno/`. Si otro documento lo contradice, manda este.
-- **Hechos**: `docs/assesment/`, `docs/references/` y `docs/mockups/`. No se editan; una decisión posterior que los contradiga se registra en `docs/diseno/decisiones.md`.
+- **Hechos**: `docs/assesment/` y `docs/references/`. No se editan; una decisión posterior que los contradiga se registra en `docs/diseno/decisiones.md`.
 - **Principios**: `.specify/memory/constitution.md`. Solo se enmiendan con aprobación explícita.
 - **CONTPAQi**: toda afirmación sobre el SDK o las tablas `adm*` se respalda en `docs/contpaq/` o en documentación oficial verificada (Principio VII). Lo que dependa de la matriz del SDK sin ejecutar es un supuesto, no un hecho.
 
