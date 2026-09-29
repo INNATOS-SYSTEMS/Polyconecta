@@ -20,18 +20,16 @@ El orden de construcción está en [PLAN_CONSTRUCCION.md](PLAN_CONSTRUCCION.md).
 
 ## 2. Hechos, `assesment/` y `references/`
 
-Registro de lo que dijo y mostró la operación. **No se editan**; si una decisión posterior los contradice, la contradicción se registra en `decisiones.md`.
+Registro de lo que dijo la operación. **No se editan**; si una decisión posterior los contradice, la contradicción se registra en `decisiones.md`.
 
 | Documento | Qué es |
 | :--- | :--- |
 | [INFORME OPERATIVO AS-IS.md](assesment/INFORME%20OPERATIVO%20AS-IS.md) | Diagnóstico de la operación actual por área |
 | [INFORME OPERATIVO TO-BE.md](assesment/INFORME%20OPERATIVO%20TO-BE.md) | Propuesta preliminar del sistema |
 | [INFORME_VALIDACION_DIAGRAMA_OPERATIVO.md](assesment/INFORME_VALIDACION_DIAGRAMA_OPERATIVO.md) | Flujo validado con la operación y matriz de 17 ajustes |
-| [references/notes/](references/notes/) | Notas de la reunión de descripción de flujos (18-sep-2026) |
-| [references/documents/](references/documents/) | CFDI real de referencia (S-26234) |
 | [references/poly_empaques_logo_blanco.svg](references/poly_empaques_logo_blanco.svg) | Logotipo |
 
-Los mockups de pantallas, el diagrama de secuencia generado y las capturas de UX de Odoo se retiraron el 28-sep-2026. Lo que se decidió a partir de ellos está en `diseno/` (D-05 a D-13), y siguen en el historial de git.
+Los mockups de pantallas, el diagrama de secuencia generado, las capturas de UX de Odoo, las notas de la reunión del 18-sep y el CFDI de referencia (S-26234) se retiraron el 28-sep-2026. Lo que se decidió a partir de ellos está en `diseno/` (D-01 a D-13), y siguen en el historial de git.
 ## 3. Referencia técnica de CONTPAQi, `contpaq/`
 
 | Documento | Qué es |
