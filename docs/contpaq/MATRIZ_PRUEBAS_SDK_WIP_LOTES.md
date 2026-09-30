@@ -1,6 +1,6 @@
 # MATRIZ DE PRUEBAS TÉCNICAS — SDK CONTPAQi para WIP, Lotes y Traspasos
 
-**Proyecto:** PolyConecta · **Fecha:** 21 de septiembre de 2026 · **Estatus:** Ejecutada el 30-sep-2026 contra `adPOLYEMPAQUES` (ambiente de pruebas del VPS). Ver el registro al final
+**Proyecto:** PolyConecta · **Fecha:** 21 de septiembre de 2026 · **Estatus:** Ejecutada el 30-sep-2026 contra `adPOLYEMPAQUES` (ambiente de pruebas del VPS). Ver el registro al final. Bloque S (segunda ronda) pendiente de ejecutar
 
 **Propósito:** Verificar contra una instalación real de CONTPAQi Comercial Premium que el SDK soporta las operaciones que asumen SPEC-007 (abastecimiento, hoy [02-flujo-y-reglas.md §2](../diseno/02-flujo-y-reglas.md)) y SPEC-008 (recolección a WIP, hoy [§4](../diseno/02-flujo-y-reglas.md)). Las referencias `SPEC-00X FR-NNN` de esta matriz corresponden a los identificadores `[00X-FR-NNN]` de esos documentos. **Ninguna de las dos specs debe pasar a implementación productiva antes de cerrar los bloques B, C y D de esta matriz** — son supuestos, no hechos verificados.
 
@@ -119,6 +119,33 @@
 
 ---
 
+## Bloque S — Segunda ronda: operación continua y casos pendientes
+
+Agregado el 30-sep-2026, después de la primera ejecución. Cubre las preguntas que quedaron abiertas en [preguntas-abiertas.md](../diseno/preguntas-abiertas.md) y las decisiones D-80, D-88, D-91, D-92 y D-102. Misma regla de verificación: `rc = 0` no basta; toda prueba se confirma por SQL.
+
+| ID | Objetivo | Procedimiento | Criterio de aceptación | Si falla |
+| :--- | :--- | :--- | :--- | :--- |
+| **S-01** | **Latencia con sesión de larga duración** (T-13, D-91, D-92) | En **un solo proceso**: iniciar sesión y `fSetNombrePAQ` una vez, `fAbreEmpresa` una vez, y ejecutar 20 pares Salida + Entrada seguidos. Medir por separado el inicio del SDK, la apertura de la empresa y cada par | Después del arranque, cada par tarda **segundos** (meta de D-92). El arranque se paga una sola vez | La meta de segundos no es alcanzable: revisar D-92 y dimensionar la cola en minutos |
+| **S-02** | Causa de los bloqueos (T-13, H-7) | Repetir S-01 con Comercial abierto y cerrado en la misma sesión, y tras reiniciar el servidor. Registrar en qué llamada ocurre la espera | Se identifica la llamada que bloquea y la condición que lo provoca | Escalar a soporte de CONTPAQi con la evidencia |
+| **S-03** | **Bridge como servicio de Windows** (pregunta H-03, D-88) | Registrar `sdklab` como servicio con una **cuenta de usuario real** (no LocalSystem), con perfil cargado, y ejecutar `sdk-open` y un par Salida + Entrada | Funciona sin sesión iniciada en el escritorio | Se descarta el servicio; pasar a S-04 |
+| **S-04** | Tarea programada con inicio de sesión automático (pregunta H-03) | Usuario de Windows dedicado con inicio de sesión automático y una tarea "al iniciar sesión" que levanta el proceso. Reiniciar el servidor sin intervención | Tras el reinicio, el proceso queda corriendo y procesa un par sin que nadie toque el servidor | El bridge requiere intervención tras cada reinicio: riesgo operativo a registrar |
+| **S-05** | Reinicio diario (D-91, D-98) | Con el proceso de S-03 o S-04 corriendo, provocar el apagado programado y el arranque siguiente | Cierra empresa y SDK (`fTerminaSDK`) y la siguiente sesión arranca sin la lentitud de H-7 | Sesiones colgadas: definir cómo se detectan y se liberan |
+| **S-06** | **Referencia corta para reconciliar** (D-80) | Crear un par con `CREFERENCIA` de 20 caracteres derivada de la `idempotency_key` (la llave completa no cabe: el campo mide 20). Buscar el documento por SQL con esa referencia | La referencia se guarda completa y es única y localizable en `admDocumentos` | Guardar la llave en otro campo del documento (observaciones o campo extra) y verificarlo igual |
+| **S-07** | Reconciliar un par interrumpido (D-80, G-04) | Crear la Salida, detener el proceso antes de la Entrada, y reintentar con el algoritmo de reconciliación: leer por referencia qué existe y completar solo lo que falta | Queda exactamente una Salida y una Entrada, con las cantidades y el costo esperados | El algoritmo de D-80 no alcanza: rediseñar antes de A-14 |
+| **S-08** | Borrar un documento huérfano (D-80, G-01) | Reproducir G-01 (documento sin movimientos) y eliminarlo con `fBuscarDocumento` + `fBorraDocumento` | El documento desaparece o queda cancelado, sin afectar existencias ni folios de otros documentos | Los huérfanos se cancelan en lugar de borrarse; registrar cómo se ven en CONTPAQi |
+| **S-09** | **Alta de almacén** (T-10) | La referencia del SDK no documenta ninguna función de alta de almacenes (hay `fInserta*` para productos, clientes y clasificaciones, no para almacenes). Buscarla en la documentación oficial vigente; si existe, probarla con `LAB-ALM` | Existe una función documentada y el almacén aparece en `admAlmacenes` | Los almacenes se crean a mano por la UI al inicializar (contingencia de T-10) |
+| **S-10** | Alta de conceptos propios (D-89) | Verificar si `fInsertaConceptoDocto` o equivalente existe; si no, crear por la UI una Salida y una Entrada de PolyConecta y usarlas en un par | Los conceptos propios funcionan en el par, con su propia numeración de folios | Usar los conceptos existentes y aceptar el folio desbordado de H-5 |
+| **S-11** | **Consumo desde WIP** (T-11) | Registrar el consumo de un cierre como Salida desde WIP con concepto propio, sin almacén `Produccion`. Comparar con un traspaso WIP → `Produccion` | Queda documentado cuál refleja mejor el consumo en existencias y costo. La operación hoy usa "Salida materia prima MAQUINA N" (B-01) | Decidir con Contabilidad cuál usar |
+| **S-12** | Entrada de producción (T-11) | Registrar la entrada de un rollo PT con su lote nuevo y costo, y la de un subproducto de scrap | El lote aparece en `admCapasProducto` del almacén PT con la cantidad y el costo capturados | Bloquea `CIERRE_PRODUCCION` |
+| **S-13** | **Remisión ligada al pedido** (T-07) | Crear un pedido de prueba, y una remisión cuyo movimiento lleve como origen el movimiento del pedido (`admMovimientos.CIDMOVTOORIGEN`, "conversión"). Probar por la estructura de alto nivel y, si no lo admite, con `fInsertarMovimiento` + `fSetDatoMovimiento` | `CUNIDADESPENDIENTES` del pedido baja en lo remisionado y el pedido deja de estar pendiente de surtir | El pedido queda "pendiente de surtir" en CONTPAQi (contingencia de T-07) |
+| **S-14** | **Alta de pedido libre** (T-12) | `fAltaDocumento` de un pedido con dos líneas, precio unitario y moneda (D-74), y lectura del folio asignado | El pedido existe con sus líneas, precio y moneda, y el folio devuelto permite reconocerlo en la sincronización | El pedido libre queda solo interno (contingencia de T-12) |
+| **S-15** | **Compras con lote** (T-16, D-102) | SQL: identificar los conceptos de compra usados en 2026, y si sus movimientos de MP tienen capas con número de lote (`admMovimientosCapas`) | Queda documentado si la MP comprada trae lote, con qué nomenclatura y con qué concepto | Si no trae lote, PolyConecta tendría que lotificar al recibir (ver T-16) |
+| **S-16** | Lectura incremental de compras (D-102) | SQL: leer los documentos de compra afectados desde una marca de tiempo o id, dos veces seguidas | La segunda lectura trae solo lo nuevo; no se pierde ni se duplica ninguna compra | Definir otra marca para la lectura incremental |
+
+> **S-01 decide la meta de latencia de D-92** y **S-03/S-04 deciden cómo corre el bridge**. Van primero. S-15 y S-16 son solo lectura y pueden correr en paralelo desde el inicio.
+
+---
+
 ## Trazabilidad prueba → decisión de spec
 
 | Decisión / requisito | Pruebas que lo sostienen | Consecuencia si fallan |
@@ -129,6 +156,11 @@
 | **⑩ Devolución con cantidad manual** (SPEC-008 FR-009b) | D-02, D-03, D-05 | La devolución sería total o nada |
 | **Visor por clasificación** (SPEC-007 FR-002) | A-05, F-01, F-02, F-03, F-04 | PolyConecta mantiene su propio catálogo de clasificación y una proyección de existencias |
 | **Trazabilidad por lote** (transversal) | C-01, C-04, C-05 | PolyConecta reconstruye el linaje por su cuenta |
+| **Sesión y latencia del bridge** (D-88, D-91, D-92) | S-01 a S-05 | La meta de segundos se revisa; el bridge requiere intervención tras reinicios |
+| **Reconciliación** (D-80) | S-06, S-07, S-08 | Rediseñar la ejecución por pasos antes de corregir el gateway |
+| **Inicialización** (D-43, D-89) | S-09, S-10 | Almacenes y conceptos se crean por la UI |
+| **Cierre de producción y remisión** (T-07, T-11) | S-11, S-12, S-13 | `CIERRE_PRODUCCION` y `REMISION` sin diseño cerrado |
+| **Pedido libre y compras** (T-12, T-16, D-102) | S-14, S-15, S-16 | Pedido libre interno; lotificación de MP en PolyConecta |
 
 ---
 
@@ -140,6 +172,7 @@
 4. **D y E** — dependen de que B y C pasen.
 5. **F** — independiente de todo lo anterior, solo lectura. Puede ejecutarse desde el día 1 y desbloquea SPEC-007 por separado.
 6. **G** — al final, con el flujo completo funcionando.
+7. **S** (segunda ronda): S-15 y S-16 en paralelo (solo lectura) → S-01 y S-02 → S-03 o S-04 → S-05 → S-06 a S-08 → S-09 a S-14.
 
 > **F es independiente de B/C/D.** Si el bloque B falla y WIP no puede ser almacén contable, SPEC-007 sigue siendo implementable: solo necesita leer existencias. Conviene ejecutar F en paralelo desde el inicio para no acoplar el destino de las dos specs.
 

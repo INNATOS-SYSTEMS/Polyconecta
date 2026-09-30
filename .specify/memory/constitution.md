@@ -1,12 +1,13 @@
 <!--
 Sync Impact Report:
-- Version change: 1.5.0 → 1.6.0
-- Added principles:
-  - Principle X: Free Documents (every operational document can be created on its own with "New"; origin is an optional reference, never a precondition; the document's rules apply regardless of origin).
-- Modified principles: None.
+- Version change: 1.6.0 → 1.6.1
+- Modified principles:
+  - Principle II: the SDK library is `MGWServicios.dll` (CONTPAQi Comercial), not `SDK_CONTPAQ.dll`; the bridge is a dedicated x86 process that keeps one long-lived SDK session with programmatic sign-in, instead of a generic Windows "Worker" (the SDK does not run over SSH, and running it as a Windows service is still unverified).
+- Added principles: None.
 - Removed sections: None.
-- Follow-up TODOs: None. Source decisions: docs/diseno/decisiones.md D-52 to D-56 (2026-09-28).
+- Follow-up TODOs: pregunta H-03 (how the bridge runs unattended). Source decisions: docs/diseno/decisiones.md D-88, D-91 and D-105 (2026-09-30), from the SDK test matrix.
 
+Previous amendment (1.5.0 → 1.6.0, 2026-09-28): Principle X, Free Documents (D-52 to D-57).
 Previous amendment (1.4.0 → 1.5.0, 2026-09-28): Principles I, II, IV, V, VI and IX aligned with no handheld devices, `SC` plant code and Montemorelos deferred to Phase 2 (D-32 to D-51).
 -->
 
@@ -18,7 +19,7 @@ Previous amendment (1.4.0 → 1.5.0, 2026-09-28): Principles I, II, IV, V, VI an
 PolyConecta is a specialized, custom Operational Routing & Inventory Engine. **CONTPAQi Comercial Premium v10+ remains the single master repository of record** for billing, accounting, financial reporting, and official stock balances. No third-party ERP framework (such as Odoo) will be deployed. PolyConecta operates as the intelligence layer for shop-floor routing, stock movements, and production tracking, continuously reflecting transactions into CONTPAQi. Although PolyConecta is a custom application and does not deploy Odoo as an underlying ERP, its User Experience (UI/UX), shop-floor interaction, and operational philosophy across MRP, Inventory Locations, Work Centers, and Quality MUST explicitly take **Odoo 19 Enterprise** as their primary design and interaction benchmark.
 
 ### II. Asynchronous ERP Synchronization & Outbox Resilience
-Integration with CONTPAQi Premium MUST strictly follow an asynchronous Outbox Pattern with a dedicated single-threaded Integration Bridge (.NET x86 Worker) interacting via `SDK_CONTPAQ.dll`. Direct SQL `INSERT` or `UPDATE` queries to CONTPAQi database tables (`adm*`) are strictly prohibited to preserve database integrity and CFDI compliance. Plant operations and shop-floor capture MUST proceed asynchronously without waiting for synchronous ERP locks.
+Integration with CONTPAQi Premium MUST strictly follow an asynchronous Outbox Pattern with a dedicated single-threaded Integration Bridge (.NET x86 process) interacting via the CONTPAQi Comercial SDK (`MGWServicios.dll`). The bridge signs in programmatically, with no human interaction, and keeps one long-lived SDK session; how it runs unattended on Windows is defined in the technical design. Direct SQL `INSERT` or `UPDATE` queries to CONTPAQi database tables (`adm*`) are strictly prohibited to preserve database integrity and CFDI compliance. Plant operations and shop-floor capture MUST proceed asynchronously without waiting for synchronous ERP locks.
 
 ### III. SKU Catalog Boundaries & Inventory Mapping
 - **Materia Prima (MP):** Raw materials (resins, additives, pigments) MUST be strictly standardized under a unified master SKU catalog across all plants, resolving supplier code discrepancies.
@@ -71,4 +72,4 @@ Following Odoo's document philosophy, every operational document (sales order, m
 - Amendments require formal approval from the Steering Committee.
 - Semantic versioning applies (MAJOR for principle redefinition, MINOR for scope/governance updates, PATCH for wording fixes).
 
-**Version**: 1.6.0 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-09-28
+**Version**: 1.6.1 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-09-30

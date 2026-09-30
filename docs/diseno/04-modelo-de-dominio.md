@@ -87,7 +87,7 @@ erDiagram
 | `Plant` | Planta | `code` (`PIM`, `SC`, `MTM`), `legal_entity_id` |
 | `WorkCenter` | Máquina o estación | `code`, `plant_id`, `process_type`, `capacity_kg_per_hour` |
 | `Operator` | Operador de máquina: es un dato de planeación y producción, no un usuario del sistema (D-39) | `code`, `name`, `plant_id` |
-| `StockLocation` | Ubicación | `code` (`PIM/Stock/MP`), `plant_id`, `usage` (`Internal`, `Wip`, `Production`, `Transit`, `Quarantine`, `Customer`, `Vendor`), `erp_warehouse_id`: el almacén que se reserva en `admAlmacenes` al inicializar, para **toda** ubicación (D-43) |
+| `StockLocation` | Ubicación | `code` (`PIM/Stock/MP`), `plant_id`, `usage` (`Internal`, `Wip`, `Production`, `Transit`, `Quarantine`, `Customer`, `Vendor`), `erp_warehouse_id`: el almacén que se reserva en `admAlmacenes` al inicializar, para toda ubicación salvo `Vendors` (D-43, D-96) |
 | `OperationType` | Catálogo de operaciones | `code`, origen y destino por defecto, `requires_quality_release`, `triggers_erp_document_type` |
 
 ### Catálogo de productos
@@ -96,7 +96,7 @@ erDiagram
 | :--- | :--- |
 | `Product` | Identidad única de catálogo: `sku`, `name`, `category` (`RawMaterial`, `Additive`, `Pigment`, `Recycled`, `IntermediateRoll`, `FinishedGood`, `ScrapMaterial`), `base_uom = KG`, `erp_product_id` |
 | `PackagingUnit` | Unidades de venta del producto: `code` (`KG`, `MIL`, `PZA`, `ROLLO`, `BULTO25`), `conversion_to_kg`, `is_default_sales_unit` |
-| `ProductClassification` | Clasificación que agrupa el visor de disponibilidad y la herencia de rutas |
+| `ProductClassification` | Clasificación que agrupa el visor de disponibilidad y la herencia de rutas. Es de PolyConecta: la de CONTPAQi no distingue bolsa, rollo impreso, liso y maestro (D-86) |
 | `RawMaterialCatalog` | MP estandarizada entre plantas (Principio III): `mfi_melt_flow_index`, `density_g_cm3`, `target_hopper` |
 | `SupplierProductMapping` | Códigos de proveedor que apuntan a la MP estándar |
 | `ScrapReasonCode`, `IncidentType` | Catálogos cerrados |
@@ -152,12 +152,12 @@ El PT no siempre es una bolsa: puede ser el mismo rollo vendido tal cual, por es
 | `SubProductLine` | Producto de scrap que resulta del proceso: cantidad, unidad, producido, almacén destino |
 | `PlanningLine` | Centro de trabajo, cantidad, unidad, inicio, fin y operador |
 | `ProductionSlot` | Un slot por rollo proyectado, precargado al confirmar la orden |
-| `StockLot` | `name` calculado (`R001-IV310-26`, o `R001-BOL-2026-0007` si la OF no tiene pedido; sufijo `.S` en cuarentena), `sequence_number`, pesos bruto, tara y neto, `state` (`Available`, `Quarantine`, `Consumed`, `ScrappedOut`), `current_location_id` |
+| `StockLot` | `name` calculado (`R001-IV310-26`, o `R001-BOL-2026-0007` si la OF no tiene pedido; sufijo `.S` en cuarentena), `sequence_number`, pesos bruto, tara y neto, `state` (`Available`, `Quarantine`, `Consumed`, `ScrappedOut`), `current_location_id`. Corresponde al **número de lote** de CONTPAQi, que puede tener varias capas por almacén (D-83) |
 | `QualityControl` | Documento `QC/2026/000X`: orden, auditor, proceso y `state` (`Planeado`, `Aprobado`, `Parcial`, `Rechazado`) |
 | `QualityControlLine` | Producto, lote, cantidad planeada, cantidad real y resultado aprueba o falla |
 | `ScrapEntry` | Kg de scrap por producto y motivo |
 | `MassBalanceAudit` | Un único registro al cierre: entrada, rollos buenos, cuarentena, scrap, varianza, tolerancia aplicada y resultado |
-| `LotGenealogy` | Qué lote padre se consumió en qué lote hijo |
+| `LotGenealogy` | Qué lote padre se consumió en qué lote hijo. CONTPAQi no guarda linaje entre capas, así que esta tabla y los `StockMove` son la única trazabilidad (D-83) |
 | `Incident` | Paro: fecha, centro de trabajo, tipo, comentarios, hora de inicio y de fin. Lo captura el Supervisor de turno |
 
 Estados de `ManufacturingOrder` (D-42): `Borrador → Confirmada → En progreso → Por cerrar → Hecha`, y `Cancelada`. El prototipo todavía usa `Borrador / Planeado / En progreso / Hecho`.
@@ -166,7 +166,7 @@ Estados de `ManufacturingOrder` (D-42): `Borrador → Confirmada → En progreso
 
 | Entidad | Propósito |
 | :--- | :--- |
-| `StockPicking` | Operación (recolección, devolución, traslado, recepción o entrega) con `operation_type_id`, origen, destino, estado y enlace al backorder |
+| `StockPicking` | Operación (recolección, devolución, traslado, recepción o entrega) con `operation_type_id`, origen, destino, estado y enlace al backorder. El backorder no tiene contraparte en CONTPAQi (D-85); un traspaso validado se refleja como un par Salida + Entrada (D-79) |
 | `StockMove` | Línea: producto, lote, cantidad solicitada y cantidad hecha acumulada |
 | `WipBalance` | Saldo vivo por SKU en WIP, asignado a una OF o **sin asignar** (recolección libre, D-55); bloquea el cierre técnico de la OF si le queda saldo |
 

@@ -37,7 +37,7 @@ Los mockups de pantallas, el diagrama de secuencia generado, las capturas de UX 
 | :--- | :--- |
 | [Referencia_BD_CONTPAQi.md](contpaq/Referencia_BD_CONTPAQi.md) | Tablas `adm*` de CONTPAQi Comercial Premium |
 | [Referencia_SDK_CONTPAQi.md](contpaq/Referencia_SDK_CONTPAQi.md) | Funciones del SDK |
-| [MATRIZ_PRUEBAS_SDK_WIP_LOTES.md](contpaq/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md) | Pruebas a ejecutar contra un CONTPAQi real antes de construir WIP, lotes y traspasos |
+| [MATRIZ_PRUEBAS_SDK_WIP_LOTES.md](contpaq/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md) | Pruebas contra un CONTPAQi real de WIP, lotes y traspasos, con sus resultados del 30-sep-2026 (decisiones D-79 a D-89) |
 
 La constitución del proyecto está en [`.specify/memory/constitution.md`](../.specify/memory/constitution.md).
 

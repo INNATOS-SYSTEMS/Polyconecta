@@ -5,9 +5,12 @@ Motor logístico de PolyConecta: dónde vive el material, qué operaciones lo mu
 ## 1. Las ubicaciones las define PolyConecta (D-43)
 
 - **PolyConecta es dueño del catálogo de ubicaciones.** CONTPAQi no dicta los códigos.
-- Al **inicializar** el sistema por primera vez, **todas** las ubicaciones se reservan como almacenes en `admAlmacenes`, incluidas las virtuales (producción, tránsito, clientes y proveedores). Cada `StockLocation` guarda el id del almacén que le corresponde.
+- Al **inicializar** el sistema por primera vez, las ubicaciones se reservan como almacenes en `admAlmacenes`, incluidas las virtuales de producción, tránsito y clientes. `Vendors` queda fuera: las compras se registran en CONTPAQi (D-96).
+- **Arranque** (D-100, D-104): en un corte limpio, sin producción en curso ni OF abiertas, se inicializan todos los almacenes y los inventarios desde CONTPAQi, sumando las capas de cada lote; WIP arranca vacío.
+- **Solo PolyConecta** registra en CONTPAQi los movimientos de inventario de producción (D-96). Las recepciones de compra son la única entrada de inventario que se sigue capturando en CONTPAQi. Cada `StockLocation` guarda el id del almacén que le corresponde.
 - La convención es `{PLANTA}/{estructura}/{sububicación}`, con los códigos de planta `PIM`, `SC` y `MTM`.
-- Hay dos verificaciones pendientes: si el SDK puede dar de alta almacenes (T-10) y cómo se registran el consumo, la remisión y la compra cuando `Produccion`, `Customers` y `Vendors` también son almacenes (T-11). Ver [preguntas-abiertas.md](preguntas-abiertas.md).
+- Al inicializar también se dan de alta los **conceptos de documento propios** de PolyConecta para sus Salidas y Entradas (D-89).
+- Hay tres verificaciones pendientes: si el SDK puede dar de alta almacenes (T-10), cómo se registran el consumo y la remisión cuando `Produccion` y `Customers` también son almacenes (T-11), y la coexistencia de un WIP por planta (T-14). Hoy la empresa tiene un solo almacén WIP, creado por la UI. Ver [preguntas-abiertas.md](preguntas-abiertas.md).
 
 ## 2. Plantas
 
@@ -37,7 +40,7 @@ La entidad legal se **deriva** de la planta: PIM y SC comparten razón social; M
 | `SC/Stock/PT` | Física | Bultos y cajas terminados (lote `C001-IV310-26`) |
 | `SC/Stock/Cuarentena` | Física | Bultos o cajas retenidos por Calidad |
 | `SC/Stock/Scrap` | Física | Merma de suaje, troquel y refile |
-| `Vendors` | Externa | Origen de compras de MP |
+| `Vendors` | Externa | Origen de compras de MP. Las compras se registran en CONTPAQi y PolyConecta las sincroniza (D-96, D-102), así que no necesita almacén en CONTPAQi |
 | `Customers` | Externa | Destino de remisiones |
 
 Hay **un WIP por planta**, no uno por orden. La liga con la orden es un atributo de la reserva, lo que permite reasignar material sin moverlo físicamente.
@@ -59,18 +62,32 @@ El prototipo usa dos alias fuera de la convención, `PIM/Cuarentena` y `SC/Scrap
 | `SC-BOL-MO` | Fabricación bolseo | `SC/WIP` → `SC/Stock/PT` | Consumo de rollo + entrada de bolsa PT al cierre |
 | `PIM-OUT-DIR` | Despacho directo de rollo | `PIM/Stock/PT` → `Customers` | Remisión de venta al validar |
 | `SC-OUT-DIR` | Despacho directo de bolsa | `SC/Stock/PT` → `Customers` | Remisión de venta al validar |
+| `PIM-IN-COMPRA`, `SC-IN-COMPRA` | Recepción de compra | `Vendors` → `Stock/MP` | Ninguna: se **lee** de CONTPAQi, donde se capturó (D-102). Solo lectura en PolyConecta |
 | `ICO-TR-OUT` | Salida intercompany | `PIM/Stock/PT` → `TRANS/PIM-MTM` | Fase 2 |
 
 Los tipos de operación son un **catálogo** (`OperationType`) con origen y destino por defecto, la bandera "requiere liberación de calidad" y el documento ERP que disparan. Agregar una ruta nueva es un registro, no código. El patrón de recolección y devolución es universal y está parametrizado por almacén.
 
 ## 5. Cuándo se escribe en CONTPAQi
 
-1. **Fabricación**: el consumo de MP y la entrada de PT se registran **solo al cierre técnico**, en un único movimiento consolidado. El consumo se descuenta **desde WIP**.
-2. **Recolección y devolución**: se registran al validar, como traspaso entre almacenes (MP ↔ WIP).
+1. **Fabricación**: el consumo de MP y la entrada de PT se registran **solo al cierre técnico**, en un único movimiento consolidado. El consumo se descuenta **desde WIP**. El tipo de documento del consumo depende de T-11.
+2. **Recolección y devolución**: se registran al validar, como traspaso entre almacenes (MP ↔ WIP). La devolución lleva la cantidad re-pesada a mano (lo verificó la prueba D-02 de la matriz).
 3. **Traspaso interplanta**: se registra en **dos traspasos**. La salida (origen → tránsito) se registra al validar en origen, y la recepción (tránsito → destino) al validar en destino. Como el tránsito es un almacén en CONTPAQi, el material en camino se ve en el ERP como existencia en `TRANS/PIM-SC` (D-43). Invariante: el material permanece en tránsito hasta que el destino valida la entrada.
 4. **Venta**: la remisión se registra **solo al validar el despacho**.
 
-Todo depende de que el SDK soporte cada movimiento con lote y cantidad fraccionada. Se verifica con la [matriz de pruebas del SDK](../contpaq/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md) antes de construir (Principio VII).
+Lo sostiene la [matriz de pruebas del SDK](../contpaq/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md), ejecutada el 30-sep-2026 contra `adPOLYEMPAQUES` (Principio VII). La sección 5.1 dice cómo se escribe cada traspaso.
+
+### 5.1 Cómo se escribe un traspaso en CONTPAQi
+
+Todo lo que esta tabla de operaciones llama "traspaso" (recolección, devolución, salida a tránsito, recepción, movimientos de cuarentena) se escribe igual:
+
+1. **Par de documentos** (D-79): una **Salida** del almacén origen y una **Entrada** al almacén destino, con los conceptos propios de PolyConecta (D-89). El traspaso nativo de CONTPAQi no se puede usar desde el SDK.
+2. **Un movimiento por producto con N lotes** (D-82): cada movimiento lleva una capa por lote con su cantidad, y un lote puede tomarse parcial.
+3. **Costo**: la Entrada usa como costo unitario `CCOSTOESPECIFICO ÷ CUNIDADES` del movimiento de la Salida, para que el valor que sale del origen sea el que entra al destino (D-79).
+4. **Validar antes y verificar después** (D-81): CONTPAQi no impide existencias negativas y ajusta en silencio las unidades a la suma de lotes, así que la validación de existencia y de `Σ lotes = unidades` es de PolyConecta y del bridge.
+5. **Sin atomicidad**: si la Entrada falla, la Salida ya está hecha. El bridge reintenta solo lo que falta y nunca vuelve a enviar la Salida (D-80). Mientras tanto, el documento de PolyConecta queda con su sincronización en `Error` (CT-15), no en un estado intermedio de negocio.
+6. **Sin desafectación**: cancelar un traspaso ya escrito genera el par inverso (D-84).
+
+**Lotes y capas.** En CONTPAQi un mismo número de lote puede tener varias capas en un almacén: cada devolución crea una capa nueva en lugar de regresar a la original, y el traspaso por par no guarda el linaje entre capas. Para PolyConecta el lote es el **número de lote**; las lecturas agrupan capas por número de lote y almacén, y el recorrido del lote lo guardan los `StockMove` de PolyConecta (D-83).
 
 ## 6. Reglas push y pull
 

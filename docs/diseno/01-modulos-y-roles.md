@@ -79,7 +79,7 @@ flowchart LR
 
 ## 2. Puntos de contacto con CONTPAQi
 
-PolyConecta solo escribe en CONTPAQi cuando un documento **se valida o se cierra**. Mientras una orden sigue abierta, el ERP no cambia. Toda escritura pasa por el outbox y el bridge (Principio II). Todas las ubicaciones, incluido el tránsito, existen como almacenes en CONTPAQi (D-43).
+PolyConecta solo escribe en CONTPAQi cuando un documento **se valida o se cierra**. Mientras una orden sigue abierta, el ERP no cambia. Toda escritura pasa por el outbox y el bridge (Principio II). Todas las ubicaciones, incluido el tránsito, existen como almacenes en CONTPAQi (D-43). Cada **traspaso** de esta tabla se escribe como un par Salida + Entrada (D-79); lo que ya se escribió no se desafecta, se corrige con el documento inverso (D-84).
 
 | # | Documento en CONTPAQi | Módulo | Cuándo | Lo dispara |
 | :---: | :--- | :--- | :--- | :--- |
@@ -120,6 +120,7 @@ La seguridad tiene dos capas que no se mezclan:
 | Logística / Tráfico | Valida entregas a cliente y salidas a flete | por confirmar (dato de puesta en marcha, D-75) |
 | Supervisor de turno | Captura las incidencias (paros de máquina) | por confirmar (dato de puesta en marcha, D-75) |
 | Administrador | Configura catálogos, ubicaciones, tipos de operación, usuarios y suplentes | por confirmar (dato de puesta en marcha, D-75) |
+| Sistemas | Atiende la sincronización con CONTPAQi: recibe el aviso de cada comando en `Error`, lo reintenta o lo marca como resuelto con nota (D-93). No opera documentos | por confirmar (dato de puesta en marcha, D-75) |
 
 **Los operadores de máquina no usan el sistema** (D-39). Anotan en los diarios de piso y el Planner los vacía. Se registran como dato (`Operator`) en la planeación y la producción, no como usuarios.
 
@@ -141,6 +142,8 @@ La seguridad tiene dos capas que no se mezclan:
 | Entrega a cliente | Lee | — | — | — | Lee | — | **Crea, valida** | — | **Valida** |
 | Inventario | **Consulta, sustituye** | — | — | **Re-lotifica** | **Re-lotifica** | Lee | — | — | **Todo** |
 | Configuración | Lee | Lee | Lee | Lee | Lee | Lee | Lee | Lee | **Configura** |
+
+**Sincronización con CONTPAQi**: solo Sistemas reintenta o marca como resuelto un comando en `Error` (D-93); los demás roles ven el estado de sincronización en el formulario de su documento (CT-15).
 
 **Crea** = puede usar "Nuevo" para el modo libre (D-52); en [02-flujo-y-reglas.md §0](02-flujo-y-reglas.md) están el propósito y la restricción de cada documento. La revocación de una autorización solo procede mientras ningún documento generado haya avanzado (D-33). La sustitución de producto la decide AC sin segunda autorización, con motivo obligatorio (D-37).
 

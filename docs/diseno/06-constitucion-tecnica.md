@@ -43,7 +43,7 @@ flowchart LR
 
 | Pieza | Versión ratificada | Regla |
 | :--- | :--- | :--- |
-| Runtime y SDK .NET | **.NET 10 LTS** (D-67) | **CT-04** Todos los proyectos .NET usan la misma versión, **incluido el bridge x86** (`win-x86`). El bridge migra después de verificar `sdk-lab` contra `MGW_SDK.dll` en el laboratorio |
+| Runtime y SDK .NET | **.NET 10 LTS** (D-67) | **CT-04** Todos los proyectos .NET usan la misma versión, **incluido el bridge x86** (`win-x86`). El bridge migra después de verificar `sdk-lab` contra `MGWServicios.dll` en el laboratorio (D-88) |
 | Web API | ASP.NET Core 10 | — |
 | Base de datos | **SQL Server 2022** (D-49, D-70) | **CT-05** Base propia, separada de las de CONTPAQi; en producción, en una instancia o servidor distinto al de CONTPAQi |
 | Acceso a datos | EF Core 10 con el proveedor de SQL Server | **CT-06** El esquema solo cambia por migraciones versionadas en el repositorio; nunca a mano |
@@ -55,7 +55,7 @@ flowchart LR
 | Tiempo real | SignalR (`@microsoft/signalr`) | Chatter y avisos de sincronización. Los mensajes del chatter se guardan en la base (D-78) |
 | Pruebas .NET | **xUnit v3** + AwesomeAssertions (D-71, D-72) | Una sola versión en todos los proyectos de prueba |
 | Pruebas extremo a extremo | Playwright | — |
-| Bridge | .NET 10 `win-x86`, SQLite, SDK de CONTPAQi | Proceso aparte en Windows; único usuario del SDK (Principio II) |
+| Bridge | .NET 10 `win-x86`, SQLite, SDK de CONTPAQi (`MGWServicios.dll`) | Proceso aparte en una sesión interactiva de Windows; único usuario del SDK (Principio II, D-88) |
 
 - **CT-36** **Política de versiones (D-73).** Las versiones se fijan exactas y centralizadas: `global.json` (SDK de .NET), `Directory.Packages.props` (paquetes NuGet), `.nvmrc` (Node) y `package.json` sin `^` ni `~`. Parches y versiones menores se actualizan una vez al mes en un PR propio, con todas las pruebas en verde. Una versión mayor solo cambia por decisión registrada. No se usan paquetes con licencia comercial sin decisión registrada.
 
@@ -79,31 +79,39 @@ flowchart LR
 | :--- | :--- | :--- |
 | Productos, clientes, conceptos, agentes | CONTPAQi | Lectura por el bridge y sincronización a PolyConecta |
 | Ubicaciones y almacenes | PolyConecta (D-43) | Alta en CONTPAQi al inicializar (T-10) |
+| Conceptos de Salida y Entrada de PolyConecta | PolyConecta (D-89) | Alta en CONTPAQi al inicializar; mapeo en `plt.erp_mapping` |
+| Clasificación de productos | PolyConecta (D-86) | No se replica; la de CONTPAQi sirve de valor inicial |
 | Ficha técnica, rutas, centros de trabajo, motivos de scrap | PolyConecta | No se replican |
 | Pedidos | Compartido (D-53) | Los de CONTPAQi se sincronizan; los libres se dan de alta por el bridge |
+| Recepciones de compra | CONTPAQi (D-96) | Lectura por el bridge y sincronización a PolyConecta como entrada de solo lectura (D-102) |
 
-- **CT-15** Todo documento que escribe en CONTPAQi tiene un **estado de sincronización** propio, visible en su formulario: `No aplica`, `Pendiente`, `Enviado`, `Confirmado` o `Error`. Es independiente de su estado de negocio: un traslado puede estar `Hecho` y su sincronización en `Error`.
+- **CT-15** Todo documento que escribe en CONTPAQi tiene un **estado de sincronización** propio, visible en su formulario: `No aplica`, `Pendiente`, `Enviado`, `Confirmado` o `Error`. Es independiente de su estado de negocio: un traslado puede estar `Hecho` y su sincronización en `Error`. Los errores los atiende el rol Sistemas desde un tablero de sincronización (D-93).
 - **CT-16** La **unidad base es KG** en todo el modelo (D-03). La conversión a la unidad de CONTPAQi ocurre en el contrato, no en el dominio.
 
 ## 5. Contrato del bridge (D-63)
 
 - **CT-17** El contrato es la **API HTTP del bridge**, versionada como `v1` y documentada en `docs/contratos/bridge-v1.md` con su OpenAPI. Tiene dos partes:
   - **Escrituras**: `POST /api/v1/transactions`, con `command_type`, `idempotency_key`, `correlation_id`, `callback_url` y la carga del comando.
-  - **Lecturas**: catálogos (`/catalogs/*`) y existencias (`/inventory/stocks`).
+  - **Lecturas**: catálogos (`/catalogs/*`), existencias (`/inventory/stocks`) y recepciones de compra (`/inventory/purchases`, D-102).
 - **CT-18** El contrato define un **catálogo de comandos** con nombre de negocio. Cada comando declara su carga, su resultado y su traducción al SDK:
 
 | Comando | Módulo | Origen en PolyConecta |
 | :--- | :--- | :--- |
 | `ALTA_ALMACEN` | Inventario | Inicialización de ubicaciones (D-43) |
-| `TRASPASO` | Inventario | Recolección, devolución, traslado, recepción y movimientos de cuarentena |
+| `TRASPASO` | Inventario | Recolección, devolución, traslado, recepción y movimientos de cuarentena. Se traduce a un par Salida + Entrada con N lotes por movimiento (D-79, D-82) |
 | `ALTA_PEDIDO` | Ventas | Pedido libre confirmado (D-53) |
 | `CIERRE_PRODUCCION` | Producción | Cierre técnico: consumo desde WIP + entrada de PT y scrap |
 | `REMISION` | Logística | Entrega validada |
 
-- **CT-19** La `idempotency_key` es `{tipo de documento}:{id}:{transición}`. Reenviar un comando nunca duplica un documento en CONTPAQi.
+- **CT-19** La `idempotency_key` es `{tipo de documento}:{id}:{transición}`. Reenviar un comando nunca duplica un documento en CONTPAQi. El SDK no es idempotente (prueba G-02): la garantía es del bridge.
 - **CT-20** El outbox de PolyConecta se escribe **en la misma transacción** que el cambio de negocio. El despachador reintenta con espera creciente. Un comando que agota reintentos deja el documento en sincronización `Error`, recuperable desde la interfaz sin tocar la base.
 - **CT-21** El **bridge en modo simulado** implementa el contrato completo sin SDK: valida la carga, asigna folios simulados y responde por callback. Corre en macOS y en CI. Es la base de trabajo del camino 2.
 - **CT-22** Un cambio al contrato requiere la aprobación de **los dos líderes**. Los cambios compatibles suben la versión menor; los incompatibles abren `v2` y conviven con `v1` hasta migrar.
+- **CT-38** **Ejecución por pasos y reconciliación (D-80).** El bridge registra cada paso de un comando (documento y movimiento) y marca cada documento con una referencia derivada de la `idempotency_key`, de 20 caracteres como máximo porque es lo que mide `CREFERENCIA` (prueba S-06). Antes de reintentar, lee CONTPAQi y completa solo lo que falta. Nunca borra un documento con movimientos: lo completa o lo compensa con el inverso.
+- **CT-39** **Validar antes, verificar después (D-81).** Antes de enviar, el bridge valida existencia por lote en el origen y `Σ lotes = unidades` de cada movimiento. Después, lee `admMovimientos` y `admMovimientosCapas` y compara con la carga. Una diferencia es un `Error`, no un éxito.
+- **CT-40** **Sesión del SDK (D-88, D-91).** El bridge inicia el SDK **una sola vez por proceso**, con credenciales en variables de entorno (CT-29) y sin ventana de autenticación. Abre la empresa por lote de comandos, aplica un timeout a cada llamada y cierra empresa y SDK al apagarse. Se reinicia en una ventana diaria configurable. Corre en una sesión iniciada de Windows mientras H-03 no demuestre que puede correr como servicio.
+- **CT-41** **Orden (D-92).** El despachador envía los comandos en el orden de registro del outbox, uno a la vez. Metas de latencia: segundos para movimientos de inventario y minutos para documentos y catálogos. Un comando en `Error` detiene solo los posteriores que comparten alguna llave (producto, almacén) con él (D-95).
+- **CT-42** **Existencia oficial (D-94).** Toda validación de existencia usa la de CONTPAQi menos las salidas pendientes de sincronizar. La conciliación corre cada noche fuera del turno de registro (D-98); todas sus diferencias, sin umbral (D-101), las revisa Sistemas antes de ajustar PolyConecta, y nunca se corrige CONTPAQi en automático (D-97).
 - **CT-23** El contrato se prueba desde los dos lados con la **misma suite**: el camino 2 la corre contra el simulador en CI, y el camino 1 contra el bridge real en el laboratorio (`tools/sdk-lab`, empresa `_LAB`). Un comando está entregado cuando pasa en los dos.
 
 ## 6. Interfaz

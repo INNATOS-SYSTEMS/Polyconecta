@@ -26,6 +26,7 @@ El origen es una **referencia opcional, no una precondición**. En los dos modos
 | Entrega | El motor al autorizar un pedido | Despachar lotes disponibles | Tráfico | Hard-stop; sin pedido, la remisión no se liga a un pedido |
 | Devolución (`REC-RET`) | Cancelar o cerrar una OF | Devolver a MP un saldo de WIP | Almacenista | Cantidad re-pesada a mano |
 | Incidencia | — (siempre es libre) | Registrar un paro | Supervisor de turno | — |
+| Recepción de compra | La sincronización desde CONTPAQi (D-102) | **No tiene modo libre** | — | Invariante: la compra se captura en CONTPAQi (D-96); en PolyConecta es de solo lectura |
 
 ---
 
@@ -98,13 +99,13 @@ Bolsa 20,000 MIL (hay 3,000)
 - `[007-FR-004/005]` **MTSO** consume primero la existencia y dispara la regla siguiente **solo por el faltante**. **MTO** fabrica la cantidad completa.
 - `[007-FR-007]` El motor corre en la transición a **Autorizado** y genera documentos con folio real: entrega, orden de fabricación o traslado.
 - `[007-FR-008]` Antes de autorizar hay una **simulación** que no reserva nada y se muestra como tal.
-- `[007-FR-013]` La reserva es **lote por lote**; el último lote se fracciona **reasignando kg**, no se toma completo.
-- `[007-FR-014]` La entrega se genera **por el total** de la línea. Al entregar en parcialidades, el sistema pregunta si crea un backorder.
+- `[007-FR-013]` La reserva es **lote por lote**; el último lote se fracciona **reasignando kg**, no se toma completo. CONTPAQi admite varios lotes y lotes fraccionados en un mismo movimiento (D-82).
+- `[007-FR-014]` La entrega se genera **por el total** de la línea. Al entregar en parcialidades, el sistema pregunta si crea un backorder. El backorder solo existe en PolyConecta (D-85).
 - `[007-FR-015]` Una necesidad sin cobertura queda **visible** en el plan; nunca desaparece en silencio.
 - `[007-FR-016]` El disponible **excluye** cuarentena y scrap.
 - `[007-FR-017]` El sistema no propone ni aplica sustituciones de SKU. Toda sustitución es explícita, con motivo y autor. No existe un criterio cerrado: AC es quien primero sabe si un rollo sirve, y decide **sin segunda autorización** (D-37).
 - AC decide el **traspaso interplanta** cuando detecta rollo en PIM que puede irse a Santa Cruz.
-- `[007-FR-001]` El **visor de disponibilidad**, agrupado por clasificación, es una herramienta de consulta: físico, reservado, en WIP, disponible y entrante. No decide nada.
+- `[007-FR-001]` El **visor de disponibilidad**, agrupado por clasificación, es una herramienta de consulta: físico, reservado, en WIP, disponible y entrante. No decide nada. La clasificación es de PolyConecta (D-86); el físico se lee directo de CONTPAQi, agrupando por número de lote (D-83, D-87). Una existencia negativa en CONTPAQi se muestra como disponible 0, con aviso (D-90).
 
 ### Dos niveles de reserva
 
@@ -114,7 +115,7 @@ Bolsa 20,000 MIL (hay 3,000)
 | Ubicación del material | Sigue en `Stock/MP` | Movido a `WIP` |
 | Efecto | Resta del disponible | Ya no está en el almacén origen |
 | Se revierte con | Cancelar o revocar el pedido | Devolución `REC-RET` |
-| Afecta CONTPAQi | No | Sí (traspaso de almacén) |
+| Afecta CONTPAQi | No | Sí (par Salida + Entrada, D-79) |
 
 Fuera de alcance por ahora: la compra de materia prima (`MP-STOCK` solo consume; si no alcanza, la necesidad queda expuesta), un catálogo de sustitución por atributos y reglas por cliente o por almacén de despacho.
 
@@ -209,14 +210,15 @@ stateDiagram-v2
 - `[008-FR-002c]` Confirmar la OF libera la recolección a Almacén, que la valida **cuando el material sale físicamente**.
 - `[008-FR-003]` **Solo Almacén valida.** El Planner solicita, pero no surte.
 - `[008-FR-004]` El Almacenista declara **lote y cantidad** por línea. El sistema no asigna lotes sin confirmación.
-- `[008-FR-005]` Validar mueve el material a WIP, lo reserva físicamente contra la OF y **dispara el traspaso de almacén en CONTPAQi**.
+- `[008-FR-005]` Validar mueve el material a WIP, lo reserva físicamente contra la OF y **dispara el traspaso de almacén en CONTPAQi** (par Salida + Entrada, ver [03 §5.1](03-almacenes-y-operaciones.md)). Antes de validar, PolyConecta comprueba la existencia de cada lote en el origen: CONTPAQi no lo impide (D-81).
 - `[008-FR-006]` El material en WIP no cuenta como disponible, pero sigue siendo inventario de la empresa.
-- `[008-FR-007/008]` Se admite validar en parcialidades, con **backorder** por el remanente. Una parcialidad no impide que la OF arranque.
+- `[008-FR-007/008]` Se admite validar en parcialidades, con **backorder** por el remanente. Una parcialidad no impide que la OF arranque. Cada parcialidad es un traspaso propio en CONTPAQi; el backorder vive en PolyConecta (D-85).
 - `[008-FR-009]` La devolución (`REC-RET`) puede ser total, por cancelación, o parcial, por sobrante al cierre. Genera el traspaso inverso.
-- `[008-FR-009b]` La cantidad devuelta **se re-pesa y se captura a mano**; el sistema no asume el saldo teórico.
+- `[008-FR-009b]` La cantidad devuelta **se re-pesa y se captura a mano**; el sistema no asume el saldo teórico. En CONTPAQi la devolución crea una capa nueva del mismo lote en el almacén origen (D-83).
 - `[008-FR-009c]` No se pasa saldo de una OF a otra: el sobrante vuelve a `Stock/MP` y se pide con una recolección nueva.
 - `[008-FR-010/012]` El cierre técnico se bloquea mientras haya saldo sin declarar en WIP o no cuadre `Recolectado = Consumido + Devuelto + Scrap`.
 - `[008-FR-013]` El patrón es igual para extrusión, impresión y bolseo, parametrizado por almacén.
+- La materia prima **no se mueve de noche**: la recolección de lo que consumirá el turno nocturno se surte en el turno de día (D-99). Solo el turno de día registra operaciones en PolyConecta (D-98). Si una OF con planeación nocturna no tiene su recolección validada al acercarse el fin del turno de día, el sistema avisa al Planner y al Almacenista; no bloquea (D-103).
 
 ---
 
@@ -224,7 +226,7 @@ stateDiagram-v2
 
 ### Traslado interplanta en dos pasos
 
-1. **Traslado** (`PIM-TR-OUT`): se valida la salida en PIM y el material queda en `TRANS/PIM-SC`. **Se registra en CONTPAQi el traspaso origen → tránsito**, porque el tránsito también es un almacén en CONTPAQi (D-43).
+1. **Traslado** (`PIM-TR-OUT`): se valida la salida en PIM y el material queda en `TRANS/PIM-SC`. **Se registra en CONTPAQi el traspaso origen → tránsito** (par Salida + Entrada, D-79), porque el tránsito también es un almacén en CONTPAQi (D-43).
 2. **Recepción** (`SC-TR-IN`): Santa Cruz valida la llegada, lote por lote, y puede ser parcial (demanda contra cantidad entregada). **Al validar se registra el traspaso tránsito → destino.** Una recepción libre (sin traslado de origen) solo puede recibir lotes que ya estén en tránsito (D-56).
 
 Invariante: todo material que sale de una planta hacia otra permanece en `TRANS/*` hasta que el destino valida la entrada.
@@ -269,4 +271,4 @@ Siguen el patrón de Odoo 19 (Principio IX de la constitución).
 - Alcance inicial: **todos los modelos a la vez**.
 - **Un filtro no puede ampliar lo que restringe una regla de fila.** El alcance por planta es una regla de fila (se define en roles y permisos), no un filtro que se pueda quitar.
 - Las acciones no permitidas aparecen **deshabilitadas con su razón**, no ocultas.
-- Un documento en estado `Hecho` no se edita: se corrige con un documento inverso.
+- Un documento en estado `Hecho` no se edita: se corrige con un documento inverso. En CONTPAQi tampoco se puede desafectar lo ya escrito (D-84).

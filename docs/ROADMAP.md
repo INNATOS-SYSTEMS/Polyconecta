@@ -2,7 +2,7 @@
 
 La construcción avanza **módulo a módulo** por **dos caminos en paralelo**, cada uno con su líder y sus agentes. Las reglas de cómo se construye están en la [constitución técnica](diseno/06-constitucion-tecnica.md); aquí están el orden, qué entrega cada camino por módulo y el tablero de avance.
 
-**Actualizado:** 29 de septiembre de 2026.
+**Actualizado:** 30 de septiembre de 2026 (resultados de la matriz del SDK).
 
 ---
 
@@ -36,8 +36,8 @@ El orden sigue la dependencia de datos: cada módulo usa lo que cerró el anteri
 
 | Módulo | Camino 2 · PolyConecta | Camino 1 · Integración | Pruebas del SDK que lo sostienen |
 | :--- | :--- | :--- | :--- |
-| 0 · Plataforma | Todo lo de la tabla anterior, más el despachador del outbox hacia el contrato | Contrato `v1` publicado; **bridge en modo simulado**; idempotencia, callbacks y DLQ recuperable; corrección de G-01; lecturas de catálogos | G-01..G-05, F-01..F-03 |
-| 1 · Catálogos e Inventario | Tablas `inv`, sincronización de productos, ubicaciones con su id ERP, existencias y reservas | `ALTA_ALMACEN` (o alta manual si T-10 falla); `TRASPASO` con lote; lectura de existencias | A, B, C-02, C-03, F-04, F-05, T-10, T-11 |
+| 0 · Plataforma | Todo lo de la tabla anterior, más el despachador del outbox hacia el contrato | Contrato `v1` publicado; **bridge en modo simulado**; idempotencia, callbacks y DLQ recuperable; sesión del SDK con usuario (CT-40); ejecución por pasos con reconciliación (CT-38, corrige G-01 y G-04); validación y verificación (CT-39); lecturas de catálogos | G-01..G-05, F-01..F-03 |
+| 1 · Catálogos e Inventario | Tablas `inv`, sincronización de productos y de recepciones de compra (D-102), clasificación propia (D-86), ubicaciones con su id ERP, existencias agrupadas por número de lote y reservas | `ALTA_ALMACEN` (o alta manual si T-10 falla) y alta de conceptos propios (D-89); `TRASPASO` como par Salida + Entrada con N lotes (D-79, D-82); lectura de existencias (D-87) | A, B, C, F, T-10, T-11, T-14 |
 | 2 · Ventas | Tablas `ven`, pedido en sus dos modos, firmas, motor de abastecimiento | Sincronización de pedidos; `ALTA_PEDIDO` con folio devuelto e idempotencia (T-12) | F, T-12 |
 | 3 · Producción | Tablas `prd`, orden de fabricación, recolección y devolución, captura, cierre y balance | `CIERRE_PRODUCCION` (consumo desde WIP + entrada de PT y scrap); `TRASPASO` de recolección y devolución | B, C, D, E, T-11 |
 | 4 · Calidad | Tablas `cal`, documento de calidad, hard-stop aplicado en Inventario y Logística | `TRASPASO` hacia y desde cuarentena | B |
@@ -59,20 +59,20 @@ Estados de cada columna: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bl
 | 4 | Calidad | 🟨 | por crear | ⬜ | ⬜ | ⬜ |
 | 5 | Logística | 🟨 | por crear | ⬜ | ⬜ | ⬜ |
 
-**Diseño cerrado** significa que el módulo no tiene preguntas abiertas que bloqueen su spec. Hoy ninguno lo cumple del todo; ver la sección 5.
+**Diseño cerrado** significa que el módulo no tiene preguntas abiertas que bloqueen su spec. Hoy ninguno lo cumple del todo; ver la sección 5. De las decisiones derivadas de la matriz, solo D-88 (sesión del SDK) sigue en *Propuesta*, pendiente de H-03.
 
 ## 5. Lo que bloquea cada módulo
 
 | Módulo | Preguntas abiertas ([preguntas-abiertas.md](diseno/preguntas-abiertas.md)) |
 | :--- | :--- |
 | 0 · Plataforma | ninguna propia |
-| 1 · Catálogos e Inventario | T-01, T-02, T-05, T-06, T-10, T-11 |
+| 1 · Catálogos e Inventario | T-06, T-10, T-11, T-14 |
 | 2 · Ventas | T-12 |
-| 3 · Producción | T-01, T-03, T-04 |
+| 3 · Producción | T-11 |
 | 4 · Calidad | ninguna propia |
 | 5 · Logística | T-07 (remisión ligada al pedido) |
 
-Para el **piloto** de cualquier módulo hacen falta además el hosting de producción y los respaldos (H-01, H-02).
+Para el **cierre integrado** de cualquier módulo hacen falta además la sesión interactiva del bridge (H-03) y entender la lentitud del SDK (T-13). Para el **piloto**, el hosting de producción y los respaldos (H-01, H-02).
 
 ## 6. Puesta en marcha
 
@@ -83,6 +83,11 @@ Son datos de la operación que no bloquean la construcción (D-75): cada módulo
 | Titulares y suplentes de cada rol, con su planta (ex P-02) | 0 · Plataforma | Dirección | ⬜ |
 | Catálogo de centros de trabajo: código, proceso, planta y capacidad (ex P-14) | 3 · Producción | Planners de PIM y SC | ⬜ |
 | Tolerancia del balance de masa (ex P-16) | 3 · Producción | Producción | ⬜ |
+| Ventana nocturna para el reinicio del bridge y la conciliación (D-98) | 0 · Plataforma | Sistemas | ⬜ |
+| Depurar en CONTPAQi antes de la carga inicial: productos cuya existencia no cuadra con sus lotes (F-03) y existencias negativas (F-06) (D-100) | 1 · Inventario | Sistemas | ⬜ |
+| Carga inicial de almacenes e inventarios, con WIP vacío (D-100) | 1 · Inventario | Sistemas | ⬜ |
+| Fecha del corte limpio de arranque: sin producción en curso ni OF abiertas (D-104) | Todos | Dirección y Producción | ⬜ |
+| Retirar de la captura manual en CONTPAQi los conceptos de producción (por ejemplo "Salida materia prima MAQUINA N") al arrancar cada módulo (D-96) | 1 y 3 | Sistemas y Dirección | ⬜ |
 
 ## 7. Trabajo de arranque
 
@@ -90,12 +95,17 @@ Son datos de la operación que no bloquean la construcción (D-75): cada módulo
 | :---: | :--- | :---: | :---: |
 | A-1 | Asignar a los dos líderes | — | ⬜ |
 | A-2 | Rotar la contraseña de `sa`, crear el login de solo lectura del bridge y definir `BridgeConfig__SqlConnectionString` en el VPS | 1 | ⬜ |
-| A-3 | Ejecutar la matriz del SDK: F (solo lectura) → A → B → C-02/C-03 → D → E → G | 1 | ⬜ |
+| A-3 | Ejecutar la matriz del SDK: F (solo lectura) → A → B → C-02/C-03 → D → E → G. Ejecutada el 30-sep (commit `7f0596e`), 35 de 36; queda F-05 | 1 | ✅ |
+| A-13 | Cotejar con la UI de CONTPAQi F-01, F-02 y F-05, y crear los WIP por planta para A-04 (T-06, T-14) | 1 | ⬜ |
+| A-14 | Corregir el gateway del bridge según la matriz: sesión de larga duración, par Salida + Entrada, N lotes, pasos con reconciliación, validación y verificación (D-79 a D-82, D-88, D-91) | 1 | ⬜ |
+| A-15 | Medir en el laboratorio (pruebas S-01, S-02) la latencia con sesión de larga duración: tiempo de iniciar el SDK, de abrir la empresa y de cada par Salida + Entrada, contra la meta de segundos (D-92, T-13) | 1 | ⬜ |
+| A-16 | Probar el bridge como servicio de Windows con una cuenta de usuario real y, si falla, como tarea programada con inicio de sesión automático (pruebas S-03 a S-05, H-03) | 1 | ⬜ |
+| A-17 | Ejecutar el resto del bloque S de la matriz: reconciliación (S-06 a S-08), almacenes y conceptos (S-09, S-10), cierre y remisión (S-11 a S-13), pedido libre y compras (S-14 a S-16) | 1 | ⬜ |
 | A-4 | Escribir el contrato `bridge-v1` a partir de la API actual del bridge y del catálogo de comandos (CT-18) | 1 y 2 | ⬜ |
 | A-5 | Bridge en modo simulado (CT-21) | 1 | ⬜ |
 | A-6 | ~~Decidir versiones~~ — ratificadas el 29-sep (D-67 a D-73) | 1 y 2 | ✅ |
 | A-9 | Migrar PolyConecta a .NET 10, EF Core SQL Server, xUnit v3 y AwesomeAssertions; quitar Npgsql, EF InMemory de producción y MediatR; centralizar versiones (D-73) | 2 | ⬜ |
-| A-10 | Verificar el bridge en .NET 10 `win-x86` con `sdk-lab` (F y G) y migrarlo (D-67) | 1 | ⬜ |
+| A-10 | Verificar el bridge en .NET 10 `win-x86` con `sdk-lab` (F y G) y migrarlo (D-67). La matriz corrió en .NET 8 | 1 | ⬜ |
 | A-11 | Pipeline de GitHub Actions: build, pruebas .NET y Angular, suite de contrato contra el simulador y SQL Server 2022 en contenedor (D-76, CT-27) | 1 y 2 | ⬜ |
 | A-12 | Definir el hosting de producción y los respaldos (H-01, H-02) | — | ⬜ |
 | A-7 | Ejecutar la spec 001 (réplica en Angular) | 2 | ⬜ |
@@ -103,15 +113,27 @@ Son datos de la operación que no bloquean la construcción (D-75): cada módulo
 
 ## 8. Ramas de contingencia de la matriz del SDK
 
+Resultado de la ejecución del 30-sep-2026:
+
+| Bloque | Resultado | Consecuencia en el diseño |
+| :--- | :---: | :--- |
+| **B** (traspaso entre almacenes) | ⚠️ | El traspaso nativo no es viable, pero sí el par Salida + Entrada. WIP y tránsito siguen siendo almacenes (D-79) |
+| **C-02 / C-03** (multilote, fraccionamiento) | ✅ | Se mantiene la reserva lote por lote (D-82) |
+| **C-04, D-03** (linaje y capas) | ❌ | PolyConecta lleva el linaje; las lecturas agrupan por número de lote (D-83) |
+| **D-02** (devolución parcial manual) | ✅ | Se mantiene la devolución re-pesada |
+| **D-04** (desafectación) | — | Cancelar es siempre documento inverso (D-84) |
+| **E** (backorder) | ⚠️ | Se aplica la contingencia: el backorder vive en PolyConecta (D-85) |
+| **A-05** (clasificación) | ⚠️ | Se aplica la contingencia: clasificación propia (D-86) |
+| **F** (existencias) | ✅ / ⏳ | Lectura directa sin proyección (D-87); falta F-05 |
+| **G** (robustez) | ❌ / ✅ | Sin transacción ni idempotencia en el SDK: pasos con reconciliación y verificación en el bridge (D-80, D-81) |
+
+Siguen abiertas:
+
 | Si falla… | Consecuencia | Costo |
 | :--- | :--- | :--- |
-| **B** (traspaso entre almacenes) | WIP y tránsito pasan a ser ubicaciones internas de PolyConecta; se revierten D-22 y parte de D-43 | Se pierde el reflejo contable de WIP y tránsito; la recolección se simplifica |
-| **C-02 / C-03** (multilote, fraccionamiento) | Solo se reserva el lote completo; el bridge emite un movimiento por lote | Rediseñar la reserva lote por lote |
-| **D-02** (devolución parcial manual) | Devolución total o nada | Rediseñar la devolución re-pesada (008-FR-009b) |
-| **E** (backorder) | El backorder vive solo en PolyConecta | Aceptable |
-| **A-05** (clasificación) | PolyConecta mantiene su propia clasificación | Un catálogo más que mantener |
 | **T-10** (alta de almacenes) | Los almacenes se crean a mano en CONTPAQi una vez | Aceptable |
 | **T-12** (alta de pedido) | El pedido libre queda interno hasta resolverlo | Ventas se cierra integrado sin el modo libre hacia CONTPAQi |
+| **T-13** (lentitud del SDK) | Sincronización de minutos, un comando a la vez | La interfaz debe dejar claro el estado de sincronización (CT-15) |
 
 ## 9. Riesgos fuera de la matriz
 
