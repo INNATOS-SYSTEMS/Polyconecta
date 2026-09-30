@@ -23,8 +23,28 @@ internal static class SdkSession
         SetDllDirectory(cfg.SdkPath);
         Directory.SetCurrentDirectory(cfg.SdkPath);
 
-        var initRc = ContpaqiSdkNative.fInicializaSDK();
-        if (initRc != 0) throw new LabException("SDK_INIT_FAILED", $"fInicializaSDK rc={initRc}: {Msg(initRc)}");
+        // Sin credenciales, el SDK abre una ventana de autenticación que bloquea al proceso si nadie la contesta.
+        // Usuario y contraseña de CONTPAQi Comercial: solo desde variables de entorno, nunca desde archivos.
+        var sdkUser = Environment.GetEnvironmentVariable("SDKLAB_CONTPAQI_USER");
+        var sdkPassword = Environment.GetEnvironmentVariable("SDKLAB_CONTPAQI_PASSWORD");
+        // Con credenciales, la secuencia documentada es fInicioSesionSDK + fSetNombrePAQ("CONTPAQ I COMERCIAL"),
+        // que sustituye a fInicializaSDK. fInicializaSDK ignora la sesión y busca el "último usuario" de Windows
+        // (rc=41719 "No existe último usuario" en empresas con usuarios).
+        int initRc;
+        if (!string.IsNullOrEmpty(sdkUser))
+        {
+            // Usuarios centralizados de CONTPAQi (por omisión) o usuarios propios de Comercial (SDKLAB_LOGIN_MODE=comercial).
+            if (string.Equals(Environment.GetEnvironmentVariable("SDKLAB_LOGIN_MODE"), "comercial", StringComparison.OrdinalIgnoreCase))
+                LabNative.fInicioSesionSDK(sdkUser, sdkPassword ?? "");
+            else
+                LabNative.fInicioSesionSDKCONTPAQi(sdkUser, sdkPassword ?? "");
+            initRc = ContpaqiSdkNative.fSetNombrePAQ("CONTPAQ I COMERCIAL");
+        }
+        else
+        {
+            initRc = ContpaqiSdkNative.fInicializaSDK();
+        }
+        if (initRc != 0) throw new LabException("SDK_INIT_FAILED", $"{(string.IsNullOrEmpty(sdkUser) ? "fInicializaSDK" : "fSetNombrePAQ")} rc={initRc}: {Msg(initRc)}");
         try
         {
             var openRc = ContpaqiSdkNative.fAbreEmpresa(cfg.LabCompanyPath);

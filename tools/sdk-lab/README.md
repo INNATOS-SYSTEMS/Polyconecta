@@ -1,5 +1,7 @@
 # sdk-lab — estación de laboratorio del SDK de CONTPAQi
 
+> **Para correr la matriz en el VPS paso a paso, sigue [EJECUCION_EN_VPS.md](EJECUCION_EN_VPS.md).**
+
 Paquete autocontenido para ejecutar la [matriz de pruebas del SDK](../../docs/contpaq/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md)
 con un agente, en el VPS Windows donde vive CONTPAQi + `MGW_SDK.dll`.
 

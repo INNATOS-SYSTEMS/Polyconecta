@@ -1,6 +1,6 @@
 # MATRIZ DE PRUEBAS TÉCNICAS — SDK CONTPAQi para WIP, Lotes y Traspasos
 
-**Proyecto:** PolyConecta · **Fecha:** 21 de septiembre de 2026 · **Estatus:** Pendiente de ejecución
+**Proyecto:** PolyConecta · **Fecha:** 21 de septiembre de 2026 · **Estatus:** Ejecutada el 30-sep-2026 contra `adPOLYEMPAQUES` (ambiente de pruebas del VPS). Ver el registro al final
 
 **Propósito:** Verificar contra una instalación real de CONTPAQi Comercial Premium que el SDK soporta las operaciones que asumen SPEC-007 (abastecimiento, hoy [02-flujo-y-reglas.md §2](../diseno/02-flujo-y-reglas.md)) y SPEC-008 (recolección a WIP, hoy [§4](../diseno/02-flujo-y-reglas.md)). Las referencias `SPEC-00X FR-NNN` de esta matriz corresponden a los identificadores `[00X-FR-NNN]` de esos documentos. **Ninguna de las dos specs debe pasar a implementación productiva antes de cerrar los bloques B, C y D de esta matriz** — son supuestos, no hechos verificados.
 
@@ -149,39 +149,52 @@
 
 | ID | Fecha | Ejecutó | Resultado | Código de error | Evidencia (SQL / captura) | Notas |
 | :--- | :--- | :--- | :---: | :--- | :--- | :--- |
-| A-01 | | | | | | |
-| A-02 | | | | | | |
-| A-03 | | | | | | |
-| A-04 | | | | | | |
-| A-05 | | | | | | |
-| B-01 | | | | | | |
-| B-02 | | | | | | |
-| B-03 | | | | | | |
-| B-04 | | | | | | |
-| B-05 | | | | | | |
-| C-01 | | | | | | |
-| C-02 | | | | | | |
-| C-03 | | | | | | |
-| C-04 | | | | | | |
-| C-05 | | | | | | |
-| C-06 | | | | | | |
-| C-07 | | | | | | |
-| D-01 | | | | | | |
-| D-02 | | | | | | |
-| D-03 | | | | | | |
-| D-04 | | | | | | |
-| D-05 | | | | | | |
-| E-01 | | | | | | |
-| E-02 | | | | | | |
-| E-03 | | | | | | |
-| F-01 | | | | | | |
-| F-02 | | | | | | |
-| F-03 | | | | | | |
-| F-04 | | | | | | |
-| F-05 | | | | | | |
-| F-06 | | | | | | |
-| G-01 | | | | | | |
-| G-02 | | | | | | |
-| G-03 | | | | | | |
-| G-04 | | | | | | |
-| G-05 | | | | | | |
+| A-01 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | rc=0 | sdk-open → opened=true | Requiere fInicioSesionSDKCONTPAQi(usuario, contraseña) + fSetNombrePAQ("CONTPAQ I COMERCIAL"). Con fInicializaSDK: rc=41719 "No existe último usuario"; sin credenciales abre ventana de autenticación y bloquea |
+| A-02 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | rc=126202 "La ruta de datos no es valida." | sdk-open ruta inexistente, 3 corridas | Código y mensaje estables |
+| A-03 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | — | admAlmacenes: 90 · WIP; doc 184282 | Ya existía (alta manual por UI) y acepta movimientos |
+| A-04 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ⚠️ | — | admAlmacenes | Un solo WIP; no hay WIP por planta |
+| A-05 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ⚠️ | — | admClasificaciones 25–30 | "TIPO DE PRODUCTOS" (21 valores, 65 % de productos) separa SEM/PT/MP/INSUMOS; no distingue bolsa / rollo impreso / liso / maestro |
+| B-01 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | — | admConceptos docDe=34 | Conceptos 36 "Traspasos" y 362021 "Traspasos PT PIM a SC", 0 usos. La operación usa pares Entrada/Salida y "Salida materia prima MAQUINA N" |
+| B-02 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ❌ / ✅ | fAltaDocumento rc=0 (doc 184280, concepto 36, folio 1); fAltaMovimiento rc=132303 "Defina el almacén para consignar productos desde la Configuración General o desde el catálogo de clientes." | spec B-02a; snapshot antes-B02; docs 184281 (Salida, concepto 3535012, folio 297809) y 184282 (Entrada, concepto 34, a WIP 90) | Traspaso nativo ❌: Un traspaso con un solo movimiento (almacén origen) no es posible por la estructura de alto nivel: tMovimiento solo tiene aCodAlmacen. CONTPAQi genera el movimiento destino oculto (CTIPOTRASPASO=3) y busca el destino en la configuración de consignación · Como par Salida + Entrada ✅: Traspaso como par Salida + Entrada. No es atómico: si falla la Entrada, la Salida queda hecha |
+| B-03 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ⚠️ | — | snapshots antes-B02b / despues-B02b-sal; sql | Cantidad ✅: MP0004 almacén 9 76,250 → 76,240; WIP 0 → 10. Valor ❌ por error del experimento: la Salida valió 201.32 en total (CCOSTOESPECIFICO es el costo TOTAL del movimiento) y la Entrada se capturó con 201.32 como costo UNITARIO (2,013.25). Regla para el bridge: costo unitario de la Entrada = CCOSTOESPECIFICO de la Salida ÷ CUNIDADES. *Corregido el 30-sep; el primer registro decía que el valor se conservaba* |
+| B-04 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ⚠️ | — | admDocumentos.CAFECTADO=1 | Los documentos de almacén quedan afectados y mueven existencia al crearse, sin fAfectaDocto_Param |
+| B-05 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ⚠️ | — | admMovimientos | Resuelto con el par: cada documento lleva un solo movimiento con su propio almacén (CTIPOTRASPASO=1). El traspaso nativo necesita el destino y la estructura de alto nivel no lo admite |
+| C-01 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | rc=0 | doc 184284 movs 308023/308024; capas 3354/3355 en WIP | Un lote completo por movimiento aparece en WIP con su existencia y costo |
+| C-02 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | rc=0 (dos fAltaMovimientoSeriesCapas sobre el mismo movimiento) | doc 184283 mov 308022; admMovimientosCapas 29084/29085 | 150 kg en un movimiento: 100 de 250223PT01 + 50 de 090223PT01. Costo por capa exacto: 6,071.824. El gateway actual solo manda un lote por movimiento |
+| C-03 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | — | diff antes-C02 / despues-C02-sal | Fraccionamiento: 250223PT01 525 → 425; 090223PT01 1,975 → 1,925 |
+| C-04 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ⚠️ | — | admCapasProducto 3354/3355 | CIDCAPAORIGEN=0: con el par Salida + Entrada CONTPAQi no guarda el linaje entre capas. Lo debe llevar PolyConecta (LotGenealogy) |
+| C-05 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | — | capas 1994 (almacén 9) y 3354 (WIP) | Mismo número de lote en dos almacenes: capas distintas con existencias independientes |
+| C-06 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | — | sumas de capas = unidades | No fue necesario fCalculaMovtoSerieCapa |
+| C-07 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ❌ | rc=0 | doc 184285 mov 308025; diff antes-C07 / despues-C07 | CONTPAQi no rechaza: reescribe en silencio las unidades del movimiento a la suma de capas (50 pedidas → 30 registradas). El bridge debe validar antes y verificar después |
+| D-01 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ⚠️ | rc=0 | docs 184286 (Salida de WIP) y 184287 (Entrada a almacén 9) | Cantidad ✅: MP0004 vuelve a 76,250 en el almacén 9 y 0 en WIP. Valor ❌ heredado de B-03: quedan +1,811.92 en el almacén 9 y 1,811.80 en WIP con 0 unidades. Se corrige restaurando la línea base |
+| D-02 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | rc=0 | docs 184288 (Salida de WIP) y 184289 (Entrada a almacén 9) | Devolución de 87.5 kg capturados a mano del lote 250223PT01; WIP queda con 12.5 kg. Valor correcto usando el costo unitario de la capa |
+| D-03 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ❌ | — | diff antes-D02 / despues-D02 | La devolución NO regresa a la capa original (1994, 395 kg): crea la capa 3356 con el mismo número de lote. Cada devolución multiplica capas de un lote; el visor debe agrupar por número de lote |
+| D-04 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | rc=1000090 "Proceso cancelado." | doc 184288; snapshots antes-D04 / despues-D04 | fAfectaDocto_Param(false) falla de forma explícita y no cambia nada. Las cancelaciones se modelan con documento inverso (RF-6) |
+| D-05 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ⚠️ | rc=0 | doc 184290 | CONTPAQi acepta sacar 5 kg de un almacén con 0: WIP queda en −5. No valida existencia; PolyConecta y el bridge deben validar antes de enviar (coincide con F-06) |
+| E-01 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | rc=0 | docs 184291–184296 (tres pares LAB-E01) | Tres tandas de 100 kg de MP0010 a WIP: existencia 300; valor salido del almacén 9 = 6,650.03 = valor entrado a WIP. Regla de costo validada: costo unitario de la Entrada = CCOSTOESPECIFICO ÷ CUNIDADES de la Salida (22.1667585, distinto del promedio simple del almacén) |
+| E-02 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ⚠️ | rc=0 | pendientes 3535012 → 0; pendientes 34 → 300 (MP0010, almacén 90) | Mide unidades de documentos CONTPAQi no relacionados con un documento posterior, no el pendiente de una solicitud. El backorder vive en PolyConecta (contingencia T-04) |
+| E-03 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | — | capas 3354 y 3355 en WIP (bloque C) | Tandas de lotes distintos conviven en WIP con existencias independientes |
+| F-01 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ⚠️ | — | sql | Existencia = CENTRADASPERIODO12 − CSALIDASPERIODO12 del ejercicio (acumulados que incluyen saldo inicial). Falta cotejo con la UI |
+| F-02 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ⚠️ | — | sql | 2,319 capas de lote con existencia. Falta cotejo con la UI |
+| F-03 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | — | sql | 222/223 pares producto-almacén cuadran con la suma de lotes. Excepción: NA321210 en MP PIM (399,450 vs 424,450) |
+| F-04 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | — | tiempo | Existencias de un almacén completo: indistinguible de SELECT 1 (~5.5 s, todo de SSH) |
+| F-05 | — | — | ⏳ | — | — | Requiere modificar una existencia desde la UI de CONTPAQi y volver a consultar; pendiente de ejecución manual |
+| F-06 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ⚠️ | — | sql | 4,025 existencias negativas en 3,706 productos; concentradas en Almacen Uno (3,511, −641 M) y Almacen PT (301, −178 M). Ninguna capa de lote negativa |
+| G-01 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ❌ | — | doc 184280 sin movimientos | Comprobado en la práctica: tras fallar fAltaMovimiento queda un documento huérfano (orphanDocumentLeftBehind=true) |
+| G-02 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | rc=0 en ambos | docs 184298 y 184299 (LAB-G02) | El SDK no es idempotente: el mismo documento enviado dos veces se crea dos veces. La idempotency_key del bridge es indispensable |
+| G-03 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | A rc=0; B fAltaMovimiento rc=28 "La operación no es aplicable." | doc 184301; capa 3355 50 → 10 | Dos Salidas simultáneas de 40 kg sobre un lote de 50: una gana y la otra falla sin dejar documento ni negativos. El código 28 es genérico |
+| G-04 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ❌ | — | doc 184300: 32 de 40 movimientos, afectado | Interrumpir el proceso deja el documento a medias y con existencias ya movidas. Sin transacción: al reintentar, el bridge debe reconciliar lo escrito antes de reenviar |
+| G-05 | 2026-09-30 | Claude (sdklab por tarea interactiva) | ✅ | rc=0 | doc 184297 | 12.345 kg se guardan sin redondeo (capturadas y registradas); WIP 300 − 12.345 = 287.655 |
+
+### Entorno de la ejecución
+
+Windows Server 2022 (20348) · CONTPAQi Comercial 11.5.1.0 · SDK `MGWServicios.dll` 11.5.1.0 · empresa `adPOLYEMPAQUES` (ambiente de pruebas; línea base `adPOLYEMPAQUES.baseline.bak`, 30-sep 18:51) · documentos de prueba 184280–184301, referencias `LAB-*`. Pendientes de cotejo manual en la UI: F-01, F-02, F-05. A-04 requiere un WIP por planta.
+
+### Hallazgos fuera de la matriz
+- H-1 · El interop usaba MGW_SDK.dll (Factura Electrónica); la de Comercial es MGWServicios.dll. Corregido en ContpaqiSdkNative.cs.
+- H-2 · El SDK solo funciona en la sesión interactiva; por SSH o servicio se bloquea sin error.
+- H-3 · El bridge no inicia sesión (fInicioSesionSDKCONTPAQi) y usa fInicializaSDK: contra esta empresa fallaría o quedaría bloqueado.
+- H-4 · Las estructuras tDocumento, tMovimiento y tSeriesCapas del interop no correspondían a la referencia (tamaños de cadena, aSistemaOrigen double, aObservaciones inexistente, orden de tSeriesCapas). fAltaDocumento fallaba con rc=130241 "El concepto del documento es obligatorio". Corregidas en ContpaqiSdkNative.cs.
+- H-5 · El concepto 34 "Entrada al Almacén" tiene un folio capturado en 2022 (211,912,336); el siguiente folio generado fue 211,912,349,212,714. PolyConecta debería usar conceptos propios para sus Salidas y Entradas.
+- H-6 · La primera Salida por SDK tardó varios minutos en completarse; la Entrada, segundos. Pendiente saber si apareció una ventana en la sesión.
+- H-7 · Algunas operaciones por SDK tardan varios minutos, o no terminan: se bloquean ANTES de conectar a SQL (ninguna sesión en adPOLYEMPAQUES durante el bloqueo; sin ventanas en la sesión; Comercial cerrado). Procesos detenidos a la fuerza no liberan su sesión del SDK. Reiniciar AppKeyLicenseServer_CONTPAQi no eliminó la lentitud (siguiente operación: 214 s). El despachador del bridge necesita timeouts largos y siempre cerrar la sesión (fTerminaSDK).

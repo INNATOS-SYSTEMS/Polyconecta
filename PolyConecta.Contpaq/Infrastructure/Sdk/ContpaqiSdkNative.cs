@@ -4,6 +4,10 @@ using System.Text;
 
 namespace Contpaq.Bridge.Infrastructure.Sdk
 {
+    // Estructuras según docs/contpaq/Referencia_SDK_CONTPAQi.md, "Definición de las estructuras de datos".
+    // Longitudes = constante + 1 (terminador): kLongCodigo 30, kLongSerie 11, kLongFecha 23,
+    // kLongReferencia 20, kLongDescripcion 60. El orden y el tamaño de cada campo definen la posición en memoria:
+    // un tamaño distinto desplaza todos los campos siguientes.
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
     public struct tDocumento
     {
@@ -13,21 +17,23 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
         public double aImporte;
         public double aDescuentoDoc1;
         public double aDescuentoDoc2;
-        public double aSistemaOrigen;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 12)]
+        public int aSistemaOrigen;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 31)]
         public string aCodConcepto;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 12)]
         public string aSeries;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 12)]
-        public string aFecha;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 12)]
-        public string aCodigoCteProv;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 12)]
-        public string aCodigoAgente;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 24)]
+        public string aFecha;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 31)]
+        public string aCodigoCteProv;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 31)]
+        public string aCodigoAgente;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 21)]
         public string aReferencia;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 254)]
-        public string aObservaciones;
+        public int aAfecta;
+        public double aGasto1;
+        public double aGasto2;
+        public double aGasto3;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 4)]
@@ -37,13 +43,13 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
         public double aUnidades;
         public double aPrecio;
         public double aCosto;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 30)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 31)]
         public string aCodProdSer;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 30)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 31)]
         public string aCodAlmacen;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 254)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 21)]
         public string aReferencia;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 254)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 31)]
         public string aCodClasific;
     }
 
@@ -52,26 +58,29 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
     {
         public double aUnidades;
         public double aTipoCambio;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 30)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 31)]
         public string aSeries;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 30)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 61)]
         public string aPedimento;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 12)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 61)]
+        public string aAgencia;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 24)]
         public string aFechaPedimento;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 30)]
-        public string aAduana;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 12)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 61)]
+        public string aNumeroLote;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 24)]
         public string aFechaFabricacion;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 12)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 24)]
         public string aFechaCaducidad;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 30)]
-        public string aLote;
     }
 
     public static class ContpaqiSdkNative
     {
         public const int kSIN_ERRORES = 0;
-        public const string DllName = "MGW_SDK.dll";
+        // Interfaz del SDK para CONTPAQi Comercial Premium (docs/contpaq/Referencia_SDK_CONTPAQi.md,
+        // "Archivos usados por el SDK"). MGW_SDK.dll es la de Factura Electrónica y depende de MGW100.dll,
+        // que no existe en la carpeta de Comercial.
+        public const string DllName = "MGWServicios.dll";
 
         [DllImport(DllName, EntryPoint = "fInicializaSDK", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
         public static extern int fInicializaSDK();

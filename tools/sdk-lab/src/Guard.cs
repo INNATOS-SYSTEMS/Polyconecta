@@ -60,7 +60,7 @@ public static class Guard
             var marker = (string?)cmd.ExecuteScalar();
             facts["marker"] = marker;
             if (marker != "1")
-                failures.Add($"La base no tiene la propiedad extendida {MarkerProperty}=1. No se puede confirmar que sea una copia de laboratorio (ver Install-Workstation.ps1 / Restore-Lab.ps1).");
+                failures.Add($"La base no tiene la propiedad extendida {MarkerProperty}=1. No se puede confirmar que sea una copia de laboratorio (ver Install-Workstation.ps1 / Reset-Lab.ps1).");
 
             cmd.Parameters.Clear();
             cmd.CommandText = "SELECT IS_MEMBER('db_owner')";

@@ -10,6 +10,8 @@ public sealed class MovSpec
     public string Almacen { get; set; } = "";
     public double Unidades { get; set; }
     public double Precio { get; set; }
+    /// <summary>Costo unitario (tMovimiento.aCosto). En una entrada que completa un traspaso, el costo de la salida.</summary>
+    public double Costo { get; set; }
     public string Referencia { get; set; } = "";
     /// <summary>Cero, una o varias capas. Varias = varias llamadas a fAltaMovimientoSeriesCapas sobre el mismo movimiento (C-02).</summary>
     public List<CapaSpec> Capas { get; set; } = [];
@@ -59,7 +61,7 @@ internal static class SpecRunner
                 aFolio = 0, aNumMoneda = 1, aTipoCambio = 1.0, aImporte = 0,
                 aCodConcepto = spec.Concepto, aSeries = spec.Serie, aFecha = fecha,
                 aCodigoCteProv = spec.CodigoCteProv, aCodigoAgente = "",
-                aReferencia = spec.Referencia, aObservaciones = $"sdklab {spec.Id}",
+                aReferencia = spec.Referencia,
             };
             var rc = ContpaqiSdkNative.fAltaDocumento(ref docId, ref doc);
             if (!Ok("fAltaDocumento", rc, new { docId, folio = doc.aFolio })) return Result(spec, steps, docId, doc.aFolio, stoppedAt: "fAltaDocumento");
@@ -71,7 +73,7 @@ internal static class SpecRunner
                 var movId = 0;
                 var mov = new tMovimiento
                 {
-                    aConsecutivo = 0, aUnidades = m.Unidades, aPrecio = m.Precio, aCosto = 0,
+                    aConsecutivo = 0, aUnidades = m.Unidades, aPrecio = m.Precio, aCosto = m.Costo,
                     aCodProdSer = m.Producto, aCodAlmacen = m.Almacen, aReferencia = m.Referencia, aCodClasific = "",
                 };
                 rc = ContpaqiSdkNative.fAltaMovimiento(docId, ref movId, ref mov);
@@ -84,7 +86,7 @@ internal static class SpecRunner
                     var capa = new tSeriesCapas
                     {
                         aUnidades = k.Unidades, aTipoCambio = 1.0, aSeries = "", aPedimento = "", aFechaPedimento = "",
-                        aAduana = "", aFechaFabricacion = "", aFechaCaducidad = k.Caducidad ?? "", aLote = k.Lote,
+                        aAgencia = "", aFechaFabricacion = "", aFechaCaducidad = k.Caducidad ?? "", aNumeroLote = k.Lote,
                     };
                     rc = ContpaqiSdkNative.fAltaMovimientoSeriesCapas(movId, ref capa);
                     if (!Ok($"fAltaMovimientoSeriesCapas[{i}.{c}]", rc, new { k.Lote, k.Unidades }))

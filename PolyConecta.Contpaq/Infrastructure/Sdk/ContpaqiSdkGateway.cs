@@ -480,8 +480,8 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
                     aFecha = docFecha,
                     aCodigoCteProv = payload.CodigoClienteProveedor,
                     aCodigoAgente = payload.CodigoAgente ?? "",
-                    aReferencia = payload.Referencia ?? "",
-                    aObservaciones = payload.Observaciones ?? ""
+                    aReferencia = payload.Referencia ?? ""
+                    // tDocumento no tiene observaciones: requieren fSetDatoDocumento, pendiente en el bridge.
                 };
 
                 var docErr = ContpaqiSdkNative.fAltaDocumento(ref docId, ref docto);
@@ -526,10 +526,10 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
                             aSeries = "",
                             aPedimento = movPayload.Lote.Pedimento ?? "",
                             aFechaPedimento = "",
-                            aAduana = "",
+                            aAgencia = "",
                             aFechaFabricacion = "",
                             aFechaCaducidad = movPayload.Lote.FechaCaducidad ?? "",
-                            aLote = movPayload.Lote.NumeroLote
+                            aNumeroLote = movPayload.Lote.NumeroLote
                         };
 
                         var lotErr = ContpaqiSdkNative.fAltaMovimientoSeriesCapas(movId, ref seriesCapas);

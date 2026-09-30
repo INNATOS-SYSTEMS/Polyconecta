@@ -27,3 +27,6 @@ scripts/screenshots/package-lock.json
 tools/sdk-lab/dist/
 tools/sdk-lab/evidence/
 tools/sdk-lab/lab.config.json
+
+## Claude Code (configuración personal)
+.claude/settings.local.json

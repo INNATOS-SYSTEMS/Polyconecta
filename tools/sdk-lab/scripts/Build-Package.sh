@@ -8,7 +8,7 @@ rm -rf dist && mkdir -p "$OUT/scripts" "$OUT/specs" "$OUT/matrix" "$OUT/evidence
 dotnet publish src/SdkLab.csproj -c Release -r win-x86 --self-contained true \
   -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "$OUT"
 
-cp AGENTS.md CLAUDE.md lab.config.example.json README.md "$OUT/"
+cp AGENTS.md CLAUDE.md lab.config.example.json README.md EJECUCION_EN_VPS.md "$OUT/"
 cp scripts/*.ps1 "$OUT/scripts/"
 cp specs/*.json "$OUT/specs/"
 cp ../../docs/contpaq/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md "$OUT/matrix/"
