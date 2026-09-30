@@ -6,7 +6,7 @@ Lo que no se ha decidido o verificado y condiciona la construcción. Cuando se r
 - Resueltas el 29-sep-2026: P-19 (D-74) y P-20 (D-67 a D-73).
 - P-02, P-14 y P-16 pasaron a datos de puesta en marcha (D-75) y viven en el [roadmap](../ROADMAP.md).
 - I-01 y U-01 eran trabajo planeado, no preguntas: están en el alcance de los módulos del roadmap.
-- Resueltas el 30-sep-2026 con la matriz del SDK: T-01 (D-79), T-02 (D-82), T-03 (D-83), T-04 (D-85), T-05 (D-86) y T-08 (D-80). T-06 se acotó (D-87). P-21 (D-90). T-15 (D-95).
+- Resueltas el 30-sep-2026 con la matriz del SDK: T-01 (D-79), T-02 (D-82), T-03 (D-83), T-04 (D-85), T-05 (D-86) y T-08 (D-80). T-06 se acotó (D-87). P-21 (D-90). T-15 (D-95). T-16 (D-106, D-107).
 
 ## Infraestructura
 
@@ -29,4 +29,3 @@ Todas se verifican con [MATRIZ_PRUEBAS_SDK_WIP_LOTES.md](../contpaq/MATRIZ_PRUEB
 | T-12 | ¿El SDK da de alta un **pedido** con sus líneas y su **precio unitario y moneda** (D-74), y devuelve su folio, para que la sincronización lo reconozca y no lo vuelva a importar como pedido nuevo (idempotencia por `erp_document_id`)? | S-14 | El pedido libre queda solo interno en PolyConecta hasta resolverlo |
 | T-13 | **¿Por qué algunas operaciones del SDK tardan minutos o no terminan?** Se bloquean antes de conectar a SQL, sin ventanas visibles; reiniciar `AppKeyLicenseServer_CONTPAQi` no lo resolvió, y un proceso detenido a la fuerza no libera su sesión (H-6, H-7) | S-01, S-02 | No se cumple la meta de segundos de D-92. Primera hipótesis a medir: el costo está en iniciar el SDK y abrir la empresa en cada operación, y desaparece con la sesión de larga duración (D-91) |
 | T-14 | **Verificar A-04 y la creación de almacenes**: hoy la empresa tiene un solo almacén WIP (90). Falta crear `PIM/WIP` y `SC/WIP` y confirmar que coexisten (D-24, D-43) | A-04 | — (se crean por la UI si T-10 falla) |
-| T-16 | ¿Las compras de MP llegan a CONTPAQi **con número de lote**, o se lotifican después? ¿Qué concepto de documento usan? Define cómo se sincronizan (D-102) y cómo nace el lote de MP en PolyConecta | S-15, S-16 | Si no traen lote, PolyConecta tendría que lotificar la MP al recibirla, y eso escribiría en CONTPAQi |

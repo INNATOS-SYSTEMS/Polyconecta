@@ -99,7 +99,7 @@ Bolsa 20,000 MIL (hay 3,000)
 - `[007-FR-004/005]` **MTSO** consume primero la existencia y dispara la regla siguiente **solo por el faltante**. **MTO** fabrica la cantidad completa.
 - `[007-FR-007]` El motor corre en la transición a **Autorizado** y genera documentos con folio real: entrega, orden de fabricación o traslado.
 - `[007-FR-008]` Antes de autorizar hay una **simulación** que no reserva nada y se muestra como tal.
-- `[007-FR-013]` La reserva es **lote por lote**; el último lote se fracciona **reasignando kg**, no se toma completo. CONTPAQi admite varios lotes y lotes fraccionados en un mismo movimiento (D-82).
+- `[007-FR-013]` La reserva es **lote por lote** en los productos con lote (rollos y PT; la MP se reserva por cantidad, D-106); el último lote se fracciona **reasignando kg**, no se toma completo. CONTPAQi admite varios lotes y lotes fraccionados en un mismo movimiento (D-82).
 - `[007-FR-014]` La entrega se genera **por el total** de la línea. Al entregar en parcialidades, el sistema pregunta si crea un backorder. El backorder solo existe en PolyConecta (D-85).
 - `[007-FR-015]` Una necesidad sin cobertura queda **visible** en el plan; nunca desaparece en silencio.
 - `[007-FR-016]` El disponible **excluye** cuarentena y scrap.
@@ -209,7 +209,7 @@ stateDiagram-v2
 - Almacén también puede crear una **recolección libre**, sin OF (D-55). El material queda en WIP como saldo sin asignar y se liga a una OF al confirmarla. Un saldo sin asignar solo sale de WIP por asignación, devolución o scrap.
 - `[008-FR-002c]` Confirmar la OF libera la recolección a Almacén, que la valida **cuando el material sale físicamente**.
 - `[008-FR-003]` **Solo Almacén valida.** El Planner solicita, pero no surte.
-- `[008-FR-004]` El Almacenista declara **lote y cantidad** por línea. El sistema no asigna lotes sin confirmación.
+- `[008-FR-004]` El Almacenista declara **lote y cantidad** por línea. El sistema no asigna lotes sin confirmación. La materia prima no lleva lote: en ella se declara solo la cantidad (D-106).
 - `[008-FR-005]` Validar mueve el material a WIP, lo reserva físicamente contra la OF y **dispara el traspaso de almacén en CONTPAQi** (par Salida + Entrada, ver [03 §5.1](03-almacenes-y-operaciones.md)). Antes de validar, PolyConecta comprueba la existencia de cada lote en el origen: CONTPAQi no lo impide (D-81).
 - `[008-FR-006]` El material en WIP no cuenta como disponible, pero sigue siendo inventario de la empresa.
 - `[008-FR-007/008]` Se admite validar en parcialidades, con **backorder** por el remanente. Una parcialidad no impide que la OF arranque. Cada parcialidad es un traspaso propio en CONTPAQi; el backorder vive en PolyConecta (D-85).

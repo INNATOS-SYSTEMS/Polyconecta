@@ -62,7 +62,7 @@ El prototipo usa dos alias fuera de la convención, `PIM/Cuarentena` y `SC/Scrap
 | `SC-BOL-MO` | Fabricación bolseo | `SC/WIP` → `SC/Stock/PT` | Consumo de rollo + entrada de bolsa PT al cierre |
 | `PIM-OUT-DIR` | Despacho directo de rollo | `PIM/Stock/PT` → `Customers` | Remisión de venta al validar |
 | `SC-OUT-DIR` | Despacho directo de bolsa | `SC/Stock/PT` → `Customers` | Remisión de venta al validar |
-| `PIM-IN-COMPRA`, `SC-IN-COMPRA` | Recepción de compra | `Vendors` → `Stock/MP` | Ninguna: se **lee** de CONTPAQi, donde se capturó (D-102). Solo lectura en PolyConecta |
+| `PIM-IN-COMPRA`, `SC-IN-COMPRA` | Recepción de compra | `Vendors` → `Stock/MP` | Ninguna: se **lee** de CONTPAQi, donde se capturó en el almacén de MP de la planta (D-102, D-107). Solo lectura en PolyConecta; la MP no lleva lote (D-106) |
 | `ICO-TR-OUT` | Salida intercompany | `PIM/Stock/PT` → `TRANS/PIM-MTM` | Fase 2 |
 
 Los tipos de operación son un **catálogo** (`OperationType`) con origen y destino por defecto, la bandera "requiere liberación de calidad" y el documento ERP que disparan. Agregar una ruta nueva es un registro, no código. El patrón de recolección y devolución es universal y está parametrizado por almacén.

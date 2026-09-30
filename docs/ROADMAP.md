@@ -85,6 +85,8 @@ Son datos de la operación que no bloquean la construcción (D-75): cada módulo
 | Tolerancia del balance de masa (ex P-16) | 3 · Producción | Producción | ⬜ |
 | Ventana nocturna para el reinicio del bridge y la conciliación (D-98) | 0 · Plataforma | Sistemas | ⬜ |
 | Depurar en CONTPAQi antes de la carga inicial: productos cuya existencia no cuadra con sus lotes (F-03) y existencias negativas (F-06) (D-100) | 1 · Inventario | Sistemas | ⬜ |
+| Capturar las compras de MP en el almacén de MP de cada planta, no en "Gastos" (D-107) | 1 · Inventario | Compras y Sistemas | ⬜ |
+| Traspasar en CONTPAQi la existencia de MP que está en "Gastos" y otros almacenes a los almacenes de MP de cada planta (D-107) | 1 · Inventario | Sistemas | ⬜ |
 | Carga inicial de almacenes e inventarios, con WIP vacío (D-100) | 1 · Inventario | Sistemas | ⬜ |
 | Fecha del corte limpio de arranque: sin producción en curso ni OF abiertas (D-104) | Todos | Dirección y Producción | ⬜ |
 | Retirar de la captura manual en CONTPAQi los conceptos de producción (por ejemplo "Salida materia prima MAQUINA N") al arrancar cada módulo (D-96) | 1 y 3 | Sistemas y Dirección | ⬜ |

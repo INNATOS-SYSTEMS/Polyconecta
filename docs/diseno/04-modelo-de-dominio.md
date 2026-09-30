@@ -157,7 +157,7 @@ El PT no siempre es una bolsa: puede ser el mismo rollo vendido tal cual, por es
 | `QualityControlLine` | Producto, lote, cantidad planeada, cantidad real y resultado aprueba o falla |
 | `ScrapEntry` | Kg de scrap por producto y motivo |
 | `MassBalanceAudit` | Un único registro al cierre: entrada, rollos buenos, cuarentena, scrap, varianza, tolerancia aplicada y resultado |
-| `LotGenealogy` | Qué lote padre se consumió en qué lote hijo. CONTPAQi no guarda linaje entre capas, así que esta tabla y los `StockMove` son la única trazabilidad (D-83) |
+| `LotGenealogy` | Qué lote padre se consumió en qué lote hijo. CONTPAQi no guarda linaje entre capas, así que esta tabla y los `StockMove` son la única trazabilidad (D-83). La MP no tiene lote: el rollo se liga con los productos de MP consumidos por su OF (D-106) |
 | `Incident` | Paro: fecha, centro de trabajo, tipo, comentarios, hora de inicio y de fin. Lo captura el Supervisor de turno |
 
 Estados de `ManufacturingOrder` (D-42): `Borrador → Confirmada → En progreso → Por cerrar → Hecha`, y `Cancelada`. El prototipo todavía usa `Borrador / Planeado / En progreso / Hecho`.
