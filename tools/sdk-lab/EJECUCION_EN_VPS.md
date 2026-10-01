@@ -62,6 +62,17 @@ Después:
 1. **Revisa `lab.config.json`**: las rutas reales del SDK (`sdkPath`), de la empresa de laboratorio (`labCompanyPath`) y el nombre de la instancia (`sqlServer`).
 2. **Abre una sesión nueva de PowerShell**, para que tome la variable de entorno.
 
+## 3.1 Credenciales de CONTPAQi (sin ellas el SDK se cuelga)
+
+La empresa pide **dos** inicios de sesión (D-108). Si falta alguno, CONTPAQi abre una ventana de ingreso que nadie ve y la llamada espera para siempre:
+
+| Variable de entorno (de máquina) | Uso |
+| :--- | :--- |
+| `SDKLAB_COMERCIAL_USER` / `SDKLAB_COMERCIAL_PASSWORD` | Usuario de Comercial (hoy `SUPERVISOR`), con `fInicioSesionSDK` antes de `fSetNombrePAQ` |
+| `SDKLAB_CONTPAQI_USER` / `SDKLAB_CONTPAQI_PASSWORD` | Usuario centralizado de CONTPAQi (Contabilidad), con `fInicioSesionSDKCONTPAQi` después de `fSetNombrePAQ` |
+
+Una contraseña vacía se deja sin variable. El SDK solo funciona en una **sesión iniciada** de Windows (no como servicio ni por SSH): `sdklab` se lanza con una tarea programada `LogonType Interactive` en la sesión del administrador. Si un proceso se detiene a la fuerza durante el inicio de sesión, cierra también `SDKCONTPAQNG` antes de reintentar. `evidence/progress.log` registra cada llamada al SDK antes y después de ejecutarla.
+
 ## 4. Verificar el entorno
 
 ```powershell

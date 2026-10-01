@@ -97,19 +97,19 @@ flowchart LR
 
 | Comando | Módulo | Origen en PolyConecta |
 | :--- | :--- | :--- |
-| `ALTA_ALMACEN` | Inventario | Inicialización de ubicaciones (D-43) |
+| `ALTA_ALMACEN` | Inventario | Inicialización de ubicaciones (D-43); por SDK con `fInsertaAlmacen` (D-110) |
 | `TRASPASO` | Inventario | Recolección, devolución, traslado, recepción y movimientos de cuarentena. Se traduce a un par Salida + Entrada con N lotes por movimiento (D-79, D-82) |
-| `ALTA_PEDIDO` | Ventas | Pedido libre confirmado (D-53) |
-| `CIERRE_PRODUCCION` | Producción | Cierre técnico: consumo desde WIP + entrada de PT y scrap |
-| `REMISION` | Logística | Entrega validada |
+| `ALTA_PEDIDO` | Ventas | Pedido libre confirmado (D-53). En revisión: ver P-22 |
+| `CIERRE_PRODUCCION` | Producción | Cierre técnico: Salida desde WIP (consumo) + Entrada de PT y scrap con sus lotes (D-111) |
+| `REMISION` | Logística | Entrega validada; queda pendiente de facturar en CONTPAQi (S-13) |
 
 - **CT-19** La `idempotency_key` es `{tipo de documento}:{id}:{transición}`. Reenviar un comando nunca duplica un documento en CONTPAQi. El SDK no es idempotente (prueba G-02): la garantía es del bridge.
 - **CT-20** El outbox de PolyConecta se escribe **en la misma transacción** que el cambio de negocio. El despachador reintenta con espera creciente. Un comando que agota reintentos deja el documento en sincronización `Error`, recuperable desde la interfaz sin tocar la base.
 - **CT-21** El **bridge en modo simulado** implementa el contrato completo sin SDK: valida la carga, asigna folios simulados y responde por callback. Corre en macOS y en CI. Es la base de trabajo del camino 2.
 - **CT-22** Un cambio al contrato requiere la aprobación de **los dos líderes**. Los cambios compatibles suben la versión menor; los incompatibles abren `v2` y conviven con `v1` hasta migrar.
 - **CT-38** **Ejecución por pasos y reconciliación (D-80).** El bridge registra cada paso de un comando (documento y movimiento) y marca cada documento con una referencia derivada de la `idempotency_key`, de 20 caracteres como máximo porque es lo que mide `CREFERENCIA` (prueba S-06). Antes de reintentar, lee CONTPAQi y completa solo lo que falta. Nunca borra un documento con movimientos: lo completa o lo compensa con el inverso.
-- **CT-39** **Validar antes, verificar después (D-81).** Antes de enviar, el bridge valida existencia por lote en el origen y `Σ lotes = unidades` de cada movimiento. Después, lee `admMovimientos` y `admMovimientosCapas` y compara con la carga. Una diferencia es un `Error`, no un éxito.
-- **CT-40** **Sesión del SDK (D-88, D-91).** El bridge inicia el SDK **una sola vez por proceso**, con credenciales en variables de entorno (CT-29) y sin ventana de autenticación. Abre la empresa por lote de comandos, aplica un timeout a cada llamada y cierra empresa y SDK al apagarse. Se reinicia en una ventana diaria configurable. Corre en una sesión iniciada de Windows mientras H-03 no demuestre que puede correr como servicio.
+- **CT-39** **Validar antes, verificar después (D-81, D-112).** Antes de enviar, el bridge valida existencia por lote en el origen, `Σ lotes = unidades` de cada movimiento y que el producto esté activo. El folio se lee por SQL después de crear el documento. Después, lee `admMovimientos` y `admMovimientosCapas` y compara con la carga. Una diferencia es un `Error`, no un éxito.
+- **CT-40** **Sesión del SDK (D-88, D-91, D-108).** El bridge inicia el SDK **una sola vez por proceso**, con dos inicios de sesión y credenciales en variables de entorno (CT-29): usuario de Comercial con `fInicioSesionSDK` antes de `fSetNombrePAQ`, y usuario centralizado con `fInicioSesionSDKCONTPAQi` después. Sin ellos aparece una ventana de ingreso que bloquea la llamada. Abre la empresa por lote de comandos, aplica un timeout a cada llamada y cierra empresa y SDK al apagarse. Se reinicia en una ventana diaria configurable. Corre en una sesión iniciada de Windows: como servicio no funciona (S-03).
 - **CT-41** **Orden (D-92).** El despachador envía los comandos en el orden de registro del outbox, uno a la vez. Metas de latencia: segundos para movimientos de inventario y minutos para documentos y catálogos. Un comando en `Error` detiene solo los posteriores que comparten alguna llave (producto, almacén) con él (D-95).
 - **CT-42** **Existencia oficial (D-94).** Toda validación de existencia usa la de CONTPAQi menos las salidas pendientes de sincronizar. La conciliación corre cada noche fuera del turno de registro (D-98); todas sus diferencias, sin umbral (D-101), las revisa Sistemas antes de ajustar PolyConecta, y nunca se corrige CONTPAQi en automático (D-97).
 - **CT-23** El contrato se prueba desde los dos lados con la **misma suite**: el camino 2 la corre contra el simulador en CI, y el camino 1 contra el bridge real en el laboratorio (`tools/sdk-lab`, empresa `_LAB`). Un comando está entregado cuando pasa en los dos.

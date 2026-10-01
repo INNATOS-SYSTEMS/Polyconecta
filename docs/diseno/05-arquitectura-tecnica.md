@@ -61,11 +61,11 @@ Las flechas punteadas son el diseño objetivo y **todavía no existen**.
    - Deja un documento huérfano cuando falla el movimiento (G-01) y un documento a medias si el proceso se interrumpe (G-04). Falta la ejecución por pasos con reconciliación (D-80).
    - Manda un solo lote por movimiento, por la cantidad completa (C-02). Falta mandar N capas (D-82).
    - Intenta el traspaso con un solo movimiento, que CONTPAQi rechaza (B-02). Falta el par Salida + Entrada con la regla de costo (D-79).
-   - Usa `fInicializaSDK` sin iniciar sesión (H-3). Falta el inicio de sesión con credenciales y la sesión de larga duración (D-88, D-91).
+   - Usa `fInicializaSDK` sin iniciar sesión (H-3). Falta el doble inicio de sesión y la sesión de larga duración (D-91, D-108); `sdklab` ya los implementa.
    - No valida existencia ni verifica lo registrado (C-07, D-05). Falta CT-39.
 5. **Sin CI** ni gestión de secretos.
-6. **Supuestos del SDK**: la [matriz](../contpaq/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md) verificó WIP como almacén, lotes múltiples y fraccionados, devolución parcial y parcialidades (D-79 a D-87). Siguen sin verificar la frescura de la lectura (T-06), el enlace Remisión ↔ Pedido (T-07), el alta de almacenes (T-10), el registro del consumo (T-11), el alta de pedidos (T-12) y la lentitud del SDK (T-13).
-7. **Bridge como proceso interactivo**: el SDK no funciona como servicio de Windows ni por SSH (D-88). Falta definir cómo se mantiene su sesión en producción (H-03).
+6. **Supuestos del SDK**: la [matriz](../contpaq/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md) verificó WIP como almacén, lotes múltiples y fraccionados, devolución parcial y parcialidades (D-79 a D-87). El bloque S (1-oct) resolvió la lentitud y los bloqueos (D-108, D-109), el alta de almacenes (D-110) y el registro de la producción (D-111). Siguen abiertos la frescura de la lectura (T-06) y qué hacer con el pedido en CONTPAQi (P-22).
+7. **Bridge como proceso interactivo**: el SDK no funciona como servicio de Windows (S-03, D-108). Falta probar el inicio de sesión automático con reinicio (H-03, S-04).
 
 ## 5. Cómo correrlo
 

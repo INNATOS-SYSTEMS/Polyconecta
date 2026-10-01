@@ -66,13 +66,13 @@ Estados de cada columna: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bl
 | Módulo | Preguntas abiertas ([preguntas-abiertas.md](diseno/preguntas-abiertas.md)) |
 | :--- | :--- |
 | 0 · Plataforma | ninguna propia |
-| 1 · Catálogos e Inventario | T-06, T-10, T-11, T-14 |
-| 2 · Ventas | T-12 |
-| 3 · Producción | T-11 |
+| 1 · Catálogos e Inventario | T-06, T-14 |
+| 2 · Ventas | P-22 |
+| 3 · Producción | ninguna propia (D-111 por validar) |
 | 4 · Calidad | ninguna propia |
-| 5 · Logística | T-07 (remisión ligada al pedido) |
+| 5 · Logística | P-22 (la remisión no se liga a un pedido) |
 
-Para el **cierre integrado** de cualquier módulo hacen falta además la sesión interactiva del bridge (H-03) y entender la lentitud del SDK (T-13). Para el **piloto**, el hosting de producción y los respaldos (H-01, H-02).
+Para el **cierre integrado** de cualquier módulo hace falta además el inicio de sesión automático del bridge (H-03, S-04). Para el **piloto**, el hosting de producción y los respaldos (H-01, H-02).
 
 ## 6. Puesta en marcha
 
@@ -100,9 +100,9 @@ Son datos de la operación que no bloquean la construcción (D-75): cada módulo
 | A-3 | Ejecutar la matriz del SDK: F (solo lectura) → A → B → C-02/C-03 → D → E → G. Ejecutada el 30-sep (commit `7f0596e`), 35 de 36; queda F-05 | 1 | ✅ |
 | A-13 | Cotejar con la UI de CONTPAQi F-01, F-02 y F-05, y crear los WIP por planta para A-04 (T-06, T-14) | 1 | ⬜ |
 | A-14 | Corregir el gateway del bridge según la matriz: sesión de larga duración, par Salida + Entrada, N lotes, pasos con reconciliación, validación y verificación (D-79 a D-82, D-88, D-91) | 1 | ⬜ |
-| A-15 | Medir en el laboratorio (pruebas S-01, S-02) la latencia con sesión de larga duración: tiempo de iniciar el SDK, de abrir la empresa y de cada par Salida + Entrada, contra la meta de segundos (D-92, T-13) | 1 | ⬜ |
-| A-16 | Probar el bridge como servicio de Windows con una cuenta de usuario real y, si falla, como tarea programada con inicio de sesión automático (pruebas S-03 a S-05, H-03) | 1 | ⬜ |
-| A-17 | Ejecutar el resto del bloque S de la matriz: reconciliación (S-06 a S-08), almacenes y conceptos (S-09, S-10), cierre y remisión (S-11 a S-13), pedido libre y compras (S-14 a S-16) | 1 | ⬜ |
+| A-15 | ✅ 1-oct: par en 2.3 s (D-109); causa de los bloqueos encontrada (D-108). Medir en el laboratorio (pruebas S-01, S-02) la latencia con sesión de larga duración: tiempo de iniciar el SDK, de abrir la empresa y de cada par Salida + Entrada, contra la meta de segundos (D-92, T-13) | 1 | ⬜ |
+| A-16 | Probar el bridge como servicio de Windows con una cuenta de usuario real y, si falla, como tarea programada con inicio de sesión automático (pruebas S-03 a S-05, H-03). S-03 y S-05 hechas: no puede ser servicio. Falta S-04 (reinicio) | 1 | 🟨 |
+| A-17 | Ejecutar el resto del bloque S de la matriz: reconciliación (S-06 a S-08), almacenes y conceptos (S-09, S-10), cierre y remisión (S-11 a S-13), pedido libre y compras (S-14 a S-16). Hecho el 1-oct salvo S-04 y el movimiento a los almacenes de S-09 | 1 | 🟨 |
 | A-4 | Escribir el contrato `bridge-v1` a partir de la API actual del bridge y del catálogo de comandos (CT-18) | 1 y 2 | ⬜ |
 | A-5 | Bridge en modo simulado (CT-21) | 1 | ⬜ |
 | A-6 | ~~Decidir versiones~~ — ratificadas el 29-sep (D-67 a D-73) | 1 y 2 | ✅ |
@@ -128,14 +128,14 @@ Resultado de la ejecución del 30-sep-2026:
 | **A-05** (clasificación) | ⚠️ | Se aplica la contingencia: clasificación propia (D-86) |
 | **F** (existencias) | ✅ / ⏳ | Lectura directa sin proyección (D-87); falta F-05 |
 | **G** (robustez) | ❌ / ✅ | Sin transacción ni idempotencia en el SDK: pasos con reconciliación y verificación en el bridge (D-80, D-81) |
+| **S** (segunda ronda, 1-oct) | ✅ / ⚠️ | Bloqueos explicados por dos inicios de sesión (D-108); traspaso en 2.3 s (D-109); reconciliación y borrado de huérfanos probados; alta de almacenes por SDK (D-110); consumo y entrada de producción (D-111); la remisión no se liga a un pedido (P-22); el bridge no puede ser servicio (S-03) |
 
 Siguen abiertas:
 
 | Si falla… | Consecuencia | Costo |
 | :--- | :--- | :--- |
-| **T-10** (alta de almacenes) | Los almacenes se crean a mano en CONTPAQi una vez | Aceptable |
 | **T-12** (alta de pedido) | El pedido libre queda interno hasta resolverlo | Ventas se cierra integrado sin el modo libre hacia CONTPAQi |
-| **T-13** (lentitud del SDK) | Sincronización de minutos, un comando a la vez | La interfaz debe dejar claro el estado de sincronización (CT-15) |
+| **H-03 / S-04** (inicio de sesión automático) | Alguien inicia sesión en el servidor tras cada reinicio | Riesgo operativo; alertar si el bridge no está vivo |
 
 ## 9. Riesgos fuera de la matriz
 

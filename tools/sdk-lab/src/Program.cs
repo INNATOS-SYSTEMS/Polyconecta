@@ -17,6 +17,11 @@ sdklab <comando> [args]
   run <spec.json>                      Ejecuta un experimento de documento (ver specs/*.json)
   afecta <concepto> <serie> <folio> <true|false>   fAfectaDocto_Param suelto (B-04, D-04)
   pendientes <concepto> <producto> <almacen>       fObtieneUnidadesPendientes (E-02)
+  probe                                Inicia sesión, abre y cierra la empresa con tiempos por fase (S-01, S-02, S-05)
+  borra <concepto> <serie> <folio>     fBuscarDocumento + fBorraDocumento (S-08)
+  set-mov <idDoc> <idMov> <campo> <valor>  fBuscarIdDocumento + fBuscarIdMovimiento + fEditarMovimiento + fSetDatoMovimiento + fGuardaMovimiento (S-13)
+  alta-almacen <codigo> <nombre>       fInsertaAlmacen + fSetDatoAlmacen + fGuardaAlmacen (S-09); código con prefijo LAB
+  batch <pares.json>                   N pares Salida + Entrada en UNA sesión del SDK, con tiempos por llamada (S-01)
 """;
 
 if (args.Length == 0 || args[0] is "-h" or "--help") { Console.WriteLine(Usage); return 0; }
@@ -39,6 +44,11 @@ try
         "diff" => Diff(cfg, Need(rest, 0, "a"), Need(rest, 1, "b")),
         "run" => Guarded(cfg, () => SpecRunner.Run(cfg, LoadSpec(Need(rest, 0, "spec.json")))),
         "afecta" => Guarded(cfg, () => SpecRunner.Afecta(cfg, Need(rest, 0, "concepto"), Need(rest, 1, "serie"), double.Parse(Need(rest, 2, "folio")), bool.Parse(Need(rest, 3, "true|false")))),
+        "probe" => Guarded(cfg, () => { var t = new Dictionary<string, long>(); SdkSession.Run(cfg, () => 0, t); return new { opened = true, fases = t }; }),
+        "borra" => Guarded(cfg, () => SpecRunner.Borra(cfg, Need(rest, 0, "concepto"), Need(rest, 1, "serie"), Need(rest, 2, "folio"))),
+        "set-mov" => Guarded(cfg, () => SpecRunner.SetDatoMovimiento(cfg, int.Parse(Need(rest, 0, "idDoc")), int.Parse(Need(rest, 1, "idMov")), Need(rest, 2, "campo"), Need(rest, 3, "valor"))),
+        "alta-almacen" => Guarded(cfg, () => SpecRunner.AltaAlmacen(cfg, Need(rest, 0, "codigo"), Need(rest, 1, "nombre"))),
+        "batch" => Guarded(cfg, () => Batch.RunPairs(cfg, JsonSerializer.Deserialize<PairBatchSpec>(File.ReadAllText(Need(rest, 0, "pares.json")), Json.Options) ?? throw new LabException("SPEC_INVALID", "batch vacío"))),
         "pendientes" => Guarded(cfg, () => SpecRunner.Pendientes(cfg, Need(rest, 0, "concepto"), Need(rest, 1, "producto"), Need(rest, 2, "almacen"))),
         _ => throw new LabException("UNKNOWN_COMMAND", Usage),
     };
