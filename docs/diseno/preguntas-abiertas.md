@@ -15,7 +15,7 @@ Lo que no se ha decidido o verificado y condiciona la construcción. Cuando se r
 | :---: | :--- | :--- |
 | H-01 | **Hosting de producción** de PolyConecta (API, Angular y SQL Server 2022): servidor propio aparte del de CONTPAQi, el mismo VPS o nube administrada. Debe cumplir CT-05 (instancia separada de CONTPAQi) y tener conectividad con el bridge | Piloto del primer módulo; ambiente de producción (D-77) |
 | H-02 | **Respaldos** de la base de PolyConecta. Se define con H-01. Requisito mínimo ya fijado: respaldo completo diario y de logs de transacciones, con una prueba de restauración antes del piloto | Piloto del primer módulo |
-| H-03 | **Inicio de sesión automático del bridge** (D-108). Ya se sabe que el bridge no puede ser servicio (S-03): corre en una sesión iniciada de Windows. Falta probar en una ventana de mantenimiento el usuario dedicado con inicio de sesión automático y la tarea que levanta el bridge al iniciar sesión, reiniciando el servidor (S-04). El servidor actual es compartido con SQL Server de otro proyecto | Cierre integrado de cualquier módulo; piloto |
+| H-03 | **Inicio de sesión de Contabilidad en el usuario del bridge** (D-108). El inicio de sesión automático ya funciona (S-04): tras reiniciar, `polyconecta-bridge` entra solo y la tarea corre sin intervención. Pero en su sesión `fAbreEmpresa` falla al iniciar sesión en Contabilidad (rc=110117), mientras que en la del administrador funciona. Falta saber qué tiene el administrador que el usuario nuevo no tiene: un primer ingreso interactivo a CONTPAQi, o el usuario y contraseña correctos de Contabilidad. Si no se resuelve, el bridge corre en la sesión del administrador | Cierre integrado de cualquier módulo; piloto |
 
 ## Técnicas (se resuelven con la matriz del SDK)
 

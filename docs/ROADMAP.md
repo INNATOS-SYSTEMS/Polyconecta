@@ -110,7 +110,7 @@ Son datos de la operación que no bloquean la construcción (D-75): cada módulo
 | A-10 | Verificar el bridge en .NET 10 `win-x86` con `sdk-lab` (F y G) y migrarlo (D-67). La matriz corrió en .NET 8 | 1 | ⬜ |
 | A-11 | Pipeline de GitHub Actions: build, pruebas .NET y Angular, suite de contrato contra el simulador y SQL Server 2022 en contenedor (D-76, CT-27) | 1 y 2 | ⬜ |
 | A-12 | Definir el hosting de producción y los respaldos (H-01, H-02) | — | ⬜ |
-| A-18 | **Ventana de mantenimiento** en el VPS: S-09 y S-17 hechas el 1-oct. **Falta S-04** (inicio de sesión automático con reinicio), que debe preparar una persona: el agente no tiene permiso para crear usuarios ni configurar inicio de sesión automático. Procedimiento en `tools/sdk-lab/EJECUCION_EN_VPS.md` | 1 | 🟨 |
+| A-18 | **Ventana de mantenimiento** en el VPS: S-09 y S-17 hechas; S-04 hecha el 1-oct con resultado parcial: el inicio de sesión automático funciona, pero Contabilidad falla en el usuario nuevo (H-03) | 1 | 🟨 |
 | A-7 | Ejecutar la spec 001 (réplica en Angular) | 2 | ⬜ |
 | A-8 | Crear la spec del módulo 0 (Plataforma) | 2 | ⬜ |
 
