@@ -135,6 +135,16 @@ Solo hay dos plantillas escritas (`specs/B-02.traspaso-simple.json` y `specs/C-0
 
 ---
 
+## Ventana de mantenimiento (tarea A-18)
+
+Pruebas que no se ejecutaron el 1-oct porque reinician el servidor o requieren autorización. El servidor es compartido: avisa antes a quien use el SQL Server de otros proyectos.
+
+1. **Preparar el usuario del bridge (S-04).** Un usuario local de Windows dedicado (por ejemplo `polyconecta-bridge`), con inicio de sesión automático (`Autologon` de Sysinternals, que guarda la contraseña cifrada en LSA). En su sesión, una tarea programada "Al iniciar sesión" con `LogonType Interactive` que levanta `sdklab` (hoy) o el bridge (después). Las variables de la sección 3.1 van como variables de máquina.
+2. **Reiniciar el servidor** y, sin conectarse por RDP, comprobar por SSH que el proceso está vivo y que `sdklab probe` responde `opened=true` en la sesión del usuario dedicado. Repetir con un `batch` de 2 pares. Resultado esperado: sin intervención y sin ventanas de ingreso.
+3. **Movimiento a los almacenes nuevos (S-09, T-14).** Salida de 2 kg de `MP0010` del almacén 9 y Entrada de 1 kg a `LAB-WIP-PIM` y 1 kg a `LAB-WIP-SC` con el costo de la Salida. Verificar existencias por SQL.
+4. **Cerrar el pedido remisionado (S-17).** Sobre el pedido `LAB-S14-PEDIDO` (doc 184348, mov 308118): `sdklab set-mov 184348 308118 CUNIDADESPENDIENTES 0`; si no persiste, probar saldarlo o cancelarlo. Verificar por SQL y en la UI que deja de estar pendiente de surtir.
+5. Registrar los resultados en la matriz y quitar las tareas de prueba.
+
 ## Aprovechar la misma sesión: .NET 10 (tarea A-10)
 
 `sdklab` está compilado hoy en .NET 8. Para comprobar que el SDK funciona con .NET 10 x86 antes de migrar el bridge (D-67):

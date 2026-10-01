@@ -67,10 +67,10 @@ Estados de cada columna: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bl
 | :--- | :--- |
 | 0 · Plataforma | ninguna propia |
 | 1 · Catálogos e Inventario | T-06, T-14 |
-| 2 · Ventas | P-22 |
-| 3 · Producción | ninguna propia (D-111 por validar) |
+| 2 · Ventas | P-23 (cierre del pedido en CONTPAQi) |
+| 3 · Producción | ninguna propia |
 | 4 · Calidad | ninguna propia |
-| 5 · Logística | P-22 (la remisión no se liga a un pedido) |
+| 5 · Logística | P-23 |
 
 Para el **cierre integrado** de cualquier módulo hace falta además el inicio de sesión automático del bridge (H-03, S-04). Para el **piloto**, el hosting de producción y los respaldos (H-01, H-02).
 
@@ -110,6 +110,7 @@ Son datos de la operación que no bloquean la construcción (D-75): cada módulo
 | A-10 | Verificar el bridge en .NET 10 `win-x86` con `sdk-lab` (F y G) y migrarlo (D-67). La matriz corrió en .NET 8 | 1 | ⬜ |
 | A-11 | Pipeline de GitHub Actions: build, pruebas .NET y Angular, suite de contrato contra el simulador y SQL Server 2022 en contenedor (D-76, CT-27) | 1 y 2 | ⬜ |
 | A-12 | Definir el hosting de producción y los respaldos (H-01, H-02) | — | ⬜ |
+| A-18 | **Ventana de mantenimiento** en el VPS: S-04 (inicio de sesión automático con reinicio), movimiento a los almacenes de S-09 y S-17 (cierre del pedido). Procedimiento en `tools/sdk-lab/EJECUCION_EN_VPS.md` | 1 | ⬜ |
 | A-7 | Ejecutar la spec 001 (réplica en Angular) | 2 | ⬜ |
 | A-8 | Crear la spec del módulo 0 (Plataforma) | 2 | ⬜ |
 

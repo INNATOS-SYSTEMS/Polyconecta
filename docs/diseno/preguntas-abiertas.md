@@ -7,7 +7,7 @@ Lo que no se ha decidido o verificado y condiciona la construcción. Cuando se r
 - P-02, P-14 y P-16 pasaron a datos de puesta en marcha (D-75) y viven en el [roadmap](../ROADMAP.md).
 - I-01 y U-01 eran trabajo planeado, no preguntas: están en el alcance de los módulos del roadmap.
 - Resueltas el 30-sep-2026 con la matriz del SDK: T-01 (D-79), T-02 (D-82), T-03 (D-83), T-04 (D-85), T-05 (D-86) y T-08 (D-80). T-06 se acotó (D-87). P-21 (D-90). T-15 (D-95). T-16 (D-106, D-107).
-- Resueltas el 1-oct-2026 con el bloque S: T-10 (D-110), T-11 (D-111), T-13 (D-108, D-109). T-07 y T-12 dieron su respuesta técnica y abrieron P-22.
+- Resueltas el 1-oct-2026 con el bloque S: T-10 (D-110), T-11 (D-111), T-13 (D-108, D-109). T-07 y T-12 dieron su respuesta técnica; P-22 se resolvió con D-113 y abrió P-23.
 
 ## Infraestructura
 
@@ -21,7 +21,7 @@ Lo que no se ha decidido o verificado y condiciona la construcción. Cuando se r
 
 | # | Pregunta | Bloquea |
 | :---: | :--- | :--- |
-| P-22 | **¿El pedido se escribe en CONTPAQi?** La operación casi no usa pedidos en CONTPAQi (1 en 2023, 0 en 2024 y 2025, 1 en 2026); su flujo es remisión → factura o factura directa. El SDK sí da de alta un pedido con precio, moneda y tipo de cambio (S-14), pero **no puede ligarle la remisión** (S-13): un pedido escrito por PolyConecta quedaría "pendiente de surtir" para siempre. La remisión creada por PolyConecta sí queda pendiente de facturar, como hoy. Opciones: (a) el pedido vive solo en PolyConecta y en CONTPAQi solo se escribe la remisión (se retira `ALTA_PEDIDO` y la sincronización de pedidos, D-53); (b) se escribe el pedido y alguien lo cierra a mano en CONTPAQi; (c) se mantiene D-53 tal cual | Spec de Ventas (módulo 2) y comando `REMISION` |
+| P-23 | **¿Cómo se cierra en CONTPAQi un pedido ya remisionado?** El pedido nace en PolyConecta y se da de alta en CONTPAQi (D-113), pero el SDK no liga la remisión al pedido (S-13), así que el pedido quedaría "pendiente de surtir". Se prueba en la ventana de mantenimiento (S-17): fijar por SDK las unidades pendientes del pedido, o cancelarlo o saldarlo después de remisionar. Si nada funciona, Facturación lo cierra a mano o se acepta el pendiente | Comando `REMISION` y cierre integrado de Ventas y Logística |
 
 ## Técnicas (se resuelven con la matriz del SDK)
 
