@@ -72,7 +72,7 @@ Estados de cada columna: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bl
 | 4 · Calidad | ninguna propia |
 | 5 · Logística | ninguna propia (D-114 por validar) |
 
-Para el **cierre integrado** de cualquier módulo hace falta además el inicio de sesión automático del bridge (H-03, S-04). Para el **piloto**, el hosting de producción y los respaldos (H-01, H-02).
+Para el **cierre integrado** de cualquier módulo hace falta además el inicio de sesión automático del administrador con la tarea del bridge (D-115, A-19). Para el **piloto**, el hosting de producción y los respaldos (H-01, H-02).
 
 ## 6. Puesta en marcha
 
@@ -101,7 +101,7 @@ Son datos de la operación que no bloquean la construcción (D-75): cada módulo
 | A-13 | Cotejar con la UI de CONTPAQi F-01, F-02 y F-05, y crear los WIP por planta para A-04 (T-06, T-14) | 1 | ⬜ |
 | A-14 | Corregir el gateway del bridge según la matriz: sesión de larga duración, par Salida + Entrada, N lotes, pasos con reconciliación, validación y verificación (D-79 a D-82, D-88, D-91) | 1 | ⬜ |
 | A-15 | ✅ 1-oct: par en 2.3 s (D-109); causa de los bloqueos encontrada (D-108). Medir en el laboratorio (pruebas S-01, S-02) la latencia con sesión de larga duración: tiempo de iniciar el SDK, de abrir la empresa y de cada par Salida + Entrada, contra la meta de segundos (D-92, T-13) | 1 | ⬜ |
-| A-16 | Probar el bridge como servicio de Windows con una cuenta de usuario real y, si falla, como tarea programada con inicio de sesión automático (pruebas S-03 a S-05, H-03). S-03 y S-05 hechas: no puede ser servicio. Falta S-04 (reinicio) | 1 | 🟨 |
+| A-16 | Probar el bridge como servicio de Windows y con inicio de sesión automático (S-03 a S-05): no puede ser servicio; corre en la sesión del administrador (D-115) | 1 | ✅ |
 | A-17 | Ejecutar el resto del bloque S de la matriz: reconciliación (S-06 a S-08), almacenes y conceptos (S-09, S-10), cierre y remisión (S-11 a S-13), pedido libre y compras (S-14 a S-16). Hecho el 1-oct salvo S-04 y el movimiento a los almacenes de S-09 | 1 | 🟨 |
 | A-4 | Escribir el contrato `bridge-v1` a partir de la API actual del bridge y del catálogo de comandos (CT-18) | 1 y 2 | ⬜ |
 | A-5 | Bridge en modo simulado (CT-21) | 1 | ⬜ |
@@ -110,7 +110,8 @@ Son datos de la operación que no bloquean la construcción (D-75): cada módulo
 | A-10 | Verificar el bridge en .NET 10 `win-x86` con `sdk-lab` (F y G) y migrarlo (D-67). La matriz corrió en .NET 8 | 1 | ⬜ |
 | A-11 | Pipeline de GitHub Actions: build, pruebas .NET y Angular, suite de contrato contra el simulador y SQL Server 2022 en contenedor (D-76, CT-27) | 1 y 2 | ⬜ |
 | A-12 | Definir el hosting de producción y los respaldos (H-01, H-02) | — | ⬜ |
-| A-18 | **Ventana de mantenimiento** en el VPS: S-09 y S-17 hechas; S-04 hecha el 1-oct con resultado parcial: el inicio de sesión automático funciona, pero Contabilidad falla en el usuario nuevo (H-03) | 1 | 🟨 |
+| A-18 | **Ventana de mantenimiento** en el VPS: S-04, S-09 y S-17 hechas el 1-oct. El bridge corre en la sesión del administrador (D-115) | 1 | ✅ |
+| A-19 | Revertir el usuario de prueba `polyconecta-bridge` y configurar el inicio de sesión automático del administrador con la tarea del bridge (D-115) | 1 | ⬜ |
 | A-7 | Ejecutar la spec 001 (réplica en Angular) | 2 | ⬜ |
 | A-8 | Crear la spec del módulo 0 (Plataforma) | 2 | ⬜ |
 
@@ -136,7 +137,7 @@ Siguen abiertas:
 | Si falla… | Consecuencia | Costo |
 | :--- | :--- | :--- |
 | **T-12** (alta de pedido) | El pedido libre queda interno hasta resolverlo | Ventas se cierra integrado sin el modo libre hacia CONTPAQi |
-| **H-03 / S-04** (inicio de sesión automático) | Alguien inicia sesión en el servidor tras cada reinicio | Riesgo operativo; alertar si el bridge no está vivo |
+| **D-115** (sesión del administrador) | Si se desactiva el inicio de sesión automático, alguien inicia sesión tras cada reinicio | Riesgo operativo; alertar si el bridge no está vivo |
 
 ## 9. Riesgos fuera de la matriz
 

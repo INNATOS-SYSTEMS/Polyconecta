@@ -65,7 +65,7 @@ Las flechas punteadas son el diseño objetivo y **todavía no existen**.
    - No valida existencia ni verifica lo registrado (C-07, D-05). Falta CT-39.
 5. **Sin CI** ni gestión de secretos.
 6. **Supuestos del SDK**: la [matriz](../contpaq/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md) verificó WIP como almacén, lotes múltiples y fraccionados, devolución parcial y parcialidades (D-79 a D-87). El bloque S (1-oct) resolvió la lentitud y los bloqueos (D-108, D-109), el alta de almacenes (D-110) y el registro de la producción (D-111). Siguen abiertos la frescura de la lectura (T-06) y qué hacer con el pedido en CONTPAQi (P-22).
-7. **Bridge como proceso interactivo**: el SDK no funciona como servicio de Windows (S-03, D-108). Falta probar el inicio de sesión automático con reinicio (H-03, S-04).
+7. **Bridge como proceso interactivo**: el SDK no funciona como servicio de Windows (S-03, D-108). Corre en la sesión del administrador con inicio de sesión automático (D-115); el servidor queda con una sesión de administrador abierta.
 
 ## 5. Cómo correrlo
 
