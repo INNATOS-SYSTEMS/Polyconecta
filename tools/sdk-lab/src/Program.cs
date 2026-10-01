@@ -19,6 +19,7 @@ sdklab <comando> [args]
   pendientes <concepto> <producto> <almacen>       fObtieneUnidadesPendientes (E-02)
   probe                                Inicia sesión, abre y cierra la empresa con tiempos por fase (S-01, S-02, S-05)
   borra <concepto> <serie> <folio>     fBuscarDocumento + fBorraDocumento (S-08)
+  cancela <concepto> <serie> <folio>   fBuscarDocumento + fCancelaDocumento (S-17)
   set-mov <idDoc> <idMov> <campo> <valor>  fBuscarIdDocumento + fBuscarIdMovimiento + fEditarMovimiento + fSetDatoMovimiento + fGuardaMovimiento (S-13)
   alta-almacen <codigo> <nombre>       fInsertaAlmacen + fSetDatoAlmacen + fGuardaAlmacen (S-09); código con prefijo LAB
   batch <pares.json>                   N pares Salida + Entrada en UNA sesión del SDK, con tiempos por llamada (S-01)
@@ -45,6 +46,7 @@ try
         "run" => Guarded(cfg, () => SpecRunner.Run(cfg, LoadSpec(Need(rest, 0, "spec.json")))),
         "afecta" => Guarded(cfg, () => SpecRunner.Afecta(cfg, Need(rest, 0, "concepto"), Need(rest, 1, "serie"), double.Parse(Need(rest, 2, "folio")), bool.Parse(Need(rest, 3, "true|false")))),
         "probe" => Guarded(cfg, () => { var t = new Dictionary<string, long>(); SdkSession.Run(cfg, () => 0, t); return new { opened = true, fases = t }; }),
+        "cancela" => Guarded(cfg, () => SpecRunner.Cancela(cfg, Need(rest, 0, "concepto"), Need(rest, 1, "serie"), Need(rest, 2, "folio"))),
         "borra" => Guarded(cfg, () => SpecRunner.Borra(cfg, Need(rest, 0, "concepto"), Need(rest, 1, "serie"), Need(rest, 2, "folio"))),
         "set-mov" => Guarded(cfg, () => SpecRunner.SetDatoMovimiento(cfg, int.Parse(Need(rest, 0, "idDoc")), int.Parse(Need(rest, 1, "idMov")), Need(rest, 2, "campo"), Need(rest, 3, "valor"))),
         "alta-almacen" => Guarded(cfg, () => SpecRunner.AltaAlmacen(cfg, Need(rest, 0, "codigo"), Need(rest, 1, "nombre"))),

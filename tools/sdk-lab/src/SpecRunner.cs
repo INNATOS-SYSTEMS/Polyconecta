@@ -183,4 +183,14 @@ internal static class SpecRunner
             Step("fGuardaAlmacen", LabNativeDocs.fGuardaAlmacen);
             return steps;
         });
+
+    /// <summary>S-17: posiciona el documento por concepto, serie y folio, y lo cancela.</summary>
+    public static object Cancela(LabConfig cfg, string concepto, string serie, string folio) =>
+        SdkSession.Run(cfg, () =>
+        {
+            var rcBusca = Progress.Call($"fBuscarDocumento {concepto}/{serie}/{folio}", () => LabNativeDocs.fBuscarDocumento(concepto, serie, folio));
+            if (rcBusca != 0) return (object)new { rcBusca, message = SdkSession.Msg(rcBusca) };
+            var rcCancela = Progress.Call("fCancelaDocumento", LabNativeDocs.fCancelaDocumento);
+            return new { rcBusca, rcCancela, message = SdkSession.Msg(rcCancela) };
+        });
 }

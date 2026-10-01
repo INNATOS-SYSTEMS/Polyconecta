@@ -47,6 +47,9 @@ internal static class LabNativeDocs
     [DllImport(Dll, EntryPoint = "fBuscarDocumento", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     public static extern int fBuscarDocumento([MarshalAs(UnmanagedType.LPStr)] string aCodConcepto, [MarshalAs(UnmanagedType.LPStr)] string aSerie, [MarshalAs(UnmanagedType.LPStr)] string aFolio);
 
+    [DllImport(Dll, EntryPoint = "fCancelaDocumento", CallingConvention = CallingConvention.StdCall)]
+    public static extern int fCancelaDocumento();
+
     [DllImport(Dll, EntryPoint = "fBorraDocumento", CallingConvention = CallingConvention.StdCall)]
     public static extern int fBorraDocumento();
 

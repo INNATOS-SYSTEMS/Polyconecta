@@ -99,7 +99,7 @@ flowchart LR
 | :--- | :--- | :--- |
 | `ALTA_ALMACEN` | Inventario | Inicialización de ubicaciones (D-43); por SDK con `fInsertaAlmacen` (D-110) |
 | `TRASPASO` | Inventario | Recolección, devolución, traslado, recepción y movimientos de cuarentena. Se traduce a un par Salida + Entrada con N lotes por movimiento (D-79, D-82) |
-| `ALTA_PEDIDO` | Ventas | Pedido confirmado en PolyConecta (D-53, D-113); el cierre del pedido en CONTPAQi está pendiente (P-23) |
+| `ALTA_PEDIDO` | Ventas | Pedido confirmado en PolyConecta (D-53, D-113); ya remisionado, se cancela en CONTPAQi (D-114) |
 | `CIERRE_PRODUCCION` | Producción | Cierre técnico: Salida desde WIP (consumo) + Entrada de PT y scrap con sus lotes (D-111) |
 | `REMISION` | Logística | Entrega validada; queda pendiente de facturar en CONTPAQi (S-13) |
 
