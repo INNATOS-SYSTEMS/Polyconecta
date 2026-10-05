@@ -87,12 +87,12 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Réplica Angular (paralelo) | ✅ | `001-angular-presentation` | ⬜ | n/a | n/a | — |
 | F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · borrador, por ratificar | ⬜ | ⬜ | ⬜ | — |
 | F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R1 |
-| F2 · Planeación de producción | 🟨 | `004-planeacion-produccion` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R2 |
-| F3 · Almacén | 🟨 | `005-almacen` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R3 |
-| F4 · Captura de producción | 🟨 | `006-captura-produccion` · por crear | ⬜ | n/a | ⬜ | ⬜ R4 |
-| F5 · Calidad y cierre | 🟨 | `007-calidad-y-cierre` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R5 |
+| F2 · Planeación de producción | ✅ | `004-planeacion-produccion` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R2 |
+| F3 · Almacén | ✅ | `005-almacen` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R3 |
+| F4 · Captura de producción | ✅ | `006-captura-produccion` · por crear | ⬜ | n/a | ⬜ | ⬜ R4 |
+| F5 · Calidad y cierre | ✅ | `007-calidad-y-cierre` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R5 |
 | F6 · Entregas | 🟨 | `008-entregas` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R6 |
-| F7 · Traslados entre plantas | 🟨 | `009-traslados` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R7 |
+| F7 · Traslados entre plantas | ✅ | `009-traslados` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R7 |
 | F8 · Flujo completo | 🟨 | `010-flujo-completo` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R8 |
 | F9 · Ajustes y cierre | n/a | sin spec | n/a | n/a | n/a | ⬜ R9 |
 
@@ -105,8 +105,8 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Fase | Preguntas abiertas ([preguntas-abiertas.md](diseno/preguntas-abiertas.md)) o decisiones por validar |
 | :--- | :--- |
 | F0 | ninguna |
-| F1 | T-06 (lectura de existencias, tarea 1.4): se puede especificar con la lectura directa de D-87 como supuesto. P-24 (cantidad en la unidad de CONTPAQi en las líneas del pedido) |
-| F2 a F5, F7 | Dependen del contrato `bridge-v1` (0.2). P-24 (cantidad en la unidad de CONTPAQi en lotes y movimientos) y T-17 (costo de la Entrada) antes de F3 |
+| F1 | T-06 (lectura de existencias, tarea 1.4): se puede especificar con la lectura directa de D-87 como supuesto. |
+| F2 a F5, F7 | Dependen del contrato `bridge-v1` (0.2). T-17 (costo de la Entrada) se resuelve en el contrato antes de F3 |
 | F6 | D-114 (cancelar el pedido remisionado) por validar con la operación |
 | F8 | T-06 (la conciliación depende de F-05) |
 

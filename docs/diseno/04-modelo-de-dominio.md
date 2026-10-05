@@ -11,7 +11,7 @@ Modelo **objetivo** de `PolyConecta.Domain`. Consolida la redefinición del domi
 - **Delegación 1:1 para especializaciones.** Los atributos físicos por categoría viven en entidades delegadas de `Product` (`RawMaterialCatalog`, `RollSpecification`, `PtSpecification`), no como columnas nulas en `Product`.
 - **Multiempresa por derivación.** La entidad legal se resuelve `LegalEntity ← Plant ← entidad operativa`; no se copia un `legal_entity_id` en cada tabla.
 - **Numeración centralizada.** Todo folio visible (pedido, orden, lote, QC, operación) sale de `IReferenceSequenceService`, configurable por tipo de documento; nunca se arma concatenando cadenas.
-- **KG como unidad base.** Todo cálculo interno se hace en kilogramos (ver [02-flujo-y-reglas.md §6](02-flujo-y-reglas.md)).
+- **Dos cantidades capturadas.** Toda línea, lote y movimiento guarda la cantidad en la unidad de CONTPAQi y el peso en kg, los dos capturados; los cálculos internos usan el kg (D-124, ver [02-flujo-y-reglas.md §6](02-flujo-y-reglas.md)).
 - **Ninguna entidad llama a CONTPAQi.** Las escrituras al ERP se encolan en el outbox (`IBridgeSyncService`).
 
 ## 2. Mapa de entidades
@@ -94,8 +94,8 @@ erDiagram
 
 | Entidad | Propósito |
 | :--- | :--- |
-| `Product` | Identidad única de catálogo: `sku`, `name`, `category` (`RawMaterial`, `Additive`, `Pigment`, `Recycled`, `IntermediateRoll`, `FinishedGood`, `ScrapMaterial`), `base_uom = KG`, `erp_product_id` |
-| `PackagingUnit` | Unidades de venta del producto: `code` (`KG`, `MIL`, `PZA`, `ROLLO`, `BULTO25`), `conversion_to_kg`, `is_default_sales_unit` |
+| `Product` | Identidad única de catálogo: `sku`, `name`, `category` (`RawMaterial`, `Additive`, `Pigment`, `Recycled`, `IntermediateRoll`, `FinishedGood`, `ScrapMaterial`), `erp_uom` (unidad base en CONTPAQi, sincronizada), `erp_product_id` |
+| `PackagingUnit` | Unidades de medida que el producto admite en CONTPAQi, sincronizadas desde allá: `code` (`KG`, `MIL`, `PZA`, `ROLLO`…), `is_erp_base_unit`. Sin conversión a kg (D-124) |
 | `ProductClassification` | Clasificación que agrupa el visor de disponibilidad y la herencia de rutas. Es de PolyConecta: la de CONTPAQi no distingue bolsa, rollo impreso, liso y maestro (D-86) |
 | `RawMaterialCatalog` | MP estandarizada entre plantas (Principio III): `mfi_melt_flow_index`, `density_g_cm3`, `target_hopper` |
 | `SupplierProductMapping` | Códigos de proveedor que apuntan a la MP estándar |
@@ -123,7 +123,7 @@ El PT no siempre es una bolsa: puede ser el mismo rollo vendido tal cual, por es
 | :--- | :--- |
 | `Customer` | Sincronizado de solo lectura desde CONTPAQi |
 | `SalesOrder` | `erp_document_id` (Contpaq ID, solo lectura; lo asigna la sincronización o el alta del pedido libre, D-53), `origin` (`Sync` o `Manual`), `customer_id`, `customer_po`, `agent`, `promise_date`, `state` (`Draft`, `Confirmed`, `Authorized`, `InProgress`, `Done`, `Cancelled`) |
-| `SalesOrderLine` | `erp_document_line_id`, `product_id`, `requested_qty`, `requested_packaging_unit_id`, `requested_qty_kg` (calculado), `target_production_kg`, `tolerance_percentage_override`, ruta forzada opcional |
+| `SalesOrderLine` | `erp_document_line_id`, `product_id`, `requested_qty` y `requested_packaging_unit_id` (unidad de CONTPAQi), `requested_qty_kg` (capturado, D-124), `target_production_kg`, `tolerance_percentage_override`, ruta forzada opcional |
 | `AuthorizationSignature` | Firma de un pedido: rol (`Comercial` o `Cobranza`), usuario, fecha. Hay una por rol y los dos usuarios deben ser distintos |
 
 `SalesOrderLine` tiene además `unit_price` y `currency`, que solo se llenan en el pedido libre (D-74). IVA, descuentos y totales viven en CONTPAQi.

@@ -296,3 +296,4 @@ Las secciones anteriores son el **objetivo primario** de la fase, fijado al rati
 | 2026-10-05 | L1 | Queda abierto quién aplica la regla de costo de D-79 en `TRASPASO` | Sin definir | FR-002 (`TRASPASO`); se cierra antes de F3 | T-17 |
 | 2026-10-05 | Común | `CIERRE_PRODUCCION` y `REMISION` se definen completos en `1.0`, no como provisionales | Decisión del usuario | FR-002, SC-001 | D-123 |
 | 2026-10-05 | Común | El contrato lleva cantidad y unidad de CONTPAQi, sin KG ni conversión; la fecha es la de negocio. Modifica el punto 1 de D-121 | No toda cantidad está en KG | FR-002, FR-003; abre P-24 sobre cómo guarda PolyConecta esa cantidad | D-123 |
+| 2026-10-05 | Común | Toda línea, lote y movimiento guarda cantidad en la unidad de CONTPAQi y kg, los dos capturados; la unidad siempre es la de CONTPAQi | Resolver P-24 | Modelo desde F1; ninguna tarea de F0 | D-124 |

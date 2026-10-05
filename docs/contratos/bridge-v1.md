@@ -123,7 +123,7 @@ Cada comando se describe con la misma ficha. **Lado negocio** (R: L2): cuándo s
 | `fecha` | Fecha de negocio del documento (`AAAA-MM-DD`), no la de envío, en la zona del servidor de CONTPAQi (D-123) |
 | `referencia_negocio` | Folio de PolyConecta, solo informativo |
 | `almacen_origen`, `almacen_destino` | Códigos de CONTPAQi |
-| `lineas[]` | Una por producto (D-82): `producto`, `cantidad`, `unidad` y `lotes[]` con `numero` y `cantidad`, en la misma unidad de la línea. `lotes` va vacío si el producto no lleva lote, como la MP (D-106). Cantidad y unidad son las de CONTPAQi, sin conversión (D-123, P-24) |
+| `lineas[]` | Una por producto (D-82): `producto`, `cantidad`, `unidad` y `lotes[]` con `numero` y `cantidad`, en la misma unidad de la línea. `lotes` va vacío si el producto no lleva lote, como la MP (D-106). Cantidad y unidad son las de CONTPAQi, sin conversión (D-123, D-124) |
 
 **Lado SDK.** Se registra como un par Salida (origen) + Entrada (destino), con un movimiento por producto y N capas de lote (D-79, D-82). Lo respaldan B-02, B-03, C-02, C-03 y S-01.
 

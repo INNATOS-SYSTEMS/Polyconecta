@@ -8,6 +8,7 @@ Lo que no se ha decidido o verificado y condiciona la construcción. Cuando se r
 - I-01 y U-01 eran trabajo planeado, no preguntas: están en el alcance de los módulos del roadmap.
 - Resueltas el 30-sep-2026 con la matriz del SDK: T-01 (D-79), T-02 (D-82), T-03 (D-83), T-04 (D-85), T-05 (D-86) y T-08 (D-80). T-06 se acotó (D-87). P-21 (D-90). T-15 (D-95). T-16 (D-106, D-107).
 - Resueltas el 1-oct-2026 con el bloque S: T-10 (D-110), T-11 (D-111), T-13 (D-108, D-109). T-14 se cerró en la ventana de mantenimiento (S-09). H-03 se resolvió con D-115. T-07 y T-12 dieron su respuesta técnica; P-22 se resolvió con D-113 y abrió P-23, que se resolvió con D-114 (por validar).
+- Resuelta el 5-oct-2026: P-24 (D-124). Abierta ese día: T-17.
 
 ## Infraestructura
 
@@ -15,12 +16,6 @@ Lo que no se ha decidido o verificado y condiciona la construcción. Cuando se r
 | :---: | :--- | :--- |
 | H-01 | **Hosting de producción** de PolyConecta (API, Angular y SQL Server 2022): servidor propio aparte del de CONTPAQi, el mismo VPS o nube administrada. Debe cumplir CT-05 (instancia separada de CONTPAQi) y tener conectividad con el bridge | Piloto del primer módulo; ambiente de producción (D-77) |
 | H-02 | **Respaldos** de la base de PolyConecta. Se define con H-01. Requisito mínimo ya fijado: respaldo completo diario y de logs de transacciones, con una prueba de restauración antes del piloto | Piloto del primer módulo |
-
-## Modelo
-
-| # | Pregunta | Bloquea |
-| :---: | :--- | :--- |
-| P-24 | **Cantidad en la unidad de CONTPAQi dentro de PolyConecta (D-123).** El modelo dice que `base_uom` es siempre KG y que las demás cantidades se calculan con una conversión (02 §6). Como el contrato lleva la cantidad en la unidad de CONTPAQi sin convertir, PolyConecta tiene que **guardar** esa cantidad en sus líneas, lotes y movimientos, no derivarla. Propuesta: toda línea, lote y movimiento que llega a CONTPAQi guarda `cantidad` + `unidad` (la de CONTPAQi para el producto) y además `kg` para los cálculos internos, con captura dual donde las dos difieren, como ya pasa en bolseo (millares y kg). Falta decidir si los dos valores se capturan siempre o si alguno se deriva, y qué pasa con los productos cuya unidad en CONTPAQi es KG | Modelo de lotes y movimientos (F1 en adelante); ficha de `TRASPASO`, `CIERRE_PRODUCCION` y `REMISION` |
 
 ## Técnicas (se resuelven con la matriz del SDK)
 

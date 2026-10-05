@@ -253,9 +253,10 @@ Invariante: todo material que sale de una planta hacia otra permanece en `TRANS/
 
 ## 6. Unidades de medida
 
-- `Product.base_uom` es **siempre KG**. Todo cálculo interno (componentes, órdenes, balance de masa) se hace en kilogramos.
-- La unidad de venta (KG, MIL, PZA, ROLLO, BULTO…) se configura por producto (`PackagingUnit`, con su conversión a kg) y se elige por línea de pedido.
-- `requested_qty_kg` **siempre se calcula** (`cantidad × conversión`); nunca se captura por separado.
+- La **unidad de medida de toda cantidad es la de CONTPAQi** para el producto (KG, MIL, PZA, ROLLO…). Se sincroniza desde CONTPAQi y no se configura en PolyConecta; una línea solo puede usar una unidad que el producto admita allá (D-123, D-124).
+- Toda línea, lote y movimiento guarda **dos cantidades**: la cantidad en la unidad de CONTPAQi y el **peso en kg**. **Las dos se capturan siempre**; ninguna se calcula de la otra. Cuando la unidad de CONTPAQi es KG, la cantidad ya es el peso.
+- Todo **cálculo interno** (componentes, planeación, balance de masa) usa el **kg capturado**. El factor kg por unidad de la ficha técnica es una referencia para contrastar, como el factor real de bolseo (§4), no una conversión.
+- A CONTPAQi viaja la cantidad en su unidad, sin conversión (D-123).
 
 ---
 
