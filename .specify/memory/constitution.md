@@ -1,5 +1,13 @@
 <!--
 Sync Impact Report:
+- Version change: 1.7.0 → 1.8.0
+- Modified sections: Governance & Amendment Policy adds the branch rule: each spec is built on its own branch, nothing is committed directly to `main`, and only finished work is merged into `main`.
+- Modified principles: None.
+- Added principles: None.
+- Removed sections: None.
+- Follow-up TODOs: None. Source decision: docs/diseno/decisiones.md D-125 (2026-10-05), approved by the user.
+
+Previous amendment (1.6.1 → 1.7.0, 2026-10-05):
 - Version change: 1.6.1 → 1.7.0
 - Modified sections: Governance & Amendment Policy adds the one-spec-per-phase rule: each phase of the work plan is a single spec with an exploration stage, and every change discovered while building it stays inside that spec instead of opening a new one.
 - Modified principles: None.
@@ -78,7 +86,8 @@ Following Odoo's document philosophy, every operational document (sales order, m
 
 - This Constitution governs all technical architecture, specification design (`.specify`), planning (`plan.md`), and task execution (`tasks.md`) in PolyConecta.
 - **One spec per phase.** Each phase of the work plan is exactly one spec. What the spec defines when it is ratified is its **primary objective**; building it is also an **exploration stage**, and every change discovered along the way (new requirements, adjustments, corrections, decisions) MUST be recorded and executed inside that same spec, in its exploration log. A minor or light change MUST NOT create a new spec. A new spec is only justified by a new phase of the work plan. Changes that alter a validated decision or the bridge contract are also recorded in `docs/diseno/decisiones.md` when they are made (contract changes still require both leads); the rest are integrated into `docs/diseno/` when the spec closes.
+- **One branch per spec; nothing goes directly to `main`.** Each spec is built on its own branch, named after its folder (`NNN-<fase>`), and both leads work on that branch. Any other change (documentation, fixes, amendments) also goes on its own branch. No commit is made directly on `main`: a branch is merged into `main` only when its work is finished and verified (for a spec, when it closes per CT-43; for any other change, when it is complete). After the merge, the branch is deleted.
 - Amendments require formal approval from the Steering Committee.
 - Semantic versioning applies (MAJOR for principle redefinition, MINOR for scope/governance updates, PATCH for wording fixes).
 
-**Version**: 1.7.0 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-10-05
+**Version**: 1.8.0 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-10-05
