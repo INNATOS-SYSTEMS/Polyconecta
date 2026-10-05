@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-28 · **Ratified**: 2026-09-29
 
-**Status**: Ratificada. Lista para `/speckit-plan`.
+**Status**: Ratificada. Plan listo; sigue `/speckit-tasks`.
 
 **Input**: Replicar en Angular la capa de presentación `PolyConecta.Presentation` (Blazor Server) con paridad 1:1, habilitar el modo libre ("Nuevo") y llevar el chatter en tiempo real a `PolyConecta.Api`.
 
@@ -235,3 +235,28 @@ Por fases. Una fase empieza cuando la anterior cumple su salida. Dentro de las f
 - La réplica no tiene autenticación; cualquier usuario ve todas las acciones, igual que en el prototipo.
 - El chatter no persiste mensajes: al reiniciar la API se pierden, igual que hoy al reiniciar Blazor.
 - Las diferencias del prototipo con el diseño vigente (estados de OF de D-42, alias de ubicaciones de D-43, nombres de lote de D-54 en documentos ligados) se conservan en la réplica para no romper la paridad, y se corrigen al conectar la API.
+
+---
+
+## Exploración y cambios *(obligatoria, CT-43)*
+
+Las secciones anteriores son el **objetivo primario**, fijado al ratificar la spec. Lo que surja después se registra aquí y se ejecuta en esta misma spec. Si un cambio modifica una decisión validada, se registra también en `docs/diseno/decisiones.md` y se anota aquí su número. Esta spec es de un solo camino (camino 2), así que la columna "Camino" no aplica.
+
+| Fecha | Cambio | Motivo | Impacto (requisitos y tareas) | Decisión |
+| :--- | :--- | :--- | :--- | :---: |
+| 2026-10-05 | Las fases 0 y 2A las hace la tarea 0.5 de la spec 002. La 001 empieza en la fase 1, sobre lo que deje la 0.5 | Evitar dos proyectos Angular (FR-022 de la 002) | Tabla de "Ejecución por agentes"; plan, "Fases ajustadas" | Aprobado por el usuario (002) |
+| 2026-10-05 | El proyecto se llama `PolyConecta.Web` | Nombre de capa | FR-001, FR-017, alcance | D-126 |
+| 2026-10-05 | `PocSalesOrderForm` pasa de la fase 2A a la 3A. La 0.5 hace 12 componentes y crea solo los tipos que usan | Inyecta `OperationalFlowState` e `InventoryState`, que no existen hasta la fase 1 | FR-005; fase 3A. FR-022 de la 002 debe decir 12 componentes (se corrige en la rama de la 002) | research R-04 |
+| 2026-10-05 | El pedido, el traslado, la recepción y la entrega son colecciones con un documento semilla idéntico al del prototipo. Las operaciones reciben el folio | El prototipo tiene un solo documento de cada uno, y "Nuevo" necesita dónde crear otro | FR-006 se lee como "1:1 en comportamiento sobre la semilla"; FR-012 | research R-02 |
+| 2026-10-05 | El estado se pierde al recargar, sin `sessionStorage` | En Blazor los servicios son `Scoped` por circuito y recargar abre uno nuevo | FR-011 resuelto; el escenario 6 de US-2 queda como "al recargar, el estado vuelve a la semilla, igual que en Blazor" | research R-03 |
+| 2026-10-05 | El chatter del prototipo no está en vivo: el hub existe, pero ninguna página se conecta. El chatter en vivo es comportamiento nuevo, como "Nuevo". CORS con credenciales para `:4200` | Hallazgo al revisar el código | US-4 ("en el prototipo ya funciona" no es cierto), FR-015, FR-016; la paridad corre con la API apagada | research R-07 |
+| 2026-10-05 | La fase 2B espera a la API en .NET 10 (tarea 0.3 de la 002) | La 2B y la 0.3 tocan `PolyConecta.Api` | Orden de fases; SC-006 se verifica sobre .NET 10 | — |
+| 2026-10-05 | El `./run.sh` de la raíz delega en `scripts/run.sh`, así que FR-003 no cambia | Duda sobre cuál integrar | FR-003 | research R-10 |
+
+### Preguntas abiertas de esta spec
+
+1. **Responsable.** D-118 no le asigna líder a la 001. Por carpetas cae en el camino 2 (Luis Alvarado Martinez), que también revisa `bloqueos.md` entre fases.
+2. **Origen de la rama.** La 001 sale de `main` y espera a que se integre la 002 (research R-05). La alternativa es traer la rama de la 002 cuando termine la 0.5.
+3. **Vitest y jsdom.** El runner de pruebas de Angular 22 los necesita, pero no están en la lista de dependencias aprobadas (research R-06).
+4. **Pedido libre y D-124.** La propuesta es no capturar el kg en el pedido libre de la réplica (research R-09).
+
