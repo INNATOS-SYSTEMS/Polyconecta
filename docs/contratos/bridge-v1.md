@@ -141,7 +141,7 @@ Lado SDK: `fInsertaAlmacen` → `fSetDatoAlmacen` → `fGuardaAlmacen`, fijando 
 
 ### 5.4 `CIERRE_PRODUCCION` · ✏️ por redactar en la sesión
 
-Se define completo en `1.0` (D-123). Lado negocio: el cierre técnico de la OF (02 §4) con `almacen_wip`, `consumos[]` (producto, cantidad, unidad, y lotes si los lleva), `entradas[]` de PT con su lote nuevo y `subproductos[]` (scrap) con su almacén destino. Lado SDK: Salida desde WIP (consumo) + Entrada de PT y scrap con la capa del lote nuevo y su costo (D-111, S-11, S-12). ❓ Quién calcula el costo de la entrada de PT; se resuelve junto con T-17.
+Se define completo en `1.0` (D-123). Lado negocio: el cierre técnico de la OF (02 §3) con `almacen_wip`, `consumos[]` (producto, cantidad, unidad, y lotes si los lleva), `entradas[]` de PT con su lote nuevo y `subproductos[]` (scrap) con su almacén destino. Lado SDK: Salida desde WIP (consumo) + Entrada de PT y scrap con la capa del lote nuevo y su costo (D-111, S-11, S-12). ❓ Quién calcula el costo de la entrada de PT; se resuelve junto con T-17.
 
 ### 5.5 `REMISION` · ✏️ por redactar en la sesión
 

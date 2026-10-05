@@ -86,19 +86,19 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
 | Réplica Angular (paralelo) | ✅ | `001-angular-presentation` | ⬜ | n/a | n/a | — |
 | F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · borrador, por ratificar | ⬜ | ⬜ | ⬜ | — |
-| F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R1 |
-| F2 · Planeación de producción | ✅ | `004-planeacion-produccion` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R2 |
-| F3 · Almacén | ✅ | `005-almacen` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R3 |
-| F4 · Captura de producción | ✅ | `006-captura-produccion` · por crear | ⬜ | n/a | ⬜ | ⬜ R4 |
-| F5 · Calidad y cierre | ✅ | `007-calidad-y-cierre` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R5 |
-| F6 · Entregas | 🟨 | `008-entregas` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R6 |
-| F7 · Traslados entre plantas | ✅ | `009-traslados` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R7 |
-| F8 · Flujo completo | 🟨 | `010-flujo-completo` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R8 |
+| F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R1 |
+| F2 · Planeación de producción | ✅ | `004-planeacion-produccion` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R2 |
+| F3 · Almacén | ✅ | `005-almacen` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R3 |
+| F4 · Captura de producción | ✅ | `006-captura-produccion` · esqueleto | ⬜ | n/a | ⬜ | ⬜ R4 |
+| F5 · Calidad y cierre | ✅ | `007-calidad-y-cierre` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R5 |
+| F6 · Entregas | 🟨 | `008-entregas` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R6 |
+| F7 · Traslados entre plantas | ✅ | `009-traslados` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R7 |
+| F8 · Flujo completo | 🟨 | `010-flujo-completo` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R8 |
 | F9 · Ajustes y cierre | n/a | sin spec | n/a | n/a | n/a | ⬜ R9 |
 
 **Diseño cerrado** significa que la fase no tiene preguntas abiertas que bloqueen su spec (sección 5).
 
-**Cuándo se crea cada spec.** Una spec se crea antes de que empiece su fase, una vez que su diseño está cerrado. La `002` va primero porque F0 arranca el 5-oct. Las de F1 y F2 se crean durante F0, cuando ya existe el contrato `bridge-v1` (tarea 0.2), porque sus comandos dependen de él.
+**Cuándo se completa cada spec.** Los esqueletos de las specs `003` a `010` existen desde el 5-oct, con sus tareas del plan ya repartidas en Común, L1 y L2. Cada uno se completa y se ratifica con los dos líderes **antes de que empiece su fase**, cuando su diseño está cerrado. La `002` va primero porque F0 arranca el 5-oct. Las de F1 y F2 se completan durante F0, cuando ya existe el contrato `bridge-v1` (tarea 0.2), porque sus comandos dependen de él.
 
 ## 5. Lo que bloquea cada fase
 
