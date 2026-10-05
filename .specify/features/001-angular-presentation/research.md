@@ -78,9 +78,9 @@ Decisiones de la fase 0 del plan. Cada una se verificó contra el código de `Po
 
 **Hallazgo**: FR-022 de la spec 002 asigna a la tarea 0.5 las fases 0 y 2A de esta spec. La regla de ramas (CT-44) solo deja integrar a `main` lo terminado, y la 002 cierra después del 9 de octubre.
 
-**Decisión**: `001-angular-presentation` sale de `main`. Hasta que la 002 se integre, esta rama solo lleva documentación (spec, plan y tareas). Cuando la 002 se integre, la 001 trae `main` a su rama y empieza la fase 1.
+**Decisión** (del usuario, 2026-10-05): `001-angular-presentation` sale de `main`. Hasta que la 002 se integre a `main`, esta rama solo lleva documentación (spec, plan y tareas). Cuando la 002 se integre, la 001 trae `main` a su rama y empieza la fase 1.
 
-**Alternativas**: sacar la rama de `002-construccion-tecnica` al terminar la 0.5. Empieza unos días antes, pero ata la 001 a una rama sin cerrar, que puede seguir cambiando. Queda como opción si el líder la pide (pregunta abierta 2 de la spec).
+**Alternativa descartada**: traer los cambios de la rama `002-construccion-tecnica` al terminar la 0.5. Empezaba uno o dos días antes, pero ataba la 001 a una rama sin cerrar.
 
 ---
 
@@ -123,13 +123,13 @@ Decisiones de la fase 0 del plan. Cada una se verificó contra el código de `Po
 
 ---
 
-## R-09 · Pedido libre y D-124
+## R-09 · Cantidad y unidad en modo libre (D-124)
 
-**Hallazgo**: D-124 (posterior a la spec) dice que toda línea guarda la cantidad en la unidad de CONTPAQi **y** el peso en kg, los dos capturados. FR-012 pide para el pedido libre cantidad, unidad, precio unitario y moneda, sin peso.
+**Hallazgo**: D-124 dice que toda línea guarda su cantidad en la unidad de medida de CONTPAQi del producto, sin conversión. FR-012 pedía cantidad y unidad solo en algunos documentos y no decía de dónde sale la unidad.
 
-**Decisión** (del usuario, 2026-10-05): **el pedido libre de la réplica captura los dos valores**: la cantidad en la unidad de CONTPAQi del producto y el peso en kg, a mano y sin que uno se calcule del otro, aunque la réplica no esté conectada a la API. FR-012 se actualiza. Las líneas de la semilla no cambian, para no romper la paridad.
+**Decisión** (del usuario, 2026-10-05): en modo libre, **toda línea y toda asignación de lote lleva cantidad (número) y unidad**, aunque la réplica no esté conectada a la API. La unidad es la **unidad base del producto en CONTPAQi**. En la réplica sale de `ProductRef.unidad` de la semilla, se muestra al elegir el producto y no se edita. No hay un campo de peso en kg aparte, y nada se convierte. Las líneas de la semilla no cambian.
 
-**Alternativa descartada**: dejar el kg para la spec 003, al conectar la API.
+**Alternativa descartada**: agregar un campo de peso en kg a cada línea.
 
 ---
 

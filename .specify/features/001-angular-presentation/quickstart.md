@@ -61,7 +61,7 @@ npm run scenarios
 - Una recepción libre solo ofrece lotes en `TRANS/*`.
 - Un traslado o una entrega libres solo ofrecen lotes liberados.
 - Una recolección libre deja saldo sin asignar en WIP.
-- Un pedido libre pide en cada línea la cantidad en la unidad de CONTPAQi y el peso en kg. Ninguno se llena solo al capturar el otro.
+- Cada línea libre pide la cantidad y muestra la unidad base del producto en CONTPAQi, que no se puede editar.
 - Un pedido libre recibe un Contpaq ID simulado al confirmarse.
 
 Los guiones de US-3 en `npm run scenarios` verifican lo mismo de forma automática, solo contra Angular.

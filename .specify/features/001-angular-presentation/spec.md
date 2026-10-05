@@ -161,15 +161,17 @@ Como usuario, necesito que los mensajes del chatter de un documento aparezcan en
 
 | Documento | Campos mínimos al crear | Regla del modo libre |
 | :--- | :--- | :--- |
-| Pedido de venta | Cliente, líneas (producto, cantidad en la unidad de CONTPAQi, unidad, peso en kg, precio unitario y moneda) | Al confirmar recibe un Contpaq ID simulado (D-53). El precio solo existe en pedidos libres (D-74). La cantidad y el kg se capturan los dos y ninguno se calcula del otro (D-124) |
+| Pedido de venta | Cliente, líneas (producto, cantidad, unidad, precio unitario y moneda) | Al confirmar recibe un Contpaq ID simulado (D-53). El precio solo existe en pedidos libres (D-74) |
 | Orden de fabricación | Proceso, producto, cantidad, unidad | Sin pedido. Sus lotes usan el folio de la OF raíz con `/` → `-` (D-54). Al confirmarla genera su recolección y sus controles igual que una ligada |
-| Recolección | Planta, líneas (producto, cantidad) | MP → WIP sin OF; el saldo queda sin asignar (D-55) |
+| Recolección | Planta, líneas (producto, cantidad, unidad) | MP → WIP sin OF; el saldo queda sin asignar (D-55) |
 | Control de calidad | Lote(s) existentes | Solo sobre lotes existentes; aprobar o rechazar tiene los mismos efectos que en un control ligado |
 | Traslado | Lotes | Solo lotes liberados por Calidad (hard-stop) |
 | Recepción | Lotes | Solo lotes en `TRANS/*` (D-56) |
 | Entrega | Cliente, lotes | Solo lotes liberados; sin pedido |
-| Devolución (`REC-RET`) | Planta, lotes de WIP, cantidad | Cantidad capturada a mano |
+| Devolución (`REC-RET`) | Planta, lotes de WIP, cantidad, unidad | Cantidad capturada a mano |
 | Incidencia | Igual que hoy | Ya es libre en el prototipo; no cambia |
+
+**Cantidad y unidad (D-124).** En modo libre, toda línea y toda asignación de lote lleva **cantidad** (número) y **unidad**. La unidad es siempre la **unidad base del producto en CONTPAQi** (`ProductRef.unidad`): se muestra al elegir el producto y no se edita. No hay campo de peso aparte ni conversión entre unidades.
 
 - **FR-013**: Una OF MUST ofrecer la acción **"Asignar saldo de WIP"**, que liga saldo sin asignar de sus componentes. La asignación es manual y nunca automática, por la regla 008-FR-004: el sistema no asigna lotes sin confirmación.
 - **FR-014**: Un documento creado libre MUST mostrar sus smart buttons de origen vacíos o deshabilitados, nunca con un origen falso.
@@ -253,10 +255,6 @@ Las secciones anteriores son el **objetivo primario**, fijado al ratificar la sp
 | 2026-10-05 | La fase 2B espera a la API en .NET 10 (tarea 0.3 de la 002) | La 2B y la 0.3 tocan `PolyConecta.Api` | Orden de fases; SC-006 se verifica sobre .NET 10 | — |
 | 2026-10-05 | Responsable: Luis Alvarado Martinez, que también revisa `bloqueos.md` entre fases | D-118 no le asignaba líder | Encabezado; regla de autonomía 6 | Decisión del usuario |
 | 2026-10-05 | Se aprueban `vitest` y `jsdom` | El runner de pruebas de Angular 22 los necesita | Regla de autonomía 4; FR-019 | Decisión del usuario (research R-06) |
-| 2026-10-05 | El pedido libre captura la cantidad en la unidad de CONTPAQi **y** el peso en kg, los dos a mano, aunque la réplica no esté conectada a la API | D-124 aplica también a la réplica | FR-012 (pedido de venta); `SalesOrderLine` en data-model | D-124, decisión del usuario (research R-09) |
+| 2026-10-05 | En modo libre, toda línea y toda asignación de lote lleva cantidad y unidad. La unidad es la unidad base del producto en CONTPAQi, se toma del producto y no se edita. No hay campo de kg aparte ni conversión | Aplicar D-124 a la réplica aunque no esté conectada a la API | FR-012 (nota de cantidad y unidad; filas de recolección y devolución); data-model §1 y §3 | D-124, decisión del usuario (research R-09) |
+| 2026-10-05 | La 001 espera a que la 002 se integre a `main` y después trae `main` a su rama. Hasta entonces, solo documentación | Regla de ramas (CT-44) | Orden de fases; plan, "Dependencias con la spec 002" | Decisión del usuario (research R-05) |
 | 2026-10-05 | El `./run.sh` de la raíz delega en `scripts/run.sh`, así que FR-003 no cambia | Duda sobre cuál integrar | FR-003 | research R-10 |
-
-### Preguntas abiertas de esta spec
-
-1. **Origen de la rama.** La 001 sale de `main` y espera a que se integre la 002 (research R-05). La alternativa es traer la rama de la 002 cuando termine la 0.5.
-

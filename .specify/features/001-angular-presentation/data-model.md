@@ -2,6 +2,8 @@
 
 Es el modelo del **prototipo**, tipado en TypeScript, no el de [04-modelo-de-dominio.md](../../../docs/diseno/04-modelo-de-dominio.md). Ese se adopta al conectar la API. La fuente de cada tipo es su clase en `PolyConecta.Presentation/Services/`. Los nombres de campo se pasan a camelCase (FR-006). Los textos de estado se conservan en español y con las mismas cadenas, porque la paridad compara texto visible.
 
+**Cantidad y unidad.** Toda línea y toda asignación de lote lleva `cantidad` (número) y `unidad`. En modo libre, la unidad es la unidad base del producto en CONTPAQi, que en la réplica es `ProductRef.unidad` de la semilla (D-124).
+
 **Montos.** El prototipo usa `decimal` y la réplica usa `number`. Lo que la pantalla muestra se formatea igual que en Blazor (separadores y decimales), y la fase 1 lo verifica con las pruebas de FR-008.
 
 ---
@@ -37,7 +39,7 @@ Es el modelo del **prototipo**, tipado en TypeScript, no el de [04-modelo-de-dom
 | `ProductionLot` | `lote`, `real`, `unidad`, `estado: 'En revisión' \| 'Aprobado' \| 'Rechazado'` | **Lo crea la 0.5** (lo usa `LotPickerModal`) |
 | `ManufacturingOrder` | `folio`, `processType: 'Extrusion' \| 'Impresion' \| 'Bolseo'`, `processLabel`, `producto`, `empresa`, `cantidad`, `unidad`, `tiempoEstimadoHrs`, `numeroRollos`, `calidadRequerida`, `almacenFalla`, `fechaEsperada`, `state`, `originFolio?`, `pedidoFolio`, `componentes`, `subproductos`, `produccion`, `planeacion`, `sequenceCounter`; calculados `numeroLabel`, `producidoTotal` (sin rechazados) | `state`: Borrador · Planeado · En progreso · Hecho. Sin `originFolio` es la OF maestra |
 | `QualityControlState` | `manufacturingOrderFolio`, `folio`, `auditor`, `processLabel` | |
-| `SalesOrderLine` | `clave`, `producto`, `cantidad`, `unidad`, `precioUnitario`; calculado `subtotal` | En modo libre se agregan `moneda` (D-74) y `pesoKg` (D-124). `cantidad` va en la unidad de CONTPAQi del producto. En las líneas de la semilla, `pesoKg` queda vacío para no cambiar lo que muestra el prototipo |
+| `SalesOrderLine` | `clave`, `producto`, `cantidad`, `unidad`, `precioUnitario`; calculado `subtotal` | En modo libre se agrega `moneda` (D-74) |
 | `ProcessCheck` | `proceso`, `activo`, `origen`, `producto` | |
 | `ShipmentLine` | `clave`, `producto`, `demanda`, `entregado`, `unidad`, `lotesSeleccionados: string[]` | |
 | `Incidencia` | `fecha`, `centroTrabajo`, `tipo`, `comentarios`, `horaInicio`, `horaFin` | |
@@ -102,6 +104,6 @@ Los parámetros `out` de C# se devuelven como objeto. El `Notify()` del prototip
 | Recolección libre deja saldo sin asignar (D-55) | creación libre de recolección | El saldo aparece en WIP sin OF |
 | Asignar saldo de WIP es manual (FR-013) | `asignarSaldoWip` (nueva) | Nada se asigna sin la acción explícita |
 | Pedido libre recibe un Contpaq ID simulado al confirmar (D-53) | creación libre de pedido | Recibe el ID y sigue el flujo de dos firmas |
-| Línea de pedido libre con cantidad y kg capturados, sin conversión (D-124) | captura de línea libre | No se guarda sin los dos valores; cambiar uno no cambia el otro |
+| Toda línea libre lleva cantidad y la unidad base del producto en CONTPAQi (D-124) | captura de línea en modo libre | La unidad sale de `ProductRef.unidad` y no se edita; no se guarda una línea sin cantidad; no hay conversión |
 
 La fase 1 completa la tabla con cada regla que encuentre al portar los servicios, porque FR-008 da ejemplos, no una lista cerrada.
