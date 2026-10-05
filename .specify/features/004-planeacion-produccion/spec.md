@@ -12,7 +12,7 @@
 
 **Input**: Tareas 2.1 a 2.8 del [plan de trabajo](../../../docs/plan/Tarea%20(project.task)%20-%20replaneacion(2).xlsx) y la fila F2 de [ROADMAP.md §3](../../../docs/ROADMAP.md).
 
-**Decisiones que la rigen** (`docs/diseno/decisiones.md`): D-05 a D-08, D-41, D-42, D-52, D-80, D-81, D-92, D-93, D-95, D-112, D-113, D-124, D-116 a D-120 (fases y specs).
+**Decisiones que la rigen** (`docs/diseno/decisiones.md`): D-05 a D-08, D-41, D-42, D-52, D-80, D-81, D-92, D-93, D-95, D-112, D-113, D-124, D-127, D-116 a D-120 (fases y specs).
 
 ---
 

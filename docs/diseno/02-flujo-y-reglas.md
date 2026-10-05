@@ -253,9 +253,9 @@ Invariante: todo material que sale de una planta hacia otra permanece en `TRANS/
 
 ## 6. Unidades de medida
 
-- La **unidad de medida de toda cantidad es la de CONTPAQi** para el producto (KG, MIL, PZA, ROLLO…). Se sincroniza desde CONTPAQi y no se configura en PolyConecta; una línea solo puede usar una unidad que el producto admita allá (D-123, D-124).
-- Toda línea, lote y movimiento guarda **dos cantidades**: la cantidad en la unidad de CONTPAQi y el **peso en kg**. **Las dos se capturan siempre** en PolyConecta y **nunca se convierte nada**: ninguna se calcula ni se copia de la otra, aunque la unidad de CONTPAQi sea KG, y el sistema no propone valores calculados.
-- Todo **cálculo interno** (componentes, planeación, balance de masa) usa el **kg capturado**. El factor kg por unidad de la ficha técnica es una referencia para contrastar, como el factor real de bolseo (§3), no una conversión.
+- Toda línea, lote y movimiento lleva **cantidad** (número) y **unidad**. La unidad es siempre la **unidad base del producto en CONTPAQi** (KG, MIL, PZA, ROLLO…): se sincroniza desde CONTPAQi, se toma del producto y no se elige ni se edita por línea (D-123, D-127).
+- **No hay un peso en kg capturado aparte** de la cantidad, y **nunca se convierte nada** (D-127).
+- **Pendiente (P-25):** de dónde salen los kg de los cálculos internos (componentes, planeación, balance de masa) cuando la unidad base del producto no es KG. Hasta resolverlo, el balance de masa solo está definido para productos con unidad base KG.
 - A CONTPAQi viaja la cantidad en su unidad, sin conversión (D-123).
 
 ---
