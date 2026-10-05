@@ -12,13 +12,13 @@
 
 **Input**: Tareas 4.1 a 4.5 del [plan de trabajo](../../../docs/plan/Tarea%20(project.task)%20-%20replaneacion(2).xlsx) y la fila F4 de [ROADMAP.md §3](../../../docs/ROADMAP.md).
 
-**Decisiones que la rigen** (`docs/diseno/decisiones.md`): D-10, D-39, D-40, D-45, D-54, D-98, D-124, D-116 a D-120 (fases y specs).
+**Decisiones que la rigen** (`docs/diseno/decisiones.md`): D-10, D-39, D-40, D-45, D-54, D-98, D-124, D-127, D-116 a D-120 (fases y specs).
 
 ---
 
 ## Contexto para el agente
 
-- **Objetivo de la fase.** El Planner vacía en PolyConecta lo que los operadores anotaron en los diarios de piso: lotes producidos con su cantidad en la unidad de CONTPAQi y su peso en kg, registro masivo e incidencias de máquina. Los lotes se proyectan al confirmar la orden con su nomenclatura.
+- **Objetivo de la fase.** El Planner vacía en PolyConecta lo que los operadores anotaron en los diarios de piso: lotes producidos con su cantidad en la unidad base de CONTPAQi (D-127; el peso en kg depende de P-25), registro masivo e incidencias de máquina. Los lotes se proyectan al confirmar la orden con su nomenclatura.
 - **Diseño que la sostiene.** [02 §3](../../../docs/diseno/02-flujo-y-reglas.md) (pesaje y lotes, conversión en Santa Cruz, incidencias), [02 §6](../../../docs/diseno/02-flujo-y-reglas.md) (unidades), [04 §3](../../../docs/diseno/04-modelo-de-dominio.md) (Manufactura).
 - **Contrato.** Ninguno. La entrada de producción a CONTPAQi ocurre en el cierre (F5). Ver [`docs/contratos/bridge-v1.md`](../../../docs/contratos/bridge-v1.md).
 - **Depende de.** F2: orden de fabricación con planeación. F3: material en WIP.
@@ -48,7 +48,7 @@ Horas: L1 0 · L2 34 · Común 0.
 
 | Elemento | Qué hacer |
 | :--- | :--- |
-| Registro dual en bolseo y en general: cantidad en la unidad de CONTPAQi y kg, los dos capturados (D-124), dentro de 4.2 | Confirmar al ratificar si cabe en las horas de la fase o se registra fuera de alcance |
+| Registro dual en bolseo: millares y kg. D-127 quitó el kg capturado aparte en general; cómo queda el bolseo depende de P-25, dentro de 4.2 | Confirmar al ratificar si cabe en las horas de la fase o se registra fuera de alcance |
 
 ### Preguntas abiertas y decisiones por validar
 

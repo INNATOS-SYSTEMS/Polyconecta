@@ -8,7 +8,13 @@ Lo que no se ha decidido o verificado y condiciona la construcción. Cuando se r
 - I-01 y U-01 eran trabajo planeado, no preguntas: están en el alcance de los módulos del roadmap.
 - Resueltas el 30-sep-2026 con la matriz del SDK: T-01 (D-79), T-02 (D-82), T-03 (D-83), T-04 (D-85), T-05 (D-86) y T-08 (D-80). T-06 se acotó (D-87). P-21 (D-90). T-15 (D-95). T-16 (D-106, D-107).
 - Resueltas el 1-oct-2026 con el bloque S: T-10 (D-110), T-11 (D-111), T-13 (D-108, D-109). T-14 se cerró en la ventana de mantenimiento (S-09). H-03 se resolvió con D-115. T-07 y T-12 dieron su respuesta técnica; P-22 se resolvió con D-113 y abrió P-23, que se resolvió con D-114 (por validar).
-- Resuelta el 5-oct-2026: P-24 (D-124). Abierta ese día: T-17.
+- Resuelta el 5-oct-2026: P-24 (D-124). Abiertas ese día: T-17 y P-25 (D-127).
+
+## Diseño
+
+| # | Pregunta | Bloquea |
+| :---: | :--- | :--- |
+| P-25 | **De dónde salen los kg de los cálculos internos.** D-127 quitó el peso en kg capturado aparte: cada línea lleva una sola cantidad en la unidad base de CONTPAQi. El balance de masa (Principio IV), los componentes, la planeación, la meta de producción (`target_production_kg`), el scrap y el registro dual de bolseo (02 §3 y §4) se expresan en kg. Hay que decidir cómo se obtienen cuando la unidad base no es KG: un factor de la ficha técnica, capturar el peso solo en ciertos documentos (pesaje de rollos, bolseo, scrap) o dar de alta en KG los productos que entran al balance | Balance de masa (F5); captura de producción (F4); componentes y planeación (F2) |
 
 ## Infraestructura
 

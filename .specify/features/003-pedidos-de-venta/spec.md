@@ -12,7 +12,7 @@
 
 **Input**: Tareas 1.1 a 1.7 del [plan de trabajo](../../../docs/plan/Tarea%20(project.task)%20-%20replaneacion(2).xlsx) y la fila F1 de [ROADMAP.md §3](../../../docs/ROADMAP.md).
 
-**Decisiones que la rigen** (`docs/diseno/decisiones.md`): D-15, D-32 a D-38 (roles, firmas y suplentes), D-52, D-53, D-74, D-78, D-86, D-87, D-88, D-91, D-108, D-113, D-123, D-124, D-116 a D-120 (fases y specs).
+**Decisiones que la rigen** (`docs/diseno/decisiones.md`): D-15, D-32 a D-38 (roles, firmas y suplentes), D-52, D-53, D-74, D-78, D-86, D-87, D-88, D-91, D-108, D-113, D-123, D-124, D-127, D-116 a D-120 (fases y specs).
 
 ---
 
@@ -52,7 +52,7 @@ Horas: L1 28 · L2 47 · Común 0.
 | :--- | :--- |
 | Pedido capturado en CONTPAQi que entra por sincronización (D-53) | Confirmar al ratificar si cabe en las horas de la fase o se registra fuera de alcance |
 | Revocación de la autorización (02 §1) | Confirmar al ratificar si cabe en las horas de la fase o se registra fuera de alcance |
-| Ficha técnica, unidades que admite el producto (D-124) y clasificación propia (D-86) | Confirmar al ratificar si cabe en las horas de la fase o se registra fuera de alcance |
+| Ficha técnica, unidad base del producto (D-124, D-127) y clasificación propia (D-86) | Confirmar al ratificar si cabe en las horas de la fase o se registra fuera de alcance |
 | Cotejo de F-01, F-02 y F-05 con la UI de CONTPAQi (T-06, ex A-13), junto con 1.4 | Confirmar al ratificar si cabe en las horas de la fase o se registra fuera de alcance |
 
 ### Preguntas abiertas y decisiones por validar

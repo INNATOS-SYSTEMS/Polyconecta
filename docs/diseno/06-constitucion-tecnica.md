@@ -86,7 +86,7 @@ flowchart LR
 | Recepciones de compra | CONTPAQi (D-96) | Lectura por el bridge y sincronización a PolyConecta como entrada de solo lectura (D-102) |
 
 - **CT-15** Todo documento que escribe en CONTPAQi tiene un **estado de sincronización** propio, visible en su formulario: `No aplica`, `Pendiente`, `Enviado`, `Confirmado` o `Error`. Es independiente de su estado de negocio: un traslado puede estar `Hecho` y su sincronización en `Error`. Los errores los atiende el rol Sistemas desde un tablero de sincronización (D-93).
-- **CT-16** El **KG es la unidad de los cálculos internos** (D-03), como el balance de masa. El contrato **no** usa KG: lleva cantidad y unidad de medida tal como las tiene CONTPAQi para el producto, y ni PolyConecta ni el bridge convierten unidades (D-123). Las fechas son la fecha de negocio del documento, en la zona horaria del servidor de CONTPAQi (D-121, D-123). PolyConecta guarda y captura las dos cantidades, la de la unidad de CONTPAQi y el kg (D-124).
+- **CT-16** El **KG es la unidad de los cálculos internos** (D-03), como el balance de masa. El contrato **no** usa KG: lleva cantidad y unidad de medida tal como las tiene CONTPAQi para el producto, y ni PolyConecta ni el bridge convierten unidades (D-123). Las fechas son la fecha de negocio del documento, en la zona horaria del servidor de CONTPAQi (D-121, D-123). PolyConecta guarda una sola cantidad por línea, en la unidad base del producto en CONTPAQi, sin kg aparte (D-127). De dónde salen los kg de los cálculos internos está pendiente (P-25).
 
 ## 5. Contrato del bridge (D-63)
 
