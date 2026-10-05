@@ -1,5 +1,7 @@
 # Implementation Plan: [FEATURE]
 
+> **Secciones por líder (CT-34, D-120).** El plan es uno por fase. Lo común (resumen, contexto técnico, verificación de la constitución y estructura) va primero. Después, una sección **L1 · Camino 1** y otra **L2 · Camino 2** con las decisiones de diseño de cada líder. Cada líder solo edita la suya; lo común se acuerda entre los dos.
+
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`

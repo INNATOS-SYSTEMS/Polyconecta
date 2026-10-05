@@ -5,6 +5,8 @@ description: "Task list template for feature implementation"
 
 # Tasks: [FEATURE NAME]
 
+> **Secciones por líder (CT-34, D-120).** Las tareas se agrupan en una sección **L1 · Camino 1** y otra **L2 · Camino 2**, y dentro de cada una por historia de usuario. Los ids llevan el camino (`L1-T001`, `L2-T001`). Una tarea que necesita a los dos líderes va en una sección **Común** y nombra a su responsable. Cada líder solo edita su sección. Las tareas que nacen de la exploración se agregan aquí con la referencia a su fila en "Exploración y cambios" de `spec.md` (CT-43).
+
 **Input**: Design documents from `/specs/[###-feature-name]/`
 
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/

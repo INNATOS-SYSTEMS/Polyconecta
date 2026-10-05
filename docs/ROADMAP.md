@@ -85,7 +85,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Fase | Diseño cerrado | Spec | Cerrado en PolyConecta | Comandos entregados (camino 1) | Cerrado integrado | Revisión |
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
 | Réplica Angular (paralelo) | ✅ | `001-angular-presentation` | ⬜ | n/a | n/a | — |
-| F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · por crear | ⬜ | ⬜ | ⬜ | — |
+| F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · borrador, por ratificar | ⬜ | ⬜ | ⬜ | — |
 | F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R1 |
 | F2 · Planeación de producción | ✅ | `004-planeacion-produccion` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R2 |
 | F3 · Almacén | ✅ | `005-almacen` · por crear | ⬜ | ⬜ | ⬜ | ⬜ R3 |

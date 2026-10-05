@@ -175,7 +175,7 @@ Cada fase del plan de trabajo tiene **dos cierres**, y el avance del proyecto se
 | Carpetas | `PolyConecta.Contpaq/`, `tools/sdk-lab/`, `tests/Contpaq.Bridge.Tests/`, `docs/contpaq/` | `PolyConecta.Domain/`, `Application/`, `Infrastructure/`, `Api/`, `Web.Angular/`, `tests/PolyConecta.*` |
 | Compartido | `docs/contratos/`, la suite de contrato y el modo simulado del bridge (CT-22) | |
 
-- **CT-34** Cada fase del plan (F0 a F8) es una feature de Spec Kit (`.specify/features/NNN-<fase>/`) con sus tareas separadas por camino (D-116). Una fase es **una sola spec**, y un cambio menor nunca abre otra (D-119).
+- **CT-34** Cada fase del plan (F0 a F8) es una feature de Spec Kit (`.specify/features/NNN-<fase>/`) con sus tareas separadas por camino (D-116). Una fase es **una sola spec**, y un cambio menor nunca abre otra (D-119). En su carpeta, `spec.md` es **común** a los dos líderes (objetivo, alcance, criterios de aceptación y exploración), y `plan.md` y `tasks.md` tienen una sección por líder: **L1** (camino 1) y **L2** (camino 2). Cada líder y sus agentes solo editan su sección; lo común se acuerda entre los dos (D-120).
 - **CT-43** Cada spec tiene **objetivo primario** y **exploración** (D-119):
   - El **objetivo primario** es lo que la spec define al ratificarse, a partir del diseño vigente.
   - La **exploración** es el resto de la construcción de la fase. Todo cambio que surja (requisito nuevo, ajuste, corrección o decisión) se registra en la sección "Exploración y cambios" de la spec con fecha, camino, motivo e impacto, y se ejecuta en la misma spec, con sus tareas en el `tasks.md` de la fase.
