@@ -1,0 +1,22 @@
+{
+  "contract_version": "1.0",
+  "command_type": "TRASPASO",
+  "variant": "RECOLECCION",
+  "idempotency_key": "recoleccion:8813:validar",
+  "correlation_id": "0a1b2c3d-0000-4000-8000-000000000001",
+  "client_app_id": "polyconecta",
+  "callback_url": "https://api.polyconecta.local/api/v1/erp/callbacks",
+  "payload": {
+    "fecha": "2026-10-12",
+    "referencia_negocio": "REC/PIM/2026/0043",
+    "almacen_origen": "MP-PIM",
+    "almacen_destino": "WIP-PIM",
+    "lineas": [
+      {
+        "producto": "R-IV310",
+        "kg": 830.5,
+        "lotes": [ { "numero": "R001-IV310-26", "kg": 410.2 } ]
+      }
+    ]
+  }
+}

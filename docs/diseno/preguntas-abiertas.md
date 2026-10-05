@@ -22,4 +22,5 @@ Todas se verifican con [MATRIZ_PRUEBAS_SDK_WIP_LOTES.md](../contpaq/MATRIZ_PRUEB
 
 | # | Pregunta | Bloque | Si falla |
 | :---: | :--- | :---: | :--- |
+| T-17 | **Costo de la Entrada en `TRASPASO`.** D-79 fija la regla (`CCOSTOESPECIFICO ÷ CUNIDADES` de la Salida). Falta decidir quién la aplica: el bridge al crear la Entrada, leyendo la Salida recién creada, o PolyConecta con un costo que manda en la carga. También, si el resultado del comando devuelve el costo a PolyConecta | Contrato | Se define en el contrato antes de implementar `TRASPASO` (F3) |
 | T-06 | ¿La lectura directa refleja al momento un cambio hecho en la UI de CONTPAQi? Falta ejecutar F-05 y cotejar F-01 y F-02 con la UI (D-87) | F-05 | Proyección propia de existencias con estrategia de invalidación |

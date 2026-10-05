@@ -1,0 +1,23 @@
+{
+  "event_type": "transaction.status_changed",
+  "contract_version": "1.0",
+  "transaction_id": "c82f1d3b-6e5a-4f4c-b2d3-0a9f8e7d6c5b",
+  "correlation_id": "6f1c2d9e-4b7a-4c1e-9f0a-2d3e4f5a6b7c",
+  "idempotency_key": "recoleccion:8814:validar",
+  "command_type": "TRASPASO",
+  "status": "FAILED",
+  "result": null,
+  "error": {
+    "code": "EXISTENCIA_INSUFICIENTE_LOTE",
+    "retryable": false,
+    "message": "El lote R002-IV310-26 no tiene existencia suficiente en MP-PIM",
+    "detail": {
+      "producto": "R-IV310",
+      "almacen": "MP-PIM",
+      "lote": "R002-IV310-26",
+      "disponible_kg": 300.0,
+      "solicitado_kg": 420.3
+    }
+  },
+  "timestamp": "2026-10-12T10:16:40-06:00"
+}

@@ -1,0 +1,17 @@
+{
+  "event_type": "transaction.status_changed",
+  "contract_version": "1.0",
+  "transaction_id": "b71e0c2a-5d4f-4e3b-a1c2-9f8e7d6c5b4a",
+  "correlation_id": "6f1c2d9e-4b7a-4c1e-9f0a-2d3e4f5a6b7c",
+  "idempotency_key": "recoleccion:8812:validar",
+  "command_type": "TRASPASO",
+  "status": "CONFIRMED",
+  "result": {
+    "documentos": [
+      { "rol": "salida", "concepto": "SAL-RECOL", "folio": "1042", "id_erp": 55120 },
+      { "rol": "entrada", "concepto": "ENT-RECOL", "folio": "877", "id_erp": 55121 }
+    ]
+  },
+  "error": null,
+  "timestamp": "2026-10-12T10:15:03-06:00"
+}

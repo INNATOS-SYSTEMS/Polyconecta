@@ -194,15 +194,15 @@ El bridge del VPS usa credenciales nuevas y un login de solo lectura, y vuelve s
 **Común · contrato (0.2)**
 
 - **FR-001**: `docs/contratos/bridge-v1.md` MUST describir el contrato y `docs/contratos/bridge-v1.openapi.yaml` MUST ser su OpenAPI válido. Parte de la API actual del bridge (`/api/v1/transactions`, `/catalogs/*`, `/inventory/stocks`, `/dlq`) y la ajusta a CT-17 y CT-18.
-- **FR-002**: El contrato MUST definir para cada comando de CT-18 su carga (en KG y con la conversión a la unidad de CONTPAQi, CT-16), su resultado (folio, id ERP, ids de movimientos), sus errores con código estable y su traducción al SDK, citando la decisión o la prueba de la matriz que la respalda (Principio VII).
-- **FR-003**: El contrato MUST fijar `idempotency_key` (`{tipo}:{id}:{transición}`, CT-19), `correlation_id` (CT-31), la referencia de reconciliación de 20 caracteres como máximo (CT-38) y la forma del callback.
+- **FR-002**: El contrato MUST definir para cada comando de CT-18 su carga (códigos de CONTPAQi resueltos por PolyConecta y cantidades en KG; el bridge convierte a la unidad de CONTPAQi y elige el concepto por configuración, D-121), su resultado (folio, id ERP, ids de movimientos), sus errores con código estable y su traducción al SDK, citando la decisión o la prueba de la matriz que la respalda (Principio VII).
+- **FR-003**: El contrato MUST fijar `idempotency_key` (`{tipo}:{id}:{transición}`, CT-19), `correlation_id` (CT-31), la referencia de reconciliación de 20 caracteres como máximo (CT-38), la forma del callback y su firma con secreto compartido, la equivalencia de estados con CT-15 y la zona horaria del servidor de CONTPAQi como referencia de fechas (D-121).
 - **FR-004**: El contrato MUST incluir la lectura de recepciones de compra (`/inventory/purchases`, D-102) aunque su implementación real llegue en una fase posterior.
 - **FR-005**: El contrato MUST declarar sus reglas de versión (CT-22) y quedar aprobado por los dos líderes antes de que L1 y L2 lo implementen.
-- **FR-006**: La **suite de contrato** (CT-23) MUST existir en un proyecto de pruebas compartido que corra igual contra el simulador y contra el bridge real, cambiando solo la URL.
+- **FR-006**: La **suite de contrato** (CT-23) MUST vivir en `tests/PolyConecta.Contract.Tests`, probar solo por HTTP con los ejemplos de `docs/contratos/ejemplos/`, no referenciar al bridge ni a PolyConecta, y correr igual contra el simulador y contra el bridge real, cambiando solo la URL por variable de entorno (D-122).
 
 **L1 · Integración (0.1, 0.4, 0.7, 0.9)**
 
-- **FR-007**: El bridge simulado MUST implementar el contrato completo sin SDK, correr en macOS, Linux y CI, validar la carga con las mismas reglas que el real (CT-39), asignar folios simulados, responder por callback y ser idempotente (CT-21).
+- **FR-007**: El bridge simulado MUST ser el mismo bridge con `SimulatedSdkGateway` y `SimulatedReadRepository` elegidos por `BridgeConfig__Mode` (D-122): el ciclo del outbox se separa de `ContpaqiSdkGateway`, las validaciones de CT-39 suben por encima del gateway y la DLL del SDK solo se carga en modo real. MUST implementar el contrato completo sin SDK, correr en macOS, Linux y CI, validar la carga con las mismas reglas que el real (CT-39), asignar folios simulados, responder por callback y ser idempotente (CT-21).
 - **FR-008**: El simulador MUST permitir provocar errores, demoras y callbacks perdidos por configuración, sin cambiar código.
 - **FR-009**: El bridge y `tools/sdk-lab` MUST compilar para .NET 10 `win-x86` (CT-04) y repetir F y G de la matriz en el laboratorio.
 - **FR-010**: La contraseña de `sa` MUST estar rotada; el bridge MUST leer CONTPAQi con un login de solo lectura (CT-30) definido por variable de entorno (CT-29).
@@ -218,7 +218,8 @@ El bridge del VPS usa credenciales nuevas y un login de solo lectura, y vuelve s
 - **FR-017**: `IReferenceSequenceService` MUST dar los folios por tipo de documento (prefijo, relleno, reinicio), sin duplicados en concurrencia, y sustituir al value object `Folio`.
 - **FR-018**: El outbox MUST escribirse en la misma transacción que el cambio de negocio (CT-20) e incluir `idempotency_key` y `correlation_id`.
 - **FR-019**: El despachador MUST enviar en orden de registro, uno a la vez (CT-41), reintentar con espera creciente, detener solo los comandos posteriores que compartan llave con uno en `Error` (D-95) y dejar el documento en `Error` al agotar los reintentos (CT-20).
-- **FR-020**: La API MUST recibir el callback del bridge, guardar folio e id ERP en las columnas `erp_*` del documento (CT-13) y actualizar su estado de sincronización (`No aplica`, `Pendiente`, `Enviado`, `Confirmado`, `Error`, CT-15). Mostrarlo en pantalla es de F2.
+- **FR-020**: La API MUST recibir el callback del bridge, verificar su firma (D-121), guardar folio e id ERP en las columnas `erp_*` del documento (CT-13) y actualizar su estado de sincronización (`No aplica`, `Pendiente`, `Enviado`, `Confirmado`, `Error`, CT-15). Mostrarlo en pantalla es de F2.
+- **FR-020a**: El puerto `IBridgeSyncService` y el caso de uso de confirmación MUST vivir en `Application`; el despachador, el cliente HTTP y la traducción del documento a la carga, en `Infrastructure/Erp/`. El dominio no conoce el contrato (D-122).
 - **FR-021**: Pasar del simulador al bridge real MUST ser solo configuración: URL y lista de comandos habilitados (CT-03).
 - **FR-022**: MUST existir `PolyConecta.Web.Angular` (Angular 22, Node 24, versiones exactas, CT-36) con estilos, layout, navegación por módulo y componentes compartidos. Para no duplicar trabajo, la tarea 0.5 hace las fases 0 y 2A de la spec 001 (proyecto, dependencias, estilos, layout y los 13 componentes), y la spec 001 sigue desde ahí con sus páginas.
 - **FR-023**: El pipeline de GitHub Actions MUST correr en cada PR: build, pruebas de dominio, de aplicación contra SQL Server 2022 en contenedor, de contrato contra el simulador y de Angular (CT-27, D-76).
@@ -276,7 +277,6 @@ El bridge del VPS usa credenciales nuevas y un login de solo lectura, y vuelve s
 
 - El VPS del laboratorio está disponible esta semana para 0.1, 0.4 y 0.9, y la ventana de mantenimiento para reiniciarlo se coordina con Sistemas.
 - .NET 10, EF Core 10 y Angular 22 en las versiones ratificadas funcionan con el código actual sin cambios de diseño; si no, se anota en "Exploración y cambios".
-- El simulador puede vivir en el repositorio del bridge o en un proyecto aparte; lo decide `plan.md` de L1 siempre que corra en macOS y CI sin `MGWServicios.dll`.
 - El documento de prueba de US-4 vive solo en las pruebas; el primer documento real (pedido) llega en F1.
 - La ejecución por pasos con reconciliación (CT-38) y la sesión de larga duración (CT-40) del bridge real no son parte de F0, pero el contrato ya las contempla en sus errores y respuestas.
 
@@ -288,4 +288,10 @@ Las secciones anteriores son el **objetivo primario** de la fase, fijado al rati
 
 | Fecha | Camino | Cambio | Motivo | Impacto (requisitos y tareas) | Decisión |
 | :--- | :---: | :--- | :--- | :--- | :---: |
-| | | | | | |
+| 2026-10-05 | Común | La tarea 0.5 hace las fases 0 y 2A de la spec 001 (FR-022) | Evitar dos proyectos Angular | FR-022; tareas de 0.5 | Aprobado por el usuario |
+| 2026-10-05 | Común | Reglas del contrato: PolyConecta manda códigos y KG; el bridge convierte la unidad y elige el concepto por configuración; estados ↔ CT-15; callback firmado; zona horaria del servidor de CONTPAQi | Preguntas previas a la sesión del contrato | FR-002, FR-003, FR-020 | D-121 |
+| 2026-10-05 | Común | Capas: simulador como adaptadores del bridge; suite de contrato por HTTP en proyecto aparte; despachador en `Infrastructure/Erp/` | Que el simulador no se aparte del contrato | FR-006, FR-007, FR-020a | D-122 |
+| 2026-10-05 | L1 | El bridge ya tiene un modo simulado embebido (`BridgeConfig:UseMockSdk`, o automático fuera de Windows) con `if` dentro de `ContpaqiSdkGateway`. Se convierte en el adaptador `SimulatedSdkGateway` y la opción pasa a `BridgeConfig__Mode` | Hallazgo al revisar el código | FR-007 | D-122 |
+| 2026-10-05 | Común | Borrador del contrato en `docs/contratos/bridge-v1.md` con ejemplos en `docs/contratos/ejemplos/`, para la sesión de los líderes | Preparar la tarea 0.2 | FR-001 a FR-006 | — |
+| 2026-10-05 | L1 | Queda abierto quién aplica la regla de costo de D-79 en `TRASPASO` | Sin definir | FR-002 (`TRASPASO`); se cierra antes de F3 | T-17 |
+| 2026-10-05 | Común | **Propuesta por confirmar:** `CIERRE_PRODUCCION` y `REMISION` entran a `v1.0` con su forma definida pero como provisionales, y se afinan en F5 y F6 como cambios compatibles (CT-22) | Cumplir la aprobación del 6-oct (SC-001) | FR-002 | Pendiente |

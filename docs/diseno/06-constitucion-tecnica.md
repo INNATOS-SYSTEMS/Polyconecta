@@ -72,21 +72,21 @@ flowchart LR
 - **CT-12** Cada módulo tiene su **esquema** en SQL Server: `plt`, `inv`, `ven`, `prd`, `cal`, `log`. El modelo es el de [04-modelo-de-dominio.md](04-modelo-de-dominio.md), no una copia de las tablas `adm*`.
 - **CT-13** La paridad vive en dos piezas:
   1. **Columnas `erp_*`**, anulables, en cada entidad que tiene contraparte en CONTPAQi (`erp_product_id`, `erp_warehouse_id`, `erp_document_id`, `erp_folio`…). Están vacías mientras el módulo corre con el simulador o el documento no se ha sincronizado.
-  2. **Catálogo de mapeo** `plt.erp_mapping`: tipo de entidad, id de PolyConecta, código CONTPAQi, id CONTPAQi y estado. Traduce lo que no es 1:1: conceptos de documento, series, agentes.
+  2. **Catálogo de mapeo** `plt.erp_mapping`: tipo de entidad, id de PolyConecta, código CONTPAQi, id CONTPAQi y estado. Traduce lo que no es 1:1: series y agentes. PolyConecta manda al bridge los **códigos** de CONTPAQi ya resueltos (D-121). Los **conceptos de documento** no van aquí: los define la configuración del bridge (D-121).
 - **CT-14** Cada catálogo tiene **un solo dueño**:
 
 | Catálogo | Dueño | Cómo llega al otro lado |
 | :--- | :--- | :--- |
 | Productos, clientes, conceptos, agentes | CONTPAQi | Lectura por el bridge y sincronización a PolyConecta |
 | Ubicaciones y almacenes | PolyConecta (D-43) | Alta en CONTPAQi al inicializar (T-10) |
-| Conceptos de Salida y Entrada de PolyConecta | PolyConecta (D-89) | Alta en CONTPAQi al inicializar; mapeo en `plt.erp_mapping` |
+| Conceptos de Salida y Entrada de PolyConecta | PolyConecta (D-89) | Alta en CONTPAQi por la UI (D-110); el bridge elige el concepto por comando y variante, por configuración (D-121) |
 | Clasificación de productos | PolyConecta (D-86) | No se replica; la de CONTPAQi sirve de valor inicial |
 | Ficha técnica, rutas, centros de trabajo, motivos de scrap | PolyConecta | No se replican |
 | Pedidos | Compartido (D-53) | Los de CONTPAQi se sincronizan; los libres se dan de alta por el bridge |
 | Recepciones de compra | CONTPAQi (D-96) | Lectura por el bridge y sincronización a PolyConecta como entrada de solo lectura (D-102) |
 
 - **CT-15** Todo documento que escribe en CONTPAQi tiene un **estado de sincronización** propio, visible en su formulario: `No aplica`, `Pendiente`, `Enviado`, `Confirmado` o `Error`. Es independiente de su estado de negocio: un traslado puede estar `Hecho` y su sincronización en `Error`. Los errores los atiende el rol Sistemas desde un tablero de sincronización (D-93).
-- **CT-16** La **unidad base es KG** en todo el modelo (D-03). La conversión a la unidad de CONTPAQi ocurre en el contrato, no en el dominio.
+- **CT-16** La **unidad base es KG** en todo el modelo (D-03). La conversión a la unidad de CONTPAQi la hace el bridge: el contrato viaja en KG (D-121). La zona horaria de las fechas es la del servidor de CONTPAQi (D-121).
 
 ## 5. Contrato del bridge (D-63)
 
@@ -105,14 +105,14 @@ flowchart LR
 
 - **CT-19** La `idempotency_key` es `{tipo de documento}:{id}:{transición}`. Reenviar un comando nunca duplica un documento en CONTPAQi. El SDK no es idempotente (prueba G-02): la garantía es del bridge.
 - **CT-20** El outbox de PolyConecta se escribe **en la misma transacción** que el cambio de negocio. El despachador reintenta con espera creciente. Un comando que agota reintentos deja el documento en sincronización `Error`, recuperable desde la interfaz sin tocar la base.
-- **CT-21** El **bridge en modo simulado** implementa el contrato completo sin SDK: valida la carga, asigna folios simulados y responde por callback. Corre en macOS y en CI. Es la base de trabajo del camino 2.
+- **CT-21** El **bridge en modo simulado** implementa el contrato completo sin SDK: valida la carga, asigna folios simulados y responde por callback. Corre en macOS y en CI. Es la base de trabajo del camino 2. Es el mismo bridge con sus adaptadores de escritura y lectura cambiados por configuración (`BridgeConfig__Mode`), no un proyecto aparte (D-122).
 - **CT-22** Un cambio al contrato requiere la aprobación de **los dos líderes**. Los cambios compatibles suben la versión menor; los incompatibles abren `v2` y conviven con `v1` hasta migrar.
 - **CT-38** **Ejecución por pasos y reconciliación (D-80).** El bridge registra cada paso de un comando (documento y movimiento) y marca cada documento con una referencia derivada de la `idempotency_key`, de 20 caracteres como máximo porque es lo que mide `CREFERENCIA` (prueba S-06). Antes de reintentar, lee CONTPAQi y completa solo lo que falta. Nunca borra un documento con movimientos: lo completa o lo compensa con el inverso.
 - **CT-39** **Validar antes, verificar después (D-81, D-112).** Antes de enviar, el bridge valida existencia por lote en el origen, `Σ lotes = unidades` de cada movimiento y que el producto esté activo. El folio se lee por SQL después de crear el documento. Después, lee `admMovimientos` y `admMovimientosCapas` y compara con la carga. Una diferencia es un `Error`, no un éxito.
 - **CT-40** **Sesión del SDK (D-88, D-91, D-108).** El bridge inicia el SDK **una sola vez por proceso**, con dos inicios de sesión y credenciales en variables de entorno (CT-29): usuario de Comercial con `fInicioSesionSDK` antes de `fSetNombrePAQ`, y usuario centralizado con `fInicioSesionSDKCONTPAQi` después. Sin ellos aparece una ventana de ingreso que bloquea la llamada. Abre la empresa por lote de comandos, aplica un timeout a cada llamada y cierra empresa y SDK al apagarse. Se reinicia en una ventana diaria configurable. Corre en la sesión de Windows del administrador, con inicio de sesión automático y una tarea "al iniciar sesión" que lo levanta (D-115): como servicio no funciona (S-03) y en un usuario dedicado falla Contabilidad (S-04).
 - **CT-41** **Orden (D-92).** El despachador envía los comandos en el orden de registro del outbox, uno a la vez. Metas de latencia: segundos para movimientos de inventario y minutos para documentos y catálogos. Un comando en `Error` detiene solo los posteriores que comparten alguna llave (producto, almacén) con él (D-95).
 - **CT-42** **Existencia oficial (D-94).** Toda validación de existencia usa la de CONTPAQi menos las salidas pendientes de sincronizar. La conciliación corre cada noche fuera del turno de registro (D-98); todas sus diferencias, sin umbral (D-101), las revisa Sistemas antes de ajustar PolyConecta, y nunca se corrige CONTPAQi en automático (D-97).
-- **CT-23** El contrato se prueba desde los dos lados con la **misma suite**: el camino 2 la corre contra el simulador en CI, y el camino 1 contra el bridge real en el laboratorio (`tools/sdk-lab`, empresa `_LAB`). Un comando está entregado cuando pasa en los dos.
+- **CT-23** El contrato se prueba desde los dos lados con la **misma suite**: el camino 2 la corre contra el simulador en CI, y el camino 1 contra el bridge real en el laboratorio (`tools/sdk-lab`, empresa `_LAB`). Un comando está entregado cuando pasa en los dos. La suite vive en `tests/PolyConecta.Contract.Tests`, prueba solo por HTTP y no referencia a ninguno de los dos lados (D-122).
 
 ## 6. Interfaz
 
