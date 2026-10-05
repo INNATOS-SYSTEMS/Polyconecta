@@ -14,8 +14,14 @@
     "lineas": [
       {
         "producto": "R-IV310",
-        "kg": 830.5,
-        "lotes": [ { "numero": "R001-IV310-26", "kg": 410.2 } ]
+        "cantidad": 830.5,
+        "unidad": "KG",
+        "lotes": [
+          {
+            "numero": "R001-IV310-26",
+            "cantidad": 410.2
+          }
+        ]
       }
     ]
   }

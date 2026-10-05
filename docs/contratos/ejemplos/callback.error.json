@@ -15,8 +15,9 @@
       "producto": "R-IV310",
       "almacen": "MP-PIM",
       "lote": "R002-IV310-26",
-      "disponible_kg": 300.0,
-      "solicitado_kg": 420.3
+      "unidad": "KG",
+      "disponible": 300.0,
+      "solicitado": 420.3
     }
   },
   "timestamp": "2026-10-12T10:16:40-06:00"

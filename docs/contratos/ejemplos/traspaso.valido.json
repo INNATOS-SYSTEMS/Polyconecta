@@ -12,13 +12,25 @@
     "almacen_origen": "MP-PIM",
     "almacen_destino": "WIP-PIM",
     "lineas": [
-      { "producto": "PEBD-001", "kg": 1250.0, "lotes": [] },
+      {
+        "producto": "PEBD-001",
+        "cantidad": 1250.0,
+        "unidad": "KG",
+        "lotes": []
+      },
       {
         "producto": "R-IV310",
-        "kg": 830.5,
+        "cantidad": 830.5,
+        "unidad": "KG",
         "lotes": [
-          { "numero": "R001-IV310-26", "kg": 410.2 },
-          { "numero": "R002-IV310-26", "kg": 420.3 }
+          {
+            "numero": "R001-IV310-26",
+            "cantidad": 410.2
+          },
+          {
+            "numero": "R002-IV310-26",
+            "cantidad": 420.3
+          }
         ]
       }
     ]

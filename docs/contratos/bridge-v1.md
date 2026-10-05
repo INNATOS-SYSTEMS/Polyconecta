@@ -19,9 +19,9 @@ Contrato entre PolyConecta (camino 2) y el bridge de CONTPAQi (camino 1). Es el 
 | :---: | :--- | :---: | :--- |
 | 1 | El contrato habla en **comandos de negocio** (CT-18), no en funciones del SDK. El `DOCUMENT_CREATE` genérico de hoy desaparece | ✅ | CT-18 |
 | 2 | **PolyConecta manda los códigos de CONTPAQi** (producto, almacén, cliente), resueltos con su catálogo de mapeo | ✅ | D-121 |
-| 3 | Las cantidades viajan en **KG**. El bridge convierte a la unidad del producto en CONTPAQi | ✅ | D-121, CT-16 |
+| 3 | Cada cantidad viaja con su **unidad de medida**, la misma que tiene CONTPAQi para el producto. **Nadie convierte**: ni PolyConecta ni el bridge. El bridge solo valida que la unidad la admita el producto en CONTPAQi | ✅ | D-123, CT-16 |
 | 4 | El **concepto de documento lo elige el bridge** por comando y variante, según su configuración. PolyConecta no lo manda | ✅ | D-121 |
-| 5 | Las fechas se interpretan en la **zona horaria del servidor de CONTPAQi** | ✅ | D-121 |
+| 5 | La fecha de un documento es su **fecha de negocio** en PolyConecta, no la de envío, y se interpreta en la **zona horaria del servidor de CONTPAQi** | ✅ | D-121, D-123 |
 | 6 | Reenviar un comando con la misma `idempotency_key` nunca duplica un documento | ✅ | CT-19 |
 | 7 | Los comandos se procesan en orden de llegada, uno a la vez | ✅ | CT-41 |
 | 8 | Antes de escribir, el bridge valida; después de escribir, verifica lo registrado contra la carga | ✅ | CT-39 |
@@ -91,8 +91,9 @@ Contrato entre PolyConecta (camino 2) y el bridge de CONTPAQi (camino 1). Es el 
 | `PRODUCTO_NO_EXISTE` / `PRODUCTO_INACTIVO` | no | Código desconocido o inactivo | D-112, S-14 |
 | `ALMACEN_NO_EXISTE` | no | Código de almacén desconocido | — |
 | `CLIENTE_NO_EXISTE` | no | Código de cliente desconocido | — |
+| `UNIDAD_NO_ADMITIDA` | no | La unidad de la línea no es una que el producto admita en CONTPAQi | D-123 |
 | `VARIANTE_SIN_CONCEPTO` | no | La configuración del bridge no tiene concepto para el comando y la variante | D-121 |
-| `LOTES_NO_CUADRAN` | no | `Σ kg de lotes ≠ kg de la línea` | CT-39 |
+| `LOTES_NO_CUADRAN` | no | `Σ cantidad de lotes ≠ cantidad de la línea` | CT-39 |
 | `EXISTENCIA_INSUFICIENTE` / `EXISTENCIA_INSUFICIENTE_LOTE` | no | Sin existencia en origen | CT-39 |
 | `VERIFICACION_FALLIDA` | no | Lo registrado en CONTPAQi no coincide con la carga | CT-39 |
 | `SDK_TIMEOUT` | sí | La llamada excedió su tiempo límite | CT-40 |
@@ -110,8 +111,8 @@ Cada comando se describe con la misma ficha. **Lado negocio** (R: L2): cuándo s
 | `ALTA_ALMACEN` | F3 (3.2) | ✏️ completo |
 | `TRASPASO` | F3, F5, F7 | ✏️ completo, salvo el costo (T-17) |
 | `ALTA_PEDIDO` | F2 (2.4) | ✏️ completo |
-| `CIERRE_PRODUCCION` | F5 (5.1) | ❓ provisional, por confirmar |
-| `REMISION` | F6 (6.1) | ❓ provisional, por confirmar |
+| `CIERRE_PRODUCCION` | F5 (5.1) | ✏️ completo (D-123) |
+| `REMISION` | F6 (6.1) | ✏️ completo (D-123) |
 
 ### 5.1 `TRASPASO`
 
@@ -119,10 +120,10 @@ Cada comando se describe con la misma ficha. **Lado negocio** (R: L2): cuándo s
 
 | Campo | Regla |
 | :--- | :--- |
-| `fecha` | Fecha de negocio del documento (`AAAA-MM-DD`), en la zona del servidor de CONTPAQi |
+| `fecha` | Fecha de negocio del documento (`AAAA-MM-DD`), no la de envío, en la zona del servidor de CONTPAQi (D-123) |
 | `referencia_negocio` | Folio de PolyConecta, solo informativo |
 | `almacen_origen`, `almacen_destino` | Códigos de CONTPAQi |
-| `lineas[]` | Una por producto (D-82): `producto`, `kg` y `lotes[]` con `numero` y `kg`. `lotes` va vacío si el producto no lleva lote, como la MP (D-106) |
+| `lineas[]` | Una por producto (D-82): `producto`, `cantidad`, `unidad` y `lotes[]` con `numero` y `cantidad`, en la misma unidad de la línea. `lotes` va vacío si el producto no lleva lote, como la MP (D-106). Cantidad y unidad son las de CONTPAQi, sin conversión (D-123, P-24) |
 
 **Lado SDK.** Se registra como un par Salida (origen) + Entrada (destino), con un movimiento por producto y N capas de lote (D-79, D-82). Lo respaldan B-02, B-03, C-02, C-03 y S-01.
 
@@ -132,15 +133,19 @@ Cada comando se describe con la misma ficha. **Lado negocio** (R: L2): cuándo s
 
 ### 5.2 `ALTA_PEDIDO` · ✏️ por redactar en la sesión
 
-Lado negocio: el pedido confirmado y autorizado en PolyConecta (D-53, D-113), con `cliente`, `fecha`, `moneda`, `tipo_cambio` y `lineas[]` (`producto`, `kg`, `precio`). Lado SDK: S-14. Resultado: `folio` e `id_erp`. Cancelación del pedido ya remisionado: D-114, por validar con la operación.
+Lado negocio: el pedido confirmado y autorizado en PolyConecta (D-53, D-113), con `cliente`, `fecha` (de negocio), `moneda`, `tipo_cambio` y `lineas[]` (`producto`, `cantidad`, `unidad`, `precio`; el precio es por esa unidad). Lado SDK: S-14. Resultado: `folio` e `id_erp`. Cancelación del pedido ya remisionado: D-114, por validar con la operación.
 
 ### 5.3 `ALTA_ALMACEN` · ✏️ por redactar en la sesión
 
 Lado SDK: `fInsertaAlmacen` → `fSetDatoAlmacen` → `fGuardaAlmacen`, fijando `CFECHAALTAALMACEN` (D-110, S-09).
 
-### 5.4 `CIERRE_PRODUCCION` y 5.5 `REMISION` · ❓ provisionales
+### 5.4 `CIERRE_PRODUCCION` · ✏️ por redactar en la sesión
 
-Forma mínima en `1.0`; se afinan en F5 y F6 como cambios compatibles. Lado SDK: D-111 (S-11, S-12) y S-13.
+Se define completo en `1.0` (D-123). Lado negocio: el cierre técnico de la OF (02 §4) con `almacen_wip`, `consumos[]` (producto, cantidad, unidad, y lotes si los lleva), `entradas[]` de PT con su lote nuevo y `subproductos[]` (scrap) con su almacén destino. Lado SDK: Salida desde WIP (consumo) + Entrada de PT y scrap con la capa del lote nuevo y su costo (D-111, S-11, S-12). ❓ Quién calcula el costo de la entrada de PT; se resuelve junto con T-17.
+
+### 5.5 `REMISION` · ✏️ por redactar en la sesión
+
+Se define completa en `1.0` (D-123). Lado negocio: la entrega validada (02 §5) con `cliente`, `fecha`, `almacen` (PT), `pedido_erp` de referencia y `lineas[]` con producto, cantidad, unidad y lotes. Lado SDK: remisión desde el almacén de PT; no se liga al pedido (S-13); al quedar remisionado todo el pedido, el bridge lo cancela en CONTPAQi (D-114, por validar). Resultado: `folio` e `id_erp`; queda pendiente de facturar.
 
 ---
 
@@ -150,10 +155,10 @@ Ya existen en `CatalogsController`. ✏️ Propuesta de cambios: paginación con
 
 | Ruta | Hoy | Falta | Fase |
 | :--- | :--- | :--- | :--- |
-| `GET /api/v1/catalogs/products` | `search`, `limit` | Paginación, `modified_since`, unidad del producto, si lleva lote | F1 |
+| `GET /api/v1/catalogs/products` | `search`, `limit` | Paginación, `modified_since`, **unidades que admite el producto** (base y alternas), si lleva lote | F1 |
 | `GET /api/v1/catalogs/clients` | `search`, `limit` | Paginación, `modified_since` | F1 |
 | `GET /api/v1/catalogs/warehouses` | sin filtros | — | F1 |
-| `GET /api/v1/inventory/stocks` | un producto, almacén opcional; capas por lote | Varios productos por consulta, en KG | F1 |
+| `GET /api/v1/inventory/stocks` | un producto, almacén opcional; capas por lote | Varios productos por consulta, con la unidad base del producto en CONTPAQi | F1 |
 | `GET /api/v1/inventory/purchases` | no existe | Recepciones de compra afectadas, con `modified_since` (D-102) | F3 |
 | `GET /api/v1/catalogs/concepts` | existe | ❓ ¿Lo necesita PolyConecta, si el concepto lo elige el bridge (D-121)? | — |
 | `GET /api/v1/invoices` | existe | ❓ ¿Sigue en el contrato? Ninguna fase lo usa | — |
@@ -175,5 +180,5 @@ Un cambio compatible (campo opcional nuevo, comando nuevo, código de error nuev
 ## 9. Agenda de la sesión
 
 1. **Lunes 5, tarde:** secciones 2, 3 y 4.
-2. **Martes 6, mañana:** secciones 5 y 6. El costo de `TRASPASO` (T-17) y el alcance de los comandos provisionales.
+2. **Martes 6, mañana:** secciones 5 y 6, con los 5 comandos completos. El costo de `TRASPASO` y de `CIERRE_PRODUCCION` (T-17).
 3. **Martes 6, tarde:** revisión cruzada, ejemplos completos en `ejemplos/` y firma de `1.0`. Después, la OpenAPI.
