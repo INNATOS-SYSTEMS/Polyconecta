@@ -30,5 +30,36 @@ public class PolyDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PolyDbContext).Assembly);
+
+        // Un esquema por módulo (CT-12). Las entidades previas a F0 se ubican en su módulo sin
+        // rediseñarlas; cada fase las rehace con el modelo de 04-modelo-de-dominio.md.
+        foreach (var entity in modelBuilder.Model.GetEntityTypes())
+        {
+            if (entity.GetSchema() is null && SchemaPorEntidad.TryGetValue(entity.ClrType, out var schema))
+                entity.SetSchema(schema);
+
+            // Lo referenciado se archiva, no se borra (04 §1): ninguna llave borra en cascada.
+            foreach (var fk in entity.GetForeignKeys().Where(fk => !fk.IsOwnership))
+                fk.DeleteBehavior = DeleteBehavior.Restrict;
+        }
     }
+
+    private static readonly Dictionary<Type, string> SchemaPorEntidad = new()
+    {
+        [typeof(Product)] = "inv",
+        [typeof(StockLot)] = "inv",
+        [typeof(StockLocation)] = "inv",
+        [typeof(StockPicking)] = "inv",
+        [typeof(StockMove)] = "inv",
+        [typeof(PolyLocation)] = "inv",
+        [typeof(RawMaterialCatalog)] = "inv",
+        [typeof(SupplierProductMapping)] = "inv",
+        [typeof(LotGenealogy)] = "inv",
+        [typeof(ManufacturingOrder)] = "prd",
+        [typeof(Bom)] = "prd",
+        [typeof(BomLine)] = "prd",
+        [typeof(MassBalanceAudit)] = "prd",
+        [typeof(StockScrap)] = "prd",
+        [typeof(QualityCheck)] = "cal",
+    };
 }

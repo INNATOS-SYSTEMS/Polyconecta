@@ -14,7 +14,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
     {
         Title = "PolyConecta Operational API",
         Version = "v1",
@@ -22,8 +22,13 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddDbContext<PolyDbContext>(options =>
-    options.UseInMemoryDatabase("PolyConectaInMemory")); // Using InMemory for development/validation
+// La cadena de conexión nunca se versiona: ConnectionStrings__PolyConecta (CT-29). La API usa
+// un login sin permisos de DDL; las migraciones se aplican con otro (CT-30).
+var connectionString = builder.Configuration.GetConnectionString("PolyConecta")
+    ?? throw new InvalidOperationException(
+        "Falta ConnectionStrings:PolyConecta. Defínela en la variable de entorno ConnectionStrings__PolyConecta.");
+
+builder.Services.AddDbContext<PolyDbContext>(options => options.UseSqlServer(connectionString));
 
 builder.Services.AddCors(options =>
 {
@@ -39,12 +44,6 @@ builder.Services.AddSingleton<IOutboxPublisher, OutboxPublisher>();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<PolyDbContext>();
-    db.Database.EnsureCreated();
-}
-
 app.UseCors();
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -54,3 +53,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program;

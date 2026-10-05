@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using PolyConecta.Domain.Entities;
 using PolyConecta.Domain.ValueObjects;
 using Xunit;

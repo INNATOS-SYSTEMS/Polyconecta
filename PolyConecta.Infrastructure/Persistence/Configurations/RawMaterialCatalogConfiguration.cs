@@ -6,6 +6,9 @@ namespace PolyConecta.Infrastructure.Persistence.Configurations;
 
 public class RawMaterialCatalogConfiguration : IEntityTypeConfiguration<RawMaterialCatalog>
 {
+    // Fecha fija: un valor dinámico en HasData cambia el modelo en cada compilación.
+    internal static readonly DateTime FechaSemilla = new(2026, 10, 5, 0, 0, 0, DateTimeKind.Utc);
+
     public void Configure(EntityTypeBuilder<RawMaterialCatalog> builder)
     {
         builder.ToTable("poly_raw_material_catalogs");
@@ -34,7 +37,8 @@ public class RawMaterialCatalogConfiguration : IEntityTypeConfiguration<RawMater
                 DensityGcm3 = 0.958m,
                 TargetHopper = "Tolva A",
                 CidProductoContpaq = 101,
-                IsActive = true
+                IsActive = true,
+                CreatedAt = FechaSemilla
             },
             new RawMaterialCatalog
             {
@@ -46,7 +50,8 @@ public class RawMaterialCatalogConfiguration : IEntityTypeConfiguration<RawMater
                 DensityGcm3 = 0.922m,
                 TargetHopper = "Tolva B",
                 CidProductoContpaq = 102,
-                IsActive = true
+                IsActive = true,
+                CreatedAt = FechaSemilla
             },
             new RawMaterialCatalog
             {
@@ -58,7 +63,8 @@ public class RawMaterialCatalogConfiguration : IEntityTypeConfiguration<RawMater
                 DensityGcm3 = 0.940m,
                 TargetHopper = "Tolva C",
                 CidProductoContpaq = 103,
-                IsActive = true
+                IsActive = true,
+                CreatedAt = FechaSemilla
             }
         );
     }
@@ -81,7 +87,8 @@ public class SupplierProductMappingConfiguration : IEntityTypeConfiguration<Supp
                 RawMaterialCatalogId = Guid.Parse("55555555-5555-5555-5555-555555555555"),
                 SupplierCode = "LYONDELL",
                 SupplierProductName = "Alathon M6210 High Density Polyethylene",
-                SupplierSku = "LYO-M6210-HD"
+                SupplierSku = "LYO-M6210-HD",
+                MappedAt = RawMaterialCatalogConfiguration.FechaSemilla
             },
             new SupplierProductMapping
             {
@@ -89,7 +96,8 @@ public class SupplierProductMappingConfiguration : IEntityTypeConfiguration<Supp
                 RawMaterialCatalogId = Guid.Parse("66666666-6666-6666-6666-666666666666"),
                 SupplierCode = "BRASKEM",
                 SupplierProductName = "Braskem BC818 Low Density Polyethylene",
-                SupplierSku = "BRASK-BC818"
+                SupplierSku = "BRASK-BC818",
+                MappedAt = RawMaterialCatalogConfiguration.FechaSemilla
             }
         );
     }
