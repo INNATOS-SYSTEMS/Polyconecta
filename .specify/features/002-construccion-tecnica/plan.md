@@ -214,7 +214,7 @@ scripts/sql/logins-desarrollo.sql         # logins de API y migraciones en local
   - Se quitan Npgsql, MediatR, FluentValidation (sin uso) y EF InMemory.
   - `PolyDbContext` usa SQL Server con `ConnectionStrings__PolyConecta`; las migraciones usan `ConnectionStrings__PolyConectaMigraciones`.
   - Las 17 pruebas migran a xUnit v3 y AwesomeAssertions. Las de integración corren contra SQL Server en contenedor.
-- **Application (0.3).** `IUseCase<TRequest, TResult>` con decoradores escritos a mano en `AddApplication()`: validación → transacción → registro. No se agrega Scrutor (research R-02). Los cuatro controladores actuales pasan a llamar casos de uso cuando toquen lógica; en F0 basta con que la API arranque contra SQL Server.
+- **Application (0.3).** `IUseCase<TRequest, TResult>` con decoradores escritos a mano en `AddUseCase<,,>()`: registro → validación → transacción. No se agrega Scrutor (research R-02). Los cuatro controladores actuales pasan a llamar casos de uso cuando toquen lógica; en F0 basta con que la API arranque contra SQL Server.
 - **Base común (0.6)**, con el modelo en [data-model.md](data-model.md):
   - mixins y `SyncState` como tipo propio;
   - `StateTransitionLog` escrito por el método de transición del documento;

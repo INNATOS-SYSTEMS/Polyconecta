@@ -41,7 +41,7 @@ Se quitan `Npgsql.EntityFrameworkCore.PostgreSQL`, `MediatR`, `FluentValidation`
 
 **Decisión**:
 - Cada caso de uso implementa `IUseCase<TRequest, TResult>` en `PolyConecta.Application/<Modulo>/`.
-- `AddApplication()` registra cada uno envuelto a mano en tres decoradores, de fuera hacia dentro: `LoggingDecorator` (`correlation_id`, duración), `TransactionDecorator` (abre la transacción del `DbContext` y confirma al final) y `ValidationDecorator` (llama a un `IValidator<TRequest>` propio si existe).
+- `AddUseCase<,,>()` registra cada uno envuelto a mano en tres decoradores, de fuera hacia dentro: `LoggingDecorator` (`correlation_id`, duración), `ValidationDecorator` (llama a los `IValidator<TRequest>` propios; una petición inválida no abre transacción) y `TransactionDecorator` (abre la transacción del `DbContext`, guarda y confirma al final).
 - `Application` define los puertos (`IUnitOfWork`, `IBridgeSyncService`, `IReferenceSequenceService`, `ICurrentUser`, `IClock`) e `Infrastructure` los implementa.
 
 **Por qué**: D-72 pide decoradores propios sin MediatR. Hacerlo a mano evita otra dependencia (Scrutor).

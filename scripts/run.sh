@@ -42,16 +42,15 @@ else
 fi
 echo "================================================================="
 
-# Step 1: Locate a .NET installation that can actually build & run net8.0.
+# Step 1: Locate a .NET installation that can build and run the solution.
 echo "🔍 Step 1: Checking .NET SDK environment..."
 
-# El criterio es el RUNTIME de ASP.NET Core 8.x, no la version del SDK: un SDK
-# mayor (9/10) compila net8.0 sin problema, pero solo si esa instalacion trae los
-# assets de ASP.NET Core 8. Si no los trae, _framework/blazor.web.js se emite
-# vacio -> 404 -> el circuito interactivo de Blazor nunca arranca -> UI inoperable.
-# (El SDK debe ser 9+ de todas formas: el formato .slnx no existe en el SDK 8.)
-has_aspnet8_runtime() {
-    "$1" --list-runtimes 2>/dev/null | grep -q '^Microsoft\.AspNetCore\.App 8\.'
+# La solución corre en .NET 10 (CT-04). El prototipo Blazor (PolyConecta.Presentation) se queda
+# en net8.0 porque no se modifica (D-60), así que hacen falta los dos runtimes de ASP.NET Core.
+# Si falta el 8, _framework/blazor.web.js sale vacío y el circuito de Blazor nunca arranca.
+has_runtimes() {
+    "$1" --list-runtimes 2>/dev/null | grep -q '^Microsoft\.AspNetCore\.App 8\.' &&
+    "$1" --list-runtimes 2>/dev/null | grep -q '^Microsoft\.AspNetCore\.App 10\.'
 }
 
 DOTNET_BIN=""
@@ -59,20 +58,20 @@ for candidate in "$(command -v dotnet 2>/dev/null)" \
                  "/usr/local/share/dotnet/dotnet" \
                  "/usr/share/dotnet/dotnet" \
                  "$HOME/.dotnet/dotnet"; do
-    if [ -n "$candidate" ] && [ -x "$candidate" ] && has_aspnet8_runtime "$candidate"; then
+    if [ -n "$candidate" ] && [ -x "$candidate" ] && has_runtimes "$candidate"; then
         DOTNET_BIN="$candidate"
         break
     fi
 done
 
 if [ -z "$DOTNET_BIN" ]; then
-    echo "❌ Error: No se encontro una instalacion de .NET con el runtime ASP.NET Core 8.x."
+    echo "❌ Error: No se encontró una instalación de .NET con los runtimes de ASP.NET Core 8.x y 10.x."
     if command -v dotnet &> /dev/null; then
         echo "   'dotnet' en PATH: $(command -v dotnet)"
-        echo "   Runtimes disponibles ahi:"
+        echo "   Runtimes disponibles ahí:"
         dotnet --list-runtimes 2>/dev/null | sed 's/^/     /'
     fi
-    echo "   Instala el runtime 8 (macOS: brew install --cask dotnet-sdk@8)."
+    echo "   Instala el SDK 10 (global.json) y el runtime 8 (macOS: brew install --cask dotnet-sdk@8)."
     exit 1
 fi
 
@@ -85,13 +84,58 @@ export PATH="$DOTNET_ROOT:$PATH"
 echo "   Using .NET installation: ${DOTNET_ROOT}"
 echo "   Found .NET SDK version: $("$DOTNET_BIN" --version)"
 
+# Step 1b: SQL Server de PolyConecta (CT-05). Si no hay ConnectionStrings__PolyConecta en el
+# entorno, se levanta (o reutiliza) un SQL Server 2022 local en Docker con los logins de CT-30.
+# Las contraseñas locales se generan la primera vez en .env.local, que git ignora (CT-29).
+SQL_CONTAINER="polyconecta-sql"
+SQL_PORT="14333"
+if [ -z "${ConnectionStrings__PolyConecta:-}" ]; then
+    echo "🗄️  Step 1b: SQL Server local en Docker (${SQL_CONTAINER}, puerto ${SQL_PORT})..."
+    if ! docker info > /dev/null 2>&1; then
+        echo "❌ Error: Docker no está en marcha y no hay ConnectionStrings__PolyConecta en el entorno."
+        exit 1
+    fi
+    if [ ! -f .env.local ]; then
+        gen() { LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 20; }
+        {
+            echo "LOCAL_SA_PASSWORD=Sa_$(gen)1!"
+            echo "LOCAL_APP_PASSWORD=App_$(gen)1!"
+            echo "LOCAL_MIGRACIONES_PASSWORD=Mig_$(gen)1!"
+        } > .env.local
+    fi
+    # shellcheck disable=SC1091
+    . ./.env.local
+    if ! docker ps --format '{{.Names}}' | grep -q "^${SQL_CONTAINER}$"; then
+        if docker ps -a --format '{{.Names}}' | grep -q "^${SQL_CONTAINER}$"; then
+            docker start "$SQL_CONTAINER" > /dev/null
+        else
+            docker run -d --name "$SQL_CONTAINER" -e ACCEPT_EULA=Y -e "MSSQL_SA_PASSWORD=${LOCAL_SA_PASSWORD}" \
+                -p "${SQL_PORT}:1433" mcr.microsoft.com/mssql/server:2022-latest > /dev/null
+        fi
+    fi
+    SQLCMD=(docker exec "$SQL_CONTAINER" /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$LOCAL_SA_PASSWORD")
+    for _ in $(seq 1 60); do "${SQLCMD[@]}" -Q "SELECT 1" > /dev/null 2>&1 && break; sleep 2; done
+    docker cp scripts/sql/logins-desarrollo.sql "$SQL_CONTAINER:/tmp/logins-desarrollo.sql"
+    "${SQLCMD[@]}" -b -i /tmp/logins-desarrollo.sql -v Base=PolyConecta \
+        "AppPassword=${LOCAL_APP_PASSWORD}" "MigracionesPassword=${LOCAL_MIGRACIONES_PASSWORD}" > /dev/null
+    export ConnectionStrings__PolyConecta="Server=localhost,${SQL_PORT};Database=PolyConecta;User Id=polyconecta_app;Password=${LOCAL_APP_PASSWORD};TrustServerCertificate=true"
+    export ConnectionStrings__PolyConectaMigraciones="Server=localhost,${SQL_PORT};Database=PolyConecta;User Id=polyconecta_migraciones;Password=${LOCAL_MIGRACIONES_PASSWORD};TrustServerCertificate=true"
+fi
+
 # Step 2: Build complete solution
 echo "🛠️  Step 2: Building full solution (Polyconecta.slnx)..."
 "$DOTNET_BIN" build Polyconecta.slnx -c Debug
 
+# Step 2b: Aplicar migraciones con el login de migraciones (CT-06, CT-30)
+if [ -n "${ConnectionStrings__PolyConectaMigraciones:-}" ]; then
+    echo "📐 Step 2b: Applying EF Core migrations..."
+    "$DOTNET_BIN" tool restore > /dev/null
+    "$DOTNET_BIN" ef database update --project PolyConecta.Infrastructure --startup-project PolyConecta.Api --no-build
+fi
+
 # Step 3: Run test suites
 echo "🧪 Step 3: Running domain unit & integration test suites..."
-"$DOTNET_BIN" test Polyconecta.slnx --no-build --verbosity quiet
+"$DOTNET_BIN" test --solution Polyconecta.slnx --no-build
 
 echo "================================================================="
 echo "✅ Build & Tests Succeeded! Launching PolyConecta Solution Layers..."

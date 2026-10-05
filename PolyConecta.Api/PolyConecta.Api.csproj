@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PolyConecta.Domain\PolyConecta.Domain.csproj" />
+    <ProjectReference Include="..\PolyConecta.Application\PolyConecta.Application.csproj" />
     <ProjectReference Include="..\PolyConecta.Infrastructure\PolyConecta.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

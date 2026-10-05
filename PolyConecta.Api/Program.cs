@@ -1,7 +1,8 @@
 using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
+using PolyConecta.Api.Middleware;
+using PolyConecta.Application;
+using PolyConecta.Infrastructure;
 using PolyConecta.Infrastructure.Outbox;
-using PolyConecta.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,13 +23,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// La cadena de conexión nunca se versiona: ConnectionStrings__PolyConecta (CT-29). La API usa
-// un login sin permisos de DDL; las migraciones se aplican con otro (CT-30).
-var connectionString = builder.Configuration.GetConnectionString("PolyConecta")
-    ?? throw new InvalidOperationException(
-        "Falta ConnectionStrings:PolyConecta. Defínela en la variable de entorno ConnectionStrings__PolyConecta.");
-
-builder.Services.AddDbContext<PolyDbContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddCors(options =>
 {
@@ -44,6 +40,7 @@ builder.Services.AddSingleton<IOutboxPublisher, OutboxPublisher>();
 
 var app = builder.Build();
 
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseCors();
 app.UseSwagger();
 app.UseSwaggerUI();
