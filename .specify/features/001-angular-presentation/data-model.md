@@ -37,7 +37,7 @@ Es el modelo del **prototipo**, tipado en TypeScript, no el de [04-modelo-de-dom
 | `ProductionLot` | `lote`, `real`, `unidad`, `estado: 'En revisión' \| 'Aprobado' \| 'Rechazado'` | **Lo crea la 0.5** (lo usa `LotPickerModal`) |
 | `ManufacturingOrder` | `folio`, `processType: 'Extrusion' \| 'Impresion' \| 'Bolseo'`, `processLabel`, `producto`, `empresa`, `cantidad`, `unidad`, `tiempoEstimadoHrs`, `numeroRollos`, `calidadRequerida`, `almacenFalla`, `fechaEsperada`, `state`, `originFolio?`, `pedidoFolio`, `componentes`, `subproductos`, `produccion`, `planeacion`, `sequenceCounter`; calculados `numeroLabel`, `producidoTotal` (sin rechazados) | `state`: Borrador · Planeado · En progreso · Hecho. Sin `originFolio` es la OF maestra |
 | `QualityControlState` | `manufacturingOrderFolio`, `folio`, `auditor`, `processLabel` | |
-| `SalesOrderLine` | `clave`, `producto`, `cantidad`, `unidad`, `precioUnitario`; calculado `subtotal` | En modo libre se agrega `moneda` (FR-012, D-74) |
+| `SalesOrderLine` | `clave`, `producto`, `cantidad`, `unidad`, `precioUnitario`; calculado `subtotal` | En modo libre se agregan `moneda` (D-74) y `pesoKg` (D-124). `cantidad` va en la unidad de CONTPAQi del producto. En las líneas de la semilla, `pesoKg` queda vacío para no cambiar lo que muestra el prototipo |
 | `ProcessCheck` | `proceso`, `activo`, `origen`, `producto` | |
 | `ShipmentLine` | `clave`, `producto`, `demanda`, `entregado`, `unidad`, `lotesSeleccionados: string[]` | |
 | `Incidencia` | `fecha`, `centroTrabajo`, `tipo`, `comentarios`, `horaInicio`, `horaFin` | |
@@ -102,5 +102,6 @@ Los parámetros `out` de C# se devuelven como objeto. El `Notify()` del prototip
 | Recolección libre deja saldo sin asignar (D-55) | creación libre de recolección | El saldo aparece en WIP sin OF |
 | Asignar saldo de WIP es manual (FR-013) | `asignarSaldoWip` (nueva) | Nada se asigna sin la acción explícita |
 | Pedido libre recibe un Contpaq ID simulado al confirmar (D-53) | creación libre de pedido | Recibe el ID y sigue el flujo de dos firmas |
+| Línea de pedido libre con cantidad y kg capturados, sin conversión (D-124) | captura de línea libre | No se guarda sin los dos valores; cambiar uno no cambia el otro |
 
 La fase 1 completa la tabla con cada regla que encuentre al portar los servicios, porque FR-008 da ejemplos, no una lista cerrada.

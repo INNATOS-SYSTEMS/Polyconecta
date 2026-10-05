@@ -2,7 +2,7 @@
 
 **Feature Branch**: `001-angular-presentation`
 
-**Created**: 2026-09-28 · **Ratified**: 2026-09-29
+**Created**: 2026-09-28 · **Ratified**: 2026-09-29 · **Responsable**: Luis Alvarado Martinez (camino 2)
 
 **Status**: Ratificada. Plan listo; sigue `/speckit-tasks`.
 
@@ -161,7 +161,7 @@ Como usuario, necesito que los mensajes del chatter de un documento aparezcan en
 
 | Documento | Campos mínimos al crear | Regla del modo libre |
 | :--- | :--- | :--- |
-| Pedido de venta | Cliente, líneas (producto, cantidad, unidad, precio unitario y moneda) | Al confirmar recibe un Contpaq ID simulado (D-53). El precio solo existe en pedidos libres (D-74) |
+| Pedido de venta | Cliente, líneas (producto, cantidad en la unidad de CONTPAQi, unidad, peso en kg, precio unitario y moneda) | Al confirmar recibe un Contpaq ID simulado (D-53). El precio solo existe en pedidos libres (D-74). La cantidad y el kg se capturan los dos y ninguno se calcula del otro (D-124) |
 | Orden de fabricación | Proceso, producto, cantidad, unidad | Sin pedido. Sus lotes usan el folio de la OF raíz con `/` → `-` (D-54). Al confirmarla genera su recolección y sus controles igual que una ligada |
 | Recolección | Planta, líneas (producto, cantidad) | MP → WIP sin OF; el saldo queda sin asignar (D-55) |
 | Control de calidad | Lote(s) existentes | Solo sobre lotes existentes; aprobar o rechazar tiene los mismos efectos que en un control ligado |
@@ -220,7 +220,7 @@ Por fases. Una fase empieza cuando la anterior cumple su salida. Dentro de las f
 1. **Rama y commits.** Todo el trabajo va en la rama `001-angular-presentation`, nunca en `main`. Un commit por tarea de `tasks.md`, con el id de la tarea en el mensaje.
 2. **Qué se puede tocar.** Solo `PolyConecta.Web/`, los archivos de la API de FR-015, `scripts/run.sh` (fase 5) y la documentación (fase 5). Todo lo demás es de solo lectura, en especial `PolyConecta.Presentation/`.
 3. **Código compartido.** Después de la fase 2, `src/app/core/` y `src/app/shared/` solo admiten **agregar**. Si un agente de módulo necesita cambiar algo existente ahí, lo registra en `bloqueos.md` y sigue con otra tarea.
-4. **Dependencias.** Solo están aprobadas: Angular y sus paquetes oficiales, `bootstrap@5.3.2`, `bootstrap-icons@1.11.3`, `@microsoft/signalr`, `@playwright/test`, `pixelmatch` y `pngjs`. Cualquier otra se registra en `bloqueos.md` y no se instala.
+4. **Dependencias.** Solo están aprobadas: Angular y sus paquetes oficiales, `bootstrap@5.3.2`, `bootstrap-icons@1.11.3`, `@microsoft/signalr`, `@playwright/test`, `pixelmatch`, `pngjs`, `vitest` y `jsdom`. Cualquier otra se registra en `bloqueos.md` y no se instala.
 5. **Ante una duda.** Primero, lo que hace el prototipo Blazor. Segundo, esta spec. Tercero, `docs/diseno/`. Si nada lo resuelve, se registra en `bloqueos.md` y no se inventa.
 6. **`bloqueos.md`.** Vive en `.specify/features/001-angular-presentation/`. Cada entrada lleva fecha, agente, tarea, pregunta concreta y lo que se hizo mientras tanto. Lo revisa una persona entre fases.
 7. **Hecho es verificado.** Una tarea se marca hecha solo si se ejecutaron sus comandos de verificación (`npm run build`, `npm test` y, cuando aplica, `npm run parity` sobre sus rutas) y pasaron. Si una tarea no se puede verificar, queda abierta.
@@ -251,12 +251,12 @@ Las secciones anteriores son el **objetivo primario**, fijado al ratificar la sp
 | 2026-10-05 | El estado se pierde al recargar, sin `sessionStorage` | En Blazor los servicios son `Scoped` por circuito y recargar abre uno nuevo | FR-011 resuelto; el escenario 6 de US-2 queda como "al recargar, el estado vuelve a la semilla, igual que en Blazor" | research R-03 |
 | 2026-10-05 | El chatter del prototipo no está en vivo: el hub existe, pero ninguna página se conecta. El chatter en vivo es comportamiento nuevo, como "Nuevo". CORS con credenciales para `:4200` | Hallazgo al revisar el código | US-4 ("en el prototipo ya funciona" no es cierto), FR-015, FR-016; la paridad corre con la API apagada | research R-07 |
 | 2026-10-05 | La fase 2B espera a la API en .NET 10 (tarea 0.3 de la 002) | La 2B y la 0.3 tocan `PolyConecta.Api` | Orden de fases; SC-006 se verifica sobre .NET 10 | — |
+| 2026-10-05 | Responsable: Luis Alvarado Martinez, que también revisa `bloqueos.md` entre fases | D-118 no le asignaba líder | Encabezado; regla de autonomía 6 | Decisión del usuario |
+| 2026-10-05 | Se aprueban `vitest` y `jsdom` | El runner de pruebas de Angular 22 los necesita | Regla de autonomía 4; FR-019 | Decisión del usuario (research R-06) |
+| 2026-10-05 | El pedido libre captura la cantidad en la unidad de CONTPAQi **y** el peso en kg, los dos a mano, aunque la réplica no esté conectada a la API | D-124 aplica también a la réplica | FR-012 (pedido de venta); `SalesOrderLine` en data-model | D-124, decisión del usuario (research R-09) |
 | 2026-10-05 | El `./run.sh` de la raíz delega en `scripts/run.sh`, así que FR-003 no cambia | Duda sobre cuál integrar | FR-003 | research R-10 |
 
 ### Preguntas abiertas de esta spec
 
-1. **Responsable.** D-118 no le asigna líder a la 001. Por carpetas cae en el camino 2 (Luis Alvarado Martinez), que también revisa `bloqueos.md` entre fases.
-2. **Origen de la rama.** La 001 sale de `main` y espera a que se integre la 002 (research R-05). La alternativa es traer la rama de la 002 cuando termine la 0.5.
-3. **Vitest y jsdom.** El runner de pruebas de Angular 22 los necesita, pero no están en la lista de dependencias aprobadas (research R-06).
-4. **Pedido libre y D-124.** La propuesta es no capturar el kg en el pedido libre de la réplica (research R-09).
+1. **Origen de la rama.** La 001 sale de `main` y espera a que se integre la 002 (research R-05). La alternativa es traer la rama de la 002 cuando termine la 0.5.
 

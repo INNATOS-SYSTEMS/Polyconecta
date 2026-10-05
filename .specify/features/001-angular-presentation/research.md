@@ -88,7 +88,7 @@ Decisiones de la fase 0 del plan. Cada una se verificó contra el código de `Po
 
 **Hallazgo**: Angular 22 corre `ng test` con **Vitest** a través de `@angular/build:unit-test`. `@angular/build` 22.2.1 declara `vitest ^4.0.8 || ^5.0.0` como dependencia par. Karma está obsoleto. Vitest necesita un DOM simulado (`jsdom`) para probar componentes.
 
-**Decisión propuesta**: usar Vitest 5.0.3 y jsdom 30.1.2. **No están en la lista de dependencias aprobadas** de la spec (regla de autonomía 4), así que necesitan aprobación antes de la fase 1. Mientras tanto, la regla dice registrarlo en `bloqueos.md` y no instalarlo.
+**Decisión**: usar Vitest 5.0.3 y jsdom 30.1.2. El usuario los aprobó el 2026-10-05 y quedaron en la lista de la regla de autonomía 4.
 
 **Alternativas**:
 - Karma con Jasmine: obsoleto en Angular 22.
@@ -127,9 +127,9 @@ Decisiones de la fase 0 del plan. Cada una se verificó contra el código de `Po
 
 **Hallazgo**: D-124 (posterior a la spec) dice que toda línea guarda la cantidad en la unidad de CONTPAQi **y** el peso en kg, los dos capturados. FR-012 pide para el pedido libre cantidad, unidad, precio unitario y moneda, sin peso.
 
-**Decisión propuesta**: la réplica no captura el kg en el pedido libre. La spec dice que la réplica no adopta el modelo de `04-modelo-de-dominio.md` (Key Entities), y D-124 es una regla de ese modelo que entra al conectar la API (spec 003). FR-012 queda como está.
+**Decisión** (del usuario, 2026-10-05): **el pedido libre de la réplica captura los dos valores**: la cantidad en la unidad de CONTPAQi del producto y el peso en kg, a mano y sin que uno se calcule del otro, aunque la réplica no esté conectada a la API. FR-012 se actualiza. Las líneas de la semilla no cambian, para no romper la paridad.
 
-**Alternativas**: agregar el peso en kg al pedido libre. Acerca la réplica al modelo final, pero agrega un campo que no existe en ninguna otra pantalla de la réplica.
+**Alternativa descartada**: dejar el kg para la spec 003, al conectar la API.
 
 ---
 

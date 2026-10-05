@@ -4,6 +4,8 @@
 
 **Branch**: `001-angular-presentation` | **Date**: 2026-10-05 | **Spec**: [spec.md](spec.md)
 
+**Responsable**: Luis Alvarado Martinez (camino 2)
+
 **Status**: Plan completo. Sigue `/speckit-tasks`.
 
 ---
@@ -23,7 +25,7 @@ La investigación de [research.md](research.md) cambió cuatro supuestos de la s
 
 **Language/Version**: TypeScript 6.0.3 con Angular 22.2.1 (D-68), Node 24.16 (D-69, `.nvmrc`). La API, en .NET 10 tras la tarea 0.3 de la spec 002.
 
-**Primary Dependencies**: `@angular/*` 22.2.1, `bootstrap` 5.3.2, `bootstrap-icons` 1.11.3, `@microsoft/signalr` 10.0.11, `@playwright/test` 1.63.0, `pixelmatch` 7.2.0, `pngjs` 7.0.0. Las versiones van exactas (CT-36). `vitest` y `jsdom` **requieren aprobación**: ver research R-06.
+**Primary Dependencies**: `@angular/*` 22.2.1, `bootstrap` 5.3.2, `bootstrap-icons` 1.11.3, `@microsoft/signalr` 10.0.11, `@playwright/test` 1.63.0, `pixelmatch` 7.2.0, `pngjs` 7.0.0. Las versiones van exactas (CT-36). `vitest` 5.0.3 y `jsdom` 30.1.2, aprobados (research R-06).
 
 **Storage**: estado en memoria del navegador. No se usa `sessionStorage` (research R-03).
 
