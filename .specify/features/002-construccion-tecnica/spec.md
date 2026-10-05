@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-05
 
-**Status**: Borrador. Se ratifica cuando la aprueben los dos líderes.
+**Status**: Borrador. Se ratifica cuando la aprueben los dos líderes. Plan y tareas ya generados (2026-10-05); se ajustan si la ratificación cambia algo.
 
 **Fase del plan**: F0 · Construcción técnica, del 5 al 9 de octubre de 2026. Sin revisión con la operación; su salida la usan F1 y F2.
 
@@ -263,7 +263,7 @@ El bridge del VPS usa credenciales nuevas y un login de solo lectura, y vuelve s
 
 ### Reglas de autonomía
 
-1. **Rama y commits.** El trabajo va en ramas que salen de `002-construccion-tecnica`, nunca en `main`. Un commit por tarea de `tasks.md`, con su id (`L1-T003`).
+1. **Rama y commits.** Los dos líderes trabajan en la rama `002-construccion-tecnica`, nunca en `main` (CT-44). Un commit por tarea de `tasks.md`, con su id (`L1-T003`).
 2. **Qué se puede tocar.** Solo las carpetas de tu sección. Lo común se cambia con los dos líderes. `PolyConecta.Presentation/` es de solo lectura (D-60).
 3. **El contrato manda.** Si el simulador, el bridge o el despachador necesitan algo que el contrato no dice, se anota en "Exploración y cambios" y se acuerda entre los dos líderes antes de implementarlo (CT-22).
 4. **Ante una duda.** Primero esta spec, luego `docs/diseno/`, luego `docs/contpaq/`. Si nada la resuelve, se anota en "Exploración y cambios" con la pregunta concreta y lo que se hizo mientras tanto, y la revisa el líder.
@@ -297,3 +297,10 @@ Las secciones anteriores son el **objetivo primario** de la fase, fijado al rati
 | 2026-10-05 | Común | `CIERRE_PRODUCCION` y `REMISION` se definen completos en `1.0`, no como provisionales | Decisión del usuario | FR-002, SC-001 | D-123 |
 | 2026-10-05 | Común | El contrato lleva cantidad y unidad de CONTPAQi, sin KG ni conversión; la fecha es la de negocio. Modifica el punto 1 de D-121 | No toda cantidad está en KG | FR-002, FR-003; abre P-24 sobre cómo guarda PolyConecta esa cantidad | D-123 |
 | 2026-10-05 | Común | Toda línea, lote y movimiento guarda cantidad en la unidad de CONTPAQi y kg, los dos capturados; la unidad siempre es la de CONTPAQi | Resolver P-24 | Modelo desde F1; ninguna tarea de F0 | D-124 |
+| 2026-10-05 | Común | D-127 modifica D-124: cada línea lleva una sola cantidad en la unidad base del producto en CONTPAQi, sin kg aparte. Propuesta para el contrato: la unidad de la línea debe ser la base y `UNIDAD_NO_ADMITIDA` cambia de sentido | Decisión del usuario | FR-002; contrato §1 regla 3 y §4; lo firman los dos líderes (CT-22) | D-127 |
+| 2026-10-05 | Común | La regla de autonomía 1 deja de usar ramas intermedias: todo va en `002-construccion-tecnica` | Alinear con CT-44 | Reglas de autonomía | research R-10 |
+| 2026-10-05 | Común | Propuestas para los ❓ del contrato: referencia de reconciliación por hash, `SDK_ERROR` no reintentable, `concepts` e `invoices` fuera de `1.0`, costo como campo opcional mientras se resuelve T-17 | Preparar la sesión de 0.2 | FR-001 a FR-003; las aprueban los dos líderes | research R-06 |
+| 2026-10-05 | L2 | Paquete nuevo: `Testcontainers.MsSql` 4.15.0, para SQL Server 2022 en las pruebas, igual en local y en CI | Regla de autonomía 5 | FR-012, FR-023; tareas de 0.3 y 0.8 | research R-07 |
+| 2026-10-05 | L2 | El despachador espera el estado terminal solo entre comandos que comparten llave; consulta `GET /transactions/{id}` si no llega el callback; un solo despachador con `sp_getapplock` | Hacer compatibles CT-41 y D-95 | FR-019 | research R-04 |
+| 2026-10-05 | L2 | `PolyConecta.Presentation` (prototipo Blazor) se queda en .NET 8: D-60 prohíbe modificarlo y la spec 001 lo usa como referencia de paridad. Es la única excepción a CT-04 y dura lo que dure el prototipo | Conflicto entre CT-04 y D-60 | FR-012; `run.sh` necesita los runtimes 8 y 10 | research R-01 |
+| 2026-10-05 | L2 | La 0.5 hace 12 componentes, no 13: `PocSalesOrderForm` depende del estado de la spec 001 y queda en su fase 3A. FR-022 lo corrige Luis | Hallazgo de la spec 001 (su research R-04) | FR-022; tareas de 0.5 | Pendiente de L2 |
