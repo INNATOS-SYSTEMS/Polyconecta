@@ -129,3 +129,11 @@
 - [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
 - [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
 - [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+
+## Exploración y cambios *(obligatoria, CT-43)*
+
+Las secciones anteriores son el **objetivo primario** de la fase, fijado al ratificar la spec. Todo lo que surja después se registra aquí y se ejecuta en esta misma spec; un cambio menor no abre otra spec. Si un cambio modifica una decisión validada o el contrato del bridge, regístralo también en `docs/diseno/decisiones.md` y anota aquí su número.
+
+| Fecha | Camino | Cambio | Motivo | Impacto (requisitos y tareas) | Decisión |
+| :--- | :---: | :--- | :--- | :--- | :---: |
+| | | | | | |

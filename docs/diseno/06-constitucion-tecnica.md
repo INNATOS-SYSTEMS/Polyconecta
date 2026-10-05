@@ -149,9 +149,9 @@ flowchart LR
 - **CT-31** Un `correlation_id` viaja de la interfaz a la API, al outbox, al bridge y al SDK, y aparece en todos los logs.
 - **CT-32** Toda transición de estado queda en `StateTransitionLog` con usuario, rol, fecha y documento.
 
-## 9. Cierre de un módulo (D-65)
+## 9. Cierre de una fase (D-65, D-116)
 
-Un módulo tiene **dos cierres**, y el avance del proyecto se mide con los dos:
+Cada fase del plan de trabajo tiene **dos cierres**, y el avance del proyecto se mide con los dos:
 
 **Cerrado en PolyConecta** (camino 2) cuando:
 1. Su spec está implementada y todas sus reglas tienen prueba (CT-28).
@@ -161,13 +161,13 @@ Un módulo tiene **dos cierres**, y el avance del proyecto se mide con los dos:
 5. `docs/diseno/` refleja lo construido y su spec se borró (regla de `AGENTS.md`).
 
 **Cerrado integrado** (caminos 1 y 2) cuando, además:
-1. Cada comando del módulo pasa la suite de contrato contra el bridge real en laboratorio.
-2. El flujo extremo a extremo del módulo corre contra el bridge real y lo verifica en CONTPAQi de laboratorio una persona: documento, existencias y lotes.
-3. La configuración de producción del módulo apunta al bridge real (CT-03).
+1. Cada comando de la fase pasa la suite de contrato contra el bridge real en laboratorio.
+2. El flujo extremo a extremo de la fase corre contra el bridge real y lo verifica en CONTPAQi de laboratorio una persona: documento, existencias y lotes.
+3. La configuración de producción de la fase apunta al bridge real (CT-03).
 
-## 10. Gobierno de la construcción (D-66)
+## 10. Gobierno de la construcción (D-66, D-117)
 
-- **CT-33** Hay **dos líderes**, uno por camino. Cada uno dirige a sus agentes y es dueño de sus carpetas:
+- **CT-33** Hay **dos líderes**, uno por camino: **Alejandro Ponce** (camino 1) y **Luis Alvarado Martinez** (camino 2). Cada uno dirige a sus agentes y es dueño de sus carpetas. En F6 y F7 el líder del camino 1 también construye en las carpetas del camino 2 que toque su spec (D-117):
 
 | | Camino 1 · Integración CONTPAQi | Camino 2 · PolyConecta |
 | :--- | :--- | :--- |
@@ -175,5 +175,10 @@ Un módulo tiene **dos cierres**, y el avance del proyecto se mide con los dos:
 | Carpetas | `PolyConecta.Contpaq/`, `tools/sdk-lab/`, `tests/Contpaq.Bridge.Tests/`, `docs/contpaq/` | `PolyConecta.Domain/`, `Application/`, `Infrastructure/`, `Api/`, `Web.Angular/`, `tests/PolyConecta.*` |
 | Compartido | `docs/contratos/`, la suite de contrato y el modo simulado del bridge (CT-22) | |
 
-- **CT-34** Cada módulo es una feature de Spec Kit (`.specify/features/NNN-<modulo>/`) con sus tareas separadas por camino. Los agentes siguen [AGENTS.md](../../AGENTS.md) y las reglas de autonomía de la spec 001.
-- **CT-35** El estado de cada módulo se actualiza en el tablero de [ROADMAP.md](../ROADMAP.md) al cumplir cada cierre, con la fecha y el commit que lo demuestra.
+- **CT-34** Cada fase del plan (F0 a F8) es una feature de Spec Kit (`.specify/features/NNN-<fase>/`) con sus tareas separadas por camino (D-116). Una fase es **una sola spec**, y un cambio menor nunca abre otra (D-119).
+- **CT-43** Cada spec tiene **objetivo primario** y **exploración** (D-119):
+  - El **objetivo primario** es lo que la spec define al ratificarse, a partir del diseño vigente.
+  - La **exploración** es el resto de la construcción de la fase. Todo cambio que surja (requisito nuevo, ajuste, corrección o decisión) se registra en la sección "Exploración y cambios" de la spec con fecha, camino, motivo e impacto, y se ejecuta en la misma spec, con sus tareas en el `tasks.md` de la fase.
+  - Si el cambio modifica una decisión validada o el contrato del bridge, también va a [decisiones.md](decisiones.md) en el momento, y el del contrato requiere a los dos líderes (CT-22). El resto se integra en `docs/diseno/` al cerrar la spec.
+  - Los ajustes que pida una revisión (R1 a R9) se hacen en la spec de la fase que tocan, aunque esa fase ya esté cerrada: se reabre su exploración y no se crea una spec nueva. Los agentes siguen [AGENTS.md](../../AGENTS.md) y las reglas de autonomía de la spec 001.
+- **CT-35** El estado de cada fase se actualiza en el tablero de [ROADMAP.md](../ROADMAP.md) al cumplir cada cierre, con la fecha y el commit que lo demuestra.

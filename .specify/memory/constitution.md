@@ -1,5 +1,13 @@
 <!--
 Sync Impact Report:
+- Version change: 1.6.1 → 1.7.0
+- Modified sections: Governance & Amendment Policy adds the one-spec-per-phase rule: each phase of the work plan is a single spec with an exploration stage, and every change discovered while building it stays inside that spec instead of opening a new one.
+- Modified principles: None.
+- Added principles: None.
+- Removed sections: None.
+- Follow-up TODOs: None. Source decisions: docs/diseno/decisiones.md D-116 and D-119 (2026-10-05), approved by the user.
+
+Previous amendment (1.6.0 → 1.6.1, 2026-09-30):
 - Version change: 1.6.0 → 1.6.1
 - Modified principles:
   - Principle II: the SDK library is `MGWServicios.dll` (CONTPAQi Comercial), not `SDK_CONTPAQ.dll`; the bridge is a dedicated x86 process that keeps one long-lived SDK session with programmatic sign-in, instead of a generic Windows "Worker" (the SDK does not run over SSH, and running it as a Windows service is still unverified).
@@ -69,7 +77,8 @@ Following Odoo's document philosophy, every operational document (sales order, m
 ## Governance & Amendment Policy
 
 - This Constitution governs all technical architecture, specification design (`.specify`), planning (`plan.md`), and task execution (`tasks.md`) in PolyConecta.
+- **One spec per phase.** Each phase of the work plan is exactly one spec. What the spec defines when it is ratified is its **primary objective**; building it is also an **exploration stage**, and every change discovered along the way (new requirements, adjustments, corrections, decisions) MUST be recorded and executed inside that same spec, in its exploration log. A minor or light change MUST NOT create a new spec. A new spec is only justified by a new phase of the work plan. Changes that alter a validated decision or the bridge contract are also recorded in `docs/diseno/decisiones.md` when they are made (contract changes still require both leads); the rest are integrated into `docs/diseno/` when the spec closes.
 - Amendments require formal approval from the Steering Committee.
 - Semantic versioning applies (MAJOR for principle redefinition, MINOR for scope/governance updates, PATCH for wording fixes).
 
-**Version**: 1.6.1 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-09-30
+**Version**: 1.7.0 | **Ratified**: 2026-09-10 | **Last Amended**: 2026-10-05

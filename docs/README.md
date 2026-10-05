@@ -17,7 +17,7 @@ La fuente de verdad para construir. Léelo en este orden:
 | [decisiones.md](diseno/decisiones.md) | Registro de decisiones y qué cambió del informe de validación |
 | [preguntas-abiertas.md](diseno/preguntas-abiertas.md) | Lo que falta decidir o verificar |
 
-El orden de construcción, por módulos y caminos, con su tablero de avance, está en [ROADMAP.md](ROADMAP.md).
+El orden de construcción, por fases y caminos, con su tablero de avance, está en [ROADMAP.md](ROADMAP.md).
 
 ## 2. Hechos, `assesment/` y `references/`
 
