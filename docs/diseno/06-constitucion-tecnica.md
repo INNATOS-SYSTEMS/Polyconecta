@@ -13,7 +13,7 @@ Reglas de construcción de PolyConecta. Desarrolla los principios de la [constit
 ```mermaid
 flowchart LR
     subgraph C2["Camino 2 · PolyConecta"]
-        WEB["PolyConecta.Web.Angular<br/>SPA"]
+        WEB["PolyConecta.Web<br/>SPA"]
         API["PolyConecta.Api<br/>casos de uso · SignalR"]
         DB[("SQL Server<br/>base PolyConecta")]
         DISP["Despachador de outbox"]
@@ -172,7 +172,7 @@ Cada fase del plan de trabajo tiene **dos cierres**, y el avance del proyecto se
 | | Camino 1 · Integración CONTPAQi | Camino 2 · PolyConecta |
 | :--- | :--- | :--- |
 | Entrega | Que cada comando del contrato funcione contra CONTPAQi | Que cada módulo funcione completo con sus tablas y el simulador |
-| Carpetas | `PolyConecta.Contpaq/`, `tools/sdk-lab/`, `tests/Contpaq.Bridge.Tests/`, `docs/contpaq/` | `PolyConecta.Domain/`, `Application/`, `Infrastructure/`, `Api/`, `Web.Angular/`, `tests/PolyConecta.*` |
+| Carpetas | `PolyConecta.Contpaq/`, `tools/sdk-lab/`, `tests/Contpaq.Bridge.Tests/`, `docs/contpaq/` | `PolyConecta.Domain/`, `Application/`, `Infrastructure/`, `Api/`, `Web/`, `tests/PolyConecta.*` |
 | Compartido | `docs/contratos/`, la suite de contrato y el modo simulado del bridge (CT-22) | |
 
 - **CT-34** Cada fase del plan (F0 a F8) es una feature de Spec Kit (`.specify/features/NNN-<fase>/`) con sus tareas separadas por camino (D-116). Una fase es **una sola spec**, y un cambio menor nunca abre otra (D-119). En su carpeta, `spec.md` es **común** a los dos líderes (objetivo, alcance, criterios de aceptación y exploración), y `plan.md` y `tasks.md` tienen una sección por líder: **L1** (camino 1) y **L2** (camino 2). Cada líder y sus agentes solo editan su sección; lo común se acuerda entre los dos (D-120).

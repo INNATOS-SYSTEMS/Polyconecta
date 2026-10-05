@@ -27,7 +27,7 @@ Lee esto antes de cualquier tarea.
 
 | Dentro | Fuera |
 | :--- | :--- |
-| Proyecto `PolyConecta.Web.Angular` con las 18 páginas y los 13 componentes, con paridad 1:1 | Conectar las pantallas a la API REST: es la siguiente feature (D-48) |
+| Proyecto `PolyConecta.Web` con las 18 páginas y los 13 componentes, con paridad 1:1 | Conectar las pantallas a la API REST: es la siguiente feature (D-48) |
 | Estado en el navegador, portado 1:1 desde los servicios C#, con los mismos datos semilla | Autenticación, roles y permisos (la réplica no tiene usuarios, igual que el prototipo) |
 | Botón "Nuevo" habilitado con formularios de creación libre en 9 documentos (D-59) | Corregir diferencias del prototipo con el diseño: estados de OF de D-42, alias de ubicaciones de D-43, nombres de lote de D-54 en documentos ligados. Se atienden al conectar la API |
 | `ChatterHub` en `PolyConecta.Api`, con CORS para Angular (D-58) | Persistir mensajes del chatter |
@@ -122,7 +122,7 @@ Como usuario, necesito que los mensajes del chatter de un documento aparezcan en
 
 **Proyecto y plataforma**
 
-- **FR-001**: El proyecto MUST vivir en `PolyConecta.Web.Angular/` en la raíz del repositorio, con componentes standalone, **Angular 22** (D-68), TypeScript 6.0 y **Node 24 LTS** (D-69, fijado en `.nvmrc`). Las versiones van exactas en `package.json`, sin `^` ni `~` (CT-36); la versión mayor no cambia durante la feature.
+- **FR-001**: El proyecto MUST vivir en `PolyConecta.Web/` en la raíz del repositorio, con componentes standalone, **Angular 22** (D-68), TypeScript 6.0 y **Node 24 LTS** (D-69, fijado en `.nvmrc`). Las versiones van exactas en `package.json`, sin `^` ni `~` (CT-36); la versión mayor no cambia durante la feature.
 - **FR-002**: El estilo MUST ser idéntico al del prototipo: `PolyConecta.Presentation/wwwroot/css/app.css` copiado sin cambios, Bootstrap 5.3.2, Bootstrap Icons 1.11.3 y la fuente Inter, con las mismas versiones que carga `App.razor`.
 - **FR-003**: El servidor de desarrollo MUST correr en `http://localhost:4200`. `scripts/run.sh --with-angular` MUST levantarlo junto al resto sin afectar el comportamiento actual de `run.sh`.
 
@@ -181,7 +181,7 @@ Como usuario, necesito que los mensajes del chatter de un documento aparezcan en
 
 **Verificación**
 
-- **FR-017**: El proyecto MUST incluir `npm run parity`, que levanta o reutiliza Blazor (`:9000`) y Angular (`:4200`), recorre las 19 rutas en Chromium a 1600×900 con animaciones desactivadas, compara las capturas y guarda un informe en `PolyConecta.Web.Angular/parity-report/`, ignorado por git.
+- **FR-017**: El proyecto MUST incluir `npm run parity`, que levanta o reutiliza Blazor (`:9000`) y Angular (`:4200`), recorre las 19 rutas en Chromium a 1600×900 con animaciones desactivadas, compara las capturas y guarda un informe en `PolyConecta.Web/parity-report/`, ignorado por git.
 - **FR-018**: El proyecto MUST incluir guiones de escenario (US-2) que se ejecutan contra las dos aplicaciones y comparan los textos visibles en cada punto de control.
 - **FR-019**: `npm run build`, `npm test` y `npm run parity` MUST terminar sin errores para dar la feature por hecha.
 
@@ -208,7 +208,7 @@ Por fases. Una fase empieza cuando la anterior cumple su salida. Dentro de las f
 
 | Fase | Agentes | Trabajo | Dueño de | Salida |
 | :--- | :---: | :--- | :--- | :--- |
-| 0 · Base | 1 | Crear el proyecto, fijar dependencias, estilos globales (FR-001 a FR-003), esqueleto de las 19 rutas y el arnés de paridad (FR-017), aunque todavía falle | Todo `PolyConecta.Web.Angular/` | `npm run build` y `npm run parity` corren (la paridad puede fallar) |
+| 0 · Base | 1 | Crear el proyecto, fijar dependencias, estilos globales (FR-001 a FR-003), esqueleto de las 19 rutas y el arnés de paridad (FR-017), aunque todavía falle | Todo `PolyConecta.Web/` | `npm run build` y `npm run parity` corren (la paridad puede fallar) |
 | 1 · Estado | 1 | Modelos, datos semilla y servicios de estado (FR-006 a FR-011) con sus pruebas | `src/app/core/` | `npm test` verde; FR-011 documentado en `plan.md` |
 | 2 · Sistema de diseño y chatter | 2 en paralelo | **2A**: los 13 componentes y el layout (FR-005). **2B**: hub en la API y cliente SignalR (FR-015, FR-016) | 2A: `src/app/shared/`. 2B: `PolyConecta.Api/Hubs/`, CORS en `PolyConecta.Api/Program.cs`, `src/app/core/chatter/` | Componentes renderizan; US-4 pasa |
 | 3 · Páginas | 3 en paralelo | **3A**: dashboard, pedidos, inventario. **3B**: fabricación, calidad, captura masiva, incidencias. **3C**: recolecciones, traslados, recepción, entregas | `src/app/features/<módulo>/` de cada uno | Sus rutas pasan la paridad visual y sus escenarios |
@@ -218,7 +218,7 @@ Por fases. Una fase empieza cuando la anterior cumple su salida. Dentro de las f
 ### Reglas de autonomía
 
 1. **Rama y commits.** Todo el trabajo va en la rama `001-angular-presentation`, nunca en `main`. Un commit por tarea de `tasks.md`, con el id de la tarea en el mensaje.
-2. **Qué se puede tocar.** Solo `PolyConecta.Web.Angular/`, los archivos de la API de FR-015, `scripts/run.sh` (fase 5) y la documentación (fase 5). Todo lo demás es de solo lectura, en especial `PolyConecta.Presentation/`.
+2. **Qué se puede tocar.** Solo `PolyConecta.Web/`, los archivos de la API de FR-015, `scripts/run.sh` (fase 5) y la documentación (fase 5). Todo lo demás es de solo lectura, en especial `PolyConecta.Presentation/`.
 3. **Código compartido.** Después de la fase 2, `src/app/core/` y `src/app/shared/` solo admiten **agregar**. Si un agente de módulo necesita cambiar algo existente ahí, lo registra en `bloqueos.md` y sigue con otra tarea.
 4. **Dependencias.** Solo están aprobadas: Angular y sus paquetes oficiales, `bootstrap@5.3.2`, `bootstrap-icons@1.11.3`, `@microsoft/signalr`, `@playwright/test`, `pixelmatch` y `pngjs`. Cualquier otra se registra en `bloqueos.md` y no se instala.
 5. **Ante una duda.** Primero, lo que hace el prototipo Blazor. Segundo, esta spec. Tercero, `docs/diseno/`. Si nada lo resuelve, se registra en `bloqueos.md` y no se inventa.

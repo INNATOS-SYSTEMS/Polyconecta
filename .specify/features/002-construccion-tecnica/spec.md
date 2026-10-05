@@ -132,7 +132,7 @@ El bridge y `tools/sdk-lab` corren en .NET 10 `win-x86` contra `MGWServicios.dll
 
 ### User Story 6 - Aplicación web: estructura, navegación y estilo (Priority: P2) · L2 (0.5)
 
-Existe `PolyConecta.Web.Angular` con el estilo, el layout tipo Odoo, la navegación entre módulos y los componentes compartidos, listo para que cada fase agregue sus pantallas y la spec 001 sus páginas.
+Existe `PolyConecta.Web` con el estilo, el layout tipo Odoo, la navegación entre módulos y los componentes compartidos, listo para que cada fase agregue sus pantallas y la spec 001 sus páginas.
 
 **Why this priority**: F1 construye pantallas desde el 12-oct.
 
@@ -221,7 +221,7 @@ El bridge del VPS usa credenciales nuevas y un login de solo lectura, y vuelve s
 - **FR-020**: La API MUST recibir el callback del bridge, verificar su firma (D-121), guardar folio e id ERP en las columnas `erp_*` del documento (CT-13) y actualizar su estado de sincronización (`No aplica`, `Pendiente`, `Enviado`, `Confirmado`, `Error`, CT-15). Mostrarlo en pantalla es de F2.
 - **FR-020a**: El puerto `IBridgeSyncService` y el caso de uso de confirmación MUST vivir en `Application`; el despachador, el cliente HTTP y la traducción del documento a la carga, en `Infrastructure/Erp/`. El dominio no conoce el contrato (D-122).
 - **FR-021**: Pasar del simulador al bridge real MUST ser solo configuración: URL y lista de comandos habilitados (CT-03).
-- **FR-022**: MUST existir `PolyConecta.Web.Angular` (Angular 22, Node 24, versiones exactas, CT-36) con estilos, layout, navegación por módulo y componentes compartidos. Para no duplicar trabajo, la tarea 0.5 hace las fases 0 y 2A de la spec 001 (proyecto, dependencias, estilos, layout y los 13 componentes), y la spec 001 sigue desde ahí con sus páginas.
+- **FR-022**: MUST existir `PolyConecta.Web` (Angular 22, Node 24, versiones exactas, CT-36) con estilos, layout, navegación por módulo y componentes compartidos. Para no duplicar trabajo, la tarea 0.5 hace las fases 0 y 2A de la spec 001 (proyecto, dependencias, estilos, layout y los 13 componentes), y la spec 001 sigue desde ahí con sus páginas.
 - **FR-023**: El pipeline de GitHub Actions MUST correr en cada PR: build, pruebas de dominio, de aplicación contra SQL Server 2022 en contenedor, de contrato contra el simulador y de Angular (CT-27, D-76).
 
 ### Key Entities
@@ -257,7 +257,7 @@ El bridge del VPS usa credenciales nuevas y un login de solo lectura, y vuelve s
 | | L1 · Alejandro Ponce | L2 · Luis Alvarado Martinez | Común |
 | :--- | :--- | :--- | :--- |
 | Tareas | 0.1, 0.4, 0.7, 0.9 | 0.3, 0.5, 0.6, 0.8 | 0.2 |
-| Carpetas | `PolyConecta.Contpaq/`, `tools/sdk-lab/`, `tests/Contpaq.Bridge.Tests/` | `PolyConecta.Domain/`, `Application/`, `Infrastructure/`, `Api/`, `Web.Angular/`, `tests/PolyConecta.*`, `.github/` | `docs/contratos/`, suite de contrato, simulador (lo construye L1; sus cambios de comportamiento los aprueban los dos, CT-33), `global.json`, `Directory.Packages.props` |
+| Carpetas | `PolyConecta.Contpaq/`, `tools/sdk-lab/`, `tests/Contpaq.Bridge.Tests/` | `PolyConecta.Domain/`, `Application/`, `Infrastructure/`, `Api/`, `Web/`, `tests/PolyConecta.*`, `.github/` | `docs/contratos/`, suite de contrato, simulador (lo construye L1; sus cambios de comportamiento los aprueban los dos, CT-33), `global.json`, `Directory.Packages.props` |
 
 **Orden.** 0.2 va primero. 0.3 y 0.1 empiezan el 5-oct en paralelo con el contrato. 0.7 y 0.6 empiezan cuando el contrato está aprobado. 0.8 necesita 0.3 y el simulador. 0.9 cierra la fase.
 
