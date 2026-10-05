@@ -123,9 +123,9 @@ Decisiones de la fase 0 del plan. Cada una se verificó contra el código de `Po
 
 ---
 
-## R-09 · Cantidad y unidad en modo libre (D-124)
+## R-09 · Cantidad y unidad en modo libre (D-127)
 
-**Hallazgo**: D-124 dice que toda línea guarda su cantidad en la unidad de medida de CONTPAQi del producto, sin conversión. FR-012 pedía cantidad y unidad solo en algunos documentos y no decía de dónde sale la unidad.
+**Hallazgo**: D-127 dice que toda línea guarda su cantidad en la unidad de medida de CONTPAQi del producto, sin conversión. FR-012 pedía cantidad y unidad solo en algunos documentos y no decía de dónde sale la unidad.
 
 **Decisión** (del usuario, 2026-10-05): en modo libre, **toda línea y toda asignación de lote lleva cantidad (número) y unidad**, aunque la réplica no esté conectada a la API. La unidad es la **unidad base del producto en CONTPAQi**. En la réplica sale de `ProductRef.unidad` de la semilla, se muestra al elegir el producto y no se edita. No hay un campo de peso en kg aparte, y nada se convierte. Las líneas de la semilla no cambian.
 

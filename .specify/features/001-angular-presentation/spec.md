@@ -171,7 +171,7 @@ Como usuario, necesito que los mensajes del chatter de un documento aparezcan en
 | Devolución (`REC-RET`) | Planta, lotes de WIP, cantidad, unidad | Cantidad capturada a mano |
 | Incidencia | Igual que hoy | Ya es libre en el prototipo; no cambia |
 
-**Cantidad y unidad (D-124).** En modo libre, toda línea y toda asignación de lote lleva **cantidad** (número) y **unidad**. La unidad es siempre la **unidad base del producto en CONTPAQi** (`ProductRef.unidad`): se muestra al elegir el producto y no se edita. No hay campo de peso aparte ni conversión entre unidades.
+**Cantidad y unidad (D-127).** En modo libre, toda línea y toda asignación de lote lleva **cantidad** (número) y **unidad**. La unidad es siempre la **unidad base del producto en CONTPAQi** (`ProductRef.unidad`): se muestra al elegir el producto y no se edita. No hay campo de peso aparte ni conversión entre unidades.
 
 - **FR-013**: Una OF MUST ofrecer la acción **"Asignar saldo de WIP"**, que liga saldo sin asignar de sus componentes. La asignación es manual y nunca automática, por la regla 008-FR-004: el sistema no asigna lotes sin confirmación.
 - **FR-014**: Un documento creado libre MUST mostrar sus smart buttons de origen vacíos o deshabilitados, nunca con un origen falso.
@@ -255,6 +255,6 @@ Las secciones anteriores son el **objetivo primario**, fijado al ratificar la sp
 | 2026-10-05 | La fase 2B espera a la API en .NET 10 (tarea 0.3 de la 002) | La 2B y la 0.3 tocan `PolyConecta.Api` | Orden de fases; SC-006 se verifica sobre .NET 10 | — |
 | 2026-10-05 | Responsable: Luis Alvarado Martinez, que también revisa `bloqueos.md` entre fases | D-118 no le asignaba líder | Encabezado; regla de autonomía 6 | Decisión del usuario |
 | 2026-10-05 | Se aprueban `vitest` y `jsdom` | El runner de pruebas de Angular 22 los necesita | Regla de autonomía 4; FR-019 | Decisión del usuario (research R-06) |
-| 2026-10-05 | En modo libre, toda línea y toda asignación de lote lleva cantidad y unidad. La unidad es la unidad base del producto en CONTPAQi, se toma del producto y no se edita. No hay campo de kg aparte ni conversión | Aplicar D-124 a la réplica aunque no esté conectada a la API | FR-012 (nota de cantidad y unidad; filas de recolección y devolución); data-model §1 y §3 | D-124, decisión del usuario (research R-09) |
+| 2026-10-05 | En modo libre, toda línea y toda asignación de lote lleva cantidad y unidad. La unidad es la unidad base del producto en CONTPAQi, se toma del producto y no se edita. No hay campo de kg aparte ni conversión | Aplicar D-127 a la réplica aunque no esté conectada a la API | FR-012 (nota de cantidad y unidad; filas de recolección y devolución); data-model §1 y §3 | D-127, decisión del usuario (research R-09) |
 | 2026-10-05 | La 001 espera a que la 002 se integre a `main` y después trae `main` a su rama. Hasta entonces, solo documentación | Regla de ramas (CT-44) | Orden de fases; plan, "Dependencias con la spec 002" | Decisión del usuario (research R-05) |
 | 2026-10-05 | El `./run.sh` de la raíz delega en `scripts/run.sh`, así que FR-003 no cambia | Duda sobre cuál integrar | FR-003 | research R-10 |
