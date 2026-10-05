@@ -6,7 +6,7 @@
 
 **Responsable**: Luis Alvarado Martinez (camino 2)
 
-**Status**: Plan completo. Sigue `/speckit-tasks`.
+**Status**: Plan y tareas completos. La implementación empieza cuando la 002 se integre a `main`.
 
 ---
 

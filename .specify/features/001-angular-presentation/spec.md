@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-28 · **Ratified**: 2026-09-29 · **Responsable**: Luis Alvarado Martinez (camino 2)
 
-**Status**: Ratificada. Plan listo; sigue `/speckit-tasks`.
+**Status**: Ratificada. Plan y tareas listos; la implementación espera el merge de la 002 a `main`.
 
 **Input**: Replicar en Angular la capa de presentación `PolyConecta.Presentation` (Blazor Server) con paridad 1:1, habilitar el modo libre ("Nuevo") y llevar el chatter en tiempo real a `PolyConecta.Api`.
 
