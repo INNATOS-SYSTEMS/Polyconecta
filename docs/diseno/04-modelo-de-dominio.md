@@ -11,7 +11,7 @@ Modelo **objetivo** de `PolyConecta.Domain`. Consolida la redefinición del domi
 - **Delegación 1:1 para especializaciones.** Los atributos físicos por categoría viven en entidades delegadas de `Product` (`RawMaterialCatalog`, `RollSpecification`, `PtSpecification`), no como columnas nulas en `Product`.
 - **Multiempresa por derivación.** La entidad legal se resuelve `LegalEntity ← Plant ← entidad operativa`; no se copia un `legal_entity_id` en cada tabla.
 - **Numeración centralizada.** Todo folio visible (pedido, orden, lote, QC, operación) sale de `IReferenceSequenceService`, configurable por tipo de documento; nunca se arma concatenando cadenas.
-- **Dos cantidades capturadas.** Toda línea, lote y movimiento guarda la cantidad en la unidad de CONTPAQi y el peso en kg, los dos capturados; los cálculos internos usan el kg (D-124, ver [02-flujo-y-reglas.md §6](02-flujo-y-reglas.md)).
+- **Dos cantidades capturadas.** Toda línea, lote y movimiento guarda la cantidad en la unidad de CONTPAQi y el peso en kg, los dos capturados y nunca convertidos; los cálculos internos usan el kg (D-124, ver [02-flujo-y-reglas.md §6](02-flujo-y-reglas.md)).
 - **Ninguna entidad llama a CONTPAQi.** Las escrituras al ERP se encolan en el outbox (`IBridgeSyncService`).
 
 ## 2. Mapa de entidades
