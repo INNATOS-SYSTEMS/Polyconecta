@@ -1,27 +1,22 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using PolyConecta.Api.Controllers;
 using PolyConecta.Infrastructure.Persistence;
+using PolyConecta.Tests.Compartido;
 using Xunit;
 
 namespace PolyConecta.IntegrationTests;
 
-public class OrdersApiTests
+public class OrdersApiTests(SqlServerFixture sql)
 {
-    private static PolyDbContext GetDbContext()
-    {
-        var options = new DbContextOptionsBuilder<PolyDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        return new PolyDbContext(options);
-    }
+    private Task<PolyDbContext> GetDbContext() => sql.CrearContextoAsync();
 
     private static readonly string[] ProcesosEsperados = { "Extrusion", "Printing", "Bagging" };
 
     [Fact]
     public async Task CreateMasterOrder_ShouldAutoDecomposeProcessOrders()
     {
-        var db = GetDbContext();
+        await using var db = await GetDbContext();
         var controller = new OrdersController(db);
 
         var request = new OrdersController.CreateMasterOrderRequest(421, "CLI-100", "PT-BAG-001", 5000.0m);
@@ -43,7 +38,7 @@ public class OrdersApiTests
     [Fact]
     public async Task CreateMasterOrder_ShouldNotLeaveLegacyDuplicates()
     {
-        var db = GetDbContext();
+        await using var db = await GetDbContext();
         var controller = new OrdersController(db);
 
         await controller.CreateMasterOrder(

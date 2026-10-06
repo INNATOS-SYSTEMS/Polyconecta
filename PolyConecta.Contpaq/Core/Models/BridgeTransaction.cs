@@ -9,9 +9,11 @@ namespace Contpaq.Bridge.Core.Models
         public string ClientAppId { get; set; } = string.Empty;
         public string? IdempotencyKey { get; set; }
         public string CommandType { get; set; } = string.Empty;
+        public string ContractVersion { get; set; } = string.Empty;
+        public string? Variant { get; set; }
         public string PayloadJson { get; set; } = string.Empty;
         public string? CallbackUrl { get; set; }
-        public string Status { get; set; } = "PENDING";
+        public string Status { get; set; } = Contpaq.Bridge.Core.Contract.Estados.Pending;
         public int RetryCount { get; set; } = 0;
         public int MaxRetries { get; set; } = 5;
         public string NextAttemptAt { get; set; } = DateTime.UtcNow.ToString("o");
@@ -19,6 +21,10 @@ namespace Contpaq.Bridge.Core.Models
         public string? ContpaqiFolio { get; set; }
         public int? LastErrorCode { get; set; }
         public string? LastErrorMessage { get; set; }
+        /// <summary>Resultado del contrato (§5) en JSON, cuando la transacción está CONFIRMED.</summary>
+        public string? ResultJson { get; set; }
+        /// <summary>Error del contrato (§4) en JSON, cuando falló o se está reintentando.</summary>
+        public string? ErrorJson { get; set; }
         public string CreatedAt { get; set; } = DateTime.UtcNow.ToString("o");
         public string UpdatedAt { get; set; } = DateTime.UtcNow.ToString("o");
     }

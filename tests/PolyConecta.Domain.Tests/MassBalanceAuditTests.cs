@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using PolyConecta.Domain.Services;
 using Xunit;
 

@@ -30,3 +30,8 @@ tools/sdk-lab/lab.config.json
 
 ## Claude Code (configuración personal)
 .claude/settings.local.json
+
+## Bridge (bases SQLite del outbox y del simulador, logs)
+PolyConecta.Contpaq/*.db
+PolyConecta.Contpaq/*.db-*
+PolyConecta.Contpaq/logs/

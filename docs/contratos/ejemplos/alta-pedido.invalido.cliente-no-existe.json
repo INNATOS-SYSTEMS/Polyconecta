@@ -1,0 +1,19 @@
+{
+  "contract_version": "1.0",
+  "command_type": "ALTA_PEDIDO",
+  "variant": null,
+  "idempotency_key": "pedido:302:autorizar",
+  "correlation_id": "1d2e3f40-1111-4000-8000-000000000302",
+  "client_app_id": "polyconecta",
+  "callback_url": "https://api.polyconecta.local/api/v1/plataforma/bridge/callbacks",
+  "payload": {
+    "fecha": "2026-10-13",
+    "referencia_negocio": "IV311-26",
+    "cliente": "NO-EXISTE",
+    "moneda": "MXN",
+    "tipo_cambio": 1,
+    "lineas": [
+      { "producto": "PT1113 C567", "cantidad": 1000, "unidad": "PZA", "precio": 5.70 }
+    ]
+  }
+}

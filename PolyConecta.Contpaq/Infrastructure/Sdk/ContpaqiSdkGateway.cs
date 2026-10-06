@@ -5,43 +5,35 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Contpaq.Bridge.Core.Commands;
+using Contpaq.Bridge.Core.Contract;
 using Contpaq.Bridge.Core.Models;
 using Contpaq.Bridge.Core.Services;
-using Contpaq.Bridge.Infrastructure.Persistence;
-using Contpaq.Bridge.Infrastructure.Webhooks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Contpaq.Bridge.Infrastructure.Sdk
 {
-    public interface IContpaqiSdkGateway
+    /// <summary>
+    /// Gateway real: única puerta al SDK de CONTPAQi (MGWServicios.dll, Principio II). Conserva la
+    /// sesión y las llamadas nativas; el ciclo del outbox vive en OutboxWorker, que lo llama siempre
+    /// desde su mismo hilo STA (D-122).
+    /// </summary>
+    public class ContpaqiSdkGateway : ISdkGateway
     {
-        bool IsCompanyOpen { get; }
-        bool IsMockMode { get; }
-    }
-
-    public class ContpaqiSdkGateway : BackgroundService, IContpaqiSdkGateway
-    {
-        private readonly IOutboxRepository _outboxRepository;
-        private readonly IWebhookDispatcher _webhookDispatcher;
         private readonly ILogger<ContpaqiSdkGateway> _logger;
-        private readonly CircuitBreakerPolicy _circuitBreaker;
 
         private readonly string _sdkPath;
         private readonly string _companyPath;
         private readonly int _timeoutSeconds;
         private readonly int _idleTimeoutSeconds;
-        private readonly bool _forceMockMode;
 
         private bool _isSdkInitialized = false;
         private bool _isCompanyOpen = false;
         private DateTime _lastActivityTime = DateTime.MinValue;
-        private int _mockDocCounter = 1000;
 
-        public bool IsCompanyOpen => _isCompanyOpen;
-        public bool IsMockMode => _forceMockMode || !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        public bool EsReal => true;
+
+        public bool SesionActiva => _isCompanyOpen;
 
         static ContpaqiSdkGateway()
         {
@@ -93,140 +85,44 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
             }
         }
 
-        public ContpaqiSdkGateway(
-            IOutboxRepository outboxRepository,
-            IWebhookDispatcher webhookDispatcher,
-            IConfiguration configuration,
-            ILogger<ContpaqiSdkGateway> logger)
+        public ContpaqiSdkGateway(IConfiguration configuration, ILogger<ContpaqiSdkGateway> logger)
         {
-            _outboxRepository = outboxRepository;
-            _webhookDispatcher = webhookDispatcher;
             _logger = logger;
 
             _sdkPath = configuration["BridgeConfig:SdkPath"] ?? @"C:\Program Files (x86)\Compac\COMERCIAL";
             _companyPath = configuration["BridgeConfig:CompanyPath"] ?? @"C:\Compac\Empresas\adPOLYEMPAQUES";
             _timeoutSeconds = int.TryParse(configuration["BridgeConfig:TransactionTimeoutSeconds"], out var t) ? t : 8;
             _idleTimeoutSeconds = int.TryParse(configuration["BridgeConfig:IdleSessionTimeoutSeconds"], out var i) ? i : 5;
-            _forceMockMode = bool.TryParse(configuration["BridgeConfig:UseMockSdk"], out var m) && m;
-
-            var threshold = int.TryParse(configuration["BridgeConfig:CircuitBreakerFailureThreshold"], out var f) ? f : 3;
-            var cooldown = int.TryParse(configuration["BridgeConfig:CircuitBreakerCooldownSeconds"], out var c) ? c : 15;
-            _circuitBreaker = new CircuitBreakerPolicy(threshold, cooldown);
-
-            if (IsMockMode)
-            {
-                _logger.LogWarning("Running Contpaq.Bridge in MOCK SDK MODE (non-Windows platform or UseMockSdk=true). Native DLL calls are simulated.");
-            }
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        public bool AsegurarSesion() => EnsureCompanySessionOpen();
+
+        public void CerrarSiInactiva()
         {
-            var tcs = new TaskCompletionSource();
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    RunWorkerLoop(stoppingToken);
-                    tcs.SetResult();
-                }
-                catch (Exception ex)
-                {
-                    tcs.SetException(ex);
-                }
-            });
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                thread.SetApartmentState(ApartmentState.STA);
-            }
-            thread.IsBackground = true;
-            thread.Start();
-
-            return tcs.Task;
+            if (_isCompanyOpen && (DateTime.UtcNow - _lastActivityTime).TotalSeconds > _idleTimeoutSeconds)
+                CloseCompanySession();
         }
 
-        private void RunWorkerLoop(CancellationToken stoppingToken)
+        public void Apagar() => ShutdownSdk();
+
+        public void BombearMensajes() => PumpWin32Messages();
+
+        /// <summary>
+        /// En F0 ningún comando está implementado contra el SDK real: cada uno llega en su fase
+        /// (ALTA_PEDIDO 2.4, TRASPASO 3.1, ALTA_ALMACEN 3.2, CIERRE_PRODUCCION 5.1, REMISION 6.1).
+        /// El DOCUMENT_CREATE genérico se retiró con el contrato bridge-v1.
+        /// </summary>
+        public ResultadoEjecucion Ejecutar(string transactionId, ComandoLeido comando)
         {
-            _logger.LogInformation("Starting Contpaq.Bridge Worker Loop (MockMode={IsMockMode})", IsMockMode);
-
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                PumpWin32Messages();
-                try
-                {
-                    MetricCollectorService.CircuitState = _circuitBreaker.State;
-
-                    if (!_circuitBreaker.AllowExecution())
-                    {
-                        _logger.LogWarning("Circuit Breaker is OPEN. Pausing SDK queue consumption.");
-                        Thread.Sleep(2000);
-                        PumpWin32Messages();
-                        continue;
-                    }
-
-                    var pendingItems = _outboxRepository.GetPendingTransactionsAsync(10).GetAwaiter().GetResult().ToList();
-
-                    if (!pendingItems.Any())
-                    {
-                        if (_isCompanyOpen && (DateTime.UtcNow - _lastActivityTime).TotalSeconds > _idleTimeoutSeconds)
-                        {
-                            CloseCompanySession();
-                        }
-
-                        Thread.Sleep(500);
-                        continue;
-                    }
-
-                    if (!EnsureCompanySessionOpen())
-                    {
-                        _circuitBreaker.RecordFailure();
-                        Thread.Sleep(3000);
-                        continue;
-                    }
-
-                    var swBatch = Stopwatch.StartNew();
-                    int batchCount = 0;
-
-                    foreach (var tx in pendingItems)
-                    {
-                        if (stoppingToken.IsCancellationRequested) break;
-
-                        ProcessSingleTransaction(tx);
-                        PerformanceMetrics.RecordWriteOp();
-                        batchCount++;
-                        _lastActivityTime = DateTime.UtcNow;
-                    }
-
-                    swBatch.Stop();
-                    if (swBatch.ElapsedMilliseconds > 0 && batchCount > 0)
-                    {
-                        MetricCollectorService.AverageSdkLatencyMs = swBatch.ElapsedMilliseconds / (double)batchCount;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Unhandled exception in SDK worker loop");
-                    _circuitBreaker.RecordFailure();
-                    Thread.Sleep(2000);
-                }
-            }
-
-            ShutdownSdk();
+            _lastActivityTime = DateTime.UtcNow;
+            return ResultadoEjecucion.Fallo(ErrorContrato.De(CodigosError.SdkError,
+                $"El comando {comando.CommandType} todavía no está implementado contra el SDK real.",
+                new() { ["motivo"] = "COMANDO_NO_IMPLEMENTADO", ["command_type"] = comando.CommandType }));
         }
 
         private bool EnsureCompanySessionOpen()
         {
             if (_isCompanyOpen) return true;
-
-            if (IsMockMode)
-            {
-                _isSdkInitialized = true;
-                _isCompanyOpen = true;
-                _lastActivityTime = DateTime.UtcNow;
-                MetricCollectorService.IsSdkSessionActive = true;
-                _logger.LogInformation("[MOCK] Opened simulated CONTPAQi Company session: {Path}", _companyPath);
-                return true;
-            }
 
             try
             {
@@ -359,14 +255,6 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
 
         private void CloseCompanySession()
         {
-            if (IsMockMode)
-            {
-                _isCompanyOpen = false;
-                MetricCollectorService.IsSdkSessionActive = false;
-                _logger.LogInformation("[MOCK] Closed simulated CONTPAQi Company session due to idle timeout");
-                return;
-            }
-
             if (_isCompanyOpen)
             {
                 try 
@@ -388,7 +276,7 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
         {
             CloseCompanySession();
 
-            if (_isSdkInitialized && !IsMockMode)
+            if (_isSdkInitialized)
             {
                 try 
                 { 
@@ -401,242 +289,6 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
                 }
                 _isSdkInitialized = false;
             }
-        }
-
-        private void ProcessSingleTransaction(BridgeTransaction tx)
-        {
-            _outboxRepository.UpdateStatusAsync(tx.TransactionId, "PROCESSING").GetAwaiter().GetResult();
-            var sw = Stopwatch.StartNew();
-
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(_timeoutSeconds));
-
-            try
-            {
-                var payload = JsonSerializer.Deserialize<TransactionPayload>(tx.PayloadJson);
-                if (payload == null)
-                {
-                    FailTransaction(tx, 400, "Invalid JSON payload", sw.ElapsedMilliseconds);
-                    return;
-                }
-
-                if (IsMockMode)
-                {
-                    // Simulated Mock Execution
-                    Thread.Sleep(20); // Simulate 20ms SDK processing delay
-                    int mockDocId = Interlocked.Increment(ref _mockDocCounter);
-                    string mockFolio = $"MOCK-F{mockDocId}";
-
-                    LogSdkStep(tx, 1, "fAltaDocumento", 0, 5);
-                    foreach (var mov in payload.Movimientos)
-                    {
-                        LogSdkStep(tx, 1, "fAltaMovimiento", 0, 5);
-                        if (mov.Lote != null)
-                        {
-                            LogSdkStep(tx, 1, "fAltaMovimientoSeriesCapas", 0, 5);
-                        }
-                    }
-                    LogSdkStep(tx, 1, "fAfectaDocto_Param", 0, 5);
-
-                    sw.Stop();
-                    MetricCollectorService.AverageSdkLatencyMs = sw.ElapsedMilliseconds;
-
-                    _outboxRepository.UpdateStatusAsync(tx.TransactionId, "COMPLETED", mockDocId, mockFolio).GetAwaiter().GetResult();
-                    _circuitBreaker.RecordSuccess();
-
-                    tx.Status = "COMPLETED";
-                    tx.ContpaqiDocId = mockDocId;
-                    tx.ContpaqiFolio = mockFolio;
-                    _webhookDispatcher.DeliverAsync(tx).GetAwaiter().GetResult();
-
-                    _logger.LogInformation("[MOCK] Processed transaction {TxId} -> Assigned Mock DocId #{DocId} Folio {Folio}", tx.TransactionId, mockDocId, mockFolio);
-                    return;
-                }
-
-                string docFecha = DateTime.Now.ToString("MM/dd/yyyy");
-                if (!string.IsNullOrWhiteSpace(payload.Fecha))
-                {
-                    if (DateTime.TryParse(payload.Fecha, out var dt))
-                    {
-                        docFecha = dt.ToString("MM/dd/yyyy");
-                    }
-                    else
-                    {
-                        docFecha = payload.Fecha;
-                    }
-                }
-
-                int docId = 0;
-                var docto = new tDocumento
-                {
-                    aFolio = 0,
-                    aNumMoneda = 1,
-                    aTipoCambio = 1.0,
-                    aImporte = 0,
-                    aDescuentoDoc1 = 0,
-                    aDescuentoDoc2 = 0,
-                    aSistemaOrigen = 0,
-                    aCodConcepto = payload.CodigoConcepto,
-                    aSeries = "",
-                    aFecha = docFecha,
-                    aCodigoCteProv = payload.CodigoClienteProveedor,
-                    aCodigoAgente = payload.CodigoAgente ?? "",
-                    aReferencia = payload.Referencia ?? ""
-                    // tDocumento no tiene observaciones: requieren fSetDatoDocumento, pendiente en el bridge.
-                };
-
-                var docErr = ContpaqiSdkNative.fAltaDocumento(ref docId, ref docto);
-                LogSdkStep(tx, 1, "fAltaDocumento", docErr, sw.ElapsedMilliseconds);
-
-                if (docErr != ContpaqiSdkNative.kSIN_ERRORES)
-                {
-                    FailTransaction(tx, docErr, ContpaqiSdkNative.GetErrorMessage(docErr), sw.ElapsedMilliseconds);
-                    return;
-                }
-
-                foreach (var movPayload in payload.Movimientos)
-                {
-                    int movId = 0;
-                    var mov = new tMovimiento
-                    {
-                        aConsecutivo = 0,
-                        aUnidades = movPayload.Unidades,
-                        aPrecio = movPayload.Precio,
-                        aCosto = 0,
-                        aCodProdSer = movPayload.CodigoProducto,
-                        aCodAlmacen = string.IsNullOrWhiteSpace(movPayload.CodigoAlmacen) ? "1" : movPayload.CodigoAlmacen,
-                        aReferencia = "",
-                        aCodClasific = ""
-                    };
-
-                    var movErr = ContpaqiSdkNative.fAltaMovimiento(docId, ref movId, ref mov);
-                    LogSdkStep(tx, 1, "fAltaMovimiento", movErr, sw.ElapsedMilliseconds);
-
-                    if (movErr != ContpaqiSdkNative.kSIN_ERRORES)
-                    {
-                        FailTransaction(tx, movErr, ContpaqiSdkNative.GetErrorMessage(movErr), sw.ElapsedMilliseconds);
-                        return;
-                    }
-
-                    if (movPayload.Lote != null && !string.IsNullOrEmpty(movPayload.Lote.NumeroLote))
-                    {
-                        var seriesCapas = new tSeriesCapas
-                        {
-                            aUnidades = movPayload.Unidades,
-                            aTipoCambio = 1.0,
-                            aSeries = "",
-                            aPedimento = movPayload.Lote.Pedimento ?? "",
-                            aFechaPedimento = "",
-                            aAgencia = "",
-                            aFechaFabricacion = "",
-                            aFechaCaducidad = movPayload.Lote.FechaCaducidad ?? "",
-                            aNumeroLote = movPayload.Lote.NumeroLote
-                        };
-
-                        var lotErr = ContpaqiSdkNative.fAltaMovimientoSeriesCapas(movId, ref seriesCapas);
-                        LogSdkStep(tx, 1, "fAltaMovimientoSeriesCapas", lotErr, sw.ElapsedMilliseconds);
-
-                        if (lotErr != ContpaqiSdkNative.kSIN_ERRORES)
-                        {
-                            FailTransaction(tx, lotErr, ContpaqiSdkNative.GetErrorMessage(lotErr), sw.ElapsedMilliseconds);
-                            return;
-                        }
-                    }
-                }
-
-                if (docto.aFolio > 0 && payload.CodigoConcepto != "1")
-                {
-                    try
-                    {
-                        var affectErr = ContpaqiSdkNative.fAfectaDocto_Param(payload.CodigoConcepto, docto.aSeries ?? "", docto.aFolio, true);
-                        LogSdkStep(tx, 1, "fAfectaDocto_Param", affectErr, sw.ElapsedMilliseconds);
-                        if (affectErr != ContpaqiSdkNative.kSIN_ERRORES)
-                        {
-                            _logger.LogWarning("fAfectaDocto_Param returned code {ErrCode}: {Msg} (Document #{DocId} Folio {Folio} was created successfully)", affectErr, ContpaqiSdkNative.GetErrorMessage(affectErr), docId, docto.aFolio);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "fAfectaDocto_Param threw exception (Document #{DocId} Folio {Folio} was created successfully)", docId, docto.aFolio);
-                    }
-                }
-
-                sw.Stop();
-                MetricCollectorService.AverageSdkLatencyMs = sw.ElapsedMilliseconds;
-
-                string assignedFolio = docto.aFolio > 0 ? docto.aFolio.ToString() : docId.ToString();
-                _outboxRepository.UpdateStatusAsync(tx.TransactionId, "COMPLETED", docId, assignedFolio).GetAwaiter().GetResult();
-                _circuitBreaker.RecordSuccess();
-
-                tx.Status = "COMPLETED";
-                tx.ContpaqiDocId = docId;
-                tx.ContpaqiFolio = assignedFolio;
-                _webhookDispatcher.DeliverAsync(tx).GetAwaiter().GetResult();
-
-                _logger.LogInformation("Successfully created CONTPAQi Document #{DocId} Folio '{Folio}' for Transaction {TxId}", docId, assignedFolio, tx.TransactionId);
-            }
-            catch (OperationCanceledException)
-            {
-                sw.Stop();
-                FailTransaction(tx, 999, $"SDK execution timed out (> {_timeoutSeconds}s)", sw.ElapsedMilliseconds);
-            }
-            catch (Exception ex)
-            {
-                sw.Stop();
-                FailTransaction(tx, 998, ex.Message, sw.ElapsedMilliseconds);
-            }
-        }
-
-        private void FailTransaction(BridgeTransaction tx, int errorCode, string message, long durationMs)
-        {
-            _circuitBreaker.RecordFailure();
-            var nextRetryCount = tx.RetryCount + 1;
-            var delaySeconds = GetExponentialBackoffSeconds(nextRetryCount);
-            var nextAttempt = DateTime.UtcNow.AddSeconds(delaySeconds);
-
-            _outboxRepository.IncrementRetryAsync(tx.TransactionId, nextRetryCount, nextAttempt, errorCode, message).GetAwaiter().GetResult();
-
-            tx.RetryCount = nextRetryCount;
-            tx.Status = nextRetryCount >= 5 ? "DEAD_LETTER_QUEUE" : "PENDING";
-            tx.LastErrorCode = errorCode;
-            tx.LastErrorMessage = message;
-
-            if (tx.Status == "DEAD_LETTER_QUEUE")
-            {
-                _webhookDispatcher.DeliverAsync(tx).GetAwaiter().GetResult();
-            }
-
-            _logger.LogError("Transaction {TxId} failed (Attempt {Retry}/5): [{ErrCode}] {Msg}", tx.TransactionId, nextRetryCount, errorCode, message);
-        }
-
-        private int GetExponentialBackoffSeconds(int retryCount)
-        {
-            var random = new Random();
-            var jitter = random.Next(0, 3);
-            return retryCount switch
-            {
-                1 => 1 + jitter,
-                2 => 5 + jitter,
-                3 => 15 + jitter,
-                4 => 60 + jitter,
-                _ => 300 + jitter
-            };
-        }
-
-        private void LogSdkStep(BridgeTransaction tx, int attempt, string functionName, int errCode, long durationMs)
-        {
-            var log = new TransactionLog
-            {
-                LogId = Guid.NewGuid().ToString(),
-                TransactionId = tx.TransactionId,
-                CorrelationId = tx.CorrelationId,
-                AttemptNumber = attempt,
-                SdkFunctionName = functionName,
-                SdkErrorCode = errCode,
-                ErrorMessage = errCode == 0 ? null : (IsMockMode ? "Mock Success" : ContpaqiSdkNative.GetErrorMessage(errCode)),
-                DurationMs = durationMs,
-                Timestamp = DateTime.UtcNow.ToString("o")
-            };
-            _outboxRepository.AddLogAsync(log).GetAwaiter().GetResult();
         }
 
         private void PreloadNativeDependencies(string effectiveSdkPath, string commonFilesCompac, string borlandBde)

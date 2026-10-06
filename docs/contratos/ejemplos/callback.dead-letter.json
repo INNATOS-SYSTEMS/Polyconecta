@@ -1,0 +1,17 @@
+{
+  "event_type": "transaction.status_changed",
+  "contract_version": "1.0",
+  "transaction_id": "d93a2e4c-7f6b-4a5d-c3e4-1b0a9f8e7d6c",
+  "correlation_id": "1d2e3f40-1111-4000-8000-000000000301",
+  "idempotency_key": "pedido:301:autorizar",
+  "command_type": "ALTA_PEDIDO",
+  "status": "DEAD_LETTER",
+  "result": null,
+  "error": {
+    "code": "SDK_TIMEOUT",
+    "retryable": true,
+    "message": "La llamada al SDK excedió su tiempo límite y se agotaron los reintentos",
+    "detail": { "intentos": 5 }
+  },
+  "timestamp": "2026-10-13T09:42:10-06:00"
+}

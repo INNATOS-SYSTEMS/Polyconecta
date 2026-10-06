@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
-using PolyConecta.Infrastructure.Outbox;
-using PolyConecta.Infrastructure.Persistence;
+using PolyConecta.Api.Middleware;
+using PolyConecta.Application;
+using PolyConecta.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +14,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
     {
         Title = "PolyConecta Operational API",
         Version = "v1",
@@ -22,8 +22,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddDbContext<PolyDbContext>(options =>
-    options.UseInMemoryDatabase("PolyConectaInMemory")); // Using InMemory for development/validation
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddCors(options =>
 {
@@ -35,16 +35,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddSingleton<IOutboxPublisher, OutboxPublisher>();
-
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<PolyDbContext>();
-    db.Database.EnsureCreated();
-}
-
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<ProblemDetailsMiddleware>();
 app.UseCors();
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -54,3 +48,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program;

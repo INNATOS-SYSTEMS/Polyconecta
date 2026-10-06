@@ -1,0 +1,668 @@
+openapi: 3.1.0
+info:
+  title: Contrato bridge-v1 (PolyConecta ↔ bridge de CONTPAQi)
+  version: 1.0.0-propuesta
+  summary: API HTTP del bridge que cumplen por igual el bridge real y el simulado.
+  description: |
+    Se genera a partir de `docs/contratos/bridge-v1.md`, que manda si hay diferencias.
+    Estado: propuesta para firma de los dos líderes (CT-22). No es `1.0` hasta que se firme.
+  license:
+    name: Privado
+    identifier: LicenseRef-Privado
+servers:
+  - url: http://localhost:5005
+    description: Bridge local (modo simulado en macOS, Linux y CI)
+security: []
+tags:
+  - name: Comandos
+    description: Escrituras a CONTPAQi (§2 a §5)
+  - name: Lecturas
+    description: Catálogos y existencias (§6)
+
+paths:
+  /api/v1/transactions:
+    post:
+      tags: [Comandos]
+      operationId: crearTransaccion
+      summary: Envía un comando de negocio
+      description: |
+        Acepta el comando y lo procesa en orden de llegada, uno a la vez (CT-41). El resultado
+        llega por callback a `callback_url`. Un reenvío con la misma `idempotency_key` nunca
+        duplica el documento (CT-19).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comando'
+      responses:
+        '202':
+          description: Comando aceptado, o reenvío de uno ya aceptado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Acuse'
+        '400':
+          description: La carga no cumple el esquema o la versión no es compatible. No crea transacción.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/transactions/{id}:
+    get:
+      tags: [Comandos]
+      operationId: consultarTransaccion
+      summary: Estado de una transacción
+      description: Devuelve lo mismo que el callback. Sirve cuando el callback no llega (§3).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Estado actual.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Callback'
+        '404':
+          description: No existe la transacción. Sin cuerpo.
+  /api/v1/catalogs/products:
+    get:
+      tags: [Lecturas]
+      operationId: listarProductos
+      summary: Productos con su unidad base y si llevan lote
+      parameters:
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/ModifiedSince'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Página de productos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginaProductos'
+        '400':
+          description: Parámetros inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/catalogs/clients:
+    get:
+      tags: [Lecturas]
+      operationId: listarClientes
+      summary: Clientes
+      parameters:
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/ModifiedSince'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Página de clientes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginaClientes'
+        '400':
+          description: Parámetros inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/catalogs/warehouses:
+    get:
+      tags: [Lecturas]
+      operationId: listarAlmacenes
+      summary: Almacenes
+      responses:
+        '200':
+          description: Todos los almacenes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Almacen'
+        '400':
+          description: Parámetros inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/inventory/stocks:
+    get:
+      tags: [Lecturas]
+      operationId: consultarExistencias
+      summary: Existencias por producto, almacén y lote
+      parameters:
+        - name: productos
+          in: query
+          required: true
+          description: Códigos de producto separados por coma.
+          schema:
+            type: string
+        - name: almacen
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Existencias en la unidad base de cada producto.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Existencia'
+        '400':
+          description: Parámetros inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/inventory/purchases:
+    get:
+      tags: [Lecturas]
+      operationId: listarRecepcionesDeCompra
+      summary: Recepciones de compra afectadas (D-102)
+      parameters:
+        - $ref: '#/components/parameters/ModifiedSince'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Página de recepciones.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginaRecepciones'
+
+        '400':
+          description: Parámetros inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+webhooks:
+  transactionStatusChanged:
+    post:
+      operationId: recibirCallback
+      summary: Callback a PolyConecta en cada cambio a CONFIRMED, FAILED o DEAD_LETTER
+      description: |
+        Firmado con secreto compartido en la cabecera `X-Bridge-Signature`:
+        `t={unix},v1={HMAC-SHA256(secreto, t + "." + cuerpo)}`. PolyConecta rechaza con 401
+        una firma inválida o con más de 5 minutos de antigüedad (D-121).
+      parameters:
+        - name: X-Bridge-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Callback'
+      responses:
+        '200':
+          description: Procesado, o ignorado porque el documento ya estaba confirmado.
+        '401':
+          description: Firma inválida o vencida.
+
+components:
+  parameters:
+    Search:
+      name: search
+      in: query
+      required: false
+      schema:
+        type: string
+    ModifiedSince:
+      name: modified_since
+      in: query
+      required: false
+      description: Solo lo que cambió desde esta fecha y hora (ISO 8601).
+      schema:
+        type: string
+        format: date-time
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+        default: 100
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Valor de `next_cursor` de la página anterior.
+      schema:
+        type: string
+
+  schemas:
+    Comando:
+      type: object
+      required: [contract_version, command_type, idempotency_key, correlation_id, client_app_id, callback_url, payload]
+      properties:
+        contract_version:
+          type: string
+          pattern: '^1\.\d+$'
+        command_type:
+          type: string
+          enum: [ALTA_ALMACEN, TRASPASO, ALTA_PEDIDO, CIERRE_PRODUCCION, REMISION]
+        variant:
+          type: [string, 'null']
+          description: Variante de negocio que elige el concepto (§2). En TRASPASO es obligatoria.
+          enum: [RECOLECCION, DEVOLUCION, CUARENTENA, LIBERACION, TRASLADO_SALIDA, TRASLADO_RECEPCION, null]
+        idempotency_key:
+          type: string
+          maxLength: 150
+          description: '{tipo}:{id}:{transición} (CT-19).'
+        correlation_id:
+          type: string
+          maxLength: 64
+        client_app_id:
+          type: string
+          const: polyconecta
+        callback_url:
+          type: string
+          format: uri
+        payload:
+          oneOf:
+            - $ref: '#/components/schemas/CargaTraspaso'
+            - $ref: '#/components/schemas/CargaAltaPedido'
+            - $ref: '#/components/schemas/CargaAltaAlmacen'
+            - $ref: '#/components/schemas/CargaCierreProduccion'
+            - $ref: '#/components/schemas/CargaRemision'
+
+    Lote:
+      type: object
+      required: [numero, cantidad]
+      properties:
+        numero:
+          type: string
+        cantidad:
+          type: number
+          exclusiveMinimum: 0
+
+    LineaConLotes:
+      type: object
+      required: [producto, cantidad, unidad, lotes]
+      description: La suma de los lotes debe ser igual a la cantidad (CT-39). `lotes` va vacío si el producto no lleva lote.
+      properties:
+        producto:
+          type: string
+        cantidad:
+          type: number
+          exclusiveMinimum: 0
+        unidad:
+          type: string
+          description: Unidad base del producto en CONTPAQi (D-127). Nadie convierte.
+        lotes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lote'
+
+    LineaConDestino:
+      allOf:
+        - $ref: '#/components/schemas/LineaConLotes'
+        - type: object
+          required: [almacen_destino]
+          properties:
+            almacen_destino:
+              type: string
+
+    CargaTraspaso:
+      type: object
+      additionalProperties: false
+      required: [fecha, referencia_negocio, almacen_origen, almacen_destino, lineas]
+      properties:
+        fecha:
+          type: string
+          format: date
+        referencia_negocio:
+          type: string
+        almacen_origen:
+          type: string
+        almacen_destino:
+          type: string
+        lineas:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/LineaConLotes'
+
+    CargaAltaPedido:
+      type: object
+      additionalProperties: false
+      required: [fecha, referencia_negocio, cliente, moneda, tipo_cambio, lineas]
+      properties:
+        fecha:
+          type: string
+          format: date
+        referencia_negocio:
+          type: string
+        cliente:
+          type: string
+        orden_compra_cliente:
+          type: string
+        moneda:
+          type: string
+        tipo_cambio:
+          type: number
+          exclusiveMinimum: 0
+        lineas:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [producto, cantidad, unidad, precio]
+            properties:
+              producto:
+                type: string
+              cantidad:
+                type: number
+                exclusiveMinimum: 0
+              unidad:
+                type: string
+              precio:
+                type: number
+                minimum: 0
+
+    CargaAltaAlmacen:
+      type: object
+      additionalProperties: false
+      required: [codigo, nombre, fecha_alta]
+      properties:
+        codigo:
+          type: string
+        nombre:
+          type: string
+        fecha_alta:
+          type: string
+          format: date
+
+    CargaCierreProduccion:
+      type: object
+      additionalProperties: false
+      required: [fecha, referencia_negocio, almacen_wip, consumos, entradas, subproductos]
+      properties:
+        fecha:
+          type: string
+          format: date
+        referencia_negocio:
+          type: string
+        almacen_wip:
+          type: string
+        consumos:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/LineaConLotes'
+        entradas:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/LineaConDestino'
+        subproductos:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineaConDestino'
+
+    CargaRemision:
+      type: object
+      additionalProperties: false
+      required: [fecha, referencia_negocio, cliente, almacen, cierra_pedido, lineas]
+      properties:
+        fecha:
+          type: string
+          format: date
+        referencia_negocio:
+          type: string
+        cliente:
+          type: string
+        almacen:
+          type: string
+        pedido_erp:
+          type: string
+        cierra_pedido:
+          type: boolean
+        lineas:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/LineaConLotes'
+
+    Acuse:
+      type: object
+      required: [transaction_id, correlation_id, status, created_at]
+      properties:
+        transaction_id:
+          type: string
+        correlation_id:
+          type: string
+        status:
+          $ref: '#/components/schemas/Estado'
+        created_at:
+          type: string
+          format: date-time
+        is_duplicate:
+          type: boolean
+
+    Estado:
+      type: string
+      enum: [PENDING, PROCESSING, CONFIRMED, FAILED, DEAD_LETTER]
+
+    DocumentoErp:
+      type: object
+      required: [rol, concepto, folio, id_erp]
+      properties:
+        rol:
+          type: string
+          description: salida, entrada, consumo o subproducto.
+        concepto:
+          type: string
+        folio:
+          type: string
+        id_erp:
+          type: integer
+        costo:
+          type: number
+          description: Opcional mientras se resuelve T-17.
+
+    Resultado:
+      type: object
+      properties:
+        folio:
+          type: string
+        id_erp:
+          type: integer
+        documentos:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentoErp'
+        pedido_cancelado:
+          type: boolean
+
+    Callback:
+      type: object
+      required: [event_type, contract_version, transaction_id, correlation_id, idempotency_key, command_type, status, timestamp]
+      properties:
+        event_type:
+          type: string
+          const: transaction.status_changed
+        contract_version:
+          type: string
+        transaction_id:
+          type: string
+        correlation_id:
+          type: string
+        idempotency_key:
+          type: string
+        command_type:
+          type: string
+        status:
+          $ref: '#/components/schemas/Estado'
+        result:
+          oneOf:
+            - $ref: '#/components/schemas/Resultado'
+            - type: 'null'
+        error:
+          oneOf:
+            - $ref: '#/components/schemas/Error'
+            - type: 'null'
+        timestamp:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      required: [code, retryable, message]
+      properties:
+        code:
+          type: string
+          description: Estable y en mayúsculas (§4).
+          enum:
+            - CARGA_INVALIDA
+            - VERSION_NO_SOPORTADA
+            - PRODUCTO_NO_EXISTE
+            - PRODUCTO_INACTIVO
+            - ALMACEN_NO_EXISTE
+            - ALMACEN_YA_EXISTE
+            - CLIENTE_NO_EXISTE
+            - MONEDA_NO_SOPORTADA
+            - UNIDAD_NO_ADMITIDA
+            - VARIANTE_SIN_CONCEPTO
+            - LOTES_NO_CUADRAN
+            - EXISTENCIA_INSUFICIENTE
+            - EXISTENCIA_INSUFICIENTE_LOTE
+            - VERIFICACION_FALLIDA
+            - SDK_TIMEOUT
+            - SDK_SESION
+            - SDK_ERROR
+        retryable:
+          type: boolean
+        message:
+          type: string
+        detail:
+          type: object
+
+    Producto:
+      type: object
+      required: [codigo, nombre, unidad_base, lleva_lote, activo]
+      properties:
+        codigo:
+          type: string
+        nombre:
+          type: string
+        unidad_base:
+          type: string
+        lleva_lote:
+          type: boolean
+        activo:
+          type: boolean
+        modificado:
+          type: string
+          format: date-time
+
+    Cliente:
+      type: object
+      required: [codigo, razon_social]
+      properties:
+        codigo:
+          type: string
+        razon_social:
+          type: string
+        rfc:
+          type: string
+        modificado:
+          type: string
+          format: date-time
+
+    Almacen:
+      type: object
+      required: [codigo, nombre, id_erp]
+      properties:
+        codigo:
+          type: string
+        nombre:
+          type: string
+        id_erp:
+          type: integer
+
+    Existencia:
+      type: object
+      required: [producto, almacen, unidad, cantidad]
+      properties:
+        producto:
+          type: string
+        almacen:
+          type: string
+        unidad:
+          type: string
+        cantidad:
+          type: number
+        lote:
+          type: [string, 'null']
+
+    RecepcionCompra:
+      type: object
+      required: [folio, fecha, almacen, lineas]
+      properties:
+        folio:
+          type: string
+        fecha:
+          type: string
+          format: date
+        proveedor:
+          type: string
+        almacen:
+          type: string
+        lineas:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineaConLotes'
+
+    PaginaProductos:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Producto'
+        next_cursor:
+          type: [string, 'null']
+
+    PaginaClientes:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cliente'
+        next_cursor:
+          type: [string, 'null']
+
+    PaginaRecepciones:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecepcionCompra'
+        next_cursor:
+          type: [string, 'null']

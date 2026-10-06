@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Contpaq.Bridge.Core.Commands;
 using Contpaq.Bridge.Core.Models;
 using Contpaq.Bridge.Infrastructure.Persistence;
 using Contpaq.Bridge.Infrastructure.Sdk;

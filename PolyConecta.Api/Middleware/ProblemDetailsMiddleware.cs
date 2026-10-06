@@ -38,6 +38,8 @@ public class ProblemDetailsMiddleware
         var statusCode = exception switch
         {
             KeyNotFoundException => HttpStatusCode.NotFound,
+            PolyConecta.Application.Common.ValidacionException => HttpStatusCode.BadRequest,
+            PolyConecta.Domain.Common.TransicionInvalidaException => HttpStatusCode.Conflict,
             ArgumentException or InvalidOperationException => HttpStatusCode.BadRequest,
             UnauthorizedAccessException => HttpStatusCode.Unauthorized,
             _ => HttpStatusCode.InternalServerError

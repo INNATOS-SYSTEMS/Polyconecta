@@ -1,0 +1,40 @@
+<div class="o_line_capture mb-3">
+  <div class="o_line_capture_title">Captura</div>
+  <div class="row g-2 align-items-end">
+    <div class="col-12 col-md-6">
+      <input class="form-control form-control-sm o_inline_input" [class.border-primary-subtle]="resuelto()"
+             [attr.list]="listId"
+             [placeholder]="placeholder()"
+             [value]="texto()"
+             (change)="onClaveChanged($event)"
+             [title]="resuelto() ? 'Producto confirmado del catálogo de CONTPAQi' : placeholder()" />
+    </div>
+    <div class="col-6 col-md-2">
+      <input type="number" step="0.1" class="form-control form-control-sm o_inline_input"
+             placeholder="Cantidad" [value]="draft().cantidad === 0 ? '' : draft().cantidad" (change)="onCantidadChanged($event)" />
+    </div>
+    <div class="col-6 col-md-2">
+      <input class="form-control form-control-sm o_inline_input"
+             placeholder="Unidad" [value]="draft().unidad" (change)="onUnidadChanged($event)"
+             [title]="unidadPrecargada() ? 'Precargada desde el catálogo de CONTPAQi' : 'Capture la unidad'" />
+    </div>
+    <div class="col-12 col-md-2 d-flex gap-1">
+      <button class="btn btn-sm btn-primary flex-grow-1" (click)="submit()" [disabled]="!valido()">
+        <i class="bi" [class.bi-check-lg]="enEdicion()" [class.bi-plus-lg]="!enEdicion()"></i> {{ enEdicion() ? 'Guardar' : 'Agregar' }}
+      </button>
+      @if (enEdicion()) {
+        <button class="btn btn-sm btn-light border" title="Cancelar" (click)="cancelled.emit()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
+@if (catalogo().length > 0) {
+  <datalist [id]="listId">
+    @for (p of catalogo(); track p.clave) {
+      <option [value]="p.clave">{{ p.nombre }}</option>
+    }
+  </datalist>
+}
