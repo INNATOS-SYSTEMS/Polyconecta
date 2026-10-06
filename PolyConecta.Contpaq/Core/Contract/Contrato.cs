@@ -66,6 +66,8 @@ namespace Contpaq.Bridge.Core.Contract
         public const string SdkTimeout = "SDK_TIMEOUT";
         public const string SdkSesion = "SDK_SESION";
         public const string SdkError = "SDK_ERROR";
+        /// <summary>La reconciliación encontró más de un documento posible por encima de la marca (D-131): revisión manual.</summary>
+        public const string ReconciliacionAmbigua = "RECONCILIACION_AMBIGUA";
 
         /// <summary>Solo SDK_TIMEOUT y SDK_SESION se reintentan (§4).</summary>
         public static bool EsReintentable(string codigo) => codigo is SdkTimeout or SdkSesion;
@@ -117,6 +119,12 @@ namespace Contpaq.Bridge.Core.Contract
     public sealed class LineaConDestino : LineaConLotes
     {
         [JsonPropertyName("almacen_destino")] public string AlmacenDestino { get; set; } = string.Empty;
+    }
+
+    /// <summary>Línea de la remisión: el precio es opcional en 1.0 y se decide antes de F6 (P-26).</summary>
+    public sealed class LineaRemision : LineaConLotes
+    {
+        [JsonPropertyName("precio")] public decimal? Precio { get; set; }
     }
 
     public sealed class LineaPedido
@@ -178,7 +186,7 @@ namespace Contpaq.Bridge.Core.Contract
         [JsonPropertyName("almacen")] public string Almacen { get; set; } = string.Empty;
         [JsonPropertyName("pedido_erp")] public string? PedidoErp { get; set; }
         [JsonPropertyName("cierra_pedido")] public bool? CierraPedido { get; set; }
-        [JsonPropertyName("lineas")] public List<LineaConLotes>? Lineas { get; set; }
+        [JsonPropertyName("lineas")] public List<LineaRemision>? Lineas { get; set; }
     }
 
     /// <summary>Comando ya leído y con su carga tipada.</summary>

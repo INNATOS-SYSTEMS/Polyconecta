@@ -22,26 +22,26 @@
 
 Responsables: Alejandro Ponce y Luis Alvarado Martinez. En cada sección del contrato, uno redacta (R) y el otro revisa (V), como indica `bridge-v1.md`.
 
-- [ ] C-T001 [US1] **Sesión 1, secciones 2 a 4** de `docs/contratos/bridge-v1.md`:
+- [x] C-T001 [US1] **Sesión 1, secciones 2 a 4** de `docs/contratos/bridge-v1.md`:
   - aceptar o corregir cada ✏️ del sobre, los estados y el callback;
   - decidir la derivación de la referencia de 20 caracteres (propuesta en research R-06);
   - fijar el formato de la firma `X-Bridge-Signature`;
   - cerrar el catálogo de errores, incluido `SDK_ERROR`.
 
   Hecha cuando las tres secciones no tienen ✏️ ni ❓.
-- [ ] C-T002 [US1] **Sesión 2, sección 5**: completar la ficha de los cinco comandos (`ALTA_ALMACEN`, `TRASPASO`, `ALTA_PEDIDO`, `CIERRE_PRODUCCION` y `REMISION`). Cada uno lleva carga, resultado, errores y traducción al SDK, citando su decisión o prueba (FR-002, Principio VII). Aplicar D-127: la unidad de la línea es la unidad base del producto, y `UNIDAD_NO_ADMITIDA` cambia de sentido.
-- [ ] C-T003 [US1] **Decidir T-17**: quién aplica la regla de costo de D-79 en `TRASPASO` y `CIERRE_PRODUCCION`, y si el resultado devuelve el costo.
+- [x] C-T002 [US1] **Sesión 2, sección 5**: completar la ficha de los cinco comandos (`ALTA_ALMACEN`, `TRASPASO`, `ALTA_PEDIDO`, `CIERRE_PRODUCCION` y `REMISION`). Cada uno lleva carga, resultado, errores y traducción al SDK, citando su decisión o prueba (FR-002, Principio VII). Aplicar D-127: la unidad de la línea es la unidad base del producto, y `UNIDAD_NO_ADMITIDA` cambia de sentido.
+- [x] C-T003 [US1] **Decidir T-17**: quién aplica la regla de costo de D-79 en `TRASPASO` y `CIERRE_PRODUCCION`, y si el resultado devuelve el costo.
   - **Si se decide:** registrarlo en `docs/diseno/decisiones.md` y quitar T-17 de `docs/diseno/preguntas-abiertas.md`.
   - **Si no:** dejar `costo` como campo opcional del resultado (research R-06) y T-17 abierta.
-- [ ] C-T004 [US1] **Sección 6 (lecturas) y sección 7 (fuera del contrato)**:
+- [x] C-T004 [US1] **Sección 6 (lecturas) y sección 7 (fuera del contrato)**:
   - paginación con `limit` y `cursor`, `modified_since` y `snake_case`;
   - la unidad base y el uso de lote en `catalogs/products`;
   - varios productos en `inventory/stocks`;
   - `inventory/purchases` (FR-004);
   - decidir si `concepts` e `invoices` quedan fuera de `1.0`.
-- [ ] C-T005 [P] [US1] Completar `docs/contratos/ejemplos/` con una carga válida y una inválida por comando, nombradas `<comando>.valido.json` y `<comando>.invalido.<motivo>.json`, más los callbacks `confirmado`, `error` y `dead-letter`. Cada ejemplo debe cumplir lo que dice la ficha de su comando.
-- [ ] C-T006 [US1] Firmar `1.0`: las dos firmas con fecha en la tabla del encabezado, el estado en ✅ y la fila correspondiente en "Exploración y cambios". SC-001: a más tardar el 6 de octubre.
-- [ ] C-T007 [US1] Escribir `docs/contratos/bridge-v1.openapi.yaml` a partir del contrato firmado y validarlo con `npx @redocly/cli@2.58.1 lint docs/contratos/bridge-v1.openapi.yaml`, sin errores. La herramienta se anota en "Exploración y cambios" (regla de autonomía 5).
+- [x] C-T005 [P] [US1] Completar `docs/contratos/ejemplos/` con una carga válida y una inválida por comando, nombradas `<comando>.valido.json` y `<comando>.invalido.<motivo>.json`, más los callbacks `confirmado`, `error` y `dead-letter`. Cada ejemplo debe cumplir lo que dice la ficha de su comando.
+- [x] C-T006 [US1] Firmar `1.0`: las dos firmas con fecha en la tabla del encabezado, el estado en ✅ y la fila correspondiente en "Exploración y cambios". SC-001: a más tardar el 6 de octubre.
+- [x] C-T007 [US1] Escribir `docs/contratos/bridge-v1.openapi.yaml` a partir del contrato firmado y validarlo con `npx @redocly/cli@2.58.1 lint docs/contratos/bridge-v1.openapi.yaml`, sin errores. La herramienta se anota en "Exploración y cambios" (regla de autonomía 5).
 
 ### Versiones centralizadas (primera tarea .NET de la fase)
 

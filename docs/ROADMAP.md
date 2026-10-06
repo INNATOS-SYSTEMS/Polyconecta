@@ -139,7 +139,7 @@ Lo que quedaba pendiente de la lista anterior lo absorben tareas del plan.
 | A-1 | Asignar a los dos líderes | ✅ 5-oct (D-117) | — |
 | A-2 | Crear el login de solo lectura del bridge (06-oct ✅) y definir `BridgeConfig__SqlConnectionString` en el VPS. La rotación de `sa` se pospone: CONTPAQi se conecta con `sa` (D-129, H-04) | 🟨 | 0.1 |
 | A-3 | Ejecutar la matriz del SDK. 30-sep, commit `7f0596e`: 35 de 36; queda F-05 | ✅ | — |
-| A-4 | Escribir el contrato `bridge-v1` (CT-18) | ⬜ | 0.2 |
+| A-4 | Escribir el contrato `bridge-v1` (CT-18). `1.0` firmado el 6-oct (D-132) | ✅ | 0.2 |
 | A-5 | Bridge en modo simulado (CT-21) | ⬜ | 0.7 |
 | A-6 | Decidir versiones: ratificadas el 29-sep (D-67 a D-73) | ✅ | — |
 | A-7 | Ejecutar la spec 001 (réplica en Angular) | ⬜ | En paralelo (D-118) |
