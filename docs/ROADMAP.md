@@ -84,7 +84,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 
 | Fase | Diseño cerrado | Spec | Cerrado en PolyConecta | Comandos entregados (camino 1) | Cerrado integrado | Revisión |
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
-| Réplica Angular (paralelo) | ✅ | `001-angular-presentation` · tareas terminadas, falta aprobar el merge | 🟨 | n/a | n/a | — |
+| Réplica Angular (paralelo) | ✅ | `001-angular-presentation` · tareas terminadas; el merge espera a la 002 (CT-44) | 🟨 | n/a | n/a | — |
 | F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · borrador, por ratificar | ⬜ | ⬜ | ⬜ | — |
 | F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R1 |
 | F2 · Planeación de producción | ✅ | `004-planeacion-produccion` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R2 |
@@ -142,7 +142,7 @@ Lo que quedaba pendiente de la lista anterior lo absorben tareas del plan.
 | A-4 | Escribir el contrato `bridge-v1` (CT-18) | ⬜ | 0.2 |
 | A-5 | Bridge en modo simulado (CT-21) | ⬜ | 0.7 |
 | A-6 | Decidir versiones: ratificadas el 29-sep (D-67 a D-73) | ✅ | — |
-| A-7 | Ejecutar la spec 001 (réplica en Angular). 06-oct: las 73 tareas hechas y verificadas; falta revisión y merge (CT-44) | 🟨 | En paralelo (D-118) |
+| A-7 | Ejecutar la spec 001 (réplica en Angular). 06-oct: las 73 tareas hechas y verificadas; el merge espera a que la 002 esté en `main` (CT-44) | 🟨 | En paralelo (D-118) |
 | A-8 | Crear la spec de Plataforma | ⬜ | Spec `002-construccion-tecnica` |
 | A-9 | Migrar PolyConecta a .NET 10, EF Core SQL Server, xUnit v3 y AwesomeAssertions; quitar Npgsql, EF InMemory de producción y MediatR; centralizar versiones (D-73) | ⬜ | 0.3 |
 | A-10 | Verificar el bridge en .NET 10 `win-x86` con `sdk-lab` (F y G) y migrarlo (D-67) | ⬜ | 0.4 |
