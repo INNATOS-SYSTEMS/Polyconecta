@@ -24,12 +24,14 @@ export default defineConfig({
     {
       command: 'dotnet run --project ../PolyConecta.Presentation --urls http://localhost:9000',
       url: 'http://localhost:9000',
+      cwd: '..',
       reuseExistingServer: true,
       timeout: 180_000,
     },
     {
       command: 'npx ng serve --port 4200',
       url: 'http://localhost:4200',
+      cwd: '..',
       reuseExistingServer: true,
       timeout: 180_000,
     },

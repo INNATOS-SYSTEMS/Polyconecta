@@ -139,10 +139,10 @@ Los tres agentes trabajan en paralelo, cada uno en sus carpetas (plan, "Decisió
 
 ### Agente 3C · `features/logistica/`
 
-- [ ] L2-T032 [P] [US1] [3C] Lista y formulario de recolecciones en `PolyConecta.Web/src/app/features/logistica/recolecciones/`, desde `RecoleccionesList.razor` y `RecoleccionFormView.razor`, con `LotQuantityPickerModal`. El formulario resuelve folios con `/`. Verificar con `--routes=/recolecciones,/recolecciones/<folio de la semilla>`.
-- [ ] L2-T033 [P] [US1] [3C] Lista y formulario de traslados en `PolyConecta.Web/src/app/features/logistica/traslados/`, desde `TrasladosList.razor` y `TrasladoFormView.razor`, con `LotPickerModal`. Verificar con `--routes=/traslados,/traslados/PIM/OUT/48213`.
-- [ ] L2-T034 [P] [US1] [3C] Lista y formulario de recepción en `PolyConecta.Web/src/app/features/logistica/recepcion/`, desde `RecepcionList.razor` y `RecepcionFormView.razor`. Verificar con `--routes=/recepcion,/recepcion/SC/IN/50974`.
-- [ ] L2-T035 [P] [US1] [3C] Lista y formulario de entregas en `PolyConecta.Web/src/app/features/logistica/entregas/`, desde `EntregasList.razor` y `EntregaFormView.razor`. Verificar con `--routes=/entregas,/entregas/SC/OUT/31688`.
+- [x] L2-T032 [P] [US1] [3C] Lista y formulario de recolecciones en `PolyConecta.Web/src/app/features/logistica/recolecciones/`, desde `RecoleccionesList.razor` y `RecoleccionFormView.razor`, con `LotQuantityPickerModal`. El formulario resuelve folios con `/`. Verificar con `--routes=/recolecciones,/recolecciones/<folio de la semilla>`.
+- [x] L2-T033 [P] [US1] [3C] Lista y formulario de traslados en `PolyConecta.Web/src/app/features/logistica/traslados/`, desde `TrasladosList.razor` y `TrasladoFormView.razor`, con `LotPickerModal`. Verificar con `--routes=/traslados,/traslados/PIM/OUT/48213`.
+- [x] L2-T034 [P] [US1] [3C] Lista y formulario de recepción en `PolyConecta.Web/src/app/features/logistica/recepcion/`, desde `RecepcionList.razor` y `RecepcionFormView.razor`. Verificar con `--routes=/recepcion,/recepcion/SC/IN/50974`.
+- [x] L2-T035 [P] [US1] [3C] Lista y formulario de entregas en `PolyConecta.Web/src/app/features/logistica/entregas/`, desde `EntregasList.razor` y `EntregaFormView.razor`. Verificar con `--routes=/entregas,/entregas/SC/OUT/31688`.
 
 ### Navegación (agente 3A, al terminar los tres)
 
