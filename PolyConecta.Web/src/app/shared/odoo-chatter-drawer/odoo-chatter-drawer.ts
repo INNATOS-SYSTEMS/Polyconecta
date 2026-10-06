@@ -1,4 +1,5 @@
 import { Component, model, signal } from '@angular/core';
+import { horaCorta } from '../../core/format/numero';
 
 export interface ChatterEntry {
   author: string;
@@ -32,9 +33,4 @@ export class OdooChatterDrawer {
   }
 }
 
-/** Formato "h:mm tt" de .NET: 9:05 AM. */
-export function horaCorta(fecha: Date): string {
-  const horas = fecha.getHours();
-  const minutos = fecha.getMinutes().toString().padStart(2, '0');
-  return `${horas % 12 === 0 ? 12 : horas % 12}:${minutos} ${horas < 12 ? 'AM' : 'PM'}`;
-}
+export { horaCorta } from '../../core/format/numero';

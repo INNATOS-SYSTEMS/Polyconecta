@@ -106,4 +106,23 @@ Los parámetros `out` de C# se devuelven como objeto. El `Notify()` del prototip
 | Pedido libre recibe un Contpaq ID simulado al confirmar (D-53) | creación libre de pedido | Recibe el ID y sigue el flujo de dos firmas |
 | Toda línea libre lleva cantidad y la unidad base del producto en CONTPAQi (D-127) | captura de línea en modo libre | La unidad sale de `ProductRef.unidad` y no se edita; no se guarda una línea sin cantidad; no hay conversión |
 
-La fase 1 completa la tabla con cada regla que encuentre al portar los servicios, porque FR-008 da ejemplos, no una lista cerrada.
+Reglas encontradas al portar los servicios (L2-T020), también con prueba:
+
+| Regla | Dónde vive | Prueba |
+| :--- | :--- | :--- |
+| Reservar con cantidad menor parte el lote; el remanente queda libre | `reservar` | Dos partes: reservada y libre |
+| Mover a WIP y devolver conservan el total; el saldo se lleva por OF | `moverAWip`, `devolverDeWip`, `saldoWip` | Físico igual antes y después |
+| Una validación revisa todos los lotes antes de mover nada | `validar` | Con un lote corto, el error exacto y WIP en cero |
+| Sin lotes declarados no se valida | `validar` | "Declare al menos un lote antes de validar." |
+| El cierre también exige las recolecciones validadas | `puedeCerrarOf` | "Hay 1 documento(s) de recolección sin validar: …" |
+| La devolución toma el saldo de WIP agrupado por producto | `emitirDevolucion` | Una línea por clave con su nombre |
+| Comprobar disponibilidad solo informa | `comprobarDisponibilidad` | Completa o parcial con faltantes, sin mover nada |
+| Las recolecciones de la semilla salen con folios 48214 en adelante | constructor | `SC/OUT/48214`, `SC/OUT/48215`, `PIM/OUT/48216`… |
+| Planear exige componentes y libera la recolección | `planear` | Sin componentes no cambia |
+| Planeación pone en progreso la OF planeada y el pedido autorizado | `agregarPlaneacion` | Ambos a "En progreso" |
+| El pesaje crea el siguiente lote, en revisión y con peso neto | `registrarPesajeRollo` | `R006-IV310-26`, 100 |
+| El precio se precarga de la lista, sin distinguir mayúsculas | `agregarLineaPedido` | 49.5 y 0 sin precio |
+| Logística: sin lotes no cierra; parcial avisa y registra lo entregado | `validarTraslado/Recepcion/Entrega` | Error y aviso exactos |
+| Los componentes de la cartera usan `Math.Round` de .NET (al par) | semilla | `EXT-2026-0006`: 490, 216, 14 |
+
+Los formatos (`N0`, `N1`, `N`, fechas y `h:mm tt`) se midieron con .NET 8 en la cultura del prototipo (es-419) y tienen su propia prueba en `core/format/numero.spec.ts`.

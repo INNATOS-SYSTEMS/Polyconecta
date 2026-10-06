@@ -18,9 +18,9 @@ describe('OdooChatterDrawer', () => {
     expect(fixture.nativeElement.textContent).toContain('Revisar calibre');
   });
 
-  it('formatea la hora como h:mm tt de .NET', () => {
-    expect(horaCorta(new Date(2026, 9, 5, 9, 5))).toBe('9:05 AM');
-    expect(horaCorta(new Date(2026, 9, 5, 0, 30))).toBe('12:30 AM');
-    expect(horaCorta(new Date(2026, 9, 5, 15, 0))).toBe('3:00 PM');
+  it('formatea la hora como h:mm tt de .NET en es-419', () => {
+    expect(horaCorta(new Date(2026, 9, 5, 9, 5))).toBe('9:05 a.m.');
+    expect(horaCorta(new Date(2026, 9, 5, 0, 30))).toBe('12:30 a.m.');
+    expect(horaCorta(new Date(2026, 9, 5, 15, 0))).toBe('3:00 p.m.');
   });
 });

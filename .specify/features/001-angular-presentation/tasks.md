@@ -62,13 +62,13 @@
 
 ### Modelos y semilla
 
-- [ ] L2-T008 [1] Completar `PolyConecta.Web/src/app/core/models/` con los tipos de [data-model.md §1](data-model.md#1-tipos-de-coremodels):
+- [x] L2-T008 [1] Completar `PolyConecta.Web/src/app/core/models/` con los tipos de [data-model.md §1](data-model.md#1-tipos-de-coremodels):
   - `ProductClass`, `LotStatus`, `StockQuant`, `OperationType`, `StockOperation`, `BomLine`, `SubProductLine`, `PlanningLine`, `ManufacturingOrder`, `QualityControlState`, `SalesOrderLine` (con `moneda` opcional), `ProcessCheck`, `ShipmentLine` e `Incidencia`;
   - los cuatro documentos que pasan a colección (`SalesOrder`, `InterplantTransfer`, `Reception`, `Delivery`), con `libre: boolean`;
   - los textos de estado como uniones de cadenas idénticas a las del prototipo (`'Borrador' | 'Planeado' | 'En progreso' | 'Hecho'`, `'En revisión' | 'Aprobado' | 'Rechazado'`).
 
   No se cambian los tipos que dejó la 0.5.
-- [ ] L2-T009 [1] Crear la semilla en `PolyConecta.Web/src/app/core/seed/`, copiada valor por valor de los constructores e inicializadores de `PolyConecta.Presentation/Services/`:
+- [x] L2-T009 [1] Crear la semilla en `PolyConecta.Web/src/app/core/seed/`, copiada valor por valor de los constructores e inicializadores de `PolyConecta.Presentation/Services/`:
   - productos y lotes (`InventoryState.cs`);
   - tipos de operación, incluidos `PIM-REC-RET` y `STC-REC-RET`, y la secuencia de folios que arranca en 48213 (`StockOperationState.cs`);
   - las OF `BOL-2026-0001`, `IMP-2026-0001` y `EXT-2026-0001`, la cartera de extrusión de `BuildExtrusionBacklog` y la lista de precios;
@@ -79,34 +79,34 @@
 
 ### Servicios
 
-- [ ] L2-T010 [1] Implementar `PolyConecta.Web/src/app/core/state/inventory-state.ts` con signals: `getProducto`, `fisico`, `reservado`, `enWip`, `disponible`, `lotesDe`, `disponibleDeLote`, `lotesDisponibles`, `existencias`, `reservar`, `liberarReservasDe`, `moverAWip`, `devolverDeWip`, `saldoWip` y `saldoWipTotal`, más las estáticas `classLabel` y `esVendible`. Misma lógica que `InventoryState.cs`.
-- [ ] L2-T011 [1] Implementar `PolyConecta.Web/src/app/core/state/stock-operation-state.ts`: `getTipo`, `get`, `deOf`, `tieneRecoleccion`, `asegurarRecoleccion`, `confirmarRecoleccion`, `emitirDevolucion`, `asignarLote`, `quitarLote`, `comprobarDisponibilidad`, `validar` (devuelve `{ op, error }`), `cancelar`, `puedeCerrarOf` (devuelve `{ ok, motivo }`), `totalRecolectado` y `totalDevuelto`. Los mensajes de error y aviso deben ser idénticos, con el formato `N1` de .NET (depende de L2-T010 y L2-T015).
-- [ ] L2-T012 [1] Implementar `PolyConecta.Web/src/app/core/state/operational-flow-state.ts` con colecciones de pedidos, traslados, recepciones y entregas (research R-02). Cada operación que en el prototipo actuaba sobre el documento único recibe su folio: `autorizar(folio)`, `revocarFirmas(folio)`, `setOrderStage(folio, stage)`, `validarTraslado(folio)`, `validarRecepcion(folio)`, `validarEntrega(folio)`, `comprobarDisponibilidad*(folio)`. Sobre la semilla, el comportamiento es idéntico a `OperationalFlowState.cs`. Incluye `agregarLineaPedido` con precio precargado de la lista, `planear`, `agregarPlaneacion`, `registrarPesajeRollo`, `aprobarLote`, `rechazarLote`, `cerrarProduccion`, el alta de recolecciones por OF del constructor y `resetAll` (depende de L2-T010 y L2-T011).
-- [ ] L2-T013 [P] [1] Si la 0.5 no lo dejó, implementar `PolyConecta.Web/src/app/core/state/ui-view-state.ts`: `setViewMode`, `setDocumentType` y `setSearchQuery`.
-- [ ] L2-T014 [1] Implementar `PolyConecta.Web/src/app/core/search/search-view.ts`, con `SearchField`, `SearchFilter`, `SearchGroupBy` y `SearchView<T>.aplicar`: el texto se busca en todos los campos, los filtros del mismo `campo` se combinan con O y los de campos distintos con Y (FR-009). Agregar las vistas por modelo de `SearchViews.cs` (OF, operaciones, pedidos con `SalesOrderRow`, logística con `LogisticsRow`) en `PolyConecta.Web/src/app/core/search/views.ts`.
-- [ ] L2-T015 [P] [1] Crear `PolyConecta.Web/src/app/core/format/` con los formatos que usa Blazor: números `N0`, `N1` y `N2`, moneda y fechas (`dd/MM/yyyy`, `h:mm tt`). Usar la misma cultura que el prototipo; se comprueba contra textos reales de `:9000`.
+- [x] L2-T010 [1] Implementar `PolyConecta.Web/src/app/core/state/inventory-state.ts` con signals: `getProducto`, `fisico`, `reservado`, `enWip`, `disponible`, `lotesDe`, `disponibleDeLote`, `lotesDisponibles`, `existencias`, `reservar`, `liberarReservasDe`, `moverAWip`, `devolverDeWip`, `saldoWip` y `saldoWipTotal`, más las estáticas `classLabel` y `esVendible`. Misma lógica que `InventoryState.cs`.
+- [x] L2-T011 [1] Implementar `PolyConecta.Web/src/app/core/state/stock-operation-state.ts`: `getTipo`, `get`, `deOf`, `tieneRecoleccion`, `asegurarRecoleccion`, `confirmarRecoleccion`, `emitirDevolucion`, `asignarLote`, `quitarLote`, `comprobarDisponibilidad`, `validar` (devuelve `{ op, error }`), `cancelar`, `puedeCerrarOf` (devuelve `{ ok, motivo }`), `totalRecolectado` y `totalDevuelto`. Los mensajes de error y aviso deben ser idénticos, con el formato `N1` de .NET (depende de L2-T010 y L2-T015).
+- [x] L2-T012 [1] Implementar `PolyConecta.Web/src/app/core/state/operational-flow-state.ts` con colecciones de pedidos, traslados, recepciones y entregas (research R-02). Cada operación que en el prototipo actuaba sobre el documento único recibe su folio: `autorizar(folio)`, `revocarFirmas(folio)`, `setOrderStage(folio, stage)`, `validarTraslado(folio)`, `validarRecepcion(folio)`, `validarEntrega(folio)`, `comprobarDisponibilidad*(folio)`. Sobre la semilla, el comportamiento es idéntico a `OperationalFlowState.cs`. Incluye `agregarLineaPedido` con precio precargado de la lista, `planear`, `agregarPlaneacion`, `registrarPesajeRollo`, `aprobarLote`, `rechazarLote`, `cerrarProduccion`, el alta de recolecciones por OF del constructor y `resetAll` (depende de L2-T010 y L2-T011).
+- [x] L2-T013 [P] [1] Si la 0.5 no lo dejó, implementar `PolyConecta.Web/src/app/core/state/ui-view-state.ts`: `setViewMode`, `setDocumentType` y `setSearchQuery`.
+- [x] L2-T014 [1] Implementar `PolyConecta.Web/src/app/core/search/search-view.ts`, con `SearchField`, `SearchFilter`, `SearchGroupBy` y `SearchView<T>.aplicar`: el texto se busca en todos los campos, los filtros del mismo `campo` se combinan con O y los de campos distintos con Y (FR-009). Agregar las vistas por modelo de `SearchViews.cs` (OF, operaciones, pedidos con `SalesOrderRow`, logística con `LogisticsRow`) en `PolyConecta.Web/src/app/core/search/views.ts`.
+- [x] L2-T015 [P] [1] Crear `PolyConecta.Web/src/app/core/format/` con los formatos que usa Blazor: números `N0`, `N1` y `N2`, moneda y fechas (`dd/MM/yyyy`, `h:mm tt`). Usar la misma cultura que el prototipo; se comprueba contra textos reales de `:9000`.
 
 ### Pruebas de reglas (FR-008, SC-003)
 
-- [ ] L2-T016 [P] [1] Pruebas en `PolyConecta.Web/src/app/core/state/inventory-state.spec.ts`:
+- [x] L2-T016 [P] [1] Pruebas en `PolyConecta.Web/src/app/core/state/inventory-state.spec.ts`:
   - la disponibilidad excluye la cuarentena;
   - `reservar` es por lote;
   - `moverAWip` y `devolverDeWip` mueven saldo y conservan el total;
   - `saldoWip` por OF.
-- [ ] L2-T017 [P] [1] Pruebas en `PolyConecta.Web/src/app/core/state/stock-operation-state.spec.ts`:
+- [x] L2-T017 [P] [1] Pruebas en `PolyConecta.Web/src/app/core/state/stock-operation-state.spec.ts`:
   - validar una recolección parcial crea un backorder con `backorderDe` y lo pendiente;
   - declarar más de lo pendiente da el error exacto del prototipo;
   - declarar más de lo disponible en el lote da el error exacto;
   - `puedeCerrarOf` con saldo en WIP devuelve el motivo exacto.
-- [ ] L2-T018 [P] [1] Pruebas en `PolyConecta.Web/src/app/core/state/operational-flow-state.spec.ts`:
+- [x] L2-T018 [P] [1] Pruebas en `PolyConecta.Web/src/app/core/state/operational-flow-state.spec.ts`:
   - `autorizar` solo en Confirmado; la primera firma no cambia la etapa y la segunda lleva a Autorizado;
   - `revocarFirmas` borra las firmas, libera reservas y regresa a Confirmado;
   - `rechazarLote` agrega `.S` una sola vez y el lote no suma en `producidoTotal`;
   - `cerrarProduccion` no pasa a Hecho con lotes "En revisión" si `calidadRequerida` (hard-stop);
   - el pedido pasa a Hecho cuando todas sus OF están en Hecho;
   - cada OF con componentes nace con su recolección en Borrador.
-- [ ] L2-T019 [P] [1] Pruebas en `PolyConecta.Web/src/app/core/search/search-view.spec.ts`: búsqueda de texto, O dentro del mismo campo, Y entre campos y agrupaciones.
-- [ ] L2-T020 [1] Revisar `OperationalFlowState.cs`, `StockOperationState.cs` e `InventoryState.cs` línea por línea, agregar en [data-model.md §3](data-model.md#3-reglas-que-se-prueban-fr-008-fr-012) cada regla que falte y escribir su prueba en el `.spec.ts` que corresponda. FR-008 da ejemplos, no una lista cerrada.
+- [x] L2-T019 [P] [1] Pruebas en `PolyConecta.Web/src/app/core/search/search-view.spec.ts`: búsqueda de texto, O dentro del mismo campo, Y entre campos y agrupaciones.
+- [x] L2-T020 [1] Revisar `OperationalFlowState.cs`, `StockOperationState.cs` e `InventoryState.cs` línea por línea, agregar en [data-model.md §3](data-model.md#3-reglas-que-se-prueban-fr-008-fr-012) cada regla que falte y escribir su prueba en el `.spec.ts` que corresponda. FR-008 da ejemplos, no una lista cerrada.
 
 **Punto de control**: `npm test` en verde, con al menos una prueba por cada regla de data-model §3 que no sea de modo libre.
 
