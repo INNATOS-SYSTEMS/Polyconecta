@@ -1,8 +1,4 @@
 import { Routes, UrlMatchResult, UrlSegment } from '@angular/router';
-import { CalidadLibreForm } from './calidad-libre-form/calidad-libre-form';
-import { CalidadNuevo } from './calidad-nuevo/calidad-nuevo';
-import { CalidadForm } from './calidad-form/calidad-form';
-import { CalidadList } from './calidad-list/calidad-list';
 
 /** Los controles libres (QC-2026-0001) tienen su propio formulario; el resto de folios son OF. */
 function controlLibre(segments: UrlSegment[]): UrlMatchResult | null {
@@ -11,8 +7,8 @@ function controlLibre(segments: UrlSegment[]): UrlMatchResult | null {
 }
 
 export const CALIDAD_ROUTES: Routes = [
-  { path: 'calidad', component: CalidadList },
-  { path: 'calidad/nuevo', component: CalidadNuevo },
-  { matcher: controlLibre, component: CalidadLibreForm },
-  { path: 'calidad/:folioOf', component: CalidadForm },
+  { path: 'calidad', loadComponent: () => import('./calidad-list/calidad-list').then(m => m.CalidadList) },
+  { path: 'calidad/nuevo', loadComponent: () => import('./calidad-nuevo/calidad-nuevo').then(m => m.CalidadNuevo) },
+  { matcher: controlLibre, loadComponent: () => import('./calidad-libre-form/calidad-libre-form').then(m => m.CalidadLibreForm) },
+  { path: 'calidad/:folioOf', loadComponent: () => import('./calidad-form/calidad-form').then(m => m.CalidadForm) },
 ];

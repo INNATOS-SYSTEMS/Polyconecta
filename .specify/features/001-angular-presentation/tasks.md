@@ -275,17 +275,17 @@ Los tres agentes trabajan en paralelo, cada uno en sus carpetas (plan, "Decisió
 
 **Propósito**: FR-003, FR-019, SC-006 y el cierre de la spec (CT-43, CT-44). Agente `5`.
 
-- [ ] L2-T067 [5] Agregar `--with-angular` a `scripts/run.sh`:
+- [x] L2-T067 [5] Agregar `--with-angular` a `scripts/run.sh`:
   - comprueba Node 24.16 (`.nvmrc`);
   - corre `npm ci` si falta `node_modules`;
   - levanta `npm start` en `:4200` en segundo plano y lo apaga con el resto.
 
   Sin la opción, `run.sh` hace lo mismo que hoy. Funciona igual desde `./run.sh`. Verificar las dos formas.
-- [ ] L2-T068 [P] [5] Escribir `PolyConecta.Web/README.md`: requisitos, scripts (`start`, `build`, `test`, `parity`, `scenarios`, `chatter`), puertos y reglas de paridad.
-- [ ] L2-T069 [P] [5] Actualizar `docs/diseno/05-arquitectura-tecnica.md`: la capa `PolyConecta.Web` en Angular (`:4200`), el hub del chatter en `PolyConecta.Api` y el prototipo Blazor como referencia (D-60). Agregar `--with-angular` en la sección de comandos y en el `README.md` de la raíz.
-- [ ] L2-T070 [5] Correr `npm run build`, `npm test`, `npm run parity`, `npm run scenarios` y `npm run chatter`, todos en verde (FR-019). Guardar `parity-report/` final y el resumen en el commit.
-- [ ] L2-T071 [5] SC-006: `dotnet build Polyconecta.slnx` y `dotnet test Polyconecta.slnx` en verde, y `git diff main --stat -- PolyConecta.Presentation/` vacío.
-- [ ] L2-T072 [5] Recorrer [quickstart.md](quickstart.md) completo en el navegador y anotar el resultado de cada sección en la exploración de la spec.
+- [x] L2-T068 [P] [5] Escribir `PolyConecta.Web/README.md`: requisitos, scripts (`start`, `build`, `test`, `parity`, `scenarios`, `chatter`), puertos y reglas de paridad.
+- [x] L2-T069 [P] [5] Actualizar `docs/diseno/05-arquitectura-tecnica.md`: la capa `PolyConecta.Web` en Angular (`:4200`), el hub del chatter en `PolyConecta.Api` y el prototipo Blazor como referencia (D-60). Agregar `--with-angular` en la sección de comandos y en el `README.md` de la raíz.
+- [x] L2-T070 [5] Correr `npm run build`, `npm test`, `npm run parity`, `npm run scenarios` y `npm run chatter`, todos en verde (FR-019). Guardar `parity-report/` final y el resumen en el commit.
+- [x] L2-T071 [5] SC-006: `dotnet build Polyconecta.slnx` y `dotnet test Polyconecta.slnx` en verde, y `git diff main --stat -- PolyConecta.Presentation/` vacío.
+- [x] L2-T072 [5] Recorrer [quickstart.md](quickstart.md) completo en el navegador y anotar el resultado de cada sección en la exploración de la spec.
 - [ ] L2-T073 [5] Cerrar la spec:
   - integrar en `docs/diseno/` lo que cambió, como el sistema de diseño de CT-24 y las colecciones de R-02;
   - actualizar `docs/ROADMAP.md`;

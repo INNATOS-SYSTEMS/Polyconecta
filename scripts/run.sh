@@ -5,6 +5,7 @@
 # Usage:
 #   ./run.sh                  # Inicia SPA (9000) + API Gateway (9020)
 #   ./run.sh --with-bridge    # Inicia SPA (9000) + API Gateway (9020) + CONTPAQi Bridge (5005)
+#   ./run.sh --with-angular   # Además levanta la réplica en Angular, PolyConecta.Web (4200)
 # ==============================================================================
 
 set -e
@@ -16,12 +17,17 @@ cd "$REPO_ROOT"
 PRESENTATION_PORT="9000"
 API_PORT="9020"
 BRIDGE_PORT="5005"
+ANGULAR_PORT="4200"
 WITH_BRIDGE=false
+WITH_ANGULAR=false
 
 for arg in "$@"; do
     case $arg in
         --with-bridge|--bridge)
             WITH_BRIDGE=true
+            ;;
+        --with-angular|--angular)
+            WITH_ANGULAR=true
             ;;
         [0-9]*)
             API_PORT="$arg"
@@ -40,7 +46,30 @@ if [ "$WITH_BRIDGE" = true ]; then
 else
     echo "CONTPAQi Bridge Mode                : Desactivado (Usa --with-bridge para arrancar)"
 fi
+if [ "$WITH_ANGULAR" = true ]; then
+    echo "PolyConecta.Web (Angular)           : ${ANGULAR_PORT} (Activo)"
+fi
 echo "================================================================="
+
+# Step 0: La réplica en Angular necesita la versión de Node fijada en .nvmrc (spec 001, L2-T067).
+if [ "$WITH_ANGULAR" = true ]; then
+    echo "🔍 Step 0: Checking Node for PolyConecta.Web..."
+    NODE_REQUERIDO="$(tr -d 'v[:space:]' < PolyConecta.Web/.nvmrc)"
+    if ! command -v node > /dev/null 2>&1; then
+        echo "❌ Error: --with-angular requiere Node ${NODE_REQUERIDO} (PolyConecta.Web/.nvmrc) y no hay 'node' en PATH."
+        exit 1
+    fi
+    NODE_ACTUAL="$(node --version | tr -d 'v')"
+    if [ "$NODE_ACTUAL" != "$NODE_REQUERIDO" ]; then
+        echo "❌ Error: --with-angular requiere Node ${NODE_REQUERIDO} (PolyConecta.Web/.nvmrc) y está ${NODE_ACTUAL}. Usa 'nvm use'."
+        exit 1
+    fi
+    if [ ! -d PolyConecta.Web/node_modules ]; then
+        echo "   Instalando dependencias de PolyConecta.Web (npm ci)..."
+        (cd PolyConecta.Web && npm ci)
+    fi
+    echo "   Node ${NODE_ACTUAL}"
+fi
 
 # Step 1: Locate a .NET installation that can build and run the solution.
 echo "🔍 Step 1: Checking .NET SDK environment..."
@@ -143,12 +172,17 @@ echo "================================================================="
 echo "💻 PolyConecta Web Presentation   : http://localhost:${PRESENTATION_PORT}"
 echo "📚 Swagger API (PolyConecta.Api)  : http://localhost:${API_PORT}/swagger"
 echo "⚙️  REST API Endpoints Base       : http://localhost:${API_PORT}/api/v1"
+if [ "$WITH_ANGULAR" = true ]; then
+    echo "🅰️  PolyConecta.Web (Angular)      : http://localhost:${ANGULAR_PORT}"
+fi
 
 PIDS=()
 cleanup() {
     echo ""
     echo "🛑 Shutting down PolyConecta processes..."
     for pid in "${PIDS[@]}"; do
+        # npm start deja a ng serve como proceso hijo: se apagan los hijos primero.
+        pkill -P "$pid" 2>/dev/null || true
         kill "$pid" 2>/dev/null || true
     done
 }
@@ -171,6 +205,13 @@ if [ "$WITH_BRIDGE" = true ]; then
     echo "-----------------------------------------------------------------"
     echo "Iniciando servicio CONTPAQi Bridge en segundo plano (Puerto ${BRIDGE_PORT})..."
     "$DOTNET_BIN" run --project PolyConecta.Contpaq/PolyConecta.Contpaq.csproj --no-build &
+    PIDS+=($!)
+fi
+
+if [ "$WITH_ANGULAR" = true ]; then
+    echo "-----------------------------------------------------------------"
+    echo "Iniciando PolyConecta.Web en segundo plano (Puerto ${ANGULAR_PORT})..."
+    (cd PolyConecta.Web && exec npm start -- --port "${ANGULAR_PORT}") &
     PIDS+=($!)
 fi
 

@@ -1,14 +1,9 @@
 import { Routes } from '@angular/router';
-import { CapturaMasiva } from './captura-masiva/captura-masiva';
-import { FabricacionNueva } from './fabricacion-nueva/fabricacion-nueva';
-import { FabricacionForm } from './fabricacion-form/fabricacion-form';
-import { FabricacionList } from './fabricacion-list/fabricacion-list';
-import { Incidencias } from './incidencias/incidencias';
 
 export const PRODUCCION_ROUTES: Routes = [
-  { path: 'fabricacion', component: FabricacionList },
-  { path: 'fabricacion/nuevo', component: FabricacionNueva },
-  { path: 'fabricacion/:folioOf', component: FabricacionForm },
-  { path: 'captura-masiva', component: CapturaMasiva },
-  { path: 'incidencias', component: Incidencias },
+  { path: 'fabricacion', loadComponent: () => import('./fabricacion-list/fabricacion-list').then(m => m.FabricacionList) },
+  { path: 'fabricacion/nuevo', loadComponent: () => import('./fabricacion-nueva/fabricacion-nueva').then(m => m.FabricacionNueva) },
+  { path: 'fabricacion/:folioOf', loadComponent: () => import('./fabricacion-form/fabricacion-form').then(m => m.FabricacionForm) },
+  { path: 'captura-masiva', loadComponent: () => import('./captura-masiva/captura-masiva').then(m => m.CapturaMasiva) },
+  { path: 'incidencias', loadComponent: () => import('./incidencias/incidencias').then(m => m.Incidencias) },
 ];

@@ -22,8 +22,8 @@ El proyecto está al **inicio de la construcción**. Existe un prototipo navegab
 PolyConecta.Domain/          Entidades, base común (mixins, estados, sincronización) y reglas, sin dependencias
 PolyConecta.Application/     Casos de uso con decoradores y puertos (folios, outbox hacia el bridge)
 PolyConecta.Infrastructure/  EF Core con SQL Server 2022, migraciones, despachador hacia el bridge
-PolyConecta.Api/             API REST (:9020) y callback del bridge
-PolyConecta.Web/             Aplicación Angular 22 (:4200)
+PolyConecta.Api/             API REST (:9020), callback del bridge y hub del chatter
+PolyConecta.Web/             Réplica 1:1 del prototipo en Angular 22 (:4200), con modo libre
 PolyConecta.Presentation/    Prototipo Blazor Server (:9000), .NET 8, referencia de UX sin cambios
 PolyConecta.Contpaq/         Bridge hacia CONTPAQi (:5005): real en Windows x86 o simulado
 docs/contratos/              Contrato bridge-v1, su OpenAPI y sus ejemplos
@@ -42,4 +42,7 @@ Requiere el SDK de .NET 10 (`global.json`), el runtime de ASP.NET Core 8 (para e
 ```bash
 ./run.sh                 # compila, prueba y levanta Presentation (:9000) + API (:9020)
 ./run.sh --with-bridge   # además levanta el bridge (:5005), simulado fuera de Windows
+./run.sh --with-angular  # además levanta la réplica en Angular, PolyConecta.Web (:4200)
 ```
+
+Las pruebas de la aplicación Angular (paridad con el prototipo, guiones, auditor y chatter) están en [PolyConecta.Web/README.md](PolyConecta.Web/README.md).
