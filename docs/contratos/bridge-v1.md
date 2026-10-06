@@ -143,7 +143,7 @@ Cada comando se describe con la misma ficha. **Lado negocio** (R: L2): cuándo s
 | `referencia_negocio` | Folio del pedido en PolyConecta |
 | `cliente` | Código del cliente en CONTPAQi |
 | `orden_compra_cliente` | Opcional. Orden de compra del cliente |
-| `moneda` | Código de la moneda en CONTPAQi (`MXN`, `USD`) |
+| `moneda` | Código ISO de la moneda (`MXN`, `USD`). ✏️ `admMonedas` no guarda un código ISO (solo id, nombre y símbolo), así que el bridge lo traduce a `CIDMONEDA` con su configuración, igual que los conceptos. Una moneda sin traducción falla con `MONEDA_NO_SOPORTADA` |
 | `tipo_cambio` | Obligatorio si la moneda no es la base; `1` si lo es |
 | `lineas[]` | `producto`, `cantidad`, `unidad` (base, D-127) y `precio` por esa unidad. IVA, descuentos y totales los calcula CONTPAQi (D-74) |
 
@@ -214,7 +214,7 @@ Ya existen en `CatalogsController`. ✏️ Propuesta de cambios: paginación con
 
 | Ruta | Hoy | Falta | Fase |
 | :--- | :--- | :--- | :--- |
-| `GET /api/v1/catalogs/products` | `search`, `limit` | Paginación, `modified_since`, **unidad base** del producto (D-127), si lleva lote | F1 |
+| `GET /api/v1/catalogs/products` | `search`, `limit` | Paginación, `modified_since`, **unidad base** del producto (D-127), si lleva lote. ✏️ La unidad viaja como `CABREVIATURA` de `admUnidadesMedidaPeso` (vía `CIDUNIDADBASE`); lleva lote si `CCONTROLEXISTENCIA` tiene el bit de lotes (16); activo si `CSTATUSPRODUCTO = 1` | F1 |
 | `GET /api/v1/catalogs/clients` | `search`, `limit` | Paginación, `modified_since` | F1 |
 | `GET /api/v1/catalogs/warehouses` | sin filtros | — | F1 |
 | `GET /api/v1/inventory/stocks` | un producto, almacén opcional; capas por lote | Varios productos por consulta, con la unidad base del producto en CONTPAQi | F1 |

@@ -68,11 +68,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Callback'
         '404':
-          description: No existe la transacción.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: No existe la transacción. Sin cuerpo.
   /api/v1/catalogs/products:
     get:
       tags: [Lecturas]

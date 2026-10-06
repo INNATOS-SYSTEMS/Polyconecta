@@ -1,0 +1,38 @@
+{
+  "_nota": "Catálogo del bridge en modo simulado. Usa los códigos de docs/contratos/ejemplos/; L1 lo amplía con el catálogo de la empresa _LAB (Principio VIII). No lleva datos de producción.",
+  "productos": [
+    { "codigo": "PEBD-001", "nombre": "Polietileno baja densidad", "unidad_base": "KG", "lleva_lote": false, "activo": true },
+    { "codigo": "R-IV310", "nombre": "Rollo maestro IV310", "unidad_base": "KG", "lleva_lote": true, "activo": true },
+    { "codigo": "PT3413 C455", "nombre": "ROLLO TUB 20.5 370 (Maestro)", "unidad_base": "KG", "lleva_lote": true, "activo": true },
+    { "codigo": "PT1113 C567", "nombre": "BOLSA MEDIANA 44X84 C.430 BOL-004 [77]", "unidad_base": "PZA", "lleva_lote": true, "activo": true },
+    { "codigo": "SCR-BD-001", "nombre": "Scrap resina residual tpte (BD)", "unidad_base": "KG", "lleva_lote": false, "activo": true },
+    { "codigo": "MP-BAJA", "nombre": "Producto dado de baja", "unidad_base": "KG", "lleva_lote": false, "activo": false }
+  ],
+  "clientes": [
+    { "codigo": "EMM-001", "razon_social": "EMPRESA MEXICANA DE MANUFACTURA", "rfc": "EMM010101AAA" }
+  ],
+  "almacenes": [
+    { "codigo": "MP-PIM", "nombre": "Materia prima Apodaca", "id_erp": 1 },
+    { "codigo": "WIP-PIM", "nombre": "WIP Apodaca", "id_erp": 2 },
+    { "codigo": "PT-PIM", "nombre": "Producto terminado Apodaca", "id_erp": 3 },
+    { "codigo": "SCRAP-PIM", "nombre": "Scrap Apodaca", "id_erp": 4 },
+    { "codigo": "PT-SC", "nombre": "Producto terminado Santa Cruz", "id_erp": 5 },
+    { "codigo": "TRANS-PIM-SC", "nombre": "Tránsito Apodaca a Santa Cruz", "id_erp": 6 }
+  ],
+  "existencias": [
+    { "producto": "PEBD-001", "almacen": "MP-PIM", "lote": null, "cantidad": 5000 },
+    { "producto": "R-IV310", "almacen": "MP-PIM", "lote": "R001-IV310-26", "cantidad": 500 },
+    { "producto": "R-IV310", "almacen": "MP-PIM", "lote": "R002-IV310-26", "cantidad": 500 },
+    { "producto": "PEBD-001", "almacen": "WIP-PIM", "lote": null, "cantidad": 1000 },
+    { "producto": "PT1113 C567", "almacen": "PT-SC", "lote": "B001-IV310-26", "cantidad": 6000 }
+  ],
+  "recepciones_compra": [
+    {
+      "folio": "RC-0001",
+      "fecha": "2026-10-01",
+      "proveedor": "LYONDELL",
+      "almacen": "MP-PIM",
+      "lineas": [ { "producto": "PEBD-001", "cantidad": 5000, "unidad": "KG", "lotes": [] } ]
+    }
+  ]
+}

@@ -22,6 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Simulated\seed.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Dashboard\wwwroot\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

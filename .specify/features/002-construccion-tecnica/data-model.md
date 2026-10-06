@@ -122,9 +122,11 @@ Las tablas actuales (`DbInitializer.cs`) se conservan. Cambios de F0:
 
 | Tabla | Cambio | Para qué |
 | :--- | :--- | :--- |
-| `transactions` | Agrega `contract_version`, `variant` y `result_json`. `status` usa los nombres del contrato (`CONFIRMED` en lugar de `COMPLETED`, `DEAD_LETTER` en lugar de `DEAD_LETTER_QUEUE`), con migración de datos existentes | Contrato §2 y §3 |
+| `bridge_transactions` | Agrega `contract_version`, `variant`, `result_json` (resultado del contrato) y `error_json` (error del contrato). Los estados usan los nombres del contrato (`CONFIRMED` en lugar de `COMPLETED`, `DEAD_LETTER` en lugar de `DEAD_LETTER_QUEUE`); `DbInitializer` migra las filas existentes | Contrato §2 y §3 |
+| `webhook_deliveries` (ya existía) | Una fila por intento de callback, con el código HTTP y la respuesta | Reintentos del callback firmado y diagnóstico |
 | `simulated_folio` (nueva) | `concepto` (PK) y `ultimo_folio` | Folios simulados por concepto (CT-21) |
-| `callback_attempts` (nueva) | `transaction_id`, `attempt`, `status_code` y `sent_at` | Reintentos del callback firmado y diagnóstico |
+| `simulated_id` (nueva) | Último `id_erp` simulado | Ids de documento y de almacén |
+| `simulated_almacen` (nueva) | `codigo`, `nombre` e `id_erp` | Almacenes dados de alta con `ALTA_ALMACEN` en modo simulado |
 
 La ejecución por pasos con reconciliación (CT-38) agrega su propia tabla en F2 (tarea 2.2), no en F0.
 

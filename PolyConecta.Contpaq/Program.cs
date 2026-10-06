@@ -6,6 +6,12 @@ using Contpaq.Bridge.Core.Services;
 using Contpaq.Bridge.Infrastructure.Persistence;
 using Contpaq.Bridge.Infrastructure.Sdk;
 using Contpaq.Bridge.Infrastructure.Webhooks;
+using Contpaq.Bridge.Infrastructure.Outbox;
+using Contpaq.Bridge.Core.Configuration;
+using Contpaq.Bridge.Core.Contract;
+using Contpaq.Bridge.Core.Validation;
+using Contpaq.Bridge.Simulated;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,30 +38,58 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 var config = builder.Configuration;
+var opciones = BridgeOptions.Leer(config);
 var sqliteConn = config["BridgeConfig:SqliteConnectionString"] ?? "Data Source=bridge_outbox.db";
-// La cadena de conexion a CONTPAQi nunca se versiona: se toma de la variable de entorno
-// BridgeConfig__SqlConnectionString (o de dotnet user-secrets en desarrollo).
-var sqlConn = config["BridgeConfig:SqlConnectionString"];
-if (string.IsNullOrWhiteSpace(sqlConn))
-    throw new InvalidOperationException(
-        "Falta BridgeConfig:SqlConnectionString. Definela en la variable de entorno BridgeConfig__SqlConnectionString.");
-var port = int.TryParse(config["BridgeConfig:DashboardPort"], out var p) ? p : 5005;
 
+var port = int.TryParse(config["BridgeConfig:DashboardPort"], out var p) ? p : 5005;
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Initialize SQLite schema
 var dbInit = new DbInitializer(sqliteConn);
 dbInit.Initialize();
 
-// Register Repositories & Services
+// Lo común a los dos modos (D-122): API, outbox, validaciones, idempotencia y callbacks.
 builder.Services.AddSingleton(logStreamService);
+builder.Services.AddSingleton(opciones);
 builder.Services.AddSingleton<IOutboxRepository>(new OutboxRepository(sqliteConn));
-builder.Services.AddSingleton<ISqlReadRepository>(new SqlReadRepository(sqlConn));
+builder.Services.AddSingleton<ConfiguracionConceptos>();
+builder.Services.AddSingleton<ValidadorComandos>();
+builder.Services.AddHttpClient(nameof(WebhookDispatcher), c => c.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddSingleton<IWebhookDispatcher, WebhookDispatcher>();
+builder.Services.AddSingleton(new CircuitBreakerPolicy(
+    int.TryParse(config["BridgeConfig:CircuitBreakerFailureThreshold"], out var umbral) ? umbral : 3,
+    int.TryParse(config["BridgeConfig:CircuitBreakerCooldownSeconds"], out var enfriamiento) ? enfriamiento : 15));
+
+// Lo que cambia por modo: el adaptador de escritura y el de lectura.
+if (opciones.Mode == BridgeMode.Real)
+{
+    // La cadena de conexion a CONTPAQi nunca se versiona: se toma de la variable de entorno
+    // BridgeConfig__SqlConnectionString (o de dotnet user-secrets en desarrollo).
+    var sqlConn = config["BridgeConfig:SqlConnectionString"];
+    if (string.IsNullOrWhiteSpace(sqlConn))
+        throw new InvalidOperationException(
+            "Falta BridgeConfig:SqlConnectionString. Definela en la variable de entorno BridgeConfig__SqlConnectionString.");
+    builder.Services.AddSingleton<ISqlReadRepository>(new SqlReadRepository(sqlConn));
+    builder.Services.AddSingleton<IReadRepository>(new SqlContractReadRepository(sqlConn));
+    builder.Services.AddSingleton<ISdkGateway, ContpaqiSdkGateway>();
+}
+else
+{
+    var seedPath = config["BridgeConfig:Simulated:SeedPath"] ?? "Simulated/seed.json";
+    if (!Path.IsPathRooted(seedPath)) seedPath = Path.Combine(AppContext.BaseDirectory, seedPath);
+    var store = new SimulatedStore(sqliteConn);
+    store.Inicializar();
+    builder.Services.AddSingleton(SimulatedCatalog.Cargar(seedPath));
+    builder.Services.AddSingleton(store);
+    builder.Services.AddSingleton<FaultStore>();
+    builder.Services.AddSingleton<IReadRepository, SimulatedReadRepository>();
+    builder.Services.AddSingleton<ISdkGateway, SimulatedSdkGateway>();
+}
 
 // Register Background Services
 builder.Services.AddHostedService<MetricCollectorService>();
-builder.Services.AddHostedService<ContpaqiSdkGateway>();
+builder.Services.AddSingleton<OutboxWorker>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<OutboxWorker>());
 
 // Register Controllers & SignalR & OpenAPI
 builder.Services.AddControllers();
@@ -123,17 +157,28 @@ app.MapScalarApiReference(options =>
            .WithCdnUrl("https://cdn.jsdelivr.net/npm/@scalar/api-reference");
 });
 
-app.MapGet("/health", (IOutboxRepository repo) =>
+app.MapGet("/health", (ISdkGateway gateway) => Results.Ok(new
 {
-    return Results.Ok(new
+    status = "Healthy",
+    mode = opciones.Mode.ToString(),
+    contract_version = Contrato.VersionActual,
+    worker_architecture = Environment.Is64BitProcess ? "x64" : "x86",
+    sdk_initialized = gateway.SesionActiva,
+    circuit_state = MetricCollectorService.CircuitState,
+    timestamp = DateTime.UtcNow.ToString("o"),
+}));
+
+// Fallos simulados (FR-008 de la spec 002): solo existen en modo simulado (§7).
+if (opciones.Mode == BridgeMode.Simulated)
+{
+    app.MapGet("/admin/simulated/faults", (FaultStore fallos) => Results.Ok(fallos.Reglas));
+    app.MapPut("/admin/simulated/faults", (List<FaultRule> reglas, FaultStore fallos) =>
     {
-        status = "Healthy",
-        worker_architecture = "x86",
-        sdk_initialized = true,
-        sql_connected = true,
-        circuit_state = MetricCollectorService.CircuitState,
-        timestamp = DateTime.UtcNow.ToString("o")
+        fallos.Reemplazar(reglas);
+        return Results.Ok(fallos.Reglas);
     });
-});
+}
 
 app.Run();
+
+public partial class Program;

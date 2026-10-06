@@ -100,18 +100,18 @@ Responsable: Alejandro Ponce; revisa Luis Alvarado Martinez. Empieza cuando el c
 
 Empieza cuando el contrato está firmado (C-T006).
 
-- [ ] L1-T007 [US3] Crear `PolyConecta.Contpaq/Core/Contract/` con el sobre `1.0`, los modelos de carga y resultado de los cinco comandos y el modelo de errores, con sus códigos como constantes, todo según el contrato firmado. En `Api/Controllers/TransactionsController.cs`:
+- [x] L1-T007 [US3] Crear `PolyConecta.Contpaq/Core/Contract/` con el sobre `1.0`, los modelos de carga y resultado de los cinco comandos y el modelo de errores, con sus códigos como constantes, todo según el contrato firmado. En `Api/Controllers/TransactionsController.cs`:
   - exigir `contract_version` 1.x, `idempotency_key`, `correlation_id` y `callback_url`;
   - rechazar `DOCUMENT_CREATE`;
   - responder `400` con el modelo de errores.
 
   Verificar con pruebas en `tests/Contpaq.Bridge.Tests/Contract/`.
-- [ ] L1-T008 [US3] Separar el ciclo del outbox:
+- [x] L1-T008 [US3] Separar el ciclo del outbox:
   - **`Infrastructure/Outbox/OutboxWorker.cs`** (`BackgroundService`) toma la transacción pendiente, valida, llama a `ISdkGateway`, guarda el resultado y despacha el callback.
   - **`ContpaqiSdkGateway`** deja de ser `BackgroundService` y conserva la sesión y las llamadas al SDK. Se borran `_forceMockMode` y los `if` del modo simulado embebido.
   - **`DbInitializer`:** agregar las columnas `contract_version`, `variant` y `result_json`, y renombrar los estados a `CONFIRMED`, `FAILED` y `DEAD_LETTER`, migrando las filas existentes (data-model §2).
-- [ ] L1-T009 [US3] Crear `IReadRepository`, con `SqlReadRepository` (real) y `SimulatedReadRepository`. El simulado lee `PolyConecta.Contpaq/Simulated/seed.json`: productos con unidad base y si llevan lote, almacenes, clientes y existencias por lote, tomados de `_LAB` (research R-05). La ruta sale de `BridgeConfig__Simulated__SeedPath`.
-- [ ] L1-T010 [US3] Crear `PolyConecta.Contpaq/Core/Validation/` con las validaciones de CT-39 y D-127, que corren igual en los dos modos contra `IReadRepository`:
+- [x] L1-T009 [US3] Crear `IReadRepository`, con `SqlReadRepository` (real) y `SimulatedReadRepository`. El simulado lee `PolyConecta.Contpaq/Simulated/seed.json`: productos con unidad base y si llevan lote, almacenes, clientes y existencias por lote, tomados de `_LAB` (research R-05). La ruta sale de `BridgeConfig__Simulated__SeedPath`.
+- [x] L1-T010 [US3] Crear `PolyConecta.Contpaq/Core/Validation/` con las validaciones de CT-39 y D-127, que corren igual en los dos modos contra `IReadRepository`:
   - producto existe y está activo;
   - la unidad es la base;
   - almacenes y cliente existen;
@@ -119,24 +119,24 @@ Empieza cuando el contrato está firmado (C-T006).
   - hay existencia por lote en el origen.
 
   Probar cada regla en `tests/Contpaq.Bridge.Tests/Validation/`.
-- [ ] L1-T011 [US3] Crear `Infrastructure/Sdk/SimulatedSdkGateway.cs`:
+- [x] L1-T011 [US3] Crear `Infrastructure/Sdk/SimulatedSdkGateway.cs`:
   - asigna folios por concepto con la tabla `simulated_folio`;
   - devuelve `documentos[]` según el comando, por ejemplo salida y entrada en `TRASPASO`;
   - un reenvío con la misma `idempotency_key` devuelve el resultado guardado.
 
   Probarlo en `tests/Contpaq.Bridge.Tests/Simulated/`.
-- [ ] L1-T012 [US3] Agregar `BridgeConfig__Mode` en `Program.cs`:
+- [x] L1-T012 [US3] Agregar `BridgeConfig__Mode` en `Program.cs`:
   - por omisión, `Real` en Windows y `Simulated` en otro sistema;
   - en `Simulated` no se exige `BridgeConfig__SqlConnectionString` ni se precarga la DLL;
   - `/health` informa `mode` y el estado real de la sesión y de SQL.
 
   Verificar que `BridgeConfig__Mode=Simulated dotnet run --project PolyConecta.Contpaq` arranca en macOS.
-- [ ] L1-T013 [US3] Configurar los fallos simulados (FR-008):
+- [x] L1-T013 [US3] Configurar los fallos simulados (FR-008):
   - las reglas en `BridgeConfig__Simulated__Faults`, por `command_type` y, opcionalmente, por `referencia_negocio`, con `error_code`, `delay_ms` y `drop_callback`;
   - la ruta `PUT /admin/simulated/faults`, que solo se registra en modo simulado.
 
   Probarlo en `tests/Contpaq.Bridge.Tests/Simulated/`.
-- [ ] L1-T014 [US3] Firmar los callbacks en `Infrastructure/Webhooks/WebhookDispatcher.cs`:
+- [x] L1-T014 [US3] Firmar los callbacks en `Infrastructure/Webhooks/WebhookDispatcher.cs`:
   - la cabecera `X-Bridge-Signature` con HMAC-SHA256 y el secreto de `BridgeConfig__CallbackSecret`;
   - reintentos con espera creciente, registrados en la tabla `callback_attempts`;
   - `GET /api/v1/transactions/{id}` devuelve el mismo cuerpo que el callback.

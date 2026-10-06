@@ -27,13 +27,10 @@ namespace Contpaq.Bridge.Api.Controllers
         [HttpPost("{id}/retry")]
         public async Task<IActionResult> RetryDlqItem(string id)
         {
-            var item = await _outboxRepository.GetByIdAsync(id);
-            if (item == null || item.Status != "DEAD_LETTER_QUEUE")
+            if (!await _outboxRepository.ReencolarAsync(id, null))
             {
                 return NotFound(new { error = "Item not found in DLQ" });
             }
-
-            await _outboxRepository.IncrementRetryAsync(id, 0, DateTime.UtcNow, null, null);
             return Ok(new { message = $"Transaction {id} re-queued for execution" });
         }
 
@@ -42,26 +39,14 @@ namespace Contpaq.Bridge.Api.Controllers
             public JsonElement Payload { get; set; }
         }
 
+        /// <summary>Reencola con la carga corregida. La carga nueva sí se guarda (antes se perdía).</summary>
         [HttpPost("{id}/edit-and-retry")]
         public async Task<IActionResult> EditAndRetryDlqItem(string id, [FromBody] EditPayloadRequest request)
         {
-            var item = await _outboxRepository.GetByIdAsync(id);
-            if (item == null || item.Status != "DEAD_LETTER_QUEUE")
+            if (!await _outboxRepository.ReencolarAsync(id, request.Payload.GetRawText()))
             {
                 return NotFound(new { error = "Item not found in DLQ" });
             }
-
-            item.PayloadJson = request.Payload.GetRawText();
-            item.Status = "PENDING";
-            item.RetryCount = 0;
-            item.NextAttemptAt = DateTime.UtcNow.ToString("o");
-            item.LastErrorCode = null;
-            item.LastErrorMessage = null;
-            item.UpdatedAt = DateTime.UtcNow.ToString("o");
-
-            await _outboxRepository.UpdateStatusAsync(id, "PENDING", null, null, null, null);
-            await _outboxRepository.IncrementRetryAsync(id, 0, DateTime.UtcNow, null, null);
-
             return Ok(new { message = $"Transaction {id} updated and re-queued" });
         }
 
