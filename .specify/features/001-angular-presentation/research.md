@@ -82,6 +82,8 @@ Decisiones de la fase 0 del plan. Cada una se verificó contra el código de `Po
 
 **Alternativa descartada**: traer los cambios de la rama `002-construccion-tecnica` al terminar la 0.5. Empezaba uno o dos días antes, pero ataba la 001 a una rama sin cerrar.
 
+**Cambio (2026-10-06, decisión del usuario):** se toma la opción B. La 0.5 y la 0.3 quedaron terminadas y con la CI en verde en `002-construccion-tecnica`, y lo pendiente de la 002 no toca `PolyConecta.Web/`. La 001 trae esa rama y empieza; cuando la 002 se integre a `main`, trae `main`.
+
 ---
 
 ## R-06 · Runner de pruebas unitarias

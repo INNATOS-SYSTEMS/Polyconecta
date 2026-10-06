@@ -78,7 +78,7 @@ La investigación de [research.md](research.md) cambió cuatro supuestos de la s
 | API en .NET 10 | Tarea 0.3 (5 – 6 oct) | La fase 2B (hub) espera a la API migrada; SC-006 se verifica sobre .NET 10 |
 | `run.sh` adaptado a .NET 10 | Tarea 0.3 | La fase 5 agrega `--with-angular` sobre esa versión |
 
-**Rama.** `001-angular-presentation` sale de `main`. Mientras la 002 no se integre a `main`, la 001 solo avanza en documentación y en lo que no dependa del proyecto Angular. Cuando la 002 se integre, la 001 trae `main` a su rama y sigue (decisión del usuario, research R-05).
+**Rama.** `001-angular-presentation` sale de `main` y trae la rama `002-construccion-tecnica` (opción B, research R-05 con su cambio del 2026-10-06). Cuando la 002 se integre a `main`, la 001 trae `main`.
 
 ## Project Structure
 
