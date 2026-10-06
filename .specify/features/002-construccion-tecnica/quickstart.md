@@ -15,7 +15,7 @@ Cómo comprobar los criterios de éxito de la spec. Cada sección dice quién la
 ## 1. Contrato firmado (US-1, SC-001) · los dos líderes
 
 ```bash
-npx @redocly/cli lint docs/contratos/bridge-v1.openapi.yaml
+npx @redocly/cli@2.58.1 lint docs/contratos/bridge-v1.openapi.yaml
 ```
 
 **Esperado**:

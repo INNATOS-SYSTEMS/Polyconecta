@@ -41,13 +41,13 @@ Responsables: Alejandro Ponce y Luis Alvarado Martinez. En cada sección del con
   - decidir si `concepts` e `invoices` quedan fuera de `1.0`.
 - [ ] C-T005 [P] [US1] Completar `docs/contratos/ejemplos/` con una carga válida y una inválida por comando, nombradas `<comando>.valido.json` y `<comando>.invalido.<motivo>.json`, más los callbacks `confirmado`, `error` y `dead-letter`. Cada ejemplo debe cumplir lo que dice la ficha de su comando.
 - [ ] C-T006 [US1] Firmar `1.0`: las dos firmas con fecha en la tabla del encabezado, el estado en ✅ y la fila correspondiente en "Exploración y cambios". SC-001: a más tardar el 6 de octubre.
-- [ ] C-T007 [US1] Escribir `docs/contratos/bridge-v1.openapi.yaml` a partir del contrato firmado y validarlo con `npx @redocly/cli lint docs/contratos/bridge-v1.openapi.yaml`, sin errores. La herramienta se anota en "Exploración y cambios" (regla de autonomía 5).
+- [ ] C-T007 [US1] Escribir `docs/contratos/bridge-v1.openapi.yaml` a partir del contrato firmado y validarlo con `npx @redocly/cli@2.58.1 lint docs/contratos/bridge-v1.openapi.yaml`, sin errores. La herramienta se anota en "Exploración y cambios" (regla de autonomía 5).
 
 ### Versiones centralizadas (primera tarea .NET de la fase)
 
 Responsable: Luis Alvarado Martinez; revisa Alejandro Ponce.
 
-- [ ] C-T008 [US2] Crear `global.json` (SDK 10.0.300, `rollForward: latestPatch`) y `Directory.Packages.props` con `ManagePackageVersionsCentrally` y las versiones exactas de research R-01, incluidas las del bridge. Quitar los atributos `Version` de todos los `.csproj`. Verificar con `dotnet restore Polyconecta.slnx` y `grep -rn 'Version=' --include=*.csproj .`, que no debe devolver nada.
+- [x] C-T008 [US2] Crear `global.json` (SDK 10.0.300, `rollForward: latestPatch`) y `Directory.Packages.props` con `ManagePackageVersionsCentrally` y las versiones exactas de research R-01, incluidas las del bridge. Quitar los atributos `Version` de todos los `.csproj`. Verificar con `dotnet restore Polyconecta.slnx` y `grep -rn 'Version=' --include=*.csproj .`, que no debe devolver nada.
 
 ### Suite de contrato (FR-006, CT-23)
 
@@ -86,8 +86,8 @@ Responsable: Alejandro Ponce; revisa Luis Alvarado Martinez. Empieza cuando el c
 
 ### 0.4 · Migrar el conector a .NET 10 y verificarlo contra el laboratorio (6 – 7 oct, 8 h)
 
-- [ ] L1-T003 [US5] Pasar `tools/sdk-lab/src/SdkLab.csproj` a `net10.0` (`win-x86`, `x86`), con `Microsoft.Data.SqlClient` 7.1.1. Ajustar `Encrypt` y `TrustServerCertificate` en su configuración (research R-01). Generar el paquete con `tools/sdk-lab/scripts/Build-Package.sh`. Verificar con `dotnet publish -r win-x86` sin errores.
-- [ ] L1-T004 [US5] Pasar `PolyConecta.Contpaq/PolyConecta.Contpaq.csproj` a `net10.0`:
+- [x] L1-T003 [US5] Pasar `tools/sdk-lab/src/SdkLab.csproj` a `net10.0` (`win-x86`, `x86`), con `Microsoft.Data.SqlClient` 7.1.1. Ajustar `Encrypt` y `TrustServerCertificate` en su configuración (research R-01). Generar el paquete con `tools/sdk-lab/scripts/Build-Package.sh`. Verificar con `dotnet publish -r win-x86` sin errores.
+- [x] L1-T004 [US5] Pasar `PolyConecta.Contpaq/PolyConecta.Contpaq.csproj` a `net10.0`:
   - `RuntimeIdentifier` y `PlatformTarget` solo al publicar para Windows (plan, L1);
   - adaptar `Program.cs` a Swashbuckle 10 y Scalar 2;
   - `tests/Contpaq.Bridge.Tests` a xUnit v3 y AwesomeAssertions.
@@ -160,32 +160,32 @@ Empieza cuando el contrato está firmado (C-T006).
 
 Empieza después de C-T008.
 
-- [ ] L2-T001 [US2] Pasar `PolyConecta.Domain`, `PolyConecta.Infrastructure`, `PolyConecta.Api` y los proyectos de `tests/` (salvo `Contpaq.Bridge.Tests`, que es de L1) a `net10.0`. `PolyConecta.Presentation` se queda en `net8.0` (exploración, excepción a CT-04). Verificar con `dotnet build Polyconecta.slnx` sin advertencias de versión.
-- [ ] L2-T002 [US2] En `PolyConecta.Infrastructure`:
+- [x] L2-T001 [US2] Pasar `PolyConecta.Domain`, `PolyConecta.Infrastructure`, `PolyConecta.Api` y los proyectos de `tests/` (salvo `Contpaq.Bridge.Tests`, que es de L1) a `net10.0`. `PolyConecta.Presentation` se queda en `net8.0` (exploración, excepción a CT-04). Verificar con `dotnet build Polyconecta.slnx` sin advertencias de versión.
+- [x] L2-T002 [US2] En `PolyConecta.Infrastructure`:
   - quitar Npgsql, MediatR, FluentValidation y EF InMemory;
   - agregar `Microsoft.EntityFrameworkCore.SqlServer` y `.Design`;
   - `PolyDbContext` con SQL Server y el esquema de cada configuración (CT-12, research R-03).
 
   Verificar con `dotnet build` y `dotnet list package`, que ya no debe mostrar los paquetes quitados.
-- [ ] L2-T003 [US2] Crear `PolyConecta.Application/` y agregarlo a `Polyconecta.slnx`, con referencia a `Domain`:
+- [x] L2-T003 [US2] Crear `PolyConecta.Application/` y agregarlo a `Polyconecta.slnx`, con referencia a `Domain`:
   - en `Common/`: `IUseCase<TRequest, TResult>`, `LoggingDecorator`, `TransactionDecorator`, `ValidationDecorator`, `IValidator<T>`, `IUnitOfWork`, `ICurrentUser` (en F0 devuelve `"sistema"`) e `IClock`;
   - `AddApplication()` registra los decoradores a mano (research R-02).
 
   Agregar las pruebas del orden de los decoradores en `tests/PolyConecta.Application.Tests/Common/`.
-- [ ] L2-T004 [US2] En `PolyConecta.Api/Program.cs`:
+- [x] L2-T004 [US2] En `PolyConecta.Api/Program.cs`:
   - quitar `UseInMemoryDatabase` y `EnsureCreated`;
   - registrar SQL Server con `ConnectionStrings__PolyConecta`, `AddApplication()` y la infraestructura;
   - adaptar Swashbuckle 10.
 
   Verificar que la API arranca contra una base migrada con el login `polyconecta_app`.
-- [ ] L2-T005 [US2] Crear `scripts/sql/logins-desarrollo.sql`, con los logins `polyconecta_app` (lectura, escritura y `EXECUTE`) y `polyconecta_migraciones` (`db_owner`) y las contraseñas como parámetros de `sqlcmd`. Generar la migración `F0_Base` en `PolyConecta.Infrastructure/Persistence/Migrations/`. Verificar con `dotnet ef database update` sobre un SQL Server 2022 vacío, usando `ConnectionStrings__PolyConectaMigraciones` (US-2, escenario 2).
-- [ ] L2-T006 [US2] Pasar las pruebas a xUnit v3 y AwesomeAssertions:
+- [x] L2-T005 [US2] Crear `scripts/sql/logins-desarrollo.sql`, con los logins `polyconecta_app` (lectura, escritura y `EXECUTE`) y `polyconecta_migraciones` (`db_owner`) y las contraseñas como parámetros de `sqlcmd`. Generar la migración `F0_Base` en `PolyConecta.Infrastructure/Persistence/Migrations/`. Verificar con `dotnet ef database update` sobre un SQL Server 2022 vacío, usando `ConnectionStrings__PolyConectaMigraciones` (US-2, escenario 2).
+- [x] L2-T006 [US2] Pasar las pruebas a xUnit v3 y AwesomeAssertions:
   - `tests/PolyConecta.Domain.Tests` (8 pruebas);
   - `tests/PolyConecta.IntegrationTests` (6), ahora contra SQL Server con Testcontainers: un contenedor por corrida (`AssemblyFixture`) y una base migrada por clase (research R-07);
   - crear `tests/PolyConecta.Application.Tests` con la misma infraestructura.
 
   Verificar que las 14 pruebas de L2 pasan con `dotnet test`. Si alguna se reemplaza, anotarlo en la exploración.
-- [ ] L2-T007 [US2] En `scripts/run.sh`:
+- [x] L2-T007 [US2] En `scripts/run.sh`:
   - aceptar el runtime 10 para la API y el bridge, y exigir también el 8 para el prototipo;
   - quitar la suposición de EF InMemory.
 
@@ -195,37 +195,37 @@ Empieza después de C-T008.
 
 Son las fases 0 y 2A de la spec 001, ajustadas por su research R-04.
 
-- [ ] L2-T008 [US6] Crear `PolyConecta.Web/` con `npx @angular/cli@22.2.1 new`:
+- [x] L2-T008 [US6] Crear `PolyConecta.Web/` con `npx @angular/cli@22.2.1 new`:
   - componentes standalone;
   - versiones exactas en `package.json`, sin `^` ni `~` (CT-36);
   - `.nvmrc` con 24.16.0;
   - `typescript` 6.0.3.
 
   Verificar con `npm ci && npm run build`.
-- [ ] L2-T009 [US6] Estilos:
+- [x] L2-T009 [US6] Estilos:
   - copiar `PolyConecta.Presentation/wwwroot/css/app.css` sin cambios a `PolyConecta.Web/src/styles/app.css` (`diff` vacío);
   - en `src/index.html`, cargar Inter, Bootstrap 5.3.2 y Bootstrap Icons 1.11.3 por las mismas URL que `App.razor`, y aplicar el mismo `font-family` al `body`.
-- [ ] L2-T010 [US6] Crear el layout:
+- [x] L2-T010 [US6] Crear el layout:
   - `MainLayout` y `OdooTopbar` en `PolyConecta.Web/src/app/shared/`, con los menús de `Components/Shell/OdooTopbar.razor` (Ventas, Inventario con Operaciones, Fabricación y Calidad);
   - en `app.routes.ts`, una ruta y una página vacía por módulo, en `src/app/features/<modulo>/` (CT-09).
-- [ ] L2-T011 [US6] Crear en `PolyConecta.Web/src/app/core/models/` los tipos que usan los componentes (`ProductRef`, `LotBalance`, `LotAllocation`, `StockOperationLine` y `ProductionLot`, según el data-model de la spec 001) y `src/app/core/state/ui-view-state.ts`.
-- [ ] L2-T012 [P] [US6] Crear en `PolyConecta.Web/src/app/shared/` los otros 10 componentes, con las mismas entradas, salidas y marcado que su `.razor`: `OdooBreadcrumb`, `OdooSearchPanel`, `OdooViewSwitcher`, `OdooPager`, `OdooSmartButtons`, `OdooStatusPipeline`, `OdooLineCapture`, `OdooChatterDrawer`, `LotPickerModal` y `LotQuantityPickerModal`. `PocSalesOrderForm` no va aquí: queda en la spec 001.
-- [ ] L2-T013 [US6] Instalar `vitest` 5.0.3 y `jsdom` 30.1.2 exactos y configurar `ng test` sin modo observador. Escribir una prueba de render por componente en su `.spec.ts`. Verificar con `npm test`.
-- [ ] L2-T014 [US6] Comprobar en el navegador el layout, la tipografía, los colores y la barra superior contra el prototipo en `:9000` (US-6, escenario 1). Guardar las capturas lado a lado en el PR.
+- [x] L2-T011 [US6] Crear en `PolyConecta.Web/src/app/core/models/` los tipos que usan los componentes (`ProductRef`, `LotBalance`, `LotAllocation`, `StockOperationLine` y `ProductionLot`, según el data-model de la spec 001) y `src/app/core/state/ui-view-state.ts`.
+- [x] L2-T012 [P] [US6] Crear en `PolyConecta.Web/src/app/shared/` los otros 10 componentes, con las mismas entradas, salidas y marcado que su `.razor`: `OdooBreadcrumb`, `OdooSearchPanel`, `OdooViewSwitcher`, `OdooPager`, `OdooSmartButtons`, `OdooStatusPipeline`, `OdooLineCapture`, `OdooChatterDrawer`, `LotPickerModal` y `LotQuantityPickerModal`. `PocSalesOrderForm` no va aquí: queda en la spec 001.
+- [x] L2-T013 [US6] Instalar `vitest` 5.0.3 y `jsdom` 30.1.2 exactos y configurar `ng test` sin modo observador. Escribir una prueba de render por componente en su `.spec.ts`. Verificar con `npm test`.
+- [x] L2-T014 [US6] Comprobar en el navegador el layout, la tipografía, los colores y la barra superior contra el prototipo en `:9000` (US-6, escenario 1). Guardar las capturas lado a lado en el PR.
 
 ### 0.6 · Base común: auditoría, bitácora de estados, folios y cola de envíos a CONTPAQi (7 – 9 oct, 11 h)
 
 El modelo está en [data-model.md](data-model.md). Las piezas del contrato empiezan cuando está firmado (C-T006).
 
-- [ ] L2-T015 [US4] Crear en `PolyConecta.Domain/Common/` `AuditableEntity`, `ArchivableEntity` (con `Archive()` y `Restore()`), `IStatefulDocument<TState>`, `TransicionInvalidaException` y `SyncState`, con las transiciones de data-model §1. Borrar `Domain/ValueObjects/Folio.cs` y sus usos. Pruebas en `tests/PolyConecta.Domain.Tests/Common/`: las transiciones válidas e inválidas del `SyncState`, el archivado, y que un callback sobre algo `Confirmado` no cambia nada.
-- [ ] L2-T016 [US4] Crear en `PolyConecta.Domain/Plataforma/` `StateTransitionLog`, `ReferenceSequence` y el nuevo `OutboxMessage`, y borrar `Domain/Entities/OutboxMessage.cs`.
-- [ ] L2-T017 [US4] En `PolyConecta.Infrastructure`:
+- [x] L2-T015 [US4] Crear en `PolyConecta.Domain/Common/` `AuditableEntity`, `ArchivableEntity` (con `Archive()` y `Restore()`), `IStatefulDocument<TState>`, `TransicionInvalidaException` y `SyncState`, con las transiciones de data-model §1. Borrar `Domain/ValueObjects/Folio.cs` y sus usos. Pruebas en `tests/PolyConecta.Domain.Tests/Common/`: las transiciones válidas e inválidas del `SyncState`, el archivado, y que un callback sobre algo `Confirmado` no cambia nada.
+- [x] L2-T016 [US4] Crear en `PolyConecta.Domain/Plataforma/` `StateTransitionLog`, `ReferenceSequence` y el nuevo `OutboxMessage`, y borrar `Domain/Entities/OutboxMessage.cs`.
+- [x] L2-T017 [US4] En `PolyConecta.Infrastructure`:
   - las configuraciones del esquema `plt`;
   - un interceptor de `SaveChanges` que llena la auditoría con `IClock` e `ICurrentUser` y convierte los eventos de transición en `StateTransitionLog`;
   - el filtro global de archivado.
 
   Generar la migración `F0_Plataforma`. Pruebas en `tests/PolyConecta.Application.Tests/Plataforma/`: quién y cuándo, archivar sin borrar, y transición registrada con origen, destino, usuario, fecha y nota (US-4, escenarios 1 y 2).
-- [ ] L2-T018 [US4] Crear `IReferenceSequenceService` en `Application/Plataforma/Folios/` y su implementación en `Infrastructure/Plataforma/`, con `UPDLOCK, ROWLOCK` en la transacción, prefijo con `{yyyy}`, relleno y reinicio anual o mensual. Probarlo: 50 peticiones en paralelo dan 50 folios distintos y consecutivos; dos tipos usan secuencias independientes; un tipo inexistente da error (escenario 6).
+- [x] L2-T018 [US4] Crear `IReferenceSequenceService` en `Application/Plataforma/Folios/` y su implementación en `Infrastructure/Plataforma/`, con `UPDLOCK, ROWLOCK` en la transacción, prefijo con `{yyyy}`, relleno y reinicio anual o mensual. Probarlo: 50 peticiones en paralelo dan 50 folios distintos y consecutivos; dos tipos usan secuencias independientes; un tipo inexistente da error (escenario 6).
 - [ ] L2-T019 [US4] Crear `IBridgeSyncService.EncolarAsync(documento, comando, variante, carga, transición)` en `Application/Plataforma/Erp/`, con su implementación:
   - escribe el `OutboxMessage` en el mismo `DbContext`;
   - arma la `idempotency_key` (`{tipo}:{id}:{transición}`), el `correlation_id` y las `LockKeys` de la carga;

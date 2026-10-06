@@ -1,0 +1,21 @@
+{
+  "contract_version": "1.0",
+  "command_type": "CIERRE_PRODUCCION",
+  "variant": null,
+  "idempotency_key": "of:4402:cerrar",
+  "correlation_id": "1d2e3f40-3333-4000-8000-000000004402",
+  "client_app_id": "polyconecta",
+  "callback_url": "https://api.polyconecta.local/api/v1/plataforma/bridge/callbacks",
+  "payload": {
+    "fecha": "2026-10-20",
+    "referencia_negocio": "EXT-2026-0002",
+    "almacen_wip": "WIP-PIM",
+    "consumos": [
+      { "producto": "PEBD-001", "cantidad": 0.51, "unidad": "TON", "lotes": [] }
+    ],
+    "entradas": [
+      { "producto": "PT3413 C455", "cantidad": 500.0, "unidad": "KG", "almacen_destino": "PT-PIM", "lotes": [ { "numero": "R003-IV310-26", "cantidad": 500.0 } ] }
+    ],
+    "subproductos": []
+  }
+}
