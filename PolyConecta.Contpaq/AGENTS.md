@@ -17,6 +17,8 @@ Estás en el VPS de Windows donde corre CONTPAQi Comercial, para desarrollar, de
 
 Compila en Debug y en x86 (`-p:Bridge32=true`), porque `MGW_SDK.dll` es de 32 bits. Escucha en `http://localhost:5005`. Los logs salen en la consola. Para depurar paso a paso, el usuario asocia Visual Studio al proceso `Contpaq.Bridge.exe`.
 
+Si el bridge publicado está corriendo (la tarea `PolyConecta-Bridge` lo levanta al iniciar sesión), detenlo antes: los dos usan el puerto 5005. Publicar, el arranque automático y la medición del reinicio están en [`scripts/vps/README.md`](../scripts/vps/README.md).
+
 ## Reglas duras
 
 1. **No hay empresa de laboratorio.** En modo Real el bridge escribe en la empresa de CONTPAQi de `BridgeConfig__CompanyPath`, con datos reales (D-130). Por eso:

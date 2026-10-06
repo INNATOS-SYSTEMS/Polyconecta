@@ -144,7 +144,7 @@ Empieza cuando el contrato está firmado (C-T006).
 
 ### 0.9 · Inicio de sesión automático del administrador y arranque del conector en el servidor (9 oct, 4 h)
 
-- [ ] L1-T016 [US8] Crear `tools/sdk-lab/scripts/Set-BridgeAutostart.ps1`, que configura dos cosas en el VPS:
+- [ ] L1-T016 [US8] Crear `scripts/vps/Set-BridgeAutostart.ps1` (antes en `tools/sdk-lab/scripts`, retirado por D-130), que configura dos cosas en el VPS:
   - el inicio de sesión automático del administrador, con el mecanismo probado en S-04;
   - la tarea programada "al iniciar sesión", que levanta el bridge con sus variables de entorno.
 
