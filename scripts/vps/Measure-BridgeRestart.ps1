@@ -78,7 +78,8 @@ $pasa = $false
 if ($escuchando) {
     $min = ($escuchando - $arranque).TotalMinutes
     $lineas += ("Tiempo desde el arranque de Windows: {0:N1} min (máximo {1})" -f $min, $MaximoMinutos)
-    $pasa = $min -le $MaximoMinutos -and $salud -and $salud.mode -eq 'Real' -and $salud.sdk_initialized -eq $true -and $null -ne $almacenes
+    # sdk_initialized no cuenta: el bridge abre la sesión del SDK hasta que llega un comando.
+    $pasa = $min -le $MaximoMinutos -and $salud -and $salud.mode -eq 'Real' -and $null -ne $almacenes
 }
 Write-Host ''
 if ($pasa) { Ok ("SC-006 cumplido: el bridge volvió solo en {0:N1} min y lee con el login de solo lectura." -f $min) }

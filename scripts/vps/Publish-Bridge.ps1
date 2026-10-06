@@ -7,9 +7,14 @@
   2. Publica en Release con -p:Bridge32=true a una carpeta temporal y la copia a C:\PolyConecta\bridge
      sin tocar la base local del bridge (bridge_outbox.db) ni sus logs.
   3. Arranca Contpaq.Bridge.exe en una ventana aparte, con las variables de usuario (D-115).
-  4. Verifica GET /health (mode Real, sdk_initialized true) y GET /api/v1/catalogs/warehouses, que
-     lee con el login de solo lectura (cierra la verificación pendiente de L1-T002).
-  5. Escribe la evidencia, sin secretos, en tools\sdk-lab\evidence\F0\0.4.md.
+  4. Verifica GET /health (mode Real, proceso x86) y GET /api/v1/catalogs/warehouses, que lee con el
+     login de solo lectura (cierra la verificación pendiente de L1-T002).
+  5. Sonda del SDK: el bridge abre la sesión del SDK solo cuando tiene un comando pendiente. Le manda
+     un ALTA_ALMACEN de sonda; en F0 ningún comando escribe en CONTPAQi (responde SDK_ERROR con motivo
+     COMANDO_NO_IMPLEMENTADO), pero antes abre la sesión (fInicializaSDK y fAbreEmpresa). Pasa si la
+     respuesta es exactamente ese motivo y /health queda con sdk_initialized true. Si el comando ya
+     estuviera implementado, la sonda lo detecta y avisa. Usa -SinSonda para omitirla.
+  6. Escribe la evidencia, sin secretos, en tools\sdk-lab\evidence\F0\0.4.md.
 
   Antes, corre Initialize-BridgeDebug.ps1 y resuelve lo que marque [falta].
 
@@ -19,7 +24,8 @@
 [CmdletBinding()]
 param(
     [int]$Puerto = 5005,
-    [switch]$SinArrancar
+    [switch]$SinArrancar,
+    [switch]$SinSonda
 )
 
 $ErrorActionPreference = 'Stop'
@@ -79,7 +85,6 @@ Paso '4. Verificar'
 $lineas = @("Commit: $commit", "Carpeta: $CarpetaBridge", ("Arquitectura: {0}" -f $salud.worker_architecture))
 $lineas += ('/health: ' + ($salud | ConvertTo-Json -Compress))
 if ($salud.mode -eq 'Real') { Ok 'mode: Real' } else { Falla ("mode: {0} (se esperaba Real)" -f $salud.mode) }
-if ($salud.sdk_initialized -eq $true) { Ok 'sdk_initialized: true' } else { Falla 'sdk_initialized no es true: el SDK no abrió la empresa.' }
 if ($salud.worker_architecture -eq 'x86') { Ok 'Proceso de 32 bits' } else { Aviso ("worker_architecture: {0}" -f $salud.worker_architecture) }
 
 $almacenes = Invoke-Bridge '/api/v1/catalogs/warehouses' $Puerto
@@ -91,6 +96,46 @@ if ($null -ne $almacenes) {
 } else {
     Falla 'catalogs/warehouses no respondió. Revisa BridgeConfig__SqlConnectionString (L1-T002).'
     $lineas += 'catalogs/warehouses: sin respuesta'
+}
+
+if (-not $SinSonda) {
+    Paso '5. Sonda del SDK (abre la empresa; en F0 no escribe)'
+    $clave = 'dev:sonda-sdk:' + (Get-Date -Format 'yyyyMMddHHmmss')
+    $sonda = @{
+        contract_version = '1.0'; command_type = 'ALTA_ALMACEN'; variant = $null
+        idempotency_key = $clave; correlation_id = [guid]::NewGuid().ToString()
+        client_app_id = 'polyconecta'; callback_url = 'http://localhost:9/sonda'
+        payload = @{ codigo = 'DEV-SONDA'; nombre = 'DEV sonda del SDK (no se crea)'; fecha_alta = (Get-Date -Format 'yyyy-MM-dd') }
+    } | ConvertTo-Json -Depth 4
+    try {
+        $acuse = Invoke-RestMethod -Method Post -Uri ("http://localhost:{0}/api/v1/transactions" -f $Puerto) -ContentType 'application/json' -Body $sonda -TimeoutSec 15
+    } catch { $acuse = $null }
+    if (-not $acuse) {
+        Falla 'El bridge no aceptó la sonda.'
+        $lineas += 'Sonda: no aceptada'
+    } else {
+        $tx = $null
+        for ($i = 0; $i -lt 30; $i++) {
+            Start-Sleep -Seconds 2
+            $tx = Invoke-Bridge ("/api/v1/transactions/{0}" -f $acuse.transaction_id) $Puerto
+            if ($tx -and $tx.status -ne 'PENDING' -and $tx.status -ne 'PROCESSING') { break }
+        }
+        $motivo = $null
+        if ($tx -and $tx.error -and $tx.error.detail) { $motivo = $tx.error.detail.motivo }
+        $salud = Invoke-Bridge '/health' $Puerto
+        if ($motivo -eq 'COMANDO_NO_IMPLEMENTADO' -and $salud.sdk_initialized -eq $true) {
+            Ok 'El SDK abrió la empresa (sdk_initialized: true) y la sonda no escribió: COMANDO_NO_IMPLEMENTADO.'
+        } elseif ($tx -and $tx.status -eq 'CONFIRMED') {
+            Falla 'La sonda se CONFIRMÓ: ALTA_ALMACEN ya escribe en CONTPAQi. Revisa si se creó el almacén DEV-SONDA y deja de usar esta sonda.'
+        } elseif (-not $tx -or $tx.status -eq 'PENDING') {
+            Falla 'La sonda sigue pendiente: el SDK no pudo abrir la empresa. Busca fInicializaSDK, fAbreEmpresa o ARCHITECTURE en C:\PolyConecta\bridge\logs.'
+        } else {
+            Falla ("Resultado inesperado de la sonda: estado {0}, código {1}, motivo {2}." -f $tx.status, $tx.error.code, $motivo)
+        }
+        $lineas += ("Sonda {0}: estado {1}, código {2}, motivo {3}" -f $acuse.transaction_id, $tx.status, $tx.error.code, $motivo)
+        $lineas += ('/health tras la sonda: ' + ($salud | ConvertTo-Json -Compress))
+        try { Invoke-RestMethod -Method Delete -Uri ("http://localhost:{0}/api/v1/transactions/{1}" -f $Puerto, $acuse.transaction_id) -TimeoutSec 15 | Out-Null } catch { }
+    }
 }
 
 Add-Evidencia '0.4.md' 'Publicación del bridge .NET 10 x86 (L1-T006)' $lineas

@@ -209,13 +209,8 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
                 new { DeadLetter = Estados.DeadLetter });
         }
 
-        public async Task<bool> DeleteDlqTransactionAsync(string transactionId)
-        {
-            using var conn = GetConnection();
-            return await conn.ExecuteAsync(
-                "DELETE FROM bridge_transactions WHERE transaction_id = @Id AND status = @DeadLetter;",
-                new { Id = transactionId, DeadLetter = Estados.DeadLetter }) > 0;
-        }
+        public async Task<bool> DeleteDlqTransactionAsync(string transactionId) =>
+            await BorrarAsync("transaction_id = @Id AND status = @DeadLetter", new { Id = transactionId, DeadLetter = Estados.DeadLetter }) > 0;
 
         public async Task<int> GetQueueDepthAsync()
         {
@@ -225,24 +220,29 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
                 new { Pending = Estados.Pending, Processing = Estados.Processing });
         }
 
-        public async Task<int> DeletePendingTransactionsAsync()
-        {
-            using var conn = GetConnection();
-            return await conn.ExecuteAsync(
-                "DELETE FROM bridge_transactions WHERE status IN (@Pending, @Processing);",
-                new { Pending = Estados.Pending, Processing = Estados.Processing });
-        }
+        public Task<int> DeletePendingTransactionsAsync() =>
+            BorrarAsync("status IN (@Pending, @Processing)", new { Pending = Estados.Pending, Processing = Estados.Processing });
 
-        public async Task<int> PurgeAllTransactionsAsync()
-        {
-            using var conn = GetConnection();
-            return await conn.ExecuteAsync("DELETE FROM bridge_transactions;");
-        }
+        public Task<int> PurgeAllTransactionsAsync() => BorrarAsync("1 = 1", new { });
 
-        public async Task<bool> DeleteTransactionAsync(string transactionId)
+        public async Task<bool> DeleteTransactionAsync(string transactionId) =>
+            await BorrarAsync("transaction_id = @Id", new { Id = transactionId }) > 0;
+
+        /// <summary>
+        /// Borra las transacciones que cumplen el filtro junto con sus filas hijas (bitácora y entregas
+        /// de callback), que las referencian con llave foránea. Sin esto el borrado fallaba con
+        /// "FOREIGN KEY constraint failed" en cuanto la transacción tenía bitácora o callbacks.
+        /// </summary>
+        private async Task<int> BorrarAsync(string filtro, object parametros)
         {
             using var conn = GetConnection();
-            return await conn.ExecuteAsync("DELETE FROM bridge_transactions WHERE transaction_id = @Id;", new { Id = transactionId }) > 0;
+            using var tx = conn.BeginTransaction();
+            var ids = $"SELECT transaction_id FROM bridge_transactions WHERE {filtro}";
+            await conn.ExecuteAsync($"DELETE FROM transaction_logs WHERE transaction_id IN ({ids});", parametros, tx);
+            await conn.ExecuteAsync($"DELETE FROM webhook_deliveries WHERE transaction_id IN ({ids});", parametros, tx);
+            var borradas = await conn.ExecuteAsync($"DELETE FROM bridge_transactions WHERE {filtro};", parametros, tx);
+            tx.Commit();
+            return borradas;
         }
     }
 }
