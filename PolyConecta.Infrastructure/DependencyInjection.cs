@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PolyConecta.Application.Common;
+using PolyConecta.Application.Plataforma.Folios;
+using PolyConecta.Infrastructure.Plataforma;
 using PolyConecta.Infrastructure.Common;
 using PolyConecta.Infrastructure.Persistence;
 
@@ -16,7 +18,10 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException(
                 "Falta ConnectionStrings:PolyConecta. Defínela en la variable de entorno ConnectionStrings__PolyConecta.");
 
-        services.AddDbContext<PolyDbContext>(options => options.UseSqlServer(conexion));
+        services.AddScoped<AuditoriaInterceptor>();
+        services.AddDbContext<PolyDbContext>((sp, options) =>
+            options.UseSqlServer(conexion).AddInterceptors(sp.GetRequiredService<AuditoriaInterceptor>()));
+        services.AddScoped<IReferenceSequenceService, ReferenceSequenceService>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<CorrelationContext>();
         services.AddScoped<ICorrelationContext>(sp => sp.GetRequiredService<CorrelationContext>());

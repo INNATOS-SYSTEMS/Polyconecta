@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using PolyConecta.Domain.Common;
 using PolyConecta.Domain.Entities;
+using PolyConecta.Domain.Plataforma;
 
 namespace PolyConecta.Infrastructure.Persistence;
 
@@ -19,6 +22,11 @@ public class PolyDbContext : DbContext
     public DbSet<QualityCheck> QualityChecks => Set<QualityCheck>();
     public DbSet<StockScrap> StockScraps => Set<StockScrap>();
 
+    // Plataforma (base común, F0)
+    public DbSet<StateTransitionLog> StateTransitionLogs => Set<StateTransitionLog>();
+    public DbSet<ReferenceSequence> ReferenceSequences => Set<ReferenceSequence>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+
     // Additional Entities
     public DbSet<PolyLocation> Locations => Set<PolyLocation>();
     public DbSet<LotGenealogy> LotGenealogies => Set<LotGenealogy>();
@@ -29,6 +37,10 @@ public class PolyDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Las transiciones pendientes viven en memoria hasta guardarse en StateTransitionLog.
+        modelBuilder.Ignore<TransicionRegistrada>();
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PolyDbContext).Assembly);
 
         // Un esquema por módulo (CT-12). Las entidades previas a F0 se ubican en su módulo sin
@@ -38,10 +50,22 @@ public class PolyDbContext : DbContext
             if (entity.GetSchema() is null && SchemaPorEntidad.TryGetValue(entity.ClrType, out var schema))
                 entity.SetSchema(schema);
 
+            // Mixins (04 §1): versión de fila para concurrencia y lo archivado oculto por omisión.
+            if (typeof(AuditableEntity).IsAssignableFrom(entity.ClrType) && entity.BaseType is null)
+                modelBuilder.Entity(entity.ClrType).Property(nameof(AuditableEntity.RowVersion)).IsRowVersion();
+            if (typeof(ArchivableEntity).IsAssignableFrom(entity.ClrType) && entity.BaseType is null)
+                entity.SetQueryFilter(SoloActivos(entity.ClrType));
+
             // Lo referenciado se archiva, no se borra (04 §1): ninguna llave borra en cascada.
             foreach (var fk in entity.GetForeignKeys().Where(fk => !fk.IsOwnership))
                 fk.DeleteBehavior = DeleteBehavior.Restrict;
         }
+    }
+
+    private static LambdaExpression SoloActivos(Type tipo)
+    {
+        var e = Expression.Parameter(tipo, "e");
+        return Expression.Lambda(Expression.Property(e, nameof(ArchivableEntity.IsActive)), e);
     }
 
     private static readonly Dictionary<Type, string> SchemaPorEntidad = new()

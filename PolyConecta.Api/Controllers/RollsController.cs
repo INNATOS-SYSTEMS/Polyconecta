@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PolyConecta.Domain.Entities;
-using PolyConecta.Domain.ValueObjects;
+using PolyConecta.Application.Plataforma.Folios;
 using PolyConecta.Infrastructure.Outbox;
 using PolyConecta.Infrastructure.Persistence;
 
@@ -13,11 +13,13 @@ public class RollsController : ControllerBase
 {
     private readonly PolyDbContext _db;
     private readonly IOutboxPublisher _outbox;
+    private readonly IReferenceSequenceService _folios;
 
-    public RollsController(PolyDbContext db, IOutboxPublisher outbox)
+    public RollsController(PolyDbContext db, IOutboxPublisher outbox, IReferenceSequenceService folios)
     {
         _db = db;
         _outbox = outbox;
+        _folios = folios;
     }
 
     public record CaptureRollRequest(
@@ -43,12 +45,15 @@ public class RollsController : ControllerBase
             return BadRequest(new { Error = "Gross weight must be greater than tare weight." });
         }
 
-        var folioObj = Folio.Generate(request.LineId, DateTime.UtcNow);
+        var folio = await _folios.NextAsync(
+            "ROLLO_EXTRUSION",
+            new Dictionary<string, string> { ["linea"] = request.LineId.ToString("D2", System.Globalization.CultureInfo.InvariantCulture) },
+            cancellationToken);
         var roll = new StockLot
         {
             ManufacturingOrderId = request.ManufacturingOrderId,
-            Name = folioObj.Value,
-            ContpaqLotNumber = folioObj.Value, // 1:1 mapping to CONTPAQi cNumeroLote
+            Name = folio,
+            ContpaqLotNumber = folio, // 1:1 mapping to CONTPAQi cNumeroLote
             ProductSku = request.ProductSku,
             GrossWeightKg = request.GrossWeightKg,
             TareWeightKg = request.TareWeightKg,
