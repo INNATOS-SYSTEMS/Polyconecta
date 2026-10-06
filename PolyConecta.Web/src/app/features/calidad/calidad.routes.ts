@@ -1,7 +1,8 @@
 import { Routes } from '@angular/router';
-import { PaginaPendiente } from '../../shared/pagina-pendiente/pagina-pendiente';
+import { CalidadForm } from './calidad-form/calidad-form';
+import { CalidadList } from './calidad-list/calidad-list';
 
 export const CALIDAD_ROUTES: Routes = [
-  { path: 'calidad', component: PaginaPendiente, data: { titulo: 'Calidad' } },
-  { path: 'calidad/:folioOf', component: PaginaPendiente, data: { titulo: 'Control de calidad' } },
+  { path: 'calidad', component: CalidadList },
+  { path: 'calidad/:folioOf', component: CalidadForm },
 ];

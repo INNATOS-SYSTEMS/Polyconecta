@@ -1,9 +1,12 @@
 import { Routes } from '@angular/router';
-import { PaginaPendiente } from '../../shared/pagina-pendiente/pagina-pendiente';
+import { CapturaMasiva } from './captura-masiva/captura-masiva';
+import { FabricacionForm } from './fabricacion-form/fabricacion-form';
+import { FabricacionList } from './fabricacion-list/fabricacion-list';
+import { Incidencias } from './incidencias/incidencias';
 
 export const PRODUCCION_ROUTES: Routes = [
-  { path: 'fabricacion', component: PaginaPendiente, data: { titulo: 'Órdenes de fabricación' } },
-  { path: 'fabricacion/:folioOf', component: PaginaPendiente, data: { titulo: 'Orden de fabricación' } },
-  { path: 'captura-masiva', component: PaginaPendiente, data: { titulo: 'Producción' } },
-  { path: 'incidencias', component: PaginaPendiente, data: { titulo: 'Incidencias' } },
+  { path: 'fabricacion', component: FabricacionList },
+  { path: 'fabricacion/:folioOf', component: FabricacionForm },
+  { path: 'captura-masiva', component: CapturaMasiva },
+  { path: 'incidencias', component: Incidencias },
 ];

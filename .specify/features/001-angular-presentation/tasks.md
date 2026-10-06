@@ -130,12 +130,12 @@ Los tres agentes trabajan en paralelo, cada uno en sus carpetas (plan, "Decisió
 
 ### Agente 3B · `features/produccion/`, `features/calidad/`
 
-- [ ] L2-T026 [P] [US1] [3B] Lista de fabricación en `PolyConecta.Web/src/app/features/produccion/fabricacion-list/`, desde `Pages/FabricacionList.razor`. Verificar con `--routes=/fabricacion`.
-- [ ] L2-T027 [US1] [3B] Formulario de la OF en `PolyConecta.Web/src/app/features/produccion/fabricacion-form/`, desde `Pages/FabricacionFormView.razor` (418 líneas): pestañas, componentes, subproductos, producción, planeación, smart buttons, pipeline de estado y chatter. Verificar con `--routes=/fabricacion/BOL-2026-0001,/fabricacion/IMP-2026-0001,/fabricacion/EXT-2026-0001`.
-- [ ] L2-T028 [P] [US1] [3B] Captura masiva en `PolyConecta.Web/src/app/features/produccion/captura-masiva/`, desde `Pages/CapturaMasivaPage.razor`. Verificar con `--routes=/captura-masiva`.
-- [ ] L2-T029 [P] [US1] [3B] Incidencias en `PolyConecta.Web/src/app/features/produccion/incidencias/`, desde `Pages/IncidenciasPage.razor`. Verificar con `--routes=/incidencias`.
-- [ ] L2-T030 [P] [US1] [3B] Lista de calidad en `PolyConecta.Web/src/app/features/calidad/calidad-list/`, desde `Pages/CalidadList.razor`. Verificar con `--routes=/calidad`.
-- [ ] L2-T031 [US1] [3B] Formulario de calidad en `PolyConecta.Web/src/app/features/calidad/calidad-form/`, desde `Pages/CalidadFormView.razor`. Verificar con `--routes=/calidad/BOL-2026-0001`.
+- [x] L2-T026 [P] [US1] [3B] Lista de fabricación en `PolyConecta.Web/src/app/features/produccion/fabricacion-list/`, desde `Pages/FabricacionList.razor`. Verificar con `--routes=/fabricacion`.
+- [x] L2-T027 [US1] [3B] Formulario de la OF en `PolyConecta.Web/src/app/features/produccion/fabricacion-form/`, desde `Pages/FabricacionFormView.razor` (418 líneas): pestañas, componentes, subproductos, producción, planeación, smart buttons, pipeline de estado y chatter. Verificar con `--routes=/fabricacion/BOL-2026-0001,/fabricacion/IMP-2026-0001,/fabricacion/EXT-2026-0001`.
+- [x] L2-T028 [P] [US1] [3B] Captura masiva en `PolyConecta.Web/src/app/features/produccion/captura-masiva/`, desde `Pages/CapturaMasivaPage.razor`. Verificar con `--routes=/captura-masiva`.
+- [x] L2-T029 [P] [US1] [3B] Incidencias en `PolyConecta.Web/src/app/features/produccion/incidencias/`, desde `Pages/IncidenciasPage.razor`. Verificar con `--routes=/incidencias`.
+- [x] L2-T030 [P] [US1] [3B] Lista de calidad en `PolyConecta.Web/src/app/features/calidad/calidad-list/`, desde `Pages/CalidadList.razor`. Verificar con `--routes=/calidad`.
+- [x] L2-T031 [US1] [3B] Formulario de calidad en `PolyConecta.Web/src/app/features/calidad/calidad-form/`, desde `Pages/CalidadFormView.razor`. Verificar con `--routes=/calidad/BOL-2026-0001`.
 
 ### Agente 3C · `features/logistica/`
 

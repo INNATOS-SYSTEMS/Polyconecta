@@ -1,0 +1,177 @@
+@if (of(); as of) {
+    <div class="o_control_panel">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-primary btn-sm fw-bold px-3" disabled="disabled" title="Alta manual deshabilitada en esta demo: las Órdenes de Fabricación nacen del Pedido">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo
+            </button>
+            <pc-odoo-breadcrumb [items]="breadcrumb()" />
+        </div>
+        <div class="o_button_box">
+            <pc-odoo-smart-buttons [buttons]="smartButtons()" (smartNavigate)="navegar($event)" />
+        </div>
+    </div>
+
+    <div class="p-4">
+        <div class="o_statusbar">
+            <div class="d-flex align-items-center gap-2">
+                @if (of.state === 'Borrador') {
+                    <button class="btn btn-primary btn-sm fw-bold px-3" (click)="flow.planear(folioOf())" [disabled]="of.componentes.length === 0">
+                        <i class="bi bi-check-circle me-1"></i> Confirmar
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm px-3" (click)="volverALista()">Cancelar</button>
+                } @else if (of.state !== 'Hecho') {
+                    <button class="btn btn-primary btn-sm fw-bold px-3" (click)="flow.cerrarProduccion(folioOf())" [disabled]="!puedeCerrar()">
+                        <i class="bi bi-box-arrow-in-down me-1"></i> Cerrar Producción
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm px-3" (click)="volverALista()">Cancelar</button>
+                }
+            </div>
+        </div>
+
+        <div class="d-flex gap-3 align-items-start">
+            <div class="o_form_sheet flex-grow-1">
+                <div class="o_sheet_body">
+                    <pc-odoo-status-pipeline [stages]="stages" [currentStage]="of.state" />
+                    <h3 class="fw-bold mb-1">Orden de fabricación</h3>
+                    <h4 class="fw-bold text-primary mb-3">{{ of.folio }}</h4>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="o_form_label_row"><span class="o_form_label">Producto</span><span class="o_form_value fw-semibold">{{ of.producto }}</span></div>
+                            <div class="o_form_label_row"><span class="o_form_label">Cantidad</span><span class="o_form_value">{{ n1(of.cantidad) }} <span class="text-muted">{{ of.unidad }}</span></span></div>
+                            <div class="o_form_label_row"><span class="o_form_label">Proceso</span><span class="o_form_value">{{ of.processLabel }}</span></div>
+                            <div class="o_form_label_row"><span class="o_form_label">Calidad</span><span class="o_form_value d-flex align-items-center gap-2"><input type="checkbox" class="form-check-input mt-0" id="chk-calidad" [checked]="of.calidadRequerida" (change)="toggleCalidadRequerida($event)" /><label class="mb-0" for="chk-calidad">Requerida</label><span class="text-muted">— Almacén Falla: {{ of.almacenFalla }}</span></span></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="o_form_label_row"><span class="o_form_label">Empresa</span><span class="o_form_value">{{ of.empresa }}</span></div>
+                            <div class="o_form_label_row"><span class="o_form_label">Tiempo Estimado</span><span class="o_form_value">{{ of.tiempoEstimadoHrs }} hrs</span></div>
+                            <div class="o_form_label_row"><span class="o_form_label">{{ of.numeroLabel }}</span><span class="o_form_value">{{ of.numeroRollos }}</span></div>
+                            <div class="o_form_label_row"><span class="o_form_label">Fecha Esperada</span><span class="o_form_value">{{ fechaCorta(of.fechaEsperada) }}</span></div>
+                        </div>
+                    </div>
+
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item"><button class="nav-link" [class.active]="tab() === 'componentes'" (click)="goToTab('componentes')">Componentes</button></li>
+                        <li class="nav-item"><button class="nav-link" [class.active]="tab() === 'subproductos'" (click)="goToTab('subproductos')">Subproductos</button></li>
+                        <li class="nav-item"><button class="nav-link" [class.active]="tab() === 'produccion'" (click)="goToTab('produccion')">Producción</button></li>
+                        <li class="nav-item"><button class="nav-link" [class.active]="tab() === 'planeacion'" (click)="goToTab('planeacion')">Planeación</button></li>
+                    </ul>
+
+                    @if (tab() === 'componentes') {
+                        @if (of.state === 'Borrador') {
+                            <pc-odoo-line-capture [(draft)]="draftComponente" [catalogo]="inv.catalogo" [enEdicion]="editingComponente() !== null"
+                                                  (submitted)="guardarComponente($event)" (cancelled)="cancelarEdicionComponente()" />
+                        }
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="text-muted small"><tr><th style="width:15%;">Clave</th><th>Producto</th><th class="text-center" style="width:110px;">Cantidad</th><th class="text-center" style="width:110px;" title="Disponible en {{ almacenMp }} (CONTPAQi)">Existencia</th><th class="text-center" style="width:80px;">Unidad</th><th class="text-center" style="width:88px;">Acciones</th></tr></thead>
+                            <tbody>
+                                @for (line of of.componentes; track $index) {
+                                    <tr [class.table-active]="editingComponente() === line">
+                                        <td class="small">{{ line.clave }}</td>
+                                        <td>{{ line.producto }}</td>
+                                        <td class="text-center">{{ n1(line.cantidad) }}</td>
+                                        <td class="text-center fw-semibold" [class.text-danger]="existencia(line.clave) < line.cantidad" [class.text-primary]="existencia(line.clave) >= line.cantidad" title="Disponible en {{ almacenMp }} (CONTPAQi)">{{ n1(existencia(line.clave)) }}</td>
+                                        <td class="small text-center">{{ line.unidad }}</td>
+                                        <td class="text-center text-nowrap">
+                                            <button class="btn btn-sm btn-link p-0 me-2" [title]="of.state === 'Borrador' ? 'Editar' : 'La orden ya fue confirmada'"
+                                                    [disabled]="of.state !== 'Borrador'" (click)="editarComponente(line)">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-link text-danger p-0" [title]="of.state === 'Borrador' ? 'Eliminar' : 'La orden ya fue confirmada'"
+                                                    [disabled]="of.state !== 'Borrador'" (click)="flow.quitarComponente(folioOf(), line)">
+                                                <i class="bi bi-x-circle-fill"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    } @else if (tab() === 'subproductos') {
+                        @if (of.state !== 'Hecho') {
+                            <pc-odoo-line-capture [(draft)]="draftSubproducto" [catalogo]="inv.catalogo" [unidadPorDefecto]="of.unidad" (submitted)="guardarSubproducto($event)" />
+                        }
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="text-muted small"><tr><th style="width:15%;">Clave</th><th>Producto</th><th class="text-center" style="width:110px;">Cantidad</th><th class="text-center" style="width:80px;">Unidad</th><th class="text-center" style="width:90px;">Producido</th><th>Almacenar en</th><th class="text-center" style="width:88px;">Acciones</th></tr></thead>
+                            <tbody>
+                                @for (sp of of.subproductos; track $index) {
+                                    <tr>
+                                        <td class="small">{{ sp.clave }}</td>
+                                        <td>{{ sp.producto }}</td>
+                                        <td class="text-center">{{ n1(sp.cantidad) }}</td>
+                                        <td class="small text-center">{{ sp.unidad }}</td>
+                                        <td class="text-center"><input type="checkbox" class="form-check-input" [checked]="sp.producido" (change)="toggleProducido(sp, $event)" /></td>
+                                        <td class="small">{{ sp.almacenDestino }}</td>
+                                        <td class="text-center text-nowrap">
+                                            <button class="btn btn-sm btn-link p-0 me-2" [title]="of.state === 'Hecho' || sp.producido ? 'Subproducto ya producido o la orden está cerrada' : 'Editar'"
+                                                    [disabled]="of.state === 'Hecho' || sp.producido" (click)="editarSubproducto(sp)">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-link text-danger p-0" [title]="of.state === 'Hecho' || sp.producido ? 'Subproducto ya producido o la orden está cerrada' : 'Eliminar'"
+                                                    [disabled]="of.state === 'Hecho' || sp.producido" (click)="flow.quitarSubproducto(folioOf(), sp)">
+                                                <i class="bi bi-x-circle-fill"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    } @else if (tab() === 'produccion') {
+                        @if (of.state !== 'Hecho') {
+                            <pc-odoo-line-capture [(draft)]="draftProduccion" placeholder="Lote" [unidadPorDefecto]="of.unidad" (submitted)="guardarProduccion($event)" />
+                        }
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="text-muted small"><tr><th style="width:40px;">#</th><th>Producto</th><th>Lote</th><th class="text-center" style="width:110px;">Cantidad</th><th class="text-center" style="width:80px;">Unidad</th><th>Estado</th><th class="text-center" style="width:88px;">Acciones</th></tr></thead>
+                            <tbody>
+                                @if (of.produccion.length === 0) {
+                                    <tr><td colspan="7" class="text-muted small fst-italic">Sin lotes capturados todavía.</td></tr>
+                                }
+                                @for (lote of of.produccion; track $index; let i = $index) {
+                                    <tr>
+                                        <td>{{ i + 1 }}</td>
+                                        <td class="small">{{ of.producto }}</td>
+                                        <td><code>{{ lote.lote }}</code></td>
+                                        <td class="text-center">{{ n1(lote.real) }}</td>
+                                        <td class="small text-center">{{ lote.unidad }}</td>
+                                        <td><span class="badge {{ claseEstado(lote) }}">{{ lote.estado }}</span></td>
+                                        <td class="text-center text-nowrap">
+                                            <button class="btn btn-sm btn-link text-danger p-0" [title]="of.state === 'Hecho' || lote.estado === 'Aprobado' ? 'El lote fue liberado por Calidad: no puede eliminarse' : 'Eliminar'"
+                                                    [disabled]="of.state === 'Hecho' || lote.estado === 'Aprobado'" (click)="flow.quitarLoteProduccion(folioOf(), lote)">
+                                                <i class="bi bi-x-circle-fill"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    } @else {
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="text-muted small"><tr><th>Centro de trabajo</th><th>Producto</th><th class="text-end">Cantidad</th><th style="width:70px;">Unidad</th><th class="text-end">Horas Asignadas</th><th>Fecha inicio</th><th>Fecha Fin</th><th>Operador</th><th class="text-center" style="width:88px;">Acciones</th></tr></thead>
+                            <tbody>
+                                @for (pl of of.planeacion; track $index) {
+                                    <tr [class.table-active]="editingPlaneacion() === pl">
+                                        <td class="fw-semibold">{{ pl.centroTrabajo }}</td>
+                                        <td class="small">{{ pl.producto }}</td>
+                                        <td class="text-end">{{ n1(pl.cantidad) }}</td>
+                                        <td class="small">{{ pl.unidad }}</td>
+                                        <td class="text-end">{{ n1(pl.horasAsignadas) }}</td>
+                                        <td class="small">{{ fechaHora(pl.fechaInicio) }}</td>
+                                        <td class="small">{{ fechaHora(pl.fechaFin) }}</td>
+                                        <td class="small">{{ pl.operador }}</td>
+                                        <td>
+                                            @if (of.state === 'Planeado' || of.state === 'En progreso') {
+                                                <button class="btn btn-sm btn-link p-0" title="Editar" (click)="editingPlaneacion.set(pl)"><i class="bi bi-pencil"></i></button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+            <pc-odoo-chatter-drawer [messages]="chatterEntries" [documentId]="of.folio" />
+        </div>
+    </div>
+} @else {
+    <div class="p-4">Orden de Fabricación no encontrada.</div>
+}
