@@ -53,22 +53,22 @@ Responsable: Luis Alvarado Martinez; revisa Alejandro Ponce.
 
 Responsable: Alejandro Ponce; revisa Luis Alvarado Martinez. Empieza cuando el contrato está firmado (C-T006).
 
-- [ ] C-T009 [US3] Crear `tests/PolyConecta.Contract.Tests/` como proyecto xUnit v3 **sin referencias a otros proyectos**:
+- [x] C-T009 [US3] Crear `tests/PolyConecta.Contract.Tests/` como proyecto xUnit v3 **sin referencias a otros proyectos**:
   - lee `BRIDGE_URL`, `BRIDGE_CALLBACK_SECRET` y `CALLBACK_HOST` de variables de entorno (research R-09);
   - incluye un receptor de callbacks (un `WebApplication` en un puerto libre) que verifica la firma y expone los callbacks recibidos a las pruebas;
   - se agrega a `Polyconecta.slnx`.
-- [ ] C-T010 [P] [US3] Una clase de pruebas por comando en `tests/PolyConecta.Contract.Tests/Comandos/`. Cada una prueba:
+- [x] C-T010 [P] [US3] Una clase de pruebas por comando en `tests/PolyConecta.Contract.Tests/Comandos/`. Cada una prueba:
   - la carga válida: `202`, y luego un callback `CONFIRMED` con folio e `id_erp`;
   - la carga inválida: el código de error del contrato;
   - el reenvío con la misma `idempotency_key`: `is_duplicate: true` y el mismo folio.
 
   Toma los ejemplos de `docs/contratos/ejemplos/`.
-- [ ] C-T011 [P] [US3] `tests/PolyConecta.Contract.Tests/Sobre/` prueba:
+- [x] C-T011 [P] [US3] `tests/PolyConecta.Contract.Tests/Sobre/` prueba:
   - `contract_version` incompatible da `VERSION_NO_SOPORTADA`;
   - faltan campos obligatorios: `400` con el modelo de errores;
   - `GET /api/v1/transactions/{id}` devuelve lo mismo que el callback;
   - las lecturas de la sección 6 cumplen su forma y paginación.
-- [ ] C-T012 [P] [US3] `tests/PolyConecta.Contract.Tests/Simulado/` agrupa las pruebas con el rasgo `Simulado`, que se omiten contra el bridge real. Cubren error forzado, demora y callback perdido (recuperado por `GET /transactions/{id}`), usando `PUT /admin/simulated/faults`.
+- [x] C-T012 [P] [US3] `tests/PolyConecta.Contract.Tests/Simulado/` agrupa las pruebas con el rasgo `Simulado`, que se omiten contra el bridge real. Cubren error forzado, demora y callback perdido (recuperado por `GET /transactions/{id}`), usando `PUT /admin/simulated/faults`.
 
 ---
 
@@ -140,7 +140,7 @@ Empieza cuando el contrato está firmado (C-T006).
   - la cabecera `X-Bridge-Signature` con HMAC-SHA256 y el secreto de `BridgeConfig__CallbackSecret`;
   - reintentos con espera creciente, registrados en la tabla `callback_attempts`;
   - `GET /api/v1/transactions/{id}` devuelve el mismo cuerpo que el callback.
-- [ ] L1-T015 [US3] Correr la suite de contrato completa contra el simulador en macOS (`BRIDGE_URL=http://localhost:5005 dotnet test tests/PolyConecta.Contract.Tests`). Debe pasar al 100 % (SC-002).
+- [x] L1-T015 [US3] Correr la suite de contrato completa contra el simulador en macOS (`BRIDGE_URL=http://localhost:5005 dotnet test tests/PolyConecta.Contract.Tests`). Debe pasar al 100 % (SC-002).
 
 ### 0.9 · Inicio de sesión automático del administrador y arranque del conector en el servidor (9 oct, 4 h)
 
