@@ -14,16 +14,21 @@
        - BridgeConfig__CallbackSecret: si falta, se genera una al azar y se guarda.
        - BridgeConfig__Conceptos__* y BridgeConfig__Monedas__*: si faltan, el bridge usa los códigos de
          ejemplo de appsettings.json, que NO son los de CONTPAQi (D-121).
+       - BridgeConfig__Sesion__*: usuarios de Comercial y de CONTPAQi para los dos inicios de sesión de
+         D-108. Con -ConfigurarSesion los pide y los guarda; sin ellos CONTPAQi puede abrir una ventana de
+         ingreso que nadie ve y el bridge se queda esperando.
     5. El puerto del bridge libre.
 
   Nunca imprime secretos: de las variables solo dice si existen.
 
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File .\scripts\vps\Initialize-BridgeDebug.ps1
+  powershell -ExecutionPolicy Bypass -File .\scripts\vps\Initialize-BridgeDebug.ps1 -ConfigurarSesion
 #>
 [CmdletBinding()]
 param(
-    [int]$Puerto = 5005
+    [int]$Puerto = 5005,
+    [switch]$ConfigurarSesion
 )
 
 $ErrorActionPreference = 'Stop'
@@ -110,6 +115,24 @@ if ($conceptos.Count -gt 0) { Ok ("{0} conceptos de CONTPAQi configurados." -f $
 else { Aviso 'No hay BridgeConfig__Conceptos__*: el bridge usaría los códigos de ejemplo de appsettings.json, que no existen en CONTPAQi (D-121). Defínelos antes de mandar comandos que escriban.' }
 if ($monedas.Count -gt 0) { Ok ("{0} monedas configuradas." -f $monedas.Count) }
 else { Aviso 'No hay BridgeConfig__Monedas__*: el bridge usaría MXN=1 y USD=2 de ejemplo. Confírmalos contra admMonedas.' }
+
+# Inicios de sesión del SDK (D-108): Comercial antes de fSetNombrePAQ y el usuario centralizado de CONTPAQi después.
+if ($ConfigurarSesion) {
+    Write-Host '  Usuarios para los inicios de sesión del SDK (D-108). Deja vacío el que no aplique.'
+    foreach ($par in @(@('Comercial', 'ComercialUsuario', 'ComercialContrasena'), @('CONTPAQi (usuario centralizado)', 'ContpaqiUsuario', 'ContpaqiContrasena'))) {
+        $u = Read-Host ("  Usuario de {0}" -f $par[0])
+        if ($u) {
+            $c = Read-Host ("  Contraseña de {0}" -f $u) -AsSecureString
+            [Environment]::SetEnvironmentVariable('BridgeConfig__Sesion__' + $par[1], $u, 'User')
+            [Environment]::SetEnvironmentVariable('BridgeConfig__Sesion__' + $par[2], [Runtime.InteropServices.Marshal]::PtrToStringBSTR([Runtime.InteropServices.Marshal]::SecureStringToBSTR($c)), 'User')
+            Remove-Variable c
+        }
+    }
+}
+$comercial = Get-UserVar 'BridgeConfig__Sesion__ComercialUsuario'
+$contpaqi = Get-UserVar 'BridgeConfig__Sesion__ContpaqiUsuario'
+if ($comercial) { Ok "Sesión de Comercial: $comercial" } else { Aviso 'Falta BridgeConfig__Sesion__ComercialUsuario (D-108). Corre este script con -ConfigurarSesion.' }
+if ($contpaqi) { Ok "Sesión de CONTPAQi: $contpaqi" } else { Aviso 'Falta BridgeConfig__Sesion__ContpaqiUsuario (D-108): la empresa está ligada a Contabilidad y sin él fAbreEmpresa puede quedarse esperando.' }
 
 # ------------------------------------------------------------------ 5. puerto
 Seccion '5. Puerto'

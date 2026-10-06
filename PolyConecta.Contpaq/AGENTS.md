@@ -40,6 +40,7 @@ Si el bridge publicado está corriendo (la tarea `PolyConecta-Bridge` lo levanta
 | `BridgeConfig__CompanyPath`, `BridgeConfig__SdkPath` | Empresa y SDK de CONTPAQi, si no son los de `appsettings.json` |
 | `BridgeConfig__Conceptos__{COMANDO}__{VARIANTE}__{rol}` | Códigos reales de los conceptos (D-121). Los de `appsettings.json` son de ejemplo y no existen en CONTPAQi |
 | `BridgeConfig__Monedas__{ISO}` | `CIDMONEDA` de cada moneda, confirmado contra `admMonedas` |
+| `BridgeConfig__Sesion__ComercialUsuario`, `…ComercialContrasena`, `…ContpaqiUsuario`, `…ContpaqiContrasena` | Los dos inicios de sesión del SDK (D-108). `Initialize-BridgeDebug.ps1 -ConfigurarSesion` los pide y los guarda |
 
 ## Pruebas
 

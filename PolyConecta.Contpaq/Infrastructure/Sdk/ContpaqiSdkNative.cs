@@ -91,6 +91,15 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
         [DllImport(DllName, EntryPoint = "fSetNombrePAQ", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
         public static extern int fSetNombrePAQ([MarshalAs(UnmanagedType.LPStr)] string aSistema);
 
+        // Inicio de sesión sin ventana (D-108, S-02). No están en docs/contpaq/Referencia_SDK_CONTPAQi.md; firma y
+        // orden verificados con sdk-lab contra la wiki de ARSoftware.Contpaqi.Comercial. Se declaran void a propósito:
+        // en stdcall x86 ignorar el int devuelto es seguro.
+        [DllImport(DllName, EntryPoint = "fInicioSesionSDK", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+        public static extern void fInicioSesionSDK([MarshalAs(UnmanagedType.LPStr)] string aUsuario, [MarshalAs(UnmanagedType.LPStr)] string aContrasenia);
+
+        [DllImport(DllName, EntryPoint = "fInicioSesionSDKCONTPAQi", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+        public static extern void fInicioSesionSDKCONTPAQi([MarshalAs(UnmanagedType.LPStr)] string aUsuario, [MarshalAs(UnmanagedType.LPStr)] string aContrasenia);
+
         [DllImport(DllName, EntryPoint = "fAbreEmpresa", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
         public static extern int fAbreEmpresa([MarshalAs(UnmanagedType.LPStr)] string aDirectorioEmpresa);
 
