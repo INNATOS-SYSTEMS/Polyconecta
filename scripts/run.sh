@@ -155,10 +155,22 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 if [ "$WITH_BRIDGE" = true ]; then
+    # Fuera de Windows el bridge arranca en modo simulado (D-122). La API le envía su outbox y recibe
+    # los callbacks firmados con un secreto local de .env.local (CT-29).
+    if [ -f .env.local ] && ! grep -q '^LOCAL_CALLBACK_SECRET=' .env.local; then
+        echo "LOCAL_CALLBACK_SECRET=$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32)" >> .env.local
+    fi
+    # shellcheck disable=SC1091
+    [ -f .env.local ] && . ./.env.local
+    export BridgeConfig__CallbackSecret="${LOCAL_CALLBACK_SECRET:-secreto-local}"
+    export BridgeConfig__DashboardPort="${BRIDGE_PORT}"
+    export Erp__BridgeUrl="http://localhost:${BRIDGE_PORT}"
+    export Erp__CallbackBaseUrl="http://localhost:${API_PORT}"
+    export Erp__CallbackSecret="${BridgeConfig__CallbackSecret}"
     echo "🌉 CONTPAQi Bridge Worker         : http://localhost:${BRIDGE_PORT}"
     echo "-----------------------------------------------------------------"
     echo "Iniciando servicio CONTPAQi Bridge en segundo plano (Puerto ${BRIDGE_PORT})..."
-    "$DOTNET_BIN" run --project PolyConecta.Contpaq/PolyConecta.Contpaq.csproj --no-build --urls "http://localhost:${BRIDGE_PORT}" &
+    "$DOTNET_BIN" run --project PolyConecta.Contpaq/PolyConecta.Contpaq.csproj --no-build &
     PIDS+=($!)
 fi
 

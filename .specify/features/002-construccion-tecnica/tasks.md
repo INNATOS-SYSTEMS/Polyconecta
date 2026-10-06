@@ -261,14 +261,14 @@ El modelo está en [data-model.md](data-model.md). Las piezas del contrato empie
 
 ### 0.8 · Integración continua con pruebas y SQL Server (8 – 9 oct, 7 h)
 
-- [ ] L2-T024 [US7] Crear `.github/workflows/ci.yml` según research R-08, con tres trabajos:
+- [x] L2-T024 [US7] Crear `.github/workflows/ci.yml` según research R-08, con tres trabajos:
   - **`dotnet`:** build y pruebas de dominio, aplicación e integración con Testcontainers;
   - **`contrato`:** publica el bridge, lo levanta con `BridgeConfig__Mode=Simulated` y corre `tests/PolyConecta.Contract.Tests` y `CicloCompleto`;
   - **`web`:** `npm ci`, build y pruebas en `PolyConecta.Web`.
 
   Secretos y contraseñas de prueba se generan en el propio trabajo; ninguno queda en el archivo (CT-29). Verificar con un push a la rama: los tres trabajos en verde.
 - [ ] L2-T025 [US7] Pedir a un administrador del repositorio que proteja `main`, con PR obligatorio y los checks `dotnet`, `contrato` y `web` requeridos. Puede hacerse con `gh api repos/INNATOS-SYSTEMS/Polyconecta/branches/main/protection`. Verificar con un PR que tenga una prueba rota a propósito: queda en rojo y no se puede integrar; al corregirla, en verde (SC-007).
-- [ ] L2-T026 [P] [US2] Actualizar `docs/diseno/05-arquitectura-tecnica.md` §3 a §5 con la nueva solución: proyectos, .NET 10, SQL Server, Application, bridge con modo simulado, CI y cómo correrlo. Marcar resuelta la deuda 1, 2 y 5 de §4 (SC-008). Actualizar el `README.md` de la raíz.
+- [x] L2-T026 [P] [US2] Actualizar `docs/diseno/05-arquitectura-tecnica.md` §3 a §5 con la nueva solución: proyectos, .NET 10, SQL Server, Application, bridge con modo simulado, CI y cómo correrlo. Marcar resuelta la deuda 1, 2 y 5 de §4 (SC-008). Actualizar el `README.md` de la raíz.
 
 ---
 
