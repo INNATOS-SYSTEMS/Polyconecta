@@ -23,7 +23,7 @@ Cómo está armada la solución, qué hace hoy cada proyecto y qué deuda técni
 flowchart LR
     WEB["PolyConecta.Web<br/>Angular 22 · :9000"]
     PROTO["PolyConecta.Presentation<br/>prototipo Blazor · .NET 8<br/>solo en pruebas de paridad · :9010"]
-    API["PolyConecta.Api<br/>ASP.NET Core 10 · :9200"]
+    API["PolyConecta.Api<br/>ASP.NET Core 10 · :9020"]
     APP["PolyConecta.Application<br/>casos de uso y puertos"]
     INF["PolyConecta.Infrastructure<br/>EF Core · SQL Server 2022 · outbox · despachador"]
     DOM["PolyConecta.Domain<br/>sin dependencias"]
@@ -72,8 +72,9 @@ La flecha punteada de la web a la API es de F1 en adelante. Hasta entonces, `Pol
 Requisitos: SDK de .NET 10 (`global.json`), Docker y Node 24.16 (`PolyConecta.Web/.nvmrc`). El runtime de ASP.NET Core 8 solo hace falta para las pruebas de paridad, que levantan el prototipo en `:9010`; `run.sh` ya no lo levanta (D-128).
 
 ```bash
-./run.sh                 # compila, prueba y levanta PolyConecta.Web (:9000) + API (:9200); comprueba Node 24.16 y corre npm ci si falta
+./run.sh                 # compila, prueba y levanta PolyConecta.Web (:9000) + API (:9020); comprueba Node 24.16 y corre npm ci si falta
 ./run.sh --with-bridge   # además levanta el bridge (:9030), en modo simulado fuera de Windows, conectado a la API
+./run.sh --solo-web      # solo PolyConecta.Web (:9000): sin .NET, SQL Server, pruebas ni API; el chatter queda sin conexión en vivo
 cd PolyConecta.Web && npm ci && npm start   # solo la aplicación Angular (:9000)
 ```
 

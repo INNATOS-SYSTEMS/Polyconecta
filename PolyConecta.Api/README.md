@@ -2,8 +2,8 @@
 
 API REST en ASP.NET Core. Depende de `PolyConecta.Domain` y `PolyConecta.Infrastructure`.
 
-- Base: `http://localhost:9200/api/v1`
-- Swagger: `http://localhost:9200/swagger` (el contrato se genera en vivo; no hay un OpenAPI versionado)
+- Base: `http://localhost:9020/api/v1`
+- Swagger: `http://localhost:9020/swagger` (el contrato se genera en vivo; no hay un OpenAPI versionado)
 
 ## Contenido actual
 

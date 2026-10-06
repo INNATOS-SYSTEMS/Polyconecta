@@ -3,8 +3,9 @@
 # PolyConecta - Solution Build, Test & Multi-Layer Launch Script
 # ==============================================================================
 # Usage:
-#   ./run.sh                  # Inicia PolyConecta.Web (9000) + API (9200)
+#   ./run.sh                  # Inicia PolyConecta.Web (9000) + API (9020)
 #   ./run.sh --with-bridge    # Además levanta el bridge de CONTPAQi (9030)
+#   ./run.sh --solo-web       # Solo PolyConecta.Web (9000): sin .NET, SQL Server, pruebas ni API
 #
 # El prototipo Blazor (PolyConecta.Presentation) ya no se levanta: es solo la referencia de las
 # pruebas de paridad de PolyConecta.Web, que lo arrancan por su cuenta en :9010.
@@ -17,14 +18,18 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
 WEB_PORT="9000"
-API_PORT="9200"
+API_PORT="9020"
 BRIDGE_PORT="9030"
 WITH_BRIDGE=false
+SOLO_WEB=false
 
 for arg in "$@"; do
     case $arg in
         --with-bridge|--bridge)
             WITH_BRIDGE=true
+            ;;
+        --solo-web|--web)
+            SOLO_WEB=true
             ;;
         --with-angular|--angular)
             # PolyConecta.Web ya se levanta siempre; se acepta para no romper a quien lo usaba.
@@ -40,11 +45,15 @@ echo "🚀  PolyConecta Operational Suite - Build, Test & Run"
 echo "================================================================="
 echo "Repository Root: ${REPO_ROOT}"
 echo "PolyConecta.Web (Angular)            : ${WEB_PORT}"
+if [ "$SOLO_WEB" = true ]; then
+    echo "Modo                                : solo la capa web (--solo-web)"
+else
 echo "Swagger & REST API (PolyConecta.Api) : ${API_PORT}"
 if [ "$WITH_BRIDGE" = true ]; then
     echo "CONTPAQi Bridge Port                : ${BRIDGE_PORT} (Activo)"
 else
     echo "CONTPAQi Bridge Mode                : Desactivado (Usa --with-bridge para arrancar)"
+fi
 fi
 echo "================================================================="
 
@@ -65,6 +74,16 @@ if [ ! -d PolyConecta.Web/node_modules ]; then
     (cd PolyConecta.Web && npm ci)
 fi
 echo "   Node ${NODE_ACTUAL}"
+
+# --solo-web: la réplica no necesita la API (el chatter queda "Sin conexión en vivo" y agrega en local).
+if [ "$SOLO_WEB" = true ]; then
+    echo "================================================================="
+    echo "💻 PolyConecta.Web (Angular) : http://localhost:${WEB_PORT}"
+    echo "Press Ctrl+C to stop the server."
+    echo "================================================================="
+    cd PolyConecta.Web
+    exec npm start -- --port "${WEB_PORT}"
+fi
 
 # Step 1: Locate a .NET installation that can build and run the solution.
 echo "🔍 Step 1: Checking .NET SDK environment..."

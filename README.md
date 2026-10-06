@@ -22,7 +22,7 @@ El proyecto está al **inicio de la construcción**. Existe un prototipo navegab
 PolyConecta.Domain/          Entidades, base común (mixins, estados, sincronización) y reglas, sin dependencias
 PolyConecta.Application/     Casos de uso con decoradores y puertos (folios, outbox hacia el bridge)
 PolyConecta.Infrastructure/  EF Core con SQL Server 2022, migraciones, despachador hacia el bridge
-PolyConecta.Api/             API REST (:9200), callback del bridge y hub del chatter
+PolyConecta.Api/             API REST (:9020), callback del bridge y hub del chatter
 PolyConecta.Web/             Réplica 1:1 del prototipo en Angular 22 (:9000), con modo libre
 PolyConecta.Presentation/    Prototipo Blazor Server, .NET 8, referencia de UX sin cambios (solo en pruebas de paridad, :9010)
 PolyConecta.Contpaq/         Bridge hacia CONTPAQi (:9030): real en Windows x86 o simulado
@@ -40,8 +40,9 @@ scripts/                     Ejecutar, empaquetar, desplegar y logins de SQL Ser
 Requiere el SDK de .NET 10 (`global.json`), Docker (SQL Server 2022 local y pruebas) y Node 24.16 (aplicación Angular). El runtime de ASP.NET Core 8 solo hace falta para las pruebas de paridad contra el prototipo. Detalle en [05-arquitectura-tecnica.md §5](docs/diseno/05-arquitectura-tecnica.md).
 
 ```bash
-./run.sh                 # compila, prueba y levanta PolyConecta.Web (:9000) + API (:9200)
+./run.sh                 # compila, prueba y levanta PolyConecta.Web (:9000) + API (:9020)
 ./run.sh --with-bridge   # además levanta el bridge (:9030), simulado fuera de Windows
+./run.sh --solo-web      # solo PolyConecta.Web (:9000), sin .NET, SQL Server ni API
 ```
 
 Las pruebas de la aplicación Angular (paridad con el prototipo, guiones, auditor y chatter) están en [PolyConecta.Web/README.md](PolyConecta.Web/README.md).

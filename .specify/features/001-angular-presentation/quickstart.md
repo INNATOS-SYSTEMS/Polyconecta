@@ -15,7 +15,7 @@ Cómo comprobar que la feature cumple sus criterios de éxito. Los scripts está
 ./run.sh
 ```
 
-Levanta Angular en `:9000` y la API en `:9200` (D-128). El prototipo Blazor ya no lo levanta `run.sh`: las pruebas de paridad lo arrancan en `:9010`.
+Levanta Angular en `:9000` y la API en `:9020` (D-128). El prototipo Blazor ya no lo levanta `run.sh`: las pruebas de paridad lo arrancan en `:9010`.
 
 ## 2. Compilar y probar (FR-019, SC-003)
 

@@ -14,11 +14,11 @@ Réplica en Angular del prototipo Blazor `PolyConecta.Presentation` (spec 001). 
 | Aplicación | Puerto |
 | :--- | :--- |
 | `PolyConecta.Web` (Angular) | 9000 |
-| `PolyConecta.Api` (hub del chatter en `/hubs/chatter`) | 9200 |
+| `PolyConecta.Api` (hub del chatter en `/hubs/chatter`) | 9020 |
 | `PolyConecta.Contpaq` (bridge, con `--with-bridge`) | 9030 |
 | `PolyConecta.Presentation` (prototipo Blazor): solo lo levantan las pruebas de paridad | 9010 |
 
-Desde la raíz, `./run.sh` levanta la Web y la API.
+Desde la raíz, `./run.sh` levanta la Web y la API, y `./run.sh --solo-web` solo la Web.
 
 ## Scripts
 
