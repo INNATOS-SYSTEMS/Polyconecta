@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using PolyConecta.Api.Hubs;
 using PolyConecta.Api.Middleware;
 using PolyConecta.Application;
 using PolyConecta.Infrastructure;
@@ -33,7 +34,18 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
+    // El cliente de SignalR negocia con credenciales, y el navegador rechaza "*" con credenciales
+    // (research R-07 de la spec 001): el hub tiene su propia política para la aplicación Angular.
+    options.AddPolicy(PoliticaChatter, policy =>
+    {
+        policy.WithOrigins(builder.Configuration.GetSection("Chatter:Origenes").Get<string[]>() ?? ["http://localhost:4200"])
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -46,7 +58,11 @@ app.UseSwaggerUI();
 app.UseRouting();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<ChatterHub>("/hubs/chatter").RequireCors(PoliticaChatter);
 
 app.Run();
 
-public partial class Program;
+public partial class Program
+{
+    private const string PoliticaChatter = "chatter";
+}

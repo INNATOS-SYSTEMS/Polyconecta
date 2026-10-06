@@ -245,14 +245,14 @@ Los tres agentes trabajan en paralelo, cada uno en sus carpetas (plan, "Decisió
 
 **Cuándo**: es la fase 2B. Empieza en cuanto la API esté en .NET 10 (tarea 0.3 de la 002) y puede correr en paralelo con la fase 1. Debe terminar antes de que se cierre la fase 1, porque después `shared/` solo admite agregar (regla 3) y L2-T065 cambia el panel. Agente `2B`, dueño de `PolyConecta.Api/Hubs/`, el CORS en `PolyConecta.Api/Program.cs` y `src/app/core/chatter/`.
 
-- [ ] L2-T062 [US4] [2B] Copiar `PolyConecta.Presentation/Hubs/ChatterHub.cs` a `PolyConecta.Api/Hubs/ChatterHub.cs`, cambiando solo el namespace. El original no se toca (D-60).
-- [ ] L2-T063 [US4] [2B] En `PolyConecta.Api/Program.cs`:
+- [x] L2-T062 [US4] [2B] Copiar `PolyConecta.Presentation/Hubs/ChatterHub.cs` a `PolyConecta.Api/Hubs/ChatterHub.cs`, cambiando solo el namespace. El original no se toca (D-60).
+- [x] L2-T063 [US4] [2B] En `PolyConecta.Api/Program.cs`:
   - agregar `AddSignalR()`;
   - crear una política de CORS con nombre que admita el origen `http://localhost:4200`, cualquier encabezado y método, y credenciales;
   - mapear `/hubs/chatter` con esa política.
 
   La política por omisión de los controladores no cambia ([contracts/chatter-hub.md](contracts/chatter-hub.md), research R-07). Verificar con `dotnet build Polyconecta.slnx`.
-- [ ] L2-T064 [US4] [2B] Implementar `PolyConecta.Web/src/app/core/chatter/chatter.service.ts` con `@microsoft/signalr@10.0.11`:
+- [x] L2-T064 [US4] [2B] Implementar `PolyConecta.Web/src/app/core/chatter/chatter.service.ts` con `@microsoft/signalr@10.0.11`:
   - URL del hub por configuración (`http://localhost:9020/hubs/chatter`);
   - `withAutomaticReconnect`;
   - un signal con el estado de la conexión;
@@ -260,7 +260,7 @@ Los tres agentes trabajan en paralelo, cada uno en sus carpetas (plan, "Decisió
   - un flujo de mensajes filtrado por `documentId`, con la hora local de recepción en `h:mm tt` (no se usa la del servidor).
 
   Probarlo con un hub simulado en `chatter.service.spec.ts`.
-- [ ] L2-T065 [US4] [2B] Integrar el servicio en `PolyConecta.Web/src/app/shared/` (`OdooChatterDrawer`):
+- [x] L2-T065 [US4] [2B] Integrar el servicio en `PolyConecta.Web/src/app/shared/` (`OdooChatterDrawer`):
   - con conexión, envía por el hub y muestra el mensaje al recibirlo, sin duplicar el propio;
   - sin conexión, agrega local como en Blazor (autor `Administrator`) y muestra "Sin conexión en vivo".
 
