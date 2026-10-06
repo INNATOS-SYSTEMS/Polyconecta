@@ -3,6 +3,7 @@ import { n1, n2 } from '../../core/format/numero';
 import { SalesOrderLine, subtotal } from '../../core/models/ventas';
 import { PEDIDO_FOLIO } from '../../core/seed/flujo';
 import { InventoryState } from '../../core/state/inventory-state';
+import { PedidoLibre } from '../../core/state/libre/pedido-libre';
 import { OperationalFlowState } from '../../core/state/operational-flow-state';
 import { LineDraft, OdooLineCapture, emptyDraft } from '../odoo-line-capture/odoo-line-capture';
 
@@ -19,6 +20,9 @@ import { LineDraft, OdooLineCapture, emptyDraft } from '../odoo-line-capture/odo
 export class PocSalesOrderForm {
   protected readonly flow = inject(OperationalFlowState);
   protected readonly inv = inject(InventoryState);
+  private readonly pedidoLibre = inject(PedidoLibre);
+  /** Motivo por el que no se guardó la última línea de un pedido libre. */
+  protected readonly errorLinea = signal<string | undefined>(undefined);
   readonly folio = input(PEDIDO_FOLIO);
 
   protected readonly n1 = n1;
@@ -65,11 +69,17 @@ export class PocSalesOrderForm {
   }
 
   protected editarLinea(linea: SalesOrderLine): void {
-    this.draftLinea.set({ clave: linea.clave, producto: linea.producto, cantidad: linea.cantidad, unidad: linea.unidad });
+    this.draftLinea.set({ clave: linea.clave, producto: linea.producto, cantidad: linea.cantidad, unidad: linea.unidad, precioUnitario: linea.precioUnitario, moneda: linea.moneda });
     this.flow.quitarLineaPedido(linea, this.folio());
   }
 
   protected agregarLinea(d: LineDraft): void {
+    if (this.pedido().libre) {
+      const error = this.pedidoLibre.agregarLinea(this.folio(), d.clave, d.cantidad, d.precioUnitario ?? 0, d.moneda ?? 'MXN');
+      this.errorLinea.set(error);
+      if (!error) this.draftLinea.set(emptyDraft());
+      return;
+    }
     this.flow.agregarLineaPedido(d.clave, d.producto, d.cantidad, d.unidad, this.folio());
     this.draftLinea.set(emptyDraft());
   }

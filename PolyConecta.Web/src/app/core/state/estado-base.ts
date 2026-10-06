@@ -11,6 +11,11 @@ export abstract class EstadoBase {
   protected notify(): void {
     this.cambios.update(n => n + 1);
   }
+
+  /** Para los servicios del modo libre, que agregan documentos a las colecciones de este estado. */
+  notificar(): void {
+    this.notify();
+  }
 }
 
 /** Comparación de cadenas sin distinguir mayúsculas, como StringComparison.OrdinalIgnoreCase. */

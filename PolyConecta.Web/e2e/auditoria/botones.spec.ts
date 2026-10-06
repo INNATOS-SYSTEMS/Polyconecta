@@ -25,6 +25,8 @@ async function pulsar(page: Page, base: string, ruta: string, i: number): Promis
   if (i >= n) return null;
   const el = todos.nth(i);
   const etiqueta = norm((await el.innerText().catch(() => '')) || (await el.getAttribute('title')) || (await el.evaluate(e => `[${e.tagName.toLowerCase()} ${e.querySelector('i')?.className ?? e.className}]`)));
+  // "Nuevo" es la única diferencia permitida con el prototipo (D-59): se compara su etiqueta, no se pulsa.
+  if (etiqueta === 'Nuevo') return { etiqueta, url: '', texto: '' };
   const deshabilitado = await el.isDisabled().catch(() => false);
   if (!deshabilitado) {
     await el.click({ timeout: 3000 }).catch(() => undefined);

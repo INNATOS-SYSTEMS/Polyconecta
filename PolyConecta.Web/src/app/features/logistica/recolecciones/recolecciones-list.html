@@ -1,8 +1,6 @@
 <div class="o_control_panel">
     <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-primary btn-sm fw-bold px-3" disabled="disabled" title="Alta manual fuera de alcance de esta demo: las recolecciones nacen de la Orden de Fabricación">
-            <i class="bi bi-plus-lg me-1"></i> Nuevo
-        </button>
+        <pc-boton-nuevo [ruta]="'/recolecciones'" />
         <pc-odoo-breadcrumb [items]="[{ label: 'Recolecciones' }]" />
     </div>
     <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" />

@@ -1,8 +1,6 @@
 <div class="o_control_panel">
     <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-primary btn-sm fw-bold px-3" disabled="disabled" title="Alta manual deshabilitada en esta demo: los pedidos nacen de la sincronización con CONTPAQi">
-            <i class="bi bi-plus-lg me-1"></i> Nuevo
-        </button>
+        <pc-boton-nuevo [ruta]="'/pedidos'" />
         <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos', url: '/pedidos' }, { label: folio() }]" />
     </div>
     <div class="o_button_box">
@@ -38,6 +36,9 @@
         <div class="o_form_sheet flex-grow-1">
             <div class="o_sheet_body">
                 <pc-odoo-status-pipeline [stages]="stages" [currentStage]="pedido().stage" />
+                @if (error()) {
+                    <div class="alert alert-danger py-2 px-3 small mb-3"><i class="bi bi-x-octagon me-1"></i>{{ error() }}</div>
+                }
                 <pc-poc-sales-order-form [folio]="pedido().folio" />
             </div>
         </div>

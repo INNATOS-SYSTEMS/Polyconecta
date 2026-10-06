@@ -9,7 +9,8 @@
     "test": "ng test --watch=false",
     "parity": "node e2e/parity/correr.mjs",
     "scenarios": "playwright test --config e2e/playwright.config.ts scenarios/ --grep escenario",
-    "audit": "playwright test --config e2e/playwright.config.ts auditoria/"
+    "audit": "playwright test --config e2e/playwright.config.ts auditoria/",
+    "chatter": "playwright test --config e2e/chatter/playwright.config.ts"
   },
   "private": true,
   "packageManager": "npm@11.13.0",

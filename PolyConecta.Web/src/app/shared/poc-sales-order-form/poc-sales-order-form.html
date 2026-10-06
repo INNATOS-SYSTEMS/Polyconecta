@@ -25,11 +25,11 @@
         <div class="col-md-6">
             <div class="o_form_label_row">
                 <span class="o_form_label">Fecha</span>
-                <span class="o_form_value">27/04/2026</span>
+                <span class="o_form_value">{{ pedido().libre ? '—' : '27/04/2026' }}</span>
             </div>
             <div class="o_form_label_row">
                 <span class="o_form_label">Fecha Est. Entrega</span>
-                <span class="o_form_value">05/05/2026</span>
+                <span class="o_form_value">{{ pedido().libre ? '—' : '05/05/2026' }}</span>
             </div>
             <div class="o_form_label_row">
                 <span class="o_form_label">Orden de Compra</span>
@@ -37,7 +37,7 @@
             </div>
             <div class="o_form_label_row">
                 <span class="o_form_label">Contpaq ID</span>
-                <span class="o_form_value">{{ pedido().contpaqId }}</span>
+                <span class="o_form_value">{{ pedido().libre && pedido().contpaqId === '' ? '— (se asigna al confirmar)' : pedido().contpaqId }}</span>
             </div>
         </div>
     </div>
@@ -47,7 +47,10 @@
     </ul>
     <div class="mb-4">
         @if (pedidoAbierto()) {
-            <pc-odoo-line-capture [(draft)]="draftLinea" [catalogo]="inv.catalogo" (submitted)="agregarLinea($event)" />
+            <pc-odoo-line-capture [(draft)]="draftLinea" [catalogo]="inv.catalogo" [unidadFija]="pedido().libre" [conPrecio]="pedido().libre" (submitted)="agregarLinea($event)" />
+            @if (errorLinea()) {
+                <div class="alert alert-danger py-2 px-3 small mb-3"><i class="bi bi-x-octagon me-1"></i>{{ errorLinea() }}</div>
+            }
         }
         <table class="table align-middle mb-0">
             <thead>
@@ -75,7 +78,7 @@
                         <td class="text-center">{{ n1(linea.cantidad) }}</td>
                         <td class="text-center fw-semibold" [class.text-danger]="existencia(linea.clave) < linea.cantidad" [class.text-primary]="existencia(linea.clave) >= linea.cantidad" title="Disponible en ubicaciones vendibles (CONTPAQi)">{{ n1(existencia(linea.clave)) }}</td>
                         <td class="text-center small text-muted">{{ linea.unidad }}</td>
-                        <td class="text-end text-muted">${{ n2(linea.precioUnitario) }}</td>
+                        <td class="text-end text-muted">${{ n2(linea.precioUnitario) }}@if (linea.moneda) { {{ linea.moneda }}}</td>
                         <td class="text-end fw-semibold">${{ n2(subtotalDe(linea)) }}</td>
                         <td class="text-center text-nowrap">
                             <button class="btn btn-sm btn-link p-0 me-2" [title]="pedidoAbierto() ? 'Editar' : 'El pedido ya fue autorizado'"
@@ -91,6 +94,9 @@
                 }
             </tbody>
         </table>
+        @if (pedido().libre) {
+            <p class="small text-muted mt-2 mb-0">IVA, descuentos y totales los calcula CONTPAQi al dar de alta el pedido (D-74).</p>
+        } @else {
         <div class="row">
             <div class="col-md-8"></div>
             <div class="col-md-4">
@@ -99,8 +105,10 @@
                 <div class="o_form_label_row"><span class="o_form_label fw-bold">Total</span><span class="o_form_value fw-bold">${{ n2(total()) }}</span></div>
             </div>
         </div>
+        }
     </div>
 
+    @if (!pedido().libre) {
     <h6 class="text-uppercase text-muted small fw-bold mb-2">Procesos Requeridos</h6>
     <div class="o_section_card">
         <table class="table table-sm align-middle mb-0">
@@ -117,6 +125,7 @@
             </tbody>
         </table>
     </div>
+    }
 </div>
 
 @if (showFichaTecnica()) {

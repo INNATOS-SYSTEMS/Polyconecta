@@ -1,3 +1,4 @@
+import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { n1 } from '../../../core/format/numero';
@@ -20,7 +21,7 @@ interface Fila {
 /** Réplica de Pages/PedidosList.razor, sobre la colección de pedidos (R-02). */
 @Component({
   selector: 'pc-pedidos-list',
-  imports: [OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager],
   templateUrl: './pedidos-list.html',
   styles: ':host { display: contents; }',
 })

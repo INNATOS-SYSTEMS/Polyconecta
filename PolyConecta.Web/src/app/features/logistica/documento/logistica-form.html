@@ -1,8 +1,6 @@
 <div class="o_control_panel">
     <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-primary btn-sm fw-bold px-3" disabled="disabled" title="Alta manual fuera de alcance de esta demo">
-            <i class="bi bi-plus-lg me-1"></i> Nuevo
-        </button>
+        <pc-boton-nuevo [ruta]="cfg().ruta" />
         <pc-odoo-breadcrumb [items]="[{ label: cfg().tituloLista, url: cfg().ruta }, { label: folio() }]" />
     </div>
     <div class="o_button_box">

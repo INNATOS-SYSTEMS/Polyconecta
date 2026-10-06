@@ -54,6 +54,8 @@ export class StockOperation {
   lineas: StockOperationLine[] = [];
   step: PasoOperacion = 0;
   contpaqId = '';
+  /** Creada con "Nuevo", sin OF: su saldo en WIP queda sin asignar (D-55). */
+  libre = false;
 
   constructor(init: Partial<StockOperation> = {}) {
     Object.assign(this, init);

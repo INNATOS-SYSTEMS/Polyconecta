@@ -1,8 +1,6 @@
 <div class="o_control_panel">
     <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-primary btn-sm fw-bold px-3" disabled="disabled" title="Alta manual deshabilitada en esta demo: las fichas de Calidad nacen de la Orden de Fabricación">
-            <i class="bi bi-plus-lg me-1"></i> Nuevo
-        </button>
+        <pc-boton-nuevo [ruta]="'/calidad'" />
         <pc-odoo-breadcrumb [items]="[{ label: 'Control de Calidad' }]" />
     </div>
     <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" />
@@ -38,7 +36,18 @@
                     <td><span class="badge badge-brand">{{ estadoQc(of) }}</span></td>
                 </tr>
             }
+            @for (c of controlesLibres(); track c.folio) {
+                <tr style="cursor:pointer;" (click)="router.navigateByUrl('/calidad/' + c.folio)">
+                    <td (click)="$event.stopPropagation()"><input type="checkbox" class="form-check-input" /></td>
+                    <td class="fw-semibold text-primary">{{ c.folio }}</td>
+                    <td class="text-muted">—</td>
+                    <td class="text-muted">— (libre)</td>
+                    <td class="text-muted">—</td>
+                    <td class="text-end">{{ c.lotes.length }}</td>
+                    <td><span class="badge badge-brand">{{ qc.estado(c) }}</span></td>
+                </tr>
+            }
         </tbody>
     </table>
-    <pc-odoo-pager [count]="filteredOrders().length" />
+    <pc-odoo-pager [count]="filteredOrders().length + controlesLibres().length" />
 </div>

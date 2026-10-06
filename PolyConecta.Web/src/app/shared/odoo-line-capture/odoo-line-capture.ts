@@ -6,9 +6,14 @@ export interface LineDraft {
   producto: string;
   cantidad: number;
   unidad: string;
+  /** Solo en pedidos libres (D-74). */
+  precioUnitario?: number;
+  moneda?: string;
 }
 
 export const emptyDraft = (): LineDraft => ({ clave: '', producto: '', cantidad: 0, unidad: '' });
+
+export const MONEDAS_CAPTURA = ['MXN', 'USD'];
 
 const SEPARADOR = ' — ';
 let siguienteId = 0;
@@ -30,6 +35,10 @@ export class OdooLineCapture {
   readonly unidadPorDefecto = input<string | undefined>(undefined);
   readonly placeholder = input('Clave / Producto');
   readonly enEdicion = input(false);
+  /** Modo libre (D-127): solo productos del catálogo; la unidad es la del producto y no se edita. */
+  readonly unidadFija = input(false);
+  /** Pedido libre (D-74): agrega precio unitario y moneda. */
+  readonly conPrecio = input(false);
   readonly submitted = output<LineDraft>();
   readonly cancelled = output<void>();
 
@@ -41,7 +50,13 @@ export class OdooLineCapture {
   protected readonly texto = computed(() =>
     this.resuelto() ? this.draft().clave + SEPARADOR + this.draft().producto : this.draft().clave,
   );
-  protected readonly valido = computed(() => this.draft().clave.trim() !== '' && this.draft().cantidad > 0);
+  protected readonly monedas = MONEDAS_CAPTURA;
+  protected readonly valido = computed(() => {
+    const d = this.draft();
+    if (d.clave.trim() === '' || !(d.cantidad > 0)) return false;
+    if (this.unidadFija() && !this.resuelto()) return false;
+    return !this.conPrecio() || (d.precioUnitario ?? 0) > 0;
+  });
 
   protected onClaveChanged(event: Event): void {
     let texto = ((event.target as HTMLInputElement).value ?? '').trim();
@@ -72,6 +87,15 @@ export class OdooLineCapture {
     this.draft.update(d => ({ ...d, cantidad: Number.isFinite(valor) ? valor : 0 }));
   }
 
+  protected onPrecioChanged(event: Event): void {
+    const valor = Number.parseFloat((event.target as HTMLInputElement).value);
+    this.draft.update(d => ({ ...d, precioUnitario: Number.isFinite(valor) ? valor : 0 }));
+  }
+
+  protected onMonedaChanged(event: Event): void {
+    this.draft.update(d => ({ ...d, moneda: (event.target as HTMLSelectElement).value }));
+  }
+
   protected onUnidadChanged(event: Event): void {
     this.draft.update(d => ({ ...d, unidad: (event.target as HTMLInputElement).value ?? '' }));
     this.unidadPrecargada.set(false);
@@ -82,6 +106,6 @@ export class OdooLineCapture {
     const porDefecto = this.unidadPorDefecto();
     const d = this.draft();
     const unidad = d.unidad.trim() === '' && porDefecto ? porDefecto : d.unidad;
-    this.submitted.emit({ ...d, unidad });
+    this.submitted.emit({ ...d, unidad, ...(this.conPrecio() ? { moneda: d.moneda ?? MONEDAS_CAPTURA[0] } : {}) });
   }
 }

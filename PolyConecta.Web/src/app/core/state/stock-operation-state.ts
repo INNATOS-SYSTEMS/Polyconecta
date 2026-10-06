@@ -22,7 +22,8 @@ export class StockOperationState extends EstadoBase {
     return this.tipos.find(t => t.codigo === codigo) ?? this.tipos[0];
   }
 
-  private nuevoFolio(planta: string, salida: boolean): string {
+  /** Folio consecutivo de la planta. Público para los documentos libres, que comparten la secuencia. */
+  nuevoFolio(planta: string, salida: boolean): string {
     return `${planta}/${salida ? 'OUT' : 'IN'}/${++this.secuencia}`;
   }
 
@@ -204,6 +205,7 @@ export class StockOperationState extends EstadoBase {
         origen: op.origen,
         destino: op.destino,
         backorderDe: op.folio,
+        libre: op.libre,
         // El remanente de una recolección ya liberada nace liberado.
         step: 1,
         lineas: pendientes.map(l => ({ clave: l.clave, producto: l.producto, unidad: l.unidad, solicitado: pendiente(l), asignaciones: [], entregado: 0 })),

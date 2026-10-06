@@ -1,8 +1,6 @@
 <div class="o_control_panel">
     <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-primary btn-sm fw-bold px-3" disabled="disabled" title="Alta manual deshabilitada en esta demo: las Órdenes de Fabricación nacen del Pedido">
-            <i class="bi bi-plus-lg me-1"></i> Nuevo
-        </button>
+        <pc-boton-nuevo [ruta]="'/fabricacion'" />
         <pc-odoo-breadcrumb [items]="breadcrumb()" />
     </div>
     <pc-odoo-search-panel [view]="vista" [facetasContexto]="facetas()" [(texto)]="searchText" [(filtrosActivos)]="filtros" />

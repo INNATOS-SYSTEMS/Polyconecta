@@ -1,3 +1,4 @@
+import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { fechaCorta, fechaHora, n1 } from '../../../core/format/numero';
@@ -5,6 +6,8 @@ import { BomLine, PlanningLine, ProductionLot, SubProductLine } from '../../../c
 import { InventoryState } from '../../../core/state/inventory-state';
 import { OperationalFlowState } from '../../../core/state/operational-flow-state';
 import { StockOperationState } from '../../../core/state/stock-operation-state';
+import { AsignarSaldoWip } from '../../../core/state/libre/asignar-saldo-wip';
+import { OfLibre } from '../../../core/state/libre/of-libre';
 import { Crumb, OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
 import { LineDraft, OdooLineCapture, emptyDraft } from '../../../shared/odoo-line-capture/odoo-line-capture';
@@ -16,7 +19,7 @@ type Tab = 'componentes' | 'subproductos' | 'produccion' | 'planeacion';
 /** Réplica de Pages/FabricacionFormView.razor. */
 @Component({
   selector: 'pc-fabricacion-form',
-  imports: [OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooLineCapture, OdooChatterDrawer],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooLineCapture, OdooChatterDrawer],
   templateUrl: './fabricacion-form.html',
   styles: ':host { display: contents; }',
 })
@@ -25,6 +28,12 @@ export class FabricacionForm {
   protected readonly inv = inject(InventoryState);
   private readonly ops = inject(StockOperationState);
   private readonly router = inject(Router);
+  private readonly asignarWip = inject(AsignarSaldoWip);
+  private readonly ofLibre = inject(OfLibre);
+
+  /** "Asignar saldo de WIP" (FR-013): modal abierto y último error de la asignación. */
+  protected readonly mostrarSaldoWip = signal(false);
+  protected readonly errorSaldoWip = signal<string | undefined>(undefined);
 
   readonly folioOf = input('');
   /** Contexto de navegación: de qué lista se llegó aquí (?pedido=). */
@@ -79,7 +88,10 @@ export class FabricacionForm {
     this.version();
     const folio = this.folioOf();
     // Primarias y secundarias llegan al pedido directamente; la jerarquía se navega en la lista.
-    const list: SmartButtonModel[] = [{ label: 'Pedido', countBadge: 1, iconClass: 'bi bi-cart-check', targetRoute: `/pedidos/${this.of()?.pedidoFolio}` }];
+    // FR-014: una OF libre no tiene pedido; el botón queda vacío y deshabilitado, nunca con un origen falso.
+    const list: SmartButtonModel[] = this.of()?.libre
+      ? [{ label: 'Pedido', countBadge: 0, iconClass: 'bi bi-cart-check', targetRoute: '', deshabilitado: true }]
+      : [{ label: 'Pedido', countBadge: 1, iconClass: 'bi bi-cart-check', targetRoute: `/pedidos/${this.of()?.pedidoFolio}` }];
     // El traslado interplanta cuelga de la orden que tiene secundarias (la que genera el envío).
     if (this.flow.getSecondaries(folio).length > 0)
       list.push({ label: 'Traslado', countBadge: 1, iconClass: 'bi bi-truck', targetRoute: `/traslados/${this.flow.traslado().folio}` });
@@ -95,7 +107,19 @@ export class FabricacionForm {
     return this.inv.disponible(clave, InventoryState.AlmacenMateriaPrima);
   }
 
+  /** Saldo sin asignar en WIP de los componentes de esta OF. El botón solo aparece si hay. */
+  protected readonly saldoWip = computed(() => {
+    this.version();
+    return this.asignarWip.disponibles(this.folioOf());
+  });
+
+  protected asignarSaldo(lote: string, cantidad: number): void {
+    this.errorSaldoWip.set(this.asignarWip.asignar(this.folioOf(), lote, cantidad));
+  }
+
   protected goToTab(tab: Tab): void {
+    // En una OF libre la captura propone el nombre del lote con el folio de la OF raíz (D-54).
+    if (tab === 'produccion' && this.of()?.libre && this.draftProduccion().clave === '') this.proponerLote();
     this.tab.set(tab);
     this.editingComponente.set(null);
     this.editingPlaneacion.set(null);
@@ -157,6 +181,11 @@ export class FabricacionForm {
   protected guardarProduccion(d: LineDraft): void {
     this.flow.agregarLoteProduccion(this.folioOf(), d.clave, d.cantidad, d.unidad);
     this.draftProduccion.set(emptyDraft());
+    if (this.of()?.libre) this.proponerLote();
+  }
+
+  private proponerLote(): void {
+    this.draftProduccion.set({ ...emptyDraft(), clave: this.ofLibre.siguienteLote(this.folioOf()) });
   }
 
   protected claseEstado(lote: ProductionLot): string {

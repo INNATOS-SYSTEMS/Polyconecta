@@ -1,59 +1,50 @@
-# PolyconectaWeb
+# PolyConecta.Web
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.1.
+Réplica en Angular del prototipo Blazor `PolyConecta.Presentation` (spec 001). Tiene las mismas pantallas, datos semilla y reglas, más el botón "Nuevo" para crear documentos libres (D-59) y el chatter en vivo por el hub de `PolyConecta.Api` (D-58). No llama a la API REST: el estado vive en memoria del navegador y se pierde al recargar, igual que en Blazor.
 
-## Development server
+## Requisitos
 
-To start a local development server, run:
+- Node 24.16.0 (`.nvmrc`; `nvm use` en esta carpeta).
+- Dependencias: `npm ci`.
+- Para las pruebas de navegador: `npx playwright install chromium`, el SDK de .NET de `global.json` y el runtime de ASP.NET Core 8, que usa el prototipo.
+- Conexión a Google Fonts y jsDelivr: las dos aplicaciones cargan de ahí Inter, Bootstrap y Bootstrap Icons.
 
-```bash
-ng serve
-```
+## Puertos
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+| Aplicación | Puerto |
+| :--- | :--- |
+| `PolyConecta.Web` (Angular) | 4200 |
+| `PolyConecta.Presentation` (prototipo Blazor, referencia) | 9000 |
+| `PolyConecta.Api` (hub del chatter en `/hubs/chatter`) | 9020 |
 
-## Code scaffolding
+Desde la raíz, `./run.sh --with-angular` levanta las tres.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Scripts
 
-```bash
-ng generate component component-name
-```
+| Script | Qué hace |
+| :--- | :--- |
+| `npm start` | Servidor de desarrollo en `:4200` |
+| `npm run build` | Compila |
+| `npm test` | Pruebas unitarias (Vitest): estado portado, reglas del modo libre y componentes |
+| `npm run parity` | Paridad visual: captura las 19 rutas en las dos aplicaciones y compara píxeles. Informe en `parity-report/index.html`. `-- --routes=/pedidos,/fabricacion` limita la corrida |
+| `npm run scenarios` | Guiones de escenario: los mismos pasos en Blazor y en Angular, con el texto y la captura de cada punto de control comparados. Los guiones `soloAngular` prueban el modo libre |
+| `npm run audit` | Auditor de primer nivel: en cada ruta pulsa cada botón o enlace en las dos aplicaciones y compara URL y texto. Informe en `auditoria-report/` |
+| `npm run chatter` | Chatter en vivo: dos pestañas con la API corriendo (el mensaje llega en menos de 1 s) y sin conexión |
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+`parity`, `scenarios` y `audit` levantan el prototipo y Angular si no están corriendo; `chatter` también levanta la API.
 
-```bash
-ng generate --help
-```
+## Reglas de paridad
 
-## Building
+1. La referencia es el prototipo corriendo, no su código: si algo se ve o se comporta distinto, la réplica se corrige.
+2. Chromium a 1600×900, sin animaciones, con las fuentes del CDN cargadas.
+3. Umbral: 1 % de píxeles distintos por ruta y por punto de control. El umbral no se sube; una diferencia legítima se documenta en la sección "Exploración y cambios" de la spec.
+4. "Nuevo" es la única diferencia permitida (D-59): se enmascara en las capturas y el auditor no lo pulsa.
+5. Razor recorta los espacios alrededor de los bloques `@if`; en las plantillas de Angular esos bloques van en línea (`{{ folio }}@if (…) {<span>…</span>}`) para que el texto quede igual.
+6. Un `computed` que devuelve el mismo objeto mutado lleva `{ equal: () => false }`; si no, no avisa a quien depende de él.
 
-To build the project run:
+## Estructura
 
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- `src/app/core/`: modelos, semilla y servicios de estado portados del prototipo (`state/`), y el modo libre (`state/libre/`).
+- `src/app/shared/`: los componentes del prototipo (`odoo-*`, selectores de lotes, `poc-sales-order-form`), más `boton-nuevo` y `hoja-nueva`.
+- `src/app/features/`: las páginas, por módulo.
+- `e2e/`: `parity/`, `scenarios/`, `auditoria/` y `chatter/`.

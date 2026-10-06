@@ -1,3 +1,4 @@
+import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { n1 } from '../../../core/format/numero';
@@ -10,7 +11,7 @@ import { estadoQc, qcFolio } from '../calidad-estado';
 /** Réplica de Pages/CalidadFormView.razor. */
 @Component({
   selector: 'pc-calidad-form',
-  imports: [OdooBreadcrumb, OdooSmartButtons, OdooChatterDrawer, RouterLink],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooChatterDrawer, RouterLink],
   templateUrl: './calidad-form.html',
   styles: ':host { display: contents; }',
 })

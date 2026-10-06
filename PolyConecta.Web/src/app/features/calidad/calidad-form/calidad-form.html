@@ -1,9 +1,7 @@
 @if (of(); as of) {
     <div class="o_control_panel">
         <div class="d-flex align-items-center gap-3">
-            <button class="btn btn-primary btn-sm fw-bold px-3" disabled="disabled" title="Alta manual deshabilitada en esta demo: las fichas de Calidad nacen de la Orden de Fabricación">
-                <i class="bi bi-plus-lg me-1"></i> Nuevo
-            </button>
+            <pc-boton-nuevo [ruta]="'/calidad'" />
             <pc-odoo-breadcrumb [items]="[{ label: 'Control de Calidad', url: '/calidad' }, { label: qcFolio() }]" />
         </div>
         <div class="o_button_box">

@@ -64,6 +64,8 @@ export class ManufacturingOrder {
   produccion: ProductionLot[] = [];
   planeacion: PlanningLine[] = [];
   sequenceCounter = 0;
+  /** Creada con "Nuevo", sin pedido (Principio X). */
+  libre = false;
 
   constructor(init: Partial<ManufacturingOrder> = {}) {
     Object.assign(this, init);

@@ -1,3 +1,4 @@
+import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { fechaCorta, n1 } from '../../../core/format/numero';
@@ -13,7 +14,7 @@ import { CONFIG, TipoLogistica } from './tipos';
 /** Réplica de Pages/TrasladoFormView, RecepcionFormView y EntregaFormView (.razor). */
 @Component({
   selector: 'pc-logistica-form',
-  imports: [OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooChatterDrawer, LotPickerModal],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooChatterDrawer, LotPickerModal],
   templateUrl: './logistica-form.html',
   styles: ':host { display: contents; }',
 })
@@ -36,14 +37,20 @@ export class LogisticaForm {
     return this.cfg().documento(this.flow, this.folio());
   }, { equal: () => false });
 
-  protected readonly chatterEntries = computed<ChatterEntry[]>(() => [{ author: 'Sistema', timestamp: 'hoy', text: this.cfg().chatter }]);
+  protected readonly chatterEntries = computed<ChatterEntry[]>(() => [
+    { author: 'Sistema', timestamp: 'hoy', text: this.doc().libre ? `${this.cfg().tituloForm} creada con Nuevo, sin documento de origen.` : this.cfg().chatter },
+  ]);
   protected readonly smartButtons = computed(() => {
     this.flow.cambios();
-    return this.cfg().smartButtons(this.flow);
+    // FR-014: un documento libre no tiene origen; sus smart buttons quedan vacíos y deshabilitados.
+    const botones = this.cfg().smartButtons(this.flow);
+    return this.doc().libre ? botones.map(b => ({ ...b, countBadge: 0, targetRoute: '', deshabilitado: true })) : botones;
   });
+  /** El documento libre solo ofrece los lotes que permite su regla (FR-012); la semilla, los del prototipo. */
   protected readonly lotes = computed(() => {
     this.flow.cambios();
-    return this.cfg().lotes(this.flow);
+    const doc = this.doc();
+    return doc.libre ? this.flow.lotesDeDocumentoLibre(doc) : this.cfg().lotes(this.flow);
   });
 
   protected navegar(ruta: string): void {

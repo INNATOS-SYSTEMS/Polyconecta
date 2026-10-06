@@ -16,6 +16,7 @@ import {
   trasladoSemilla,
 } from '../seed/flujo';
 import { EstadoBase } from './estado-base';
+import { aplicarMovimientoLibre, comoLotes, lotesPermitidos } from './libre/movimientos-logistica';
 import { InventoryState } from './inventory-state';
 import { StockOperationState } from './stock-operation-state';
 
@@ -291,15 +292,23 @@ export class OperationalFlowState extends EstadoBase {
   }
 
   validarTraslado(folio?: string): void {
-    this.validarDocumento(this.traslado(folio), 4, 3, this.getLotesDisponiblesTraslado(), 'Traslado');
+    const doc = this.traslado(folio);
+    this.validarDocumento(doc, 4, 3, doc.libre ? this.lotesDeDocumentoLibre(doc) : this.getLotesDisponiblesTraslado(), 'Traslado');
   }
 
   validarRecepcion(folio?: string): void {
-    this.validarDocumento(this.recepcion(folio), 3, 2, this.getLotesDisponiblesTraslado(), 'Recepción');
+    const doc = this.recepcion(folio);
+    this.validarDocumento(doc, 3, 2, doc.libre ? this.lotesDeDocumentoLibre(doc) : this.getLotesDisponiblesTraslado(), 'Recepción');
   }
 
   validarEntrega(folio?: string): void {
-    this.validarDocumento(this.entrega(folio), 3, 2, this.getLotesDisponiblesEntrega(), 'Entrega');
+    const doc = this.entrega(folio);
+    this.validarDocumento(doc, 3, 2, doc.libre ? this.lotesDeDocumentoLibre(doc) : this.getLotesDisponiblesEntrega(), 'Entrega');
+  }
+
+  /** Lotes que puede tomar un documento libre según su regla (FR-012); la semilla usa los del prototipo. */
+  lotesDeDocumentoLibre(doc: DocumentoLogistica): ProductionLot[] {
+    return comoLotes(lotesPermitidos(doc, this.inv), this.inv);
   }
 
   private validarDocumento(doc: DocumentoLogistica, hecho: number, cierre: number, pool: ProductionLot[], nombre: string): void {
@@ -318,6 +327,7 @@ export class OperationalFlowState extends EstadoBase {
       }
     }
     doc.step++;
+    if (doc.libre && doc.step >= hecho) aplicarMovimientoLibre(doc, this.inv);
     this.notify();
   }
 

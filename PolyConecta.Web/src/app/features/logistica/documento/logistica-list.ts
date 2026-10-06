@@ -1,3 +1,4 @@
+import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { aplicar } from '../../../core/search/search-view';
@@ -11,7 +12,7 @@ import { CONFIG, TipoLogistica } from './tipos';
 /** Réplica de Pages/TrasladosList, RecepcionList y EntregasList (.razor), sobre sus colecciones (R-02). */
 @Component({
   selector: 'pc-logistica-list',
-  imports: [OdooBreadcrumb, OdooSearchPanel, OdooPager],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooPager],
   templateUrl: './logistica-list.html',
   styles: ':host { display: contents; }',
 })

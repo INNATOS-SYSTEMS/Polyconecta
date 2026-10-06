@@ -51,11 +51,13 @@ var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ProblemDetailsMiddleware>();
-app.UseCors();
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseRouting();
+// Después de UseRouting: así ve la política propia del hub (RequireCors). Antes solo aplicaba la
+// política por omisión y la negociación de SignalR fallaba.
+app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ChatterHub>("/hubs/chatter").RequireCors(PoliticaChatter);

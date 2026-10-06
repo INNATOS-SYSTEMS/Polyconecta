@@ -1,7 +1,7 @@
 <div class="o_line_capture mb-3">
   <div class="o_line_capture_title">Captura</div>
   <div class="row g-2 align-items-end">
-    <div class="col-12 col-md-6">
+    <div class="col-12" [class.col-md-6]="!conPrecio()" [class.col-md-4]="conPrecio()">
       <input class="form-control form-control-sm o_inline_input" [class.border-primary-subtle]="resuelto()"
              [attr.list]="listId"
              [placeholder]="placeholder()"
@@ -13,11 +13,24 @@
       <input type="number" step="0.1" class="form-control form-control-sm o_inline_input"
              placeholder="Cantidad" [value]="draft().cantidad === 0 ? '' : draft().cantidad" (change)="onCantidadChanged($event)" />
     </div>
-    <div class="col-6 col-md-2">
+    <div class="col-6" [class.col-md-2]="!conPrecio()" [class.col-md-1]="conPrecio()">
       <input class="form-control form-control-sm o_inline_input"
-             placeholder="Unidad" [value]="draft().unidad" (change)="onUnidadChanged($event)"
-             [title]="unidadPrecargada() ? 'Precargada desde el catálogo de CONTPAQi' : 'Capture la unidad'" />
+             placeholder="Unidad" [value]="draft().unidad" (change)="onUnidadChanged($event)" [readOnly]="unidadFija()"
+             [title]="unidadFija() ? 'Unidad base del producto en CONTPAQi: no se edita' : unidadPrecargada() ? 'Precargada desde el catálogo de CONTPAQi' : 'Capture la unidad'" />
     </div>
+    @if (conPrecio()) {
+      <div class="col-6 col-md-2">
+        <input type="number" step="0.01" class="form-control form-control-sm o_inline_input"
+               placeholder="Precio unitario" [value]="(draft().precioUnitario ?? 0) === 0 ? '' : draft().precioUnitario" (change)="onPrecioChanged($event)" />
+      </div>
+      <div class="col-6 col-md-1">
+        <select class="form-select form-select-sm o_inline_input" title="Moneda" (change)="onMonedaChanged($event)">
+          @for (m of monedas; track m) {
+            <option [value]="m" [selected]="(draft().moneda ?? monedas[0]) === m">{{ m }}</option>
+          }
+        </select>
+      </div>
+    }
     <div class="col-12 col-md-2 d-flex gap-1">
       <button class="btn btn-sm btn-primary flex-grow-1" (click)="submit()" [disabled]="!valido()">
         <i class="bi" [class.bi-check-lg]="enEdicion()" [class.bi-plus-lg]="!enEdicion()"></i> {{ enEdicion() ? 'Guardar' : 'Agregar' }}

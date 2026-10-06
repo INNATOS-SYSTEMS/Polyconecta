@@ -202,36 +202,36 @@ Los tres agentes trabajan en paralelo, cada uno en sus carpetas (plan, "Decisió
 
 ### Base (agente 1, antes de los tres)
 
-- [ ] L2-T050 [1] Crear `PolyConecta.Web/src/app/core/state/libre/linea-libre.ts` con el borrador de línea libre (producto, cantidad, unidad tomada de `ProductRef.unidad`) y su validación: no se guarda sin cantidad mayor que cero ni con una unidad distinta a la del producto. Agregar su prueba en `linea-libre.spec.ts`.
+- [x] L2-T050 [1] Crear `PolyConecta.Web/src/app/core/state/libre/linea-libre.ts` con el borrador de línea libre (producto, cantidad, unidad tomada de `ProductRef.unidad`) y su validación: no se guarda sin cantidad mayor que cero ni con una unidad distinta a la del producto. Agregar su prueba en `linea-libre.spec.ts`.
 
 ### Agente 3A
 
-- [ ] L2-T051 [US3] [3A] Agregar `PolyConecta.Web/src/app/core/state/libre/pedido-libre.ts`, que crea un `SalesOrder` con `libre = true`, un cliente y líneas con cantidad, unidad, precio unitario y moneda (D-74). Al confirmarlo recibe un Contpaq ID simulado (D-53) y sigue el mismo flujo de dos firmas. Probarlo en `pedido-libre.spec.ts`.
-- [ ] L2-T052 [US3] [3A] Habilitar "Nuevo" en `features/ventas/pedidos-list/` y `features/ventas/pedido-form/`: abre el formulario vacío en Borrador y sin origen.
-- [ ] L2-T053 [P] [US3] [3A] Guion `soloAngular` en `PolyConecta.Web/e2e/scenarios/libre-pedido.scenario.ts`.
+- [x] L2-T051 [US3] [3A] Agregar `PolyConecta.Web/src/app/core/state/libre/pedido-libre.ts`, que crea un `SalesOrder` con `libre = true`, un cliente y líneas con cantidad, unidad, precio unitario y moneda (D-74). Al confirmarlo recibe un Contpaq ID simulado (D-53) y sigue el mismo flujo de dos firmas. Probarlo en `pedido-libre.spec.ts`.
+- [x] L2-T052 [US3] [3A] Habilitar "Nuevo" en `features/ventas/pedidos-list/` y `features/ventas/pedido-form/`: abre el formulario vacío en Borrador y sin origen.
+- [x] L2-T053 [P] [US3] [3A] Guion `soloAngular` en `PolyConecta.Web/e2e/scenarios/libre-pedido.scenario.ts`.
 
 ### Agente 3B
 
-- [ ] L2-T054 [US3] [3B] Agregar `PolyConecta.Web/src/app/core/state/libre/of-libre.ts`, que crea una OF sin pedido con proceso, producto, cantidad y unidad:
+- [x] L2-T054 [US3] [3B] Agregar `PolyConecta.Web/src/app/core/state/libre/of-libre.ts`, que crea una OF sin pedido con proceso, producto, cantidad y unidad:
   - sus lotes usan el folio de la OF raíz con `/` → `-`, como `R001-BOL-2026-0007` (D-54);
   - al confirmarla genera su recolección y sus controles igual que una ligada.
 
   Probarlo en `of-libre.spec.ts`.
-- [ ] L2-T055 [US3] [3B] Agregar `PolyConecta.Web/src/app/core/state/libre/asignar-saldo-wip.ts` con la acción "Asignar saldo de WIP" (FR-013). Liga saldo sin asignar de los componentes de la OF solo por acción explícita y nunca de forma automática. Probarlo en `asignar-saldo-wip.spec.ts`.
-- [ ] L2-T056 [US3] [3B] Agregar `PolyConecta.Web/src/app/core/state/libre/calidad-libre.ts`, que crea un control sobre lotes existentes. Aprobar o rechazar tiene los mismos efectos que en un control ligado. Probarlo en `calidad-libre.spec.ts`.
-- [ ] L2-T057 [US3] [3B] Habilitar "Nuevo" en fabricación y calidad (listas y formularios), y la acción "Asignar saldo de WIP" en `features/produccion/fabricacion-form/`. Verificar que incidencias sigue igual que en el prototipo.
-- [ ] L2-T058 [P] [US3] [3B] Guiones `soloAngular` en `PolyConecta.Web/e2e/scenarios/libre-of.scenario.ts` y `libre-calidad.scenario.ts`.
+- [x] L2-T055 [US3] [3B] Agregar `PolyConecta.Web/src/app/core/state/libre/asignar-saldo-wip.ts` con la acción "Asignar saldo de WIP" (FR-013). Liga saldo sin asignar de los componentes de la OF solo por acción explícita y nunca de forma automática. Probarlo en `asignar-saldo-wip.spec.ts`.
+- [x] L2-T056 [US3] [3B] Agregar `PolyConecta.Web/src/app/core/state/libre/calidad-libre.ts`, que crea un control sobre lotes existentes. Aprobar o rechazar tiene los mismos efectos que en un control ligado. Probarlo en `calidad-libre.spec.ts`.
+- [x] L2-T057 [US3] [3B] Habilitar "Nuevo" en fabricación y calidad (listas y formularios), y la acción "Asignar saldo de WIP" en `features/produccion/fabricacion-form/`. Verificar que incidencias sigue igual que en el prototipo.
+- [x] L2-T058 [P] [US3] [3B] Guiones `soloAngular` en `PolyConecta.Web/e2e/scenarios/libre-of.scenario.ts` y `libre-calidad.scenario.ts`.
 
 ### Agente 3C
 
-- [ ] L2-T059 [US3] [3C] Agregar `PolyConecta.Web/src/app/core/state/libre/operaciones-libres.ts`. Probar cada regla en `operaciones-libres.spec.ts`:
+- [x] L2-T059 [US3] [3C] Agregar `PolyConecta.Web/src/app/core/state/libre/operaciones-libres.ts`. Probar cada regla en `operaciones-libres.spec.ts`:
   - **Recolección libre:** planta y líneas; MP → WIP sin OF y el saldo queda sin asignar (D-55).
   - **Traslado libre:** solo lotes liberados por Calidad.
   - **Recepción libre:** solo lotes en `TRANS/*` (D-56).
   - **Entrega libre:** cliente y lotes liberados, sin pedido.
   - **Devolución `REC-RET`:** planta, lotes de WIP, cantidad y unidad.
-- [ ] L2-T060 [US3] [3C] Habilitar "Nuevo" en recolecciones, traslados, recepción y entregas (listas y formularios). Los selectores de lotes solo ofrecen los lotes que permite cada regla.
-- [ ] L2-T061 [P] [US3] [3C] Guiones `soloAngular` en `PolyConecta.Web/e2e/scenarios/libre-operaciones.scenario.ts`, uno por documento.
+- [x] L2-T060 [US3] [3C] Habilitar "Nuevo" en recolecciones, traslados, recepción y entregas (listas y formularios). Los selectores de lotes solo ofrecen los lotes que permite cada regla.
+- [x] L2-T061 [P] [US3] [3C] Guiones `soloAngular` en `PolyConecta.Web/e2e/scenarios/libre-operaciones.scenario.ts`, uno por documento.
 
 **Punto de control**: SC-004 cumplido. `npm run parity` sigue en verde, porque "Nuevo" está enmascarado.
 
@@ -265,7 +265,7 @@ Los tres agentes trabajan en paralelo, cada uno en sus carpetas (plan, "Decisió
   - sin conexión, agrega local como en Blazor (autor `Administrator`) y muestra "Sin conexión en vivo".
 
   Con la API apagada, el panel se ve igual que en el prototipo para que la paridad no cambie. Depende de L2-T064.
-- [ ] L2-T066 [US4] [2B] Crear la prueba `PolyConecta.Web/e2e/chatter/chatter.spec.ts` y el script `"chatter"` en `package.json`. Dos pestañas sobre el mismo formulario con la API corriendo: el mensaje llega en menos de 1 s (SC-005). Con la API apagada: aparece "Sin conexión en vivo" y el mensaje se agrega solo en local.
+- [x] L2-T066 [US4] [2B] Crear la prueba `PolyConecta.Web/e2e/chatter/chatter.spec.ts` y el script `"chatter"` en `package.json`. Dos pestañas sobre el mismo formulario con la API corriendo: el mensaje llega en menos de 1 s (SC-005). Con la API apagada: aparece "Sin conexión en vivo" y el mensaje se agrega solo en local.
 
 **Punto de control**: US-4 y SC-005 cumplidos.
 

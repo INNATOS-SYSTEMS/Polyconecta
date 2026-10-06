@@ -150,6 +150,63 @@ export class InventoryState extends EstadoBase {
     return suma(this.saldoWip(ofFolio), l => l.cantidad);
   }
 
+  // ---------------------------------------------------------------- modo libre (spec 001, US-3)
+
+  /** Saldo en WIP que no pertenece a ninguna OF: lo deja una recolección libre (D-55). */
+  saldoSinAsignar(wip?: string): LotBalance[] {
+    return this.lotes.filter(l => l.estado === 'EnWip' && (l.comprometidoPor ?? '') === '' && (wip === undefined || l.ubicacion === wip));
+  }
+
+  /** Liga saldo sin asignar a una OF. Solo por acción explícita (FR-013): nada lo llama solo. */
+  asignarSaldoWip(lote: string, wip: string, ofFolio: string, cantidad: number): boolean {
+    const libre = this.saldoSinAsignar(wip).find(l => l.lote === lote);
+    if (!libre || ofFolio === '' || cantidad <= 0 || cantidad > libre.cantidad) return false;
+    libre.cantidad -= cantidad;
+    if (libre.cantidad <= 0) this.quitar(libre);
+    const destino = this.lotes.find(l => l.lote === lote && l.ubicacion === wip && l.comprometidoPor === ofFolio);
+    if (destino) destino.cantidad += cantidad;
+    else this.lotes.push({ lote, clave: libre.clave, ubicacion: wip, cantidad, estado: 'EnWip', comprometidoPor: ofFolio });
+    this.notify();
+    return true;
+  }
+
+  /**
+   * Lotes liberados por Calidad en el almacén de una planta: libres, fuera de cuarentena, de WIP y de
+   * tránsito. Un lote rechazado vive en cuarentena, así que nunca aparece (hard-stop).
+   */
+  lotesLiberados(planta: string): LotBalance[] {
+    return this.lotes.filter(
+      l => l.estado === 'Libre' && l.cantidad > 0 && l.ubicacion.toUpperCase().startsWith(planta.toUpperCase() + '/STOCK/') && InventoryState.esVendible(l.ubicacion),
+    );
+  }
+
+  /** Lotes en tránsito entre plantas (`TRANS/*`): lo único que puede recibir una recepción libre (D-56). */
+  lotesEnTransito(): LotBalance[] {
+    return this.lotes.filter(l => l.estado === 'Libre' && l.cantidad > 0 && l.ubicacion.toUpperCase().startsWith('TRANS/'));
+  }
+
+  /** Mueve un lote libre completo de una ubicación a otra. */
+  moverLote(lote: string, desde: string, hacia: string): boolean {
+    const origen = this.lotes.find(l => l.lote === lote && l.ubicacion === desde && l.estado === 'Libre');
+    if (!origen) return false;
+    const destino = this.lotes.find(l => l.lote === lote && l.ubicacion === hacia && l.estado === 'Libre');
+    if (destino) {
+      destino.cantidad += origen.cantidad;
+      this.quitar(origen);
+    } else origen.ubicacion = hacia;
+    this.notify();
+    return true;
+  }
+
+  /** Salida definitiva de un lote libre (entrega a cliente). */
+  darSalida(lote: string, desde: string): boolean {
+    const l = this.lotes.find(x => x.lote === lote && x.ubicacion === desde && x.estado === 'Libre');
+    if (!l) return false;
+    this.quitar(l);
+    this.notify();
+    return true;
+  }
+
   private quitar(l: LotBalance): void {
     this.lotes.splice(this.lotes.indexOf(l), 1);
   }

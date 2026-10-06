@@ -17,9 +17,13 @@ export type Paso =
   | { pulsar: string; texto?: string }
   | { capturar: string; valor: string; enter?: boolean }
   | { elegirLote: string; lote: string }
+  /** Elige una opción de un <select> por su valor. */
+  | { elegir: string; valor: string }
   | { control: string; en: string; esperado?: string | RegExp }
   /** Punto de control sobre si un botón está habilitado (el texto no lo dice). */
   | { control: string; habilitado: string; texto?: string; esperado?: boolean }
+  /** Punto de control sobre el valor de un campo y si se puede editar (innerText no los incluye). */
+  | { control: string; campo: string; esperado?: string | RegExp; editable?: boolean }
   | { recargar: true };
 
 export interface Guion {
@@ -75,6 +79,9 @@ async function ejecutar(page: Page, base: string, pasos: Paso[]): Promise<Corrid
       await campo.dispatchEvent('change');
       if (paso.enter) await campo.press('Enter');
       await page.waitForTimeout(150);
+    } else if ('elegir' in paso) {
+      await page.locator(paso.elegir).first().selectOption(paso.valor);
+      await page.waitForTimeout(150);
     } else if ('elegirLote' in paso) {
       const campo = page.locator(paso.elegirLote).first();
       await campo.fill(paso.lote);
@@ -83,6 +90,14 @@ async function ejecutar(page: Page, base: string, pasos: Paso[]): Promise<Corrid
     } else if ('recargar' in paso) {
       await page.reload({ waitUntil: 'networkidle' });
       await page.waitForTimeout(500);
+    } else if ('campo' in paso) {
+      const campo = page.locator(paso.campo).first();
+      const valor = await campo.inputValue();
+      const editable = await campo.isEditable();
+      controles[paso.control] = `${valor} (${editable ? 'editable' : 'no editable'})`;
+      capturas[paso.control] = await capturar(page);
+      if (paso.esperado !== undefined) expect(valor, paso.control).toMatch(paso.esperado);
+      if (paso.editable !== undefined) expect(editable, `${paso.control}: editable`).toBe(paso.editable);
     } else if ('habilitado' in paso) {
       const boton = paso.texto ? page.locator(paso.habilitado, { hasText: paso.texto }).first() : page.locator(paso.habilitado).first();
       const habilitado = await boton.isEnabled();

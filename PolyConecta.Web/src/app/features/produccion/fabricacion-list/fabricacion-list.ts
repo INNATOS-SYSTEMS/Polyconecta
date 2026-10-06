@@ -1,3 +1,4 @@
+import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { n1, ordenCultural } from '../../../core/format/numero';
@@ -20,7 +21,7 @@ interface Nodo {
 /** Réplica de Pages/FabricacionList.razor: la lista anidada por jerarquía de OF. */
 @Component({
   selector: 'pc-fabricacion-list',
-  imports: [OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager],
   templateUrl: './fabricacion-list.html',
   styles: ':host { display: contents; }',
 })

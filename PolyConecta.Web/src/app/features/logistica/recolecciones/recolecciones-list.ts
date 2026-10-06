@@ -1,3 +1,4 @@
+import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { aplicar } from '../../../core/search/search-view';
@@ -11,7 +12,7 @@ import { OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-p
 /** Réplica de Pages/RecoleccionesList.razor. */
 @Component({
   selector: 'pc-recolecciones-list',
-  imports: [OdooBreadcrumb, OdooSearchPanel, OdooPager],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooPager],
   templateUrl: './recolecciones-list.html',
   styles: ':host { display: contents; }',
 })

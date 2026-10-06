@@ -1,3 +1,4 @@
+import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { fechaCorta, n1 } from '../../../core/format/numero';
@@ -15,7 +16,7 @@ import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-st
 /** Réplica de Pages/RecoleccionFormView.razor (/recolecciones/{*Folio}). */
 @Component({
   selector: 'pc-recoleccion-form',
-  imports: [OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooChatterDrawer, LotQuantityPickerModal, RouterLink],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooChatterDrawer, LotQuantityPickerModal, RouterLink],
   templateUrl: './recoleccion-form.html',
   styles: ':host { display: contents; }',
 })
@@ -60,10 +61,14 @@ export class RecoleccionForm {
   protected readonly smartButtons = computed<SmartButtonModel[]>(() => {
     this.version();
     const op = this.op();
+    // FR-014: una operación libre no tiene OF; su botón queda vacío y deshabilitado.
+    const sinOf = op !== undefined && op.ofFolio === '';
     const lista: SmartButtonModel[] = [
-      { label: 'Orden de Fabricación', countBadge: 1, iconClass: 'bi bi-gear-wide-connected', targetRoute: `/fabricacion/${op?.ofFolio ?? ''}` },
+      sinOf
+        ? { label: 'Orden de Fabricación', countBadge: 0, iconClass: 'bi bi-gear-wide-connected', targetRoute: '', deshabilitado: true }
+        : { label: 'Orden de Fabricación', countBadge: 1, iconClass: 'bi bi-gear-wide-connected', targetRoute: `/fabricacion/${op?.ofFolio ?? ''}` },
     ];
-    const hermanas = op ? this.ops.deOf(op.ofFolio).filter(o => o.folio !== op.folio) : [];
+    const hermanas = op && !sinOf ? this.ops.deOf(op.ofFolio).filter(o => o.folio !== op.folio) : [];
     if (hermanas.length > 0)
       lista.push({ label: 'Recolecciones', countBadge: hermanas.length, iconClass: 'bi bi-box-arrow-right', targetRoute: '/recolecciones' });
     return lista;
