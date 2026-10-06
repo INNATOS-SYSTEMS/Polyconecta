@@ -20,12 +20,15 @@
      $s = Read-Host 'Contraseña del login' -AsSecureString
      $env:Password = [Runtime.InteropServices.Marshal]::PtrToStringBSTR(
                        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($s))
-     sqlcmd -S localhost\COMPAC -E -b -i New-BridgeReadOnlyLogin.sql `
+     sqlcmd -S localhost\COMPAC01 -E -C -b -i .\New-BridgeReadOnlyLogin.sql `
             -v Login="polyconecta_bridge_ro" Bases="adPOLYEMPAQUES"
      Remove-Item Env:Password
 
    sqlcmd toma $(Password) de la variable de entorno, así que la contraseña no
-   queda en el historial ni en la lista de procesos.
+   queda en el historial ni en la lista de procesos. -C confía en el certificado
+   autofirmado de SQL Server: el ODBC Driver 18 cifra por omisión y sin -C falla
+   con "The certificate chain was issued by an authority that is not trusted".
+   COMPAC01 es la instancia de CONTPAQi en el VPS.
 
    Es idempotente: si el login ya existe, le cambia la contraseña (sirve para
    rotarla) y en cada base solo agrega lo que falte.
