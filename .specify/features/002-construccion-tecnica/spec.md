@@ -39,7 +39,7 @@ Lee esto antes de cualquier tarea.
 | Bridge en .NET 10 `win-x86` verificado contra el laboratorio | Sesión de larga duración del bridge real con doble inicio de sesión (1.1, F1); ejecución por pasos con reconciliación (2.2, F2) |
 | Aplicación Angular: proyecto, estilos, layout, navegación y componentes compartidos | Las páginas: las hace la spec 001 en paralelo y cada fase sobre la API (D-118) |
 | CI en GitHub Actions con SQL Server 2022 y la suite de contrato contra el simulador | Hosting de producción y respaldos (H-01, H-02) |
-| Credenciales rotadas, login de solo lectura e inicio de sesión automático del administrador con la tarea del bridge | Cambios en `PolyConecta.Presentation` (prototipo, D-60) |
+| Login de solo lectura del bridge (la rotación de `sa` se pospone, D-129) e inicio de sesión automático del administrador con la tarea del bridge | Cambios en `PolyConecta.Presentation` (prototipo, D-60) |
 
 ---
 
@@ -170,7 +170,7 @@ El bridge del VPS usa credenciales nuevas y un login de solo lectura, y vuelve s
 
 **Acceptance Scenarios**:
 
-1. **Given** la contraseña anterior de `sa`, **When** se intenta usar, **Then** falla; el bridge lee con su login de solo lectura definido en `BridgeConfig__SqlConnectionString` (A-2).
+1. **Given** el bridge configurado, **When** lee CONTPAQi, **Then** no usa `sa` (la rotación de `sa` se pospone, D-129); lee con su login de solo lectura definido en `BridgeConfig__SqlConnectionString` (A-2).
 2. **Given** el usuario de prueba `polyconecta-bridge`, **When** termina F0, **Then** está revertido (A-19).
 3. **Given** un reinicio del servidor, **When** arranca Windows, **Then** inicia sesión el administrador y la tarea "al iniciar sesión" levanta el bridge (D-115).
 
@@ -205,7 +205,7 @@ El bridge del VPS usa credenciales nuevas y un login de solo lectura, y vuelve s
 - **FR-007**: El bridge simulado MUST ser el mismo bridge con `SimulatedSdkGateway` y `SimulatedReadRepository` elegidos por `BridgeConfig__Mode` (D-122): el ciclo del outbox se separa de `ContpaqiSdkGateway`, las validaciones de CT-39 suben por encima del gateway y la DLL del SDK solo se carga en modo real. MUST implementar el contrato completo sin SDK, correr en macOS, Linux y CI, validar la carga con las mismas reglas que el real (CT-39), asignar folios simulados, responder por callback y ser idempotente (CT-21).
 - **FR-008**: El simulador MUST permitir provocar errores, demoras y callbacks perdidos por configuración, sin cambiar código.
 - **FR-009**: El bridge y `tools/sdk-lab` MUST compilar para .NET 10 `win-x86` (CT-04) y repetir F y G de la matriz en el laboratorio.
-- **FR-010**: La contraseña de `sa` MUST estar rotada; el bridge MUST leer CONTPAQi con un login de solo lectura (CT-30) definido por variable de entorno (CT-29).
+- **FR-010**: ~~La contraseña de `sa` MUST estar rotada~~ (pospuesto por D-129 hasta resolver H-04); el bridge MUST leer CONTPAQi con un login de solo lectura (CT-30) definido por variable de entorno (CT-29).
 - **FR-011**: El servidor MUST iniciar sesión automáticamente con el administrador y levantar el bridge con una tarea "al iniciar sesión" (D-115), y el usuario de prueba `polyconecta-bridge` MUST quedar revertido.
 
 **L2 · PolyConecta (0.3, 0.5, 0.6, 0.8)**
@@ -324,3 +324,4 @@ Las secciones anteriores son el **objetivo primario** de la fase, fijado al rati
 | 2026-10-05 | L2 | La 0.5 hace 12 componentes, no 13: `PocSalesOrderForm` depende del estado de la spec 001 y queda en su fase 3A. FR-022 lo corrige Luis | Hallazgo de la spec 001 (su research R-04) | FR-022; tareas de 0.5 | Pendiente de L2 |
 | 2026-10-06 | L1 | `New-BridgeReadOnlyLogin.sql` recibe las bases en la variable `Bases` en lugar de fijar `CompacWAdmin`: el bridge solo lee tablas `adm*` de la base de la empresa (`SqlReadRepository`, `SqlContractReadRepository`), así que por mínimo privilegio basta `adPOLYEMPAQUES`. Valida las bases antes de crear nada, se niega con `sa` o un `sysadmin`, es idempotente (rota la contraseña si el login existe) y toma la contraseña de la variable de entorno. Probado contra SQL Server 2022 local: lee, no escribe ni crea tablas, la contraseña anterior deja de entrar | Hallazgo al escribir L1-T001 | L1-T001; L1-T002 lo corre en el VPS con `Bases="adPOLYEMPAQUES"` | — |
 | 2026-10-06 | L1 | El sitio `CONTPAQ.BRIDGE` de IIS se retiró del VPS: no hay bridge publicado y nada usaba `sa`. `scripts/deploy.sh`, que publica en IIS, queda obsoleto; el bridge .NET 10 se publica en la sesión del administrador (D-115) y lo levanta la tarea de L1-T016. `BridgeConfig__SqlConnectionString` va como variable de usuario del administrador. La lectura de `catalogs/warehouses` con el login nuevo (L1-T002) se verifica al publicar (L1-T006) | Hallazgo al hacer L1-T002 | L1-T002, L1-T006, L1-T016; evidencia en `tools/sdk-lab/evidence/F0/0.1.md` | D-115 |
+| 2026-10-06 | L1 | No se rota `sa`: CONTPAQi se conecta con `sa` y rotarla sin cambiarla en su configuración lo dejaría sin abrir las empresas. Queda pendiente del procedimiento (H-04). El bridge ya no usa `sa`: lee con `polyconecta_bridge_ro` | Lo informa la operación al intentar la rotación | FR-010, US-8 escenario 1, L1-T002, quickstart §8 | D-129 |

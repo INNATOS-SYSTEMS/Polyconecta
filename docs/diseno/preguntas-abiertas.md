@@ -9,6 +9,7 @@ Lo que no se ha decidido o verificado y condiciona la construcción. Cuando se r
 - Resueltas el 30-sep-2026 con la matriz del SDK: T-01 (D-79), T-02 (D-82), T-03 (D-83), T-04 (D-85), T-05 (D-86) y T-08 (D-80). T-06 se acotó (D-87). P-21 (D-90). T-15 (D-95). T-16 (D-106, D-107).
 - Resueltas el 1-oct-2026 con el bloque S: T-10 (D-110), T-11 (D-111), T-13 (D-108, D-109). T-14 se cerró en la ventana de mantenimiento (S-09). H-03 se resolvió con D-115. T-07 y T-12 dieron su respuesta técnica; P-22 se resolvió con D-113 y abrió P-23, que se resolvió con D-114 (por validar).
 - Resuelta el 5-oct-2026: P-24 (D-124). Abiertas ese día: T-17 y P-25 (D-127).
+- Abierta el 6-oct-2026: H-04 (D-129).
 
 ## Diseño
 
@@ -22,6 +23,7 @@ Lo que no se ha decidido o verificado y condiciona la construcción. Cuando se r
 | :---: | :--- | :--- |
 | H-01 | **Hosting de producción** de PolyConecta (API, Angular y SQL Server 2022): servidor propio aparte del de CONTPAQi, el mismo VPS o nube administrada. Debe cumplir CT-05 (instancia separada de CONTPAQi) y tener conectividad con el bridge | Piloto del primer módulo; ambiente de producción (D-77) |
 | H-02 | **Respaldos** de la base de PolyConecta. Se define con H-01. Requisito mínimo ya fijado: respaldo completo diario y de logs de transacciones, con una prueba de restauración antes del piloto | Piloto del primer módulo |
+| H-04 | **Cómo rotar la contraseña de `sa` sin romper CONTPAQi.** CONTPAQi Comercial se conecta con `sa` (D-129). Falta el procedimiento oficial para cambiarla en su configuración a la vez que en SQL Server, y saber qué más usa `sa` en el servidor (respaldos, otras aplicaciones). Lo confirman Sistemas o el distribuidor de CONTPAQi. Mientras tanto la contraseña anterior sigue en el historial de git (D-51) | La rotación de `sa` (tarea 0.1 de F0) |
 
 ## Técnicas (se resuelven con la matriz del SDK)
 

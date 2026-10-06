@@ -79,10 +79,10 @@ Responsable: Alejandro Ponce; revisa Luis Alvarado Martinez. Empieza cuando el c
 - [x] L1-T001 [US8] Crear `tools/sdk-lab/scripts/New-BridgeReadOnlyLogin.sql`. Recibe el nombre del login y la contraseña como parámetros de `sqlcmd` (`$(Login)`, `$(Password)`), nunca escritos en el archivo. Crea el login y le da `db_datareader` en `CompacWAdmin` y en las bases de empresa que lee el bridge. Revisar el archivo con `git diff`: no debe contener ningún secreto.
 - [ ] L1-T002 [US8] En el VPS:
   - crear el login con el script;
-  - rotar la contraseña de `sa` con Sistemas;
+  - ~~rotar la contraseña de `sa` con Sistemas~~: pospuesto por D-129, CONTPAQi se conecta con `sa` (H-04);
   - cambiar `BridgeConfig__SqlConnectionString` del entorno del administrador al login de solo lectura.
 
-  Verificar que la contraseña anterior de `sa` falla y que `GET /api/v1/catalogs/warehouses` responde. Guardar la evidencia, sin secretos, en `tools/sdk-lab/evidence/F0/0.1.md`.
+  Verificar que `GET /api/v1/catalogs/warehouses` responde con el login de solo lectura (al publicar el bridge, L1-T006). Guardar la evidencia, sin secretos, en `tools/sdk-lab/evidence/F0/0.1.md`.
 
 ### 0.4 · Migrar el conector a .NET 10 y verificarlo contra el laboratorio (6 – 7 oct, 8 h)
 

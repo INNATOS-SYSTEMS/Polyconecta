@@ -89,7 +89,7 @@ Abrir un PR con una prueba rota a propósito.
 
 ## 8. Servidor del conector (US-8, SC-006) · L1, en el VPS
 
-1. Intentar entrar con la contraseña anterior de `sa`: debe fallar.
+1. La cadena del bridge usa `polyconecta_bridge_ro`, no `sa`. La rotación de `sa` se pospone (D-129, H-04).
 2. Reiniciar el VPS sin iniciar sesión a mano.
 3. En menos de 5 minutos, `GET /health` responde y `GET /api/v1/catalogs/warehouses` lee con el login de solo lectura.
 4. El usuario `polyconecta-bridge` ya no existe.

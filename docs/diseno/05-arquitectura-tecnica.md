@@ -58,7 +58,7 @@ La flecha punteada de la web a la API es de F1 en adelante: en F0 la aplicación
 
 ## 4. Deuda técnica conocida
 
-1. **Credencial en el historial.** La contraseña de `sa` estuvo versionada hasta el 28-sep; el bridge ya la toma de `BridgeConfig__SqlConnectionString`. **Falta rotarla** y crear el login de solo lectura (tarea 0.1, en el VPS). El historial no se reescribe (D-51).
+1. **Credencial en el historial.** La contraseña de `sa` estuvo versionada hasta el 28-sep y el historial no se reescribe (D-51). El bridge ya no usa `sa`: lee con el login de solo lectura `polyconecta_bridge_ro`, creado el 6-oct, y toma su cadena de `BridgeConfig__SqlConnectionString`. **`sa` no se rota por ahora**, porque CONTPAQi se conecta con ella (D-129); falta el procedimiento para cambiarla en SQL Server y en CONTPAQi a la vez (H-04).
 2. ~~Sin persistencia real~~. Resuelta en F0: SQL Server 2022 con migraciones y logins separados (CT-30).
 3. **La UI no usa el backend.** El prototipo duplica en `Presentation/Services` la lógica que debería vivir en el dominio. La aplicación Angular se conecta a la API desde F1.
 4. **Gateway real del SDK.** El bridge real todavía no implementa los comandos del contrato; la ejecución por pasos con reconciliación (D-80, CT-38), los N lotes por movimiento (D-82), el par Salida + Entrada (D-79), la sesión de larga duración con doble inicio de sesión (D-91, D-108) y la verificación posterior (CT-39) llegan con cada comando.
