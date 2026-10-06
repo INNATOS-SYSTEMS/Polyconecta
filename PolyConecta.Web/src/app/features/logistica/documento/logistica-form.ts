@@ -30,10 +30,11 @@ export class LogisticaForm {
   protected readonly fechaCorta = fechaCorta;
   protected readonly lotModalLine = signal<ShipmentLine | null>(null);
 
+  /** Devuelve el mismo objeto mutado: sin equal:false no avisaría a sus dependientes. */
   protected readonly doc = computed(() => {
     this.flow.cambios();
     return this.cfg().documento(this.flow, this.folio());
-  });
+  }, { equal: () => false });
 
   protected readonly chatterEntries = computed<ChatterEntry[]>(() => [{ author: 'Sistema', timestamp: 'hoy', text: this.cfg().chatter }]);
   protected readonly smartButtons = computed(() => {

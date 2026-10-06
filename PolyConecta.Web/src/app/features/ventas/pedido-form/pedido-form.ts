@@ -24,10 +24,11 @@ export class PedidoForm {
 
   protected readonly stages = ['Borrador', 'Confirmado', 'Autorizado', 'En progreso', 'Hecho'];
 
+  /** Devuelve el mismo objeto mutado: sin equal:false no avisaría a sus dependientes. */
   protected readonly pedido = computed(() => {
     this.flow.cambios();
     return this.flow.pedido(this.folio());
-  });
+  }, { equal: () => false });
 
   protected readonly firmas = computed(() => {
     this.flow.cambios();

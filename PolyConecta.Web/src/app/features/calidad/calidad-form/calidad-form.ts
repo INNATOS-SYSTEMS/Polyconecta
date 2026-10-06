@@ -24,10 +24,11 @@ export class CalidadForm {
   protected readonly tab = signal<'controles' | 'notas'>('controles');
   protected readonly chatterEntries: ChatterEntry[] = [{ author: 'Sistema', timestamp: 'hoy', text: 'Ficha de Control de Calidad generada.' }];
 
+  /** Devuelve el mismo objeto mutado: sin equal:false no avisaría a sus dependientes. */
   protected readonly of = computed(() => {
     this.flow.cambios();
     return this.flow.getOrder(this.folioOf());
-  });
+  }, { equal: () => false });
 
   protected readonly qcFolio = computed(() => qcFolio(this.folioOf()));
   protected readonly estado = computed(() => estadoQc(this.of()));

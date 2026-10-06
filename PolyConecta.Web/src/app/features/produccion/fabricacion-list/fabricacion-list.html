@@ -47,7 +47,7 @@
                     <tr style="cursor:pointer;" [class.table-active]="selected().has(nodo.of.folio)" (click)="abrir(nodo.of.folio)">
                         <td (click)="$event.stopPropagation()"><input type="checkbox" class="form-check-input" [checked]="selected().has(nodo.of.folio)" (change)="toggleOne(nodo.of.folio)" /></td>
                         <!-- Razor recorta el espacio alrededor de los bloques @if: aquí se escribe en una línea. -->
-                        <td class="fw-semibold text-primary" [style.padding-left.px]="12 + nodo.nivel * 26">@if (nodo.nivel > 0) {<i class="bi bi-arrow-return-right text-muted me-1" style="opacity:.55;"></i>}{{ nodo.of.folio }}@if (nodo.nivel === 0 && nodo.hijos.length > 0) { <span class="badge bg-secondary-subtle text-secondary-emphasis ms-2" style="font-size:.65rem;">maestra</span>}</td>
+                        <td class="fw-semibold text-primary" [style.padding-left.px]="12 + nodo.nivel * 26">@if (nodo.nivel > 0) {<i class="bi bi-arrow-return-right text-muted me-1" style="opacity:.55;"></i>}{{ nodo.of.folio }}@if (nodo.nivel === 0 && nodo.hijos.length > 0) {<span class="badge bg-secondary-subtle text-secondary-emphasis ms-2" style="font-size:.65rem;">maestra</span>}</td>
                         <td>{{ nodo.of.producto }}</td>
                         <td>{{ nodo.of.processLabel }}</td>
                         <td class="text-end">{{ n1(nodo.of.cantidad) }} {{ nodo.of.unidad }}</td>

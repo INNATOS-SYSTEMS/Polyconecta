@@ -40,11 +40,12 @@ export class RecoleccionForm {
     inject(OperationalFlowState);
   }
 
+  /** Devuelve el mismo objeto mutado: sin equal:false no avisaría a sus dependientes. */
   protected readonly op = computed(() => {
     this.version();
     const f = this.folio();
     return f ? this.ops.get(f) : undefined;
-  });
+  }, { equal: () => false });
 
   protected readonly lotesElegibles = computed<LotBalance[]>(() => {
     this.version();

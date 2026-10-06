@@ -164,29 +164,29 @@ Los tres agentes trabajan en paralelo, cada uno en sus carpetas (plan, "Decisió
 
 ### Agente 3A
 
-- [ ] L2-T038 [US2] [3A] Conectar las acciones del pedido en `features/ventas/pedido-form/` y en `shared/poc-sales-order-form/`: confirmar, autorizar (botón único que firma el rol pendiente), revocar firmas y agregar o quitar líneas con precio precargado.
-- [ ] L2-T039 [P] [US2] [3A] Guion `PolyConecta.Web/e2e/scenarios/autorizacion-pedido.scenario.ts` (US-2, escenario 1): confirmar `IV310-26`, pulsar "Autorizar" dos veces y comprobar la etapa, las firmas y las OF del pedido.
-- [ ] L2-T040 [P] [US2] [3A] Guion `PolyConecta.Web/e2e/scenarios/busqueda.scenario.ts` (escenario 5): en pedidos, fabricación e inventario, buscar texto, aplicar dos filtros del mismo campo y dos de campos distintos, y quitar una faceta.
+- [x] L2-T038 [US2] [3A] Conectar las acciones del pedido en `features/ventas/pedido-form/` y en `shared/poc-sales-order-form/`: confirmar, autorizar (botón único que firma el rol pendiente), revocar firmas y agregar o quitar líneas con precio precargado.
+- [x] L2-T039 [P] [US2] [3A] Guion `PolyConecta.Web/e2e/scenarios/autorizacion-pedido.scenario.ts` (US-2, escenario 1): confirmar `IV310-26`, pulsar "Autorizar" dos veces y comprobar la etapa, las firmas y las OF del pedido.
+- [x] L2-T040 [P] [US2] [3A] Guion `PolyConecta.Web/e2e/scenarios/busqueda.scenario.ts` (escenario 5): en pedidos, fabricación e inventario, buscar texto, aplicar dos filtros del mismo campo y dos de campos distintos, y quitar una faceta.
 
 ### Agente 3B
 
-- [ ] L2-T041 [US2] [3B] Conectar las acciones de la OF en `features/produccion/fabricacion-form/`:
+- [x] L2-T041 [US2] [3B] Conectar las acciones de la OF en `features/produccion/fabricacion-form/`:
   - planear;
   - agregar y quitar componentes, subproductos y lotes de producción;
   - agregar planeación;
   - registrar el pesaje de un rollo;
   - cerrar la producción, con el bloqueo del hard-stop visible igual que en Blazor.
-- [ ] L2-T042 [P] [US2] [3B] Conectar aprobar y rechazar lote en `features/calidad/calidad-form/`, la captura en `features/produccion/captura-masiva/` y el alta de incidencias en `features/produccion/incidencias/`.
-- [ ] L2-T043 [US2] [3B] Guion `PolyConecta.Web/e2e/scenarios/flujo-of.scenario.ts` (escenario 2): planear una OF, validar su recolección con lotes, capturar rollos, aprobar uno, rechazar otro (nombre con `.S`) y cerrar. Comprueba estados, saldo en WIP, nombres de lote e inventario en cada paso. Depende de L2-T047.
-- [ ] L2-T044 [P] [US2] [3B] Guion `PolyConecta.Web/e2e/scenarios/hard-stop.scenario.ts` (escenario 3): con un lote en revisión, intentar cerrar la OF y comprobar que se bloquea.
+- [x] L2-T042 [P] [US2] [3B] Conectar aprobar y rechazar lote en `features/calidad/calidad-form/`, la captura en `features/produccion/captura-masiva/` y el alta de incidencias en `features/produccion/incidencias/`.
+- [x] L2-T043 [US2] [3B] Guion `PolyConecta.Web/e2e/scenarios/flujo-of.scenario.ts` (escenario 2): planear una OF, validar su recolección con lotes, capturar rollos, aprobar uno, rechazar otro (nombre con `.S`) y cerrar. Comprueba estados, saldo en WIP, nombres de lote e inventario en cada paso. Depende de L2-T047.
+- [x] L2-T044 [P] [US2] [3B] Guion `PolyConecta.Web/e2e/scenarios/hard-stop.scenario.ts` (escenario 3): con un lote en revisión, intentar cerrar la OF y comprobar que se bloquea.
 
 ### Agente 3C
 
-- [ ] L2-T045 [US2] [3C] Conectar las acciones de la recolección en `features/logistica/recolecciones/`: asignar y quitar lotes en `LotQuantityPickerModal`, comprobar disponibilidad, validar (con backorder si es parcial), cancelar y emitir devolución.
-- [ ] L2-T046 [P] [US2] [3C] Conectar comprobar disponibilidad, seleccionar lotes y validar en traslados, recepción y entregas, con el "Contpaq ID" simulado y los avisos y errores iguales a Blazor.
-- [ ] L2-T047 [US2] [3C] Guion `PolyConecta.Web/e2e/scenarios/recoleccion.scenario.ts`: validación parcial con backorder y devolución a stock.
-- [ ] L2-T048 [P] [US2] [3C] Guion `PolyConecta.Web/e2e/scenarios/logistica.scenario.ts` (escenario 4): traslado, recepción y entrega, con estados y "Contpaq ID" en cada paso.
-- [ ] L2-T049 [P] [US2] [3C] Guion `PolyConecta.Web/e2e/scenarios/recarga.scenario.ts` (escenario 6, research R-03): modificar el estado, recargar la pestaña y comprobar que vuelve a la semilla en las dos aplicaciones.
+- [x] L2-T045 [US2] [3C] Conectar las acciones de la recolección en `features/logistica/recolecciones/`: asignar y quitar lotes en `LotQuantityPickerModal`, comprobar disponibilidad, validar (con backorder si es parcial), cancelar y emitir devolución.
+- [x] L2-T046 [P] [US2] [3C] Conectar comprobar disponibilidad, seleccionar lotes y validar en traslados, recepción y entregas, con el "Contpaq ID" simulado y los avisos y errores iguales a Blazor.
+- [x] L2-T047 [US2] [3C] Guion `PolyConecta.Web/e2e/scenarios/recoleccion.scenario.ts`: validación parcial con backorder y devolución a stock.
+- [x] L2-T048 [P] [US2] [3C] Guion `PolyConecta.Web/e2e/scenarios/logistica.scenario.ts` (escenario 4): traslado, recepción y entrega, con estados y "Contpaq ID" en cada paso.
+- [x] L2-T049 [P] [US2] [3C] Guion `PolyConecta.Web/e2e/scenarios/recarga.scenario.ts` (escenario 6, research R-03): modificar el estado, recargar la pestaña y comprobar que vuelve a la semilla en las dos aplicaciones.
 
 **Punto de control**: SC-002 cumplido, con `npm run parity` todavía en verde.
 

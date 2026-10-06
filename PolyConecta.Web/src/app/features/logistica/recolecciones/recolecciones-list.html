@@ -28,7 +28,7 @@
                         <input type="checkbox" class="form-check-input" [checked]="seleccionadas().has(op.folio)" (change)="toggle(op.folio)" />
                     </td>
                     <td class="fw-semibold text-primary">
-                        {{ op.folio }}@if (op.backorderDe !== undefined) { <span class="badge bg-secondary-subtle text-secondary-emphasis ms-1" style="font-size:.65rem;">backorder</span>}
+                        {{ op.folio }}@if (op.backorderDe !== undefined) {<span class="badge bg-secondary-subtle text-secondary-emphasis ms-1" style="font-size:.65rem;">backorder</span>}
                     </td>
                     <td>{{ op.operacion }}</td>
                     <td>{{ op.origen }}</td>

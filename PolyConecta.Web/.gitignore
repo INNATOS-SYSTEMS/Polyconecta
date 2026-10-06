@@ -46,3 +46,5 @@ Thumbs.db
 # Informe de paridad con el prototipo (spec 001, FR-017)
 /parity-report/
 /test-results/
+auditoria-report/
+/scenario-report/

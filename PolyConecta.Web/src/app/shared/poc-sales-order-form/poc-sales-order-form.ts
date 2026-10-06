@@ -40,10 +40,11 @@ export class PocSalesOrderForm {
   protected readonly targetProductionKg = signal('500.0');
   protected readonly targetProductionKgDesde = signal('490.0');
 
+  /** Devuelve el mismo objeto mutado: sin equal:false no avisaría a sus dependientes. */
   protected readonly pedido = computed(() => {
     this.flow.cambios();
     return this.flow.pedido(this.folio());
-  });
+  }, { equal: () => false });
 
   /** Autorizado en adelante el pedido ya generó documentos: sus líneas quedan cerradas. */
   protected readonly pedidoAbierto = computed(() => this.pedido().stage === 'Borrador' || this.pedido().stage === 'Confirmado');

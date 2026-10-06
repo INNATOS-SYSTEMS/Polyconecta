@@ -47,10 +47,11 @@ export class FabricacionForm {
 
   private readonly version = computed(() => this.flow.cambios() + this.inv.cambios() + this.ops.cambios());
 
+  /** Devuelve el mismo objeto mutado: sin equal:false no avisaría a sus dependientes. */
   protected readonly of = computed(() => {
     this.version();
     return this.flow.getOrder(this.folioOf());
-  });
+  }, { equal: () => false });
 
   protected readonly breadcrumb = computed<Crumb[]>(() => {
     const p = this.pedido();
