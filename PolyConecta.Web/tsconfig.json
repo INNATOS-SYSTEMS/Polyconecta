@@ -15,6 +15,7 @@
     "module": "preserve"
   },
   "angularCompilerOptions": {
+    "preserveWhitespaces": true,
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true

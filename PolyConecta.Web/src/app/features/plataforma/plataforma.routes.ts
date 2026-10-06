@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { PaginaPendiente } from '../../shared/pagina-pendiente/pagina-pendiente';
+import { Dashboard } from './dashboard/dashboard';
 
 export const PLATAFORMA_ROUTES: Routes = [
-  { path: '', pathMatch: 'full', component: PaginaPendiente, data: { titulo: 'Inicio' } },
+  { path: '', pathMatch: 'full', component: Dashboard },
 ];

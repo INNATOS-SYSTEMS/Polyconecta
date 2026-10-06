@@ -1,7 +1,8 @@
 import { Routes } from '@angular/router';
-import { PaginaPendiente } from '../../shared/pagina-pendiente/pagina-pendiente';
+import { PedidoForm } from './pedido-form/pedido-form';
+import { PedidosList } from './pedidos-list/pedidos-list';
 
 export const VENTAS_ROUTES: Routes = [
-  { path: 'pedidos', component: PaginaPendiente, data: { titulo: 'Pedidos' } },
-  { path: 'pedidos/:folio', component: PaginaPendiente, data: { titulo: 'Pedido' } },
+  { path: 'pedidos', component: PedidosList },
+  { path: 'pedidos/:folio', component: PedidoForm },
 ];

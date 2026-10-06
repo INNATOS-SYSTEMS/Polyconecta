@@ -33,3 +33,9 @@ export const horaCorta = (d: Date): string => {
   const h = d.getHours();
   return `${h % 12 === 0 ? 12 : h % 12}:${dos(d.getMinutes())} ${h < 12 ? 'a.m.' : 'p.m.'}`;
 };
+
+/**
+ * Orden de cadenas de .NET con la cultura del prototipo (OrderBy sin comparador): ICU, es-419. El
+ * orden ordinal difiere, por ejemplo, con guiones y mayúsculas.
+ */
+export const ordenCultural = new Intl.Collator('es-419').compare;

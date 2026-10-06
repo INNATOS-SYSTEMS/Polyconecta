@@ -122,11 +122,11 @@ Los tres agentes trabajan en paralelo, cada uno en sus carpetas (plan, "Decisió
 
 ### Agente 3A · `features/plataforma/`, `features/ventas/`, `features/inventario/`
 
-- [ ] L2-T021 [P] [US1] [3A] Dashboard en `PolyConecta.Web/src/app/features/plataforma/dashboard/`, desde `Pages/Dashboard.razor`: mosaico de aplicaciones que navega a cada módulo. Verificar con `npm run parity -- --routes=/`.
-- [ ] L2-T022 [P] [US1] [3A] Lista de pedidos en `PolyConecta.Web/src/app/features/ventas/pedidos-list/`, desde `Pages/PedidosList.razor`, con la búsqueda de L2-T014. Verificar con `--routes=/pedidos`.
-- [ ] L2-T023 [US1] [3A] Agregar `PocSalesOrderForm` en `PolyConecta.Web/src/app/shared/poc-sales-order-form/`, desde `Components/Poc/PocSalesOrderForm.razor`, con las entradas de ese componente y los servicios `OperationalFlowState` e `InventoryState`. Es un componente nuevo en `shared/`, así que lo permite la regla 3 (research R-04).
-- [ ] L2-T024 [US1] [3A] Formulario del pedido en `PolyConecta.Web/src/app/features/ventas/pedido-form/`, desde `Pages/PedidoFormView.razor`, con `PocSalesOrderForm`, el chatter y las entradas semilla del chatter. Verificar con `--routes=/pedidos/IV310-26` (depende de L2-T023).
-- [ ] L2-T025 [P] [US1] [3A] Inventario actual en `PolyConecta.Web/src/app/features/inventario/inventario-actual/`, desde `Pages/InventarioActualList.razor`, servido en `/inventario` y `/ventas/inventario`. Verificar con `--routes=/inventario,/ventas/inventario`.
+- [x] L2-T021 [P] [US1] [3A] Dashboard en `PolyConecta.Web/src/app/features/plataforma/dashboard/`, desde `Pages/Dashboard.razor`: mosaico de aplicaciones que navega a cada módulo. Verificar con `npm run parity -- --routes=/`.
+- [x] L2-T022 [P] [US1] [3A] Lista de pedidos en `PolyConecta.Web/src/app/features/ventas/pedidos-list/`, desde `Pages/PedidosList.razor`, con la búsqueda de L2-T014. Verificar con `--routes=/pedidos`.
+- [x] L2-T023 [US1] [3A] Agregar `PocSalesOrderForm` en `PolyConecta.Web/src/app/shared/poc-sales-order-form/`, desde `Components/Poc/PocSalesOrderForm.razor`, con las entradas de ese componente y los servicios `OperationalFlowState` e `InventoryState`. Es un componente nuevo en `shared/`, así que lo permite la regla 3 (research R-04).
+- [x] L2-T024 [US1] [3A] Formulario del pedido en `PolyConecta.Web/src/app/features/ventas/pedido-form/`, desde `Pages/PedidoFormView.razor`, con `PocSalesOrderForm`, el chatter y las entradas semilla del chatter. Verificar con `--routes=/pedidos/IV310-26` (depende de L2-T023).
+- [x] L2-T025 [P] [US1] [3A] Inventario actual en `PolyConecta.Web/src/app/features/inventario/inventario-actual/`, desde `Pages/InventarioActualList.razor`, servido en `/inventario` y `/ventas/inventario`. Verificar con `--routes=/inventario,/ventas/inventario`.
 
 ### Agente 3B · `features/produccion/`, `features/calidad/`
 

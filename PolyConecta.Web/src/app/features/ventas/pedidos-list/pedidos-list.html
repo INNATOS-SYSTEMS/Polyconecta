@@ -1,0 +1,61 @@
+<div class="o_control_panel">
+    <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-primary btn-sm fw-bold px-3" disabled="disabled" title="Alta manual deshabilitada en esta demo: los pedidos nacen de la sincronización con CONTPAQi">
+            <i class="bi bi-plus-lg me-1"></i> Nuevo
+        </button>
+        <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos' }]" />
+    </div>
+    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" />
+    <div class="d-flex align-items-center gap-2">
+        <pc-odoo-view-switcher />
+    </div>
+</div>
+
+<div class="p-4">
+    @if (viewState.viewMode() === 'Kanban') {
+        <div class="o_kanban_board">
+            @for (stage of stages; track stage) {
+                <div class="o_kanban_column">
+                    <div class="o_kanban_column_title">
+                        <span>{{ stage }}</span>
+                        <span class="badge bg-secondary">{{ enColumna(stage).length }}</span>
+                    </div>
+                    @for (f of enColumna(stage); track f.pedido.folio) {
+                        <div class="kanban-card" (click)="abrir(f.pedido.folio)">
+                            <div class="fw-bold text-dark small">{{ f.row.folio }}</div>
+                            <div class="text-muted small">{{ f.row.cliente }}</div>
+                            <div class="text-muted small mt-1"><i class="bi bi-box-seam me-1"></i>{{ f.row.producto }}</div>
+                            <div class="badge badge-brand mt-2">{{ f.pedido.stage }}</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    } @else {
+        <table class="table table-hover align-middle bg-white shadow-sm">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:36px;"><input type="checkbox" class="form-check-input" (change)="toggleAll($event)" /></th>
+                    <th>Folio</th>
+                    <th>Cliente</th>
+                    <th>SKU Producto Terminado</th>
+                    <th class="text-end">Cantidad</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (f of filas(); track f.pedido.folio) {
+                    <tr style="cursor:pointer;" [class.table-active]="seleccionados().has(f.pedido.folio)" (click)="abrir(f.pedido.folio)">
+                        <td (click)="$event.stopPropagation()"><input type="checkbox" class="form-check-input" [checked]="seleccionados().has(f.pedido.folio)" (change)="toggle(f.pedido.folio)" /></td>
+                        <td class="fw-semibold text-primary">{{ f.row.folio }}</td>
+                        <td>{{ f.row.cliente }}</td>
+                        <td>{{ f.row.producto }}</td>
+                        <td class="text-end">{{ f.cantidad }}</td>
+                        <td><span class="badge badge-brand">{{ f.pedido.stage }}</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <pc-odoo-pager [count]="filas().length" />
+</div>
