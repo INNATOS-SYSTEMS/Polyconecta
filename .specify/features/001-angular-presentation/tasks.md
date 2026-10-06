@@ -146,11 +146,11 @@ Los tres agentes trabajan en paralelo, cada uno en sus carpetas (plan, "Decisió
 
 ### Navegación (agente 3A, al terminar los tres)
 
-- [ ] L2-T036 [US1] [3A] Crear la prueba `PolyConecta.Web/e2e/parity/navigation.spec.ts`, que corre contra las dos aplicaciones:
+- [x] L2-T036 [US1] [3A] Crear la prueba `PolyConecta.Web/e2e/parity/navigation.spec.ts`, que corre contra las dos aplicaciones:
   - un enlace directo a `/fabricacion/BOL-2026-0001` abre el documento sin pasar por la lista;
   - un folio inexistente muestra el mismo "no encontrado" que Blazor;
   - atrás y adelante del navegador dejan la misma URL y el mismo título en las dos aplicaciones.
-- [ ] L2-T037 [US1] Correr `npm run parity` completo y dejar las 19 rutas en ≤ 1 % de píxeles distintos. Una diferencia legítima va a `parity-report/excepciones.md` con su captura; el umbral no se sube (regla 8).
+- [x] L2-T037 [US1] Correr `npm run parity` completo y dejar las 19 rutas en ≤ 1 % de píxeles distintos. Una diferencia legítima va a `parity-report/excepciones.md` con su captura; el umbral no se sube (regla 8).
 
 **Punto de control**: SC-001 cumplido. La réplica se ve y navega como el prototipo.
 
