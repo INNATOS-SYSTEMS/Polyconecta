@@ -1,0 +1,40 @@
+<header class="o_main_navbar">
+  <div class="d-flex align-items-center gap-3">
+    <button class="app-brand" (click)="goHome()" title="Inicio">
+      <i class="bi bi-grid-3x3-gap-fill fs-5"></i>
+    </button>
+    @if (currentModule().name) {
+      <span class="o_module_name">{{ currentModule().name }}</span>
+    }
+    @if (showMenu()) {
+      <nav class="o_header_menu">
+        @for (item of currentModule().items; track item.label) {
+          @if (!item.children) {
+            <a [routerLink]="item.route" [class.active]="isActive(item.route)">{{ item.label }}</a>
+          } @else {
+            <div class="o_header_dropdown">
+              <button type="button" [class.active]="anyChildActive(item)" (click)="toggle(item.label)">
+                {{ item.label }}
+              </button>
+              @if (menuAbierto() === item.label) {
+                <div class="o_header_dropdown_menu">
+                  @for (hijo of item.children; track hijo.label) {
+                    <a [routerLink]="hijo.route" [class.active]="isActive(hijo.route)" (click)="menuAbierto.set(null)">{{ hijo.label }}</a>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </nav>
+    }
+  </div>
+
+  <div class="d-flex align-items-center gap-3">
+    <i class="bi bi-bell fs-5" style="cursor:pointer; opacity:0.9;" title="Notificaciones"></i>
+    <div class="d-flex align-items-center gap-2">
+      <span class="small">Alejandro Porras</span>
+      <i class="bi bi-person-circle fs-4"></i>
+    </div>
+  </div>
+</header>
