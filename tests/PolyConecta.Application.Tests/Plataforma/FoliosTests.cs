@@ -1,10 +1,10 @@
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using PolyConecta.Application.Plataforma.Folios;
-using PolyConecta.Application.Tests.Infraestructura;
+using PolyConecta.Tests.Compartido;
 using PolyConecta.Domain.Plataforma;
 using PolyConecta.Infrastructure.Plataforma;
-using PolyConecta.IntegrationTests.Infraestructura;
+using PolyConecta.Tests.Compartido;
 using Xunit;
 
 namespace PolyConecta.Application.Tests.Plataforma;

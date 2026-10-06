@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PolyConecta.Domain.Entities;
 using PolyConecta.Application.Plataforma.Folios;
-using PolyConecta.Infrastructure.Outbox;
 using PolyConecta.Infrastructure.Persistence;
 
 namespace PolyConecta.Api.Controllers;
@@ -12,13 +11,11 @@ namespace PolyConecta.Api.Controllers;
 public class RollsController : ControllerBase
 {
     private readonly PolyDbContext _db;
-    private readonly IOutboxPublisher _outbox;
     private readonly IReferenceSequenceService _folios;
 
-    public RollsController(PolyDbContext db, IOutboxPublisher outbox, IReferenceSequenceService folios)
+    public RollsController(PolyDbContext db, IReferenceSequenceService folios)
     {
         _db = db;
-        _outbox = outbox;
         _folios = folios;
     }
 
@@ -71,13 +68,6 @@ public class RollsController : ControllerBase
         _db.StockLots.Add(roll);
         await _db.SaveChangesAsync(cancellationToken);
 
-        await _outbox.EnqueueAsync("RollCreated", new
-        {
-            RollId = roll.Id,
-            Folio = roll.Name,
-            LotNumber = roll.ContpaqLotNumber,
-            NetWeightKg = roll.NetWeightKg
-        }, cancellationToken);
 
         return CreatedAtAction(nameof(GetRollByFolio), new { folio = roll.Name }, roll);
     }

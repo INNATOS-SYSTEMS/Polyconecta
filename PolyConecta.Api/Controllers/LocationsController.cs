@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PolyConecta.Infrastructure.Outbox;
 using PolyConecta.Infrastructure.Persistence;
 
 namespace PolyConecta.Api.Controllers;
@@ -10,12 +9,10 @@ namespace PolyConecta.Api.Controllers;
 public class LocationsController : ControllerBase
 {
     private readonly PolyDbContext _db;
-    private readonly IOutboxPublisher _outbox;
 
-    public LocationsController(PolyDbContext db, IOutboxPublisher outbox)
+    public LocationsController(PolyDbContext db)
     {
         _db = db;
-        _outbox = outbox;
     }
 
     [HttpGet("locations")]
@@ -47,22 +44,12 @@ public class LocationsController : ControllerBase
         }
 
         var transferId = Guid.NewGuid();
-        var outboxMessageId = Guid.NewGuid();
 
-        await _outbox.EnqueueAsync("StockTransferred", new
-        {
-            TransferId = transferId,
-            RollFolio = request.RollFolio,
-            SourceCidAlmacen = sourceLoc.CidAlmacenContpaq,
-            TargetCidAlmacen = targetLoc.CidAlmacenContpaq,
-            Timestamp = DateTime.UtcNow
-        }, cancellationToken);
 
         return Ok(new
         {
             TransferId = transferId,
-            Status = "Success",
-            OutboxMessageId = outboxMessageId
+            Status = "Success"
         });
     }
 }

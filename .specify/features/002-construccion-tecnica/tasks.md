@@ -226,19 +226,19 @@ El modelo está en [data-model.md](data-model.md). Las piezas del contrato empie
 
   Generar la migración `F0_Plataforma`. Pruebas en `tests/PolyConecta.Application.Tests/Plataforma/`: quién y cuándo, archivar sin borrar, y transición registrada con origen, destino, usuario, fecha y nota (US-4, escenarios 1 y 2).
 - [x] L2-T018 [US4] Crear `IReferenceSequenceService` en `Application/Plataforma/Folios/` y su implementación en `Infrastructure/Plataforma/`, con `UPDLOCK, ROWLOCK` en la transacción, prefijo con `{yyyy}`, relleno y reinicio anual o mensual. Probarlo: 50 peticiones en paralelo dan 50 folios distintos y consecutivos; dos tipos usan secuencias independientes; un tipo inexistente da error (escenario 6).
-- [ ] L2-T019 [US4] Crear `IBridgeSyncService.EncolarAsync(documento, comando, variante, carga, transición)` en `Application/Plataforma/Erp/`, con su implementación:
+- [x] L2-T019 [US4] Crear `IBridgeSyncService.EncolarAsync(documento, comando, variante, carga, transición)` en `Application/Plataforma/Erp/`, con su implementación:
   - escribe el `OutboxMessage` en el mismo `DbContext`;
   - arma la `idempotency_key` (`{tipo}:{id}:{transición}`), el `correlation_id` y las `LockKeys` de la carga;
   - pasa el `SyncState` a `Pendiente`.
 
   Probar que, si falla el guardado, no queda ningún mensaje (escenario 3, CT-20).
-- [ ] L2-T020 [US4] Crear en `PolyConecta.Infrastructure/Erp/`:
+- [x] L2-T020 [US4] Crear en `PolyConecta.Infrastructure/Erp/`:
   - `BridgeHttpClient`, que arma el sobre del contrato y propaga el `correlation_id` (CT-31);
   - `ICommandPayloadTranslator` y su implementación de `TRASPASO` para el documento de prueba;
   - la verificación de la firma (`BridgeSignature`).
 
   Probar la firma con los vectores de `docs/contratos/ejemplos/`.
-- [ ] L2-T021 [US4] Crear `PolyConecta.Infrastructure/Erp/BridgeDispatcher.cs` según research R-04:
+- [x] L2-T021 [US4] Crear `PolyConecta.Infrastructure/Erp/BridgeDispatcher.cs` según research R-04:
   - orden por `Sequence`;
   - espera por llave y paso a `Bloqueado` (D-95);
   - reintentos de red con espera de 2ⁿ, hasta 5 intentos configurables;
@@ -246,12 +246,12 @@ El modelo está en [data-model.md](data-model.md). Las piezas del contrato empie
   - un solo despachador con `sp_getapplock`.
 
   Probarlo con un bridge falso en `tests/PolyConecta.Application.Tests/Erp/`: tres comandos salen en orden (escenario 4), un `Error` solo bloquea a los que comparten llave, y al agotar los reintentos el documento queda en `Error` (escenario 5).
-- [ ] L2-T022 [US4] Crear los casos de uso `ConfirmarSincronizacion` y `ReintentarSincronizacion` en `Application/Plataforma/Erp/`, y `PolyConecta.Api/Controllers/Plataforma/BridgeCallbackController.cs` según [contracts/callback-api.md](contracts/callback-api.md). Probar en `tests/PolyConecta.IntegrationTests/BridgeCallbackTests.cs`:
+- [x] L2-T022 [US4] Crear los casos de uso `ConfirmarSincronizacion` y `ReintentarSincronizacion` en `Application/Plataforma/Erp/`, y `PolyConecta.Api/Controllers/Plataforma/BridgeCallbackController.cs` según [contracts/callback-api.md](contracts/callback-api.md). Probar en `tests/PolyConecta.IntegrationTests/BridgeCallbackTests.cs`:
   - firma válida, inválida y vencida;
   - callback repetido;
   - `FAILED` con bloqueo de llaves;
   - reintentar un `Error`.
-- [ ] L2-T023 [US4] Crear `DocumentoDePrueba` en `tests/PolyConecta.Application.Tests/Ciclo/`: hereda los mixins, tiene dos estados y encola un `TRASPASO` al confirmar. La prueba `CicloCompleto`:
+- [x] L2-T023 [US4] Crear `DocumentoDePrueba` en `tests/PolyConecta.Application.Tests/Ciclo/`: hereda los mixins, tiene dos estados y encola un `TRASPASO` al confirmar. La prueba `CicloCompleto`:
   1. lee `BRIDGE_URL`;
   2. crea el documento con folio y confirma la transición;
   3. espera el callback y comprueba el folio y el id ERP en `erp_*` y `Confirmado`;

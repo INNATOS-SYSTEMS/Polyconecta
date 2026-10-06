@@ -111,6 +111,19 @@ public sealed class Bridge : IAsyncLifetime
         return null;
     }
 
+    /// <summary>Espera hasta tener <paramref name="cuantos"/> callbacks de la llave; devuelve los que haya.</summary>
+    public async Task<IReadOnlyList<JsonObject>> CallbacksAsync(string idempotencyKey, int cuantos, TimeSpan? plazo = null)
+    {
+        var limite = DateTime.UtcNow + (plazo ?? TimeSpan.FromSeconds(15));
+        while (DateTime.UtcNow < limite)
+        {
+            if (_callbacks.TryGetValue(idempotencyKey, out var lista))
+                lock (lista) if (lista.Count >= cuantos) return lista.ToList();
+            await Task.Delay(100);
+        }
+        return _callbacks.TryGetValue(idempotencyKey, out var l) ? l.ToList() : [];
+    }
+
     public int CallbacksRecibidos(string idempotencyKey) =>
         _callbacks.TryGetValue(idempotencyKey, out var lista) ? lista.Count : 0;
 

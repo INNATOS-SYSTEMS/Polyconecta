@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PolyConecta.Infrastructure.Persistence;
 
-namespace PolyConecta.Application.Tests.Infraestructura;
+namespace PolyConecta.Tests.Compartido;
 
 /// <summary>El modelo real más el documento de prueba, en su propio esquema.</summary>
 public sealed class PruebasDbContext(DbContextOptions<PolyDbContext> options) : PolyDbContext(options)
@@ -17,6 +17,8 @@ public sealed class PruebasDbContext(DbContextOptions<PolyDbContext> options) : 
             b.Property(x => x.Producto).HasMaxLength(50);
             b.Property(x => x.Cantidad).HasPrecision(18, 3);
             b.Property(x => x.Unidad).HasMaxLength(10);
+            b.Property(x => x.Origen).HasMaxLength(30);
+            b.Property(x => x.Destino).HasMaxLength(30);
             b.Property(x => x.State).HasConversion<string>().HasMaxLength(20);
             b.Property(x => x.CreatedBy).HasMaxLength(100);
             b.Property(x => x.ModifiedBy).HasMaxLength(100);
@@ -37,6 +39,8 @@ public sealed class PruebasDbContext(DbContextOptions<PolyDbContext> options) : 
             Producto nvarchar(50) NOT NULL,
             Cantidad decimal(18,3) NOT NULL,
             Unidad nvarchar(10) NOT NULL,
+            Origen nvarchar(30) NOT NULL,
+            Destino nvarchar(30) NOT NULL,
             State nvarchar(20) NOT NULL,
             IsActive bit NOT NULL,
             CreatedAt datetimeoffset NOT NULL,

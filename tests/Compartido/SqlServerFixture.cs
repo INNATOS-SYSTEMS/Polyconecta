@@ -3,9 +3,9 @@ using PolyConecta.Infrastructure.Persistence;
 using Testcontainers.MsSql;
 using Xunit;
 
-[assembly: AssemblyFixture(typeof(PolyConecta.IntegrationTests.Infraestructura.SqlServerFixture))]
+[assembly: AssemblyFixture(typeof(PolyConecta.Tests.Compartido.SqlServerFixture))]
 
-namespace PolyConecta.IntegrationTests.Infraestructura;
+namespace PolyConecta.Tests.Compartido;
 
 /// <summary>
 /// Un SQL Server 2022 en contenedor por corrida de pruebas. Cada prueba pide su propia base,

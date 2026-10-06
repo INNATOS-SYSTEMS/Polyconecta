@@ -21,7 +21,10 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
         Task CompletarAsync(string transactionId, string estado, string? resultJson, string? errorJson, string? mensaje);
         /// <summary>Error reintentable (§4): vuelve a PENDING para el siguiente intento.</summary>
         Task ProgramarReintentoAsync(string transactionId, int retryCount, DateTime nextAttemptAt, string errorJson, string mensaje);
-        /// <summary>Sistemas reencola una transacción de la DLQ, opcionalmente con la carga corregida.</summary>
+        /// <summary>
+        /// Reencola una transacción en DEAD_LETTER o FAILED: desde la DLQ (Sistemas, opcionalmente con la
+        /// carga corregida) o por un reenvío de PolyConecta con la misma llave (§3).
+        /// </summary>
         Task<bool> ReencolarAsync(string transactionId, string? nuevaCarga);
         Task RegistrarEntregaCallbackAsync(string transactionId, string callbackUrl, int? httpStatus, string? respuesta, int intento);
         Task AddLogAsync(TransactionLog log);
@@ -164,10 +167,10 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
                     payload_json = COALESCE(@Carga, payload_json),
                     result_json = NULL, error_json = NULL, last_error_code = NULL, last_error_message = NULL,
                     updated_at = @Now
-                WHERE transaction_id = @Id AND status = @DeadLetter;";
+                WHERE transaction_id = @Id AND status IN (@DeadLetter, @Failed);";
             return await conn.ExecuteAsync(sql, new
             {
-                Pending = Estados.Pending, DeadLetter = Estados.DeadLetter, Carga = nuevaCarga, Now = Ahora(), Id = transactionId,
+                Pending = Estados.Pending, DeadLetter = Estados.DeadLetter, Failed = Estados.Failed, Carga = nuevaCarga, Now = Ahora(), Id = transactionId,
             }) > 0;
         }
 

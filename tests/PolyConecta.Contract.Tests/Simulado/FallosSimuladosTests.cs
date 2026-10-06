@@ -71,4 +71,23 @@ public class FallosSimuladosTests(Bridge bridge) : IAsyncLifetime
         consulta!["status"]!.GetValue<string>().Should().Be("CONFIRMED");
         consulta["result"]!["folio"].Should().NotBeNull();
     }
+
+    [ContratoFact]
+    public async Task El_reenvio_de_una_transaccion_FAILED_la_vuelve_a_procesar_sin_duplicar()
+    {
+        SoloSimulado();
+        await bridge.FallosAsync(new { command_type = "ALTA_PEDIDO", referencia_negocio = _referencia, error_code = "EXISTENCIA_INSUFICIENTE", veces = 1 });
+        var comando = Pedido();
+        var llave = comando["idempotency_key"]!.GetValue<string>();
+        var (_, primero) = await bridge.EnviarAsync(comando);
+        (await bridge.CallbackAsync(llave))!["status"]!.GetValue<string>().Should().Be("FAILED");
+
+        var (status, reenvio) = await bridge.EnviarAsync(comando);
+
+        status.Should().Be(HttpStatusCode.Accepted);
+        reenvio["is_duplicate"]!.GetValue<bool>().Should().BeTrue();
+        reenvio["transaction_id"]!.GetValue<string>().Should().Be(primero["transaction_id"]!.GetValue<string>());
+        var callbacks = await bridge.CallbacksAsync(llave, 2);
+        callbacks.Select(c => c["status"]!.GetValue<string>()).Should().Equal("FAILED", "CONFIRMED");
+    }
 }

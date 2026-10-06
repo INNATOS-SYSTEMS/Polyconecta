@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PolyConecta.Application.Common;
+using PolyConecta.Application.Plataforma.Erp;
 
 namespace PolyConecta.Application;
 
@@ -9,6 +10,8 @@ public static class DependencyInjection
     /// <summary>Registra los casos de uso de Application. Sin MediatR ni Scrutor (D-72, research R-02).</summary>
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        services.AddUseCase<ResultadoBridge, EfectoCallback, ConfirmarSincronizacion>();
+        services.AddUseCase<ReintentarSincronizacionRequest, Unit, ReintentarSincronizacion>();
         return services;
     }
 

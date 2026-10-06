@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- El mismo SQL Server en contenedor que las pruebas de integración (research R-07). -->
-    <Compile Include="..\PolyConecta.IntegrationTests\Infraestructura\SqlServerFixture.cs" Link="Infraestructura\SqlServerFixture.cs" />
+    <!-- Soporte compartido: SQL Server en contenedor y documento de prueba (research R-07). -->
+    <Compile Include="..\Compartido\**\*.cs" Link="Compartido\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

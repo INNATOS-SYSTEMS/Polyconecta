@@ -31,10 +31,17 @@ namespace Contpaq.Bridge.Api.Controllers
             if (request is null)
                 return BadRequest(ErrorContrato.De(CodigosError.CargaInvalida, "Falta el cuerpo."));
 
-            // Un reenvío con la misma idempotency_key nunca duplica (CT-19): devuelve el original.
+            // Un reenvío con la misma idempotency_key nunca duplica (CT-19): devuelve el original. Si el
+            // original terminó en FAILED o DEAD_LETTER, no dejó documento en CONTPAQi y el reenvío es el
+            // reintento de PolyConecta (CT-20): se vuelve a encolar con la carga guardada (§3).
             if (!string.IsNullOrWhiteSpace(request.IdempotencyKey) &&
                 await outbox.GetByIdempotencyKeyAsync(request.IdempotencyKey) is { } existente)
             {
+                if (existente.Status is Estados.Failed or Estados.DeadLetter &&
+                    await outbox.ReencolarAsync(existente.TransactionId, null))
+                {
+                    existente = (await outbox.GetByIdAsync(existente.TransactionId))!;
+                }
                 return Accepted(Acuse(existente, esDuplicado: true));
             }
 

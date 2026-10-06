@@ -2,7 +2,6 @@ using System.Text.Json.Serialization;
 using PolyConecta.Api.Middleware;
 using PolyConecta.Application;
 using PolyConecta.Infrastructure;
-using PolyConecta.Infrastructure.Outbox;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,11 +35,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddSingleton<IOutboxPublisher, OutboxPublisher>();
-
 var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<ProblemDetailsMiddleware>();
 app.UseCors();
 app.UseSwagger();
 app.UseSwaggerUI();

@@ -2,7 +2,7 @@ using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using PolyConecta.Api.Controllers;
 using PolyConecta.Infrastructure.Persistence;
-using PolyConecta.IntegrationTests.Infraestructura;
+using PolyConecta.Tests.Compartido;
 using Xunit;
 
 namespace PolyConecta.IntegrationTests;

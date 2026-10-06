@@ -17,6 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Soporte compartido: SQL Server en contenedor y documento de prueba (research R-07). -->
+    <Compile Include="..\Compartido\**\*.cs" Link="Compartido\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\PolyConecta.Domain\PolyConecta.Domain.csproj" />
     <ProjectReference Include="..\..\PolyConecta.Infrastructure\PolyConecta.Infrastructure.csproj" />
     <ProjectReference Include="..\..\PolyConecta.Api\PolyConecta.Api.csproj" />

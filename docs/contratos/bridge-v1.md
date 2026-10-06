@@ -72,6 +72,7 @@ Contrato entre PolyConecta (camino 2) y el bridge de CONTPAQi (camino 1). Es el 
 - **Firma** ✅ (D-121): el bridge firma cada callback con un secreto compartido. ✏️ Propuesta: cabecera `X-Bridge-Signature: t={unix},v1={HMAC-SHA256(secreto, t + "." + cuerpo)}`. PolyConecta rechaza con `401` una firma inválida o con más de 5 minutos de antigüedad. El secreto va por variable de entorno en los dos lados (CT-29).
 - **Entrega** ✏️: si PolyConecta no responde `2xx`, el bridge reintenta con espera creciente. Si aun así no llega, PolyConecta consulta `GET /api/v1/transactions/{id}`, que devuelve lo mismo que el callback.
 - **Orden** ✏️: PolyConecta acepta callbacks repetidos o desordenados. Un callback sobre una transacción ya confirmada no cambia nada.
+- **Reintento** ✏️: un reenvío con la misma `idempotency_key` de una transacción en `FAILED` o `DEAD_LETTER` la **vuelve a encolar** con la carga guardada y responde `202` con `is_duplicate: true` y estado `PENDING`. Es como PolyConecta recupera un documento en `Error` sin cambiar la llave (CT-20). No duplica nada: esas transacciones no dejaron documento en CONTPAQi (CT-38). Un reenvío de una transacción `CONFIRMED`, `PENDING` o `PROCESSING` solo devuelve su estado.
 
 ---
 

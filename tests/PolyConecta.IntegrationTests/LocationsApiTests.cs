@@ -2,9 +2,8 @@ using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using PolyConecta.Api.Controllers;
 using PolyConecta.Domain.Entities;
-using PolyConecta.Infrastructure.Outbox;
 using PolyConecta.Infrastructure.Persistence;
-using PolyConecta.IntegrationTests.Infraestructura;
+using PolyConecta.Tests.Compartido;
 using Xunit;
 
 namespace PolyConecta.IntegrationTests;
@@ -18,8 +17,7 @@ public class LocationsApiTests(SqlServerFixture sql)
     public async Task Transfer_FromQuarantine_ShouldReturnUnprocessableEntity_HardStopGate()
     {
         await using var db = await GetDbContext();
-        var outbox = new OutboxPublisher();
-        var controller = new LocationsController(db, outbox);
+        var controller = new LocationsController(db);
 
         var request = new LocationsController.StockTransferRequest("EX-01-260910-042747", "PIM/Cuarentena", "PIM/Stock/PT", "OP-01");
         var result = await controller.ExecuteStockTransfer(request, CancellationToken.None);

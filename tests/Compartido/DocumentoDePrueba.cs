@@ -1,6 +1,6 @@
 using PolyConecta.Domain.Common;
 
-namespace PolyConecta.Application.Tests.Infraestructura;
+namespace PolyConecta.Tests.Compartido;
 
 public enum EstadoPrueba
 {
@@ -23,16 +23,23 @@ public sealed class DocumentoDePrueba : DocumentoConEstado<EstadoPrueba>, ISynce
 
     public string Unidad { get; private set; } = string.Empty;
 
+    public string Origen { get; private set; } = string.Empty;
+
+    public string Destino { get; private set; } = string.Empty;
+
     public SyncState Sync { get; private set; } = new();
 
     private DocumentoDePrueba() : base(EstadoPrueba.Borrador) { }
 
-    public DocumentoDePrueba(string folio, string producto, decimal cantidad, string unidad) : this()
+    public DocumentoDePrueba(string folio, string producto, decimal cantidad, string unidad, string origen = "MP-PIM", string destino = "WIP-PIM")
+        : this()
     {
         Folio = folio;
         Producto = producto;
         Cantidad = cantidad;
         Unidad = unidad;
+        Origen = origen;
+        Destino = destino;
     }
 
     public void Confirmar() => Transicionar(EstadoPrueba.Confirmado, "Confirmado en prueba", EstadoPrueba.Borrador);
