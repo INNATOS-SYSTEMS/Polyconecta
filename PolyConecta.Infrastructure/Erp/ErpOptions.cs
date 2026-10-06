@@ -12,7 +12,7 @@ public sealed class ErpOptions
     public string? BridgeUrl { get; set; }
 
     /// <summary>URL pública de esta API que el bridge usa para el callback (Erp__CallbackBaseUrl).</summary>
-    public string CallbackBaseUrl { get; set; } = "http://localhost:9020";
+    public string CallbackBaseUrl { get; set; } = "http://localhost:9200";
 
     /// <summary>Secreto compartido para verificar la firma del callback (Erp__CallbackSecret, D-121).</summary>
     public string CallbackSecret { get; set; } = string.Empty;

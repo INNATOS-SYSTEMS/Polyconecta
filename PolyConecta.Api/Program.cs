@@ -38,7 +38,7 @@ builder.Services.AddCors(options =>
     // (research R-07 de la spec 001): el hub tiene su propia política para la aplicación Angular.
     options.AddPolicy(PoliticaChatter, policy =>
     {
-        policy.WithOrigins(builder.Configuration.GetSection("Chatter:Origenes").Get<string[]>() ?? ["http://localhost:4200"])
+        policy.WithOrigins(builder.Configuration.GetSection("Chatter:Origenes").Get<string[]>() ?? ["http://localhost:9000"])
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

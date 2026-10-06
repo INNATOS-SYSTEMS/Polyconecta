@@ -21,13 +21,13 @@ Cómo está armada la solución, qué hace hoy cada proyecto y qué deuda técni
 
 ```mermaid
 flowchart LR
-    WEB["PolyConecta.Web<br/>Angular 22 · :4200"]
-    PROTO["PolyConecta.Presentation<br/>prototipo Blazor · .NET 8 · :9000"]
-    API["PolyConecta.Api<br/>ASP.NET Core 10 · :9020"]
+    WEB["PolyConecta.Web<br/>Angular 22 · :9000"]
+    PROTO["PolyConecta.Presentation<br/>prototipo Blazor · .NET 8<br/>solo en pruebas de paridad · :9010"]
+    API["PolyConecta.Api<br/>ASP.NET Core 10 · :9200"]
     APP["PolyConecta.Application<br/>casos de uso y puertos"]
     INF["PolyConecta.Infrastructure<br/>EF Core · SQL Server 2022 · outbox · despachador"]
     DOM["PolyConecta.Domain<br/>sin dependencias"]
-    BR["PolyConecta.Contpaq<br/>bridge · :5005<br/>Real (win-x86) o Simulated"]
+    BR["PolyConecta.Contpaq<br/>bridge · :9030<br/>Real (win-x86) o Simulated"]
     ERP[("CONTPAQi Comercial<br/>SQL Server + SDK")]
 
     WEB -. "REST /api/v1 (desde F1)" .-> API
@@ -41,7 +41,7 @@ flowchart LR
     BR -- "SQL de solo lectura" --> ERP
 ```
 
-La flecha punteada de la web a la API es de F1 en adelante. Hasta entonces, `PolyConecta.Web` es la **réplica 1:1 del prototipo** (spec 001): las mismas pantallas, datos semilla y reglas, con el estado en memoria del navegador; solo usa la API para el chatter en vivo, por el hub `ChatterHub` en `/hubs/chatter` con su propia política de CORS para `:4200` (D-58). El prototipo Blazor se conserva como referencia de comportamiento y la réplica se compara contra él con pruebas de paridad (D-60).
+La flecha punteada de la web a la API es de F1 en adelante. Hasta entonces, `PolyConecta.Web` es la **réplica 1:1 del prototipo** (spec 001): las mismas pantallas, datos semilla y reglas, con el estado en memoria del navegador; solo usa la API para el chatter en vivo, por el hub `ChatterHub` en `/hubs/chatter` con su propia política de CORS para `:9000` (D-58). El prototipo Blazor se conserva como referencia de comportamiento y la réplica se compara contra él con pruebas de paridad (D-60).
 
 ## 3. Estado real de cada proyecto
 
@@ -69,13 +69,12 @@ La flecha punteada de la web a la API es de F1 en adelante. Hasta entonces, `Pol
 
 ## 5. Cómo correrlo
 
-Requisitos: SDK de .NET 10 (`global.json`), el runtime de ASP.NET Core 8 para el prototipo, Docker y Node 24.16 (`PolyConecta.Web/.nvmrc`).
+Requisitos: SDK de .NET 10 (`global.json`), Docker y Node 24.16 (`PolyConecta.Web/.nvmrc`). El runtime de ASP.NET Core 8 solo hace falta para las pruebas de paridad, que levantan el prototipo en `:9010`; `run.sh` ya no lo levanta (D-128).
 
 ```bash
-./run.sh                 # compila, prueba y levanta Presentation (:9000) + API (:9020)
-./run.sh --with-bridge   # además levanta el bridge (:5005), en modo simulado fuera de Windows, conectado a la API
-./run.sh --with-angular  # además levanta PolyConecta.Web (:4200); comprueba Node 24.16 y corre npm ci si falta
-cd PolyConecta.Web && npm ci && npm start   # solo la aplicación Angular (:4200)
+./run.sh                 # compila, prueba y levanta PolyConecta.Web (:9000) + API (:9200); comprueba Node 24.16 y corre npm ci si falta
+./run.sh --with-bridge   # además levanta el bridge (:9030), en modo simulado fuera de Windows, conectado a la API
+cd PolyConecta.Web && npm ci && npm start   # solo la aplicación Angular (:9000)
 ```
 
 Sin `ConnectionStrings__PolyConecta`, `run.sh` levanta un SQL Server 2022 local en Docker (`polyconecta-sql`, puerto 14333), crea los logins de `scripts/sql/logins-desarrollo.sql` con contraseñas generadas en `.env.local` y aplica las migraciones con `dotnet ef` (herramienta local en `dotnet-tools.json`).
@@ -83,7 +82,7 @@ Sin `ConnectionStrings__PolyConecta`, `run.sh` levanta un SQL Server 2022 local 
 La suite de contrato y el ciclo completo corren contra un bridge levantado:
 
 ```bash
-BRIDGE_URL=http://localhost:5005 BRIDGE_CALLBACK_SECRET=<el de BridgeConfig__CallbackSecret> \
+BRIDGE_URL=http://localhost:9030 BRIDGE_CALLBACK_SECRET=<el de BridgeConfig__CallbackSecret> \
   dotnet test --project tests/PolyConecta.Contract.Tests
 ```
 

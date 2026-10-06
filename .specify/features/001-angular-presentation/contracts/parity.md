@@ -15,7 +15,7 @@ Corre las pruebas unitarias (`ng test`, research R-06) una vez, sin modo observa
 | | |
 | :--- | :--- |
 | Entrada | Opcional: `-- --routes=/pedidos,/fabricacion/BOL-2026-0001` para correr solo esas rutas (cada agente de la fase 3 verifica las suyas) |
-| Prepara | Reutiliza Blazor en `:9000` y Angular en `:4200` si responden. Si no, los levanta y los apaga al terminar. La API **no** se levanta |
+| Prepara | Reutiliza Blazor en `:9010` y Angular en `:9000` si responden. Si no, los levanta y los apaga al terminar. La API **no** se levanta |
 | Hace | Por cada ruta de FR-004, abre las dos aplicaciones en Chromium a 1600×900, espera las fuentes y el render, oculta el botón "Nuevo" con una máscara y compara las capturas con `pixelmatch` |
 | Rutas | Las 19 de FR-004. Las rutas con folio usan un folio de la semilla (`/pedidos/IV310-26`, `/fabricacion/BOL-2026-0001`, `/traslados/PIM/OUT/48213`…), y la lista exacta se fija en las tareas |
 | Salida | `PolyConecta.Web/parity-report/index.html`, con la captura de cada lado, el mapa de diferencias y el porcentaje por ruta. El reporte lo ignora git |

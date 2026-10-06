@@ -32,7 +32,7 @@ public sealed class Bridge : IAsyncLifetime
 
     public HttpClient Http { get; } = new()
     {
-        BaseAddress = new Uri(Environment.GetEnvironmentVariable("BRIDGE_URL") is { Length: > 0 } url ? url : "http://localhost:5005"),
+        BaseAddress = new Uri(Environment.GetEnvironmentVariable("BRIDGE_URL") is { Length: > 0 } url ? url : "http://localhost:9030"),
         Timeout = TimeSpan.FromSeconds(30),
     };
 

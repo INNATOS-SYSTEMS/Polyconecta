@@ -6,10 +6,10 @@ Hub de SignalR en `PolyConecta.Api` (FR-015, D-58). Es una copia de `PolyConecta
 
 | | |
 | :--- | :--- |
-| URL | `http://localhost:9020/hubs/chatter` |
+| URL | `http://localhost:9200/hubs/chatter` |
 | Transporte | El que negocie `@microsoft/signalr`: WebSockets primero |
 | Autenticación | Ninguna. La réplica no tiene usuarios |
-| CORS | Política con nombre que admite el origen `http://localhost:4200`, con cualquier encabezado y método y **con credenciales**. No sirve `AllowAnyOrigin`, porque el cliente negocia con credenciales (research R-07) |
+| CORS | Política con nombre que admite el origen `http://localhost:9000`, con cualquier encabezado y método y **con credenciales**. No sirve `AllowAnyOrigin`, porque el cliente negocia con credenciales (research R-07) |
 
 ## Métodos
 

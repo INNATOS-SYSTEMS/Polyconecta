@@ -13,17 +13,18 @@ Réplica en Angular del prototipo Blazor `PolyConecta.Presentation` (spec 001). 
 
 | Aplicación | Puerto |
 | :--- | :--- |
-| `PolyConecta.Web` (Angular) | 4200 |
-| `PolyConecta.Presentation` (prototipo Blazor, referencia) | 9000 |
-| `PolyConecta.Api` (hub del chatter en `/hubs/chatter`) | 9020 |
+| `PolyConecta.Web` (Angular) | 9000 |
+| `PolyConecta.Api` (hub del chatter en `/hubs/chatter`) | 9200 |
+| `PolyConecta.Contpaq` (bridge, con `--with-bridge`) | 9030 |
+| `PolyConecta.Presentation` (prototipo Blazor): solo lo levantan las pruebas de paridad | 9010 |
 
-Desde la raíz, `./run.sh --with-angular` levanta las tres.
+Desde la raíz, `./run.sh` levanta la Web y la API.
 
 ## Scripts
 
 | Script | Qué hace |
 | :--- | :--- |
-| `npm start` | Servidor de desarrollo en `:4200` |
+| `npm start` | Servidor de desarrollo en `:9000` |
 | `npm run build` | Compila |
 | `npm test` | Pruebas unitarias (Vitest): estado portado, reglas del modo libre y componentes |
 | `npm run parity` | Paridad visual: captura las 19 rutas en las dos aplicaciones y compara píxeles. Informe en `parity-report/index.html`. `-- --routes=/pedidos,/fabricacion` limita la corrida |

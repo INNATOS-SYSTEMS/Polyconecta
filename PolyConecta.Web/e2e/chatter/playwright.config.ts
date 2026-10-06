@@ -14,8 +14,8 @@ export default defineConfig({
   webServer: [
     ...(Array.isArray(base.webServer) ? base.webServer : []).map(w => ({ ...w, cwd: '../..' })),
     {
-      command: 'dotnet run --project ../PolyConecta.Api --no-launch-profile --urls http://localhost:9020',
-      url: 'http://localhost:9020/swagger/index.html',
+      command: 'dotnet run --project ../PolyConecta.Api --no-launch-profile --urls http://localhost:9200',
+      url: 'http://localhost:9200/swagger/index.html',
       cwd: '../..',
       reuseExistingServer: true,
       timeout: 180_000,

@@ -12,10 +12,10 @@ Cómo comprobar que la feature cumple sus criterios de éxito. Los scripts está
 ## 1. Levantar todo
 
 ```bash
-./run.sh --with-angular
+./run.sh
 ```
 
-Levanta Blazor en `:9000`, la API en `:9020` y Angular en `:4200`. Sin `--with-angular`, `run.sh` se comporta como hoy.
+Levanta Angular en `:9000` y la API en `:9200` (D-128). El prototipo Blazor ya no lo levanta `run.sh`: las pruebas de paridad lo arrancan en `:9010`.
 
 ## 2. Compilar y probar (FR-019, SC-003)
 
@@ -36,7 +36,7 @@ npm run parity
 
 **Esperado**: las 19 rutas quedan en ≤ 1 % de píxeles distintos. El informe está en `parity-report/index.html`.
 
-**A mano**: abre `/fabricacion/BOL-2026-0001` en una pestaña nueva, que debe cargar sin pasar por la lista. Luego navega y usa atrás y adelante del navegador, que se comportan igual que en `:9000`.
+**A mano**: abre `/fabricacion/BOL-2026-0001` en una pestaña nueva, que debe cargar sin pasar por la lista. Luego navega y usa atrás y adelante del navegador, que se comportan igual que en el prototipo (`:9010`).
 
 ## 4. Flujo operativo (US-2, SC-002)
 

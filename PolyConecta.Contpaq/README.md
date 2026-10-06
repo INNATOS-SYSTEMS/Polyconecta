@@ -7,7 +7,7 @@ Servicio .NET 8 **x86** que aísla toda la comunicación con CONTPAQi Comercial 
 - **Escribe** documentos y movimientos con el SDK nativo (`ContpaqiSdkGateway`, `ContpaqiSdkNative`), con circuit breaker y en un solo hilo.
 - **Lee** catálogos y existencias por SQL directo con `NOLOCK` (`SqlReadRepository`). Nunca hace `INSERT` ni `UPDATE` en tablas `adm*`.
 - **Outbox propio** en SQLite (`bridge_outbox.db`), con reintentos y dead letter queue.
-- **API y dashboard** en el puerto `5005`: transacciones, catálogos, DLQ, logs y métricas (`Api/Controllers`), con un `DashboardHub` en vivo y `CorrelationMiddleware` para trazar solicitudes de extremo a extremo.
+- **API y dashboard** en el puerto `9030`: transacciones, catálogos, DLQ, logs y métricas (`Api/Controllers`), con un `DashboardHub` en vivo y `CorrelationMiddleware` para trazar solicitudes de extremo a extremo.
 - **Webhooks** de notificación de resultado (`WebhookDispatcher`).
 
 ## Advertencias

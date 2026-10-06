@@ -35,7 +35,7 @@ public static class DependencyInjection
         services.AddHttpClient<BridgeHttpClient>((sp, http) =>
         {
             var url = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<ErpOptions>>().Value.BridgeUrl;
-            http.BaseAddress = new Uri(string.IsNullOrWhiteSpace(url) ? "http://localhost:5005" : url);
+            http.BaseAddress = new Uri(string.IsNullOrWhiteSpace(url) ? "http://localhost:9030" : url);
             http.Timeout = TimeSpan.FromSeconds(30);
         });
         if (!string.IsNullOrWhiteSpace(configuration[$"{ErpOptions.Seccion}:BridgeUrl"]))

@@ -5,7 +5,7 @@ import { horaCorta } from '../format/numero';
 /** URL del hub del chatter en PolyConecta.Api (FR-015). */
 export const CHATTER_URL = new InjectionToken<string>('CHATTER_URL', {
   providedIn: 'root',
-  factory: () => 'http://localhost:9020/hubs/chatter',
+  factory: () => 'http://localhost:9200/hubs/chatter',
 });
 
 /** Fábrica de la conexión; las pruebas la sustituyen por un hub falso. */

@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 
-export const BLAZOR = 'http://localhost:9000';
-export const ANGULAR = 'http://localhost:4200';
+export const BLAZOR = 'http://localhost:9010';
+export const ANGULAR = 'http://localhost:9000';
 
 const SIN_ANIMACIONES = '*, *::before, *::after { transition: none !important; animation: none !important; caret-color: transparent !important; }';
 

@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 /**
  * Paridad con el prototipo Blazor (spec 001, FR-017, FR-018, research R-08): Chromium a 1600×900,
- * sin animaciones, contra Blazor en :9000 y Angular en :4200. Reutiliza los servidores si ya responden.
+ * sin animaciones, contra el prototipo Blazor en :9010 (solo lo levanta este arnés) y Angular en :9000. Reutiliza los servidores si ya responden.
  */
 export default defineConfig({
   testDir: '.',
@@ -22,15 +22,15 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'dotnet run --project ../PolyConecta.Presentation --urls http://localhost:9000',
-      url: 'http://localhost:9000',
+      command: 'dotnet run --project ../PolyConecta.Presentation --urls http://localhost:9010',
+      url: 'http://localhost:9010',
       cwd: '..',
       reuseExistingServer: true,
       timeout: 180_000,
     },
     {
-      command: 'npx ng serve --port 4200',
-      url: 'http://localhost:4200',
+      command: 'npx ng serve --port 9000',
+      url: 'http://localhost:9000',
       cwd: '..',
       reuseExistingServer: true,
       timeout: 180_000,

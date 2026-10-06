@@ -43,8 +43,8 @@ dotnet run --project PolyConecta.Api
 
 ```bash
 BridgeConfig__Mode=Simulated dotnet run --project PolyConecta.Contpaq
-curl -s localhost:5005/health
-BRIDGE_URL=http://localhost:5005 dotnet test tests/PolyConecta.Contract.Tests
+curl -s localhost:9030/health
+BRIDGE_URL=http://localhost:9030 dotnet test tests/PolyConecta.Contract.Tests
 ```
 
 **Esperado**:
@@ -79,7 +79,7 @@ Seguir `tools/sdk-lab/EJECUCION_EN_VPS.md` con el paquete .NET 10 y correr los b
 cd PolyConecta.Web && npm ci && npm run build && npm test && npm start
 ```
 
-**Esperado**: en `http://localhost:4200` se ve la barra superior y una página vacía por módulo. Los 12 componentes compartidos se ven igual que en el prototipo (`:9000`).
+**Esperado**: en `http://localhost:9000` se ve la barra superior y una página vacía por módulo. Los 12 componentes compartidos se ven igual que en el prototipo (`:9010`, el que levantan las pruebas de paridad).
 
 ## 7. CI (US-7, SC-007) · L2
 

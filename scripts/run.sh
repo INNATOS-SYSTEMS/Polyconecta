@@ -3,9 +3,11 @@
 # PolyConecta - Solution Build, Test & Multi-Layer Launch Script
 # ==============================================================================
 # Usage:
-#   ./run.sh                  # Inicia SPA (9000) + API Gateway (9020)
-#   ./run.sh --with-bridge    # Inicia SPA (9000) + API Gateway (9020) + CONTPAQi Bridge (5005)
-#   ./run.sh --with-angular   # Además levanta la réplica en Angular, PolyConecta.Web (4200)
+#   ./run.sh                  # Inicia PolyConecta.Web (9000) + API (9200)
+#   ./run.sh --with-bridge    # Además levanta el bridge de CONTPAQi (9030)
+#
+# El prototipo Blazor (PolyConecta.Presentation) ya no se levanta: es solo la referencia de las
+# pruebas de paridad de PolyConecta.Web, que lo arrancan por su cuenta en :9010.
 # ==============================================================================
 
 set -e
@@ -14,12 +16,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
-PRESENTATION_PORT="9000"
-API_PORT="9020"
-BRIDGE_PORT="5005"
-ANGULAR_PORT="4200"
+WEB_PORT="9000"
+API_PORT="9200"
+BRIDGE_PORT="9030"
 WITH_BRIDGE=false
-WITH_ANGULAR=false
 
 for arg in "$@"; do
     case $arg in
@@ -27,7 +27,7 @@ for arg in "$@"; do
             WITH_BRIDGE=true
             ;;
         --with-angular|--angular)
-            WITH_ANGULAR=true
+            # PolyConecta.Web ya se levanta siempre; se acepta para no romper a quien lo usaba.
             ;;
         [0-9]*)
             API_PORT="$arg"
@@ -39,46 +39,39 @@ echo "================================================================="
 echo "🚀  PolyConecta Operational Suite - Build, Test & Run"
 echo "================================================================="
 echo "Repository Root: ${REPO_ROOT}"
-echo "PolyConecta Web Presentation Port    : ${PRESENTATION_PORT}"
+echo "PolyConecta.Web (Angular)            : ${WEB_PORT}"
 echo "Swagger & REST API (PolyConecta.Api) : ${API_PORT}"
 if [ "$WITH_BRIDGE" = true ]; then
     echo "CONTPAQi Bridge Port                : ${BRIDGE_PORT} (Activo)"
 else
     echo "CONTPAQi Bridge Mode                : Desactivado (Usa --with-bridge para arrancar)"
 fi
-if [ "$WITH_ANGULAR" = true ]; then
-    echo "PolyConecta.Web (Angular)           : ${ANGULAR_PORT} (Activo)"
-fi
 echo "================================================================="
 
-# Step 0: La réplica en Angular necesita la versión de Node fijada en .nvmrc (spec 001, L2-T067).
-if [ "$WITH_ANGULAR" = true ]; then
-    echo "🔍 Step 0: Checking Node for PolyConecta.Web..."
-    NODE_REQUERIDO="$(tr -d 'v[:space:]' < PolyConecta.Web/.nvmrc)"
-    if ! command -v node > /dev/null 2>&1; then
-        echo "❌ Error: --with-angular requiere Node ${NODE_REQUERIDO} (PolyConecta.Web/.nvmrc) y no hay 'node' en PATH."
-        exit 1
-    fi
-    NODE_ACTUAL="$(node --version | tr -d 'v')"
-    if [ "$NODE_ACTUAL" != "$NODE_REQUERIDO" ]; then
-        echo "❌ Error: --with-angular requiere Node ${NODE_REQUERIDO} (PolyConecta.Web/.nvmrc) y está ${NODE_ACTUAL}. Usa 'nvm use'."
-        exit 1
-    fi
-    if [ ! -d PolyConecta.Web/node_modules ]; then
-        echo "   Instalando dependencias de PolyConecta.Web (npm ci)..."
-        (cd PolyConecta.Web && npm ci)
-    fi
-    echo "   Node ${NODE_ACTUAL}"
+# Step 0: PolyConecta.Web necesita la versión de Node fijada en .nvmrc (spec 001, L2-T067).
+echo "🔍 Step 0: Checking Node for PolyConecta.Web..."
+NODE_REQUERIDO="$(tr -d 'v[:space:]' < PolyConecta.Web/.nvmrc)"
+if ! command -v node > /dev/null 2>&1; then
+    echo "❌ Error: PolyConecta.Web requiere Node ${NODE_REQUERIDO} (PolyConecta.Web/.nvmrc) y no hay 'node' en PATH."
+    exit 1
 fi
+NODE_ACTUAL="$(node --version | tr -d 'v')"
+if [ "$NODE_ACTUAL" != "$NODE_REQUERIDO" ]; then
+    echo "❌ Error: PolyConecta.Web requiere Node ${NODE_REQUERIDO} (PolyConecta.Web/.nvmrc) y está ${NODE_ACTUAL}. Usa 'nvm use'."
+    exit 1
+fi
+if [ ! -d PolyConecta.Web/node_modules ]; then
+    echo "   Instalando dependencias de PolyConecta.Web (npm ci)..."
+    (cd PolyConecta.Web && npm ci)
+fi
+echo "   Node ${NODE_ACTUAL}"
 
 # Step 1: Locate a .NET installation that can build and run the solution.
 echo "🔍 Step 1: Checking .NET SDK environment..."
 
-# La solución corre en .NET 10 (CT-04). El prototipo Blazor (PolyConecta.Presentation) se queda
-# en net8.0 porque no se modifica (D-60), así que hacen falta los dos runtimes de ASP.NET Core.
-# Si falta el 8, _framework/blazor.web.js sale vacío y el circuito de Blazor nunca arranca.
+# La solución corre en .NET 10 (CT-04). El prototipo Blazor sigue en net8.0 (D-60), pero run.sh ya
+# no lo levanta: el runtime 8 solo hace falta para las pruebas de paridad de PolyConecta.Web.
 has_runtimes() {
-    "$1" --list-runtimes 2>/dev/null | grep -q '^Microsoft\.AspNetCore\.App 8\.' &&
     "$1" --list-runtimes 2>/dev/null | grep -q '^Microsoft\.AspNetCore\.App 10\.'
 }
 
@@ -94,13 +87,13 @@ for candidate in "$(command -v dotnet 2>/dev/null)" \
 done
 
 if [ -z "$DOTNET_BIN" ]; then
-    echo "❌ Error: No se encontró una instalación de .NET con los runtimes de ASP.NET Core 8.x y 10.x."
+    echo "❌ Error: No se encontró una instalación de .NET con el runtime de ASP.NET Core 10.x."
     if command -v dotnet &> /dev/null; then
         echo "   'dotnet' en PATH: $(command -v dotnet)"
         echo "   Runtimes disponibles ahí:"
         dotnet --list-runtimes 2>/dev/null | sed 's/^/     /'
     fi
-    echo "   Instala el SDK 10 (global.json) y el runtime 8 (macOS: brew install --cask dotnet-sdk@8)."
+    echo "   Instala el SDK 10 (global.json)."
     exit 1
 fi
 
@@ -169,12 +162,9 @@ echo "🧪 Step 3: Running domain unit & integration test suites..."
 echo "================================================================="
 echo "✅ Build & Tests Succeeded! Launching PolyConecta Solution Layers..."
 echo "================================================================="
-echo "💻 PolyConecta Web Presentation   : http://localhost:${PRESENTATION_PORT}"
+echo "💻 PolyConecta.Web (Angular)      : http://localhost:${WEB_PORT}"
 echo "📚 Swagger API (PolyConecta.Api)  : http://localhost:${API_PORT}/swagger"
 echo "⚙️  REST API Endpoints Base       : http://localhost:${API_PORT}/api/v1"
-if [ "$WITH_ANGULAR" = true ]; then
-    echo "🅰️  PolyConecta.Web (Angular)      : http://localhost:${ANGULAR_PORT}"
-fi
 
 PIDS=()
 cleanup() {
@@ -208,16 +198,9 @@ if [ "$WITH_BRIDGE" = true ]; then
     PIDS+=($!)
 fi
 
-if [ "$WITH_ANGULAR" = true ]; then
-    echo "-----------------------------------------------------------------"
-    echo "Iniciando PolyConecta.Web en segundo plano (Puerto ${ANGULAR_PORT})..."
-    (cd PolyConecta.Web && exec npm start -- --port "${ANGULAR_PORT}") &
-    PIDS+=($!)
-fi
-
 echo "-----------------------------------------------------------------"
-echo "Iniciando PolyConecta Web Presentation en segundo plano (Puerto ${PRESENTATION_PORT})..."
-"$DOTNET_BIN" run --project PolyConecta.Presentation/PolyConecta.Presentation.csproj --no-build --urls "http://localhost:${PRESENTATION_PORT}" &
+echo "Iniciando PolyConecta.Web en segundo plano (Puerto ${WEB_PORT})..."
+(cd PolyConecta.Web && exec npm start -- --port "${WEB_PORT}") &
 PIDS+=($!)
 
 echo "================================================================="

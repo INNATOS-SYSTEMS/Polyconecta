@@ -41,7 +41,7 @@ var config = builder.Configuration;
 var opciones = BridgeOptions.Leer(config);
 var sqliteConn = config["BridgeConfig:SqliteConnectionString"] ?? "Data Source=bridge_outbox.db";
 
-var port = int.TryParse(config["BridgeConfig:DashboardPort"], out var p) ? p : 5005;
+var port = int.TryParse(config["BridgeConfig:DashboardPort"], out var p) ? p : 9030;
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Initialize SQLite schema

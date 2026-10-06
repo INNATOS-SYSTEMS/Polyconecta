@@ -10,7 +10,7 @@ Prueba el contrato de [`docs/contratos/bridge-v1.md`](../../docs/contratos/bridg
 
 ```bash
 BridgeConfig__Mode=Simulated BridgeConfig__CallbackSecret=secreto-de-pruebas dotnet run --project PolyConecta.Contpaq
-BRIDGE_URL=http://localhost:5005 BRIDGE_CALLBACK_SECRET=secreto-de-pruebas \
+BRIDGE_URL=http://localhost:9030 BRIDGE_CALLBACK_SECRET=secreto-de-pruebas \
   dotnet test --project tests/PolyConecta.Contract.Tests
 ```
 
