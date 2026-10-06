@@ -28,7 +28,7 @@
 
 **⚠️ No empieza** hasta que `002-construccion-tecnica` esté integrada a `main` (research R-05).
 
-- [ ] L2-T001 [1] Traer `main` a la rama `001-angular-presentation` y verificar `cd PolyConecta.Web && npm ci && npm run build`. Comprobar que la 0.5 dejó:
+- [x] L2-T001 [1] Traer `main` a la rama `001-angular-presentation` y verificar `cd PolyConecta.Web && npm ci && npm run build`. Comprobar que la 0.5 dejó:
   - `.nvmrc` en 24.16.0 y versiones exactas en `package.json` (CT-36);
   - `src/styles/app.css` idéntico a `PolyConecta.Presentation/wwwroot/css/app.css` (`diff` vacío);
   - en `src/index.html`, Inter, Bootstrap 5.3.2 y Bootstrap Icons 1.11.3 por las mismas URL que `App.razor`;
@@ -36,11 +36,11 @@
   - los tipos `ProductRef`, `LotBalance`, `LotAllocation`, `StockOperationLine` y `ProductionLot` en `src/app/core/models/`, y `UiViewState`.
 
   Cada faltante se registra en `bloqueos.md`.
-- [ ] L2-T002 [1] Crear `.specify/features/001-angular-presentation/bloqueos.md` con el encabezado de la regla de autonomía 6 (fecha, agente, tarea, pregunta y lo hecho mientras tanto).
-- [ ] L2-T003 [1] Si la 0.5 no lo dejó: instalar `vitest@5.0.3` y `jsdom@30.1.2` exactos y configurar `ng test` con el builder `@angular/build:unit-test` en `PolyConecta.Web/angular.json`, en una corrida sin modo observador para `npm test` (research R-06).
-- [ ] L2-T004 [P] [1] Instalar `@playwright/test@1.63.0`, `pixelmatch@7.2.0` y `pngjs@7.0.0` exactos. Crear `PolyConecta.Web/e2e/playwright.config.ts` con Chromium a 1600×900, `reducedMotion: 'reduce'`, `baseURL` por proyecto (`blazor` en `:9000` y `angular` en `:4200`) y `webServer` que reutilice los servidores si ya responden (research R-08).
-- [ ] L2-T005 [1] Completar `PolyConecta.Web/src/app/app.routes.ts` con las 19 rutas de FR-004. Las páginas que aún no existan llevan un componente provisional. Los folios con `/` de `entregas`, `recepcion`, `recolecciones` y `traslados` se resuelven con un `UrlMatcher` que toma el resto de la ruta como folio (caso borde de la spec). `/ventas/inventario` y `/inventario` llevan a la misma página.
-- [ ] L2-T006 [1] Crear el arnés de paridad en `PolyConecta.Web/e2e/parity/` según [contracts/parity.md](contracts/parity.md):
+- [x] L2-T002 [1] Crear `.specify/features/001-angular-presentation/bloqueos.md` con el encabezado de la regla de autonomía 6 (fecha, agente, tarea, pregunta y lo hecho mientras tanto).
+- [x] L2-T003 [1] Si la 0.5 no lo dejó: instalar `vitest@5.0.3` y `jsdom@30.1.2` exactos y configurar `ng test` con el builder `@angular/build:unit-test` en `PolyConecta.Web/angular.json`, en una corrida sin modo observador para `npm test` (research R-06).
+- [x] L2-T004 [P] [1] Instalar `@playwright/test@1.63.0`, `pixelmatch@7.2.0` y `pngjs@7.0.0` exactos. Crear `PolyConecta.Web/e2e/playwright.config.ts` con Chromium a 1600×900, `reducedMotion: 'reduce'`, `baseURL` por proyecto (`blazor` en `:9000` y `angular` en `:4200`) y `webServer` que reutilice los servidores si ya responden (research R-08).
+- [x] L2-T005 [1] Completar `PolyConecta.Web/src/app/app.routes.ts` con las 19 rutas de FR-004. Las páginas que aún no existan llevan un componente provisional. Los folios con `/` de `entregas`, `recepcion`, `recolecciones` y `traslados` se resuelven con un `UrlMatcher` que toma el resto de la ruta como folio (caso borde de la spec). `/ventas/inventario` y `/inventario` llevan a la misma página.
+- [x] L2-T006 [1] Crear el arnés de paridad en `PolyConecta.Web/e2e/parity/` según [contracts/parity.md](contracts/parity.md):
   - `routes.ts` con las 19 rutas y sus folios de semilla, leídos del prototipo corriendo;
   - `parity.spec.ts`, que espera `document.fonts.ready` (falla con motivo explícito si no cargan las fuentes o el CDN), espera el circuito de Blazor, enmascara el botón "Nuevo" y compara con `pixelmatch` (`threshold` 0.1; pasa con ≤ 1 % de píxeles distintos);
   - el informe en `parity-report/index.html`;
@@ -48,7 +48,7 @@
   - el script `"parity"` en `package.json` y `parity-report/` en `.gitignore`.
 
   Se verifica corriendo `npm run parity`: puede fallar en las rutas, pero no en el arnés.
-- [ ] L2-T007 [P] [1] Crear el arnés de guiones en `PolyConecta.Web/e2e/scenarios/runner.ts`. Los pasos son `ir`, `pulsar`, `capturar` y `elegirLote`, y los puntos de control leen el texto visible de un contenedor. El runner corre el mismo guion contra `:9000` y `:4200` y compara los textos; los guiones marcados `soloAngular` solo corren contra `:4200`. Agregar el script `"scenarios"` en `package.json` ([contracts/parity.md](contracts/parity.md)).
+- [x] L2-T007 [P] [1] Crear el arnés de guiones en `PolyConecta.Web/e2e/scenarios/runner.ts`. Los pasos son `ir`, `pulsar`, `capturar` y `elegirLote`, y los puntos de control leen el texto visible de un contenedor. El runner corre el mismo guion contra `:9000` y `:4200` y compara los textos; los guiones marcados `soloAngular` solo corren contra `:4200`. Agregar el script `"scenarios"` en `package.json` ([contracts/parity.md](contracts/parity.md)).
 
 **Punto de control**: `npm run build`, `npm test` (sin pruebas todavía) y `npm run parity` corren.
 
