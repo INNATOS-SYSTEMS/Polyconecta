@@ -40,6 +40,11 @@ public class CicloCompletoTests(SqlServerFixture sql)
         {
             db.ReferenceSequences.Add(new ReferenceSequence("PRUEBA", prefijo, 4, ResetRule.Nunca));
             await db.SaveChangesAsync();
+            // La idempotency_key lleva el id del documento (CT-19) y cada base nueva arranca en 1. El
+            // simulador conserva sus transacciones entre corridas: con el mismo id, el comando llegaría
+            // como reenvío y devolvería el resultado anterior. Un id inicial al azar evita el choque.
+            var inicio = Random.Shared.NextInt64(1_000_000, 1_000_000_000_000);
+            await db.Database.ExecuteSqlRawAsync($"DBCC CHECKIDENT ('prueba.documento_de_prueba', RESEED, {inicio}) WITH NO_INFOMSGS;");
         }
         // El reloj del documento es real: el bridge firma el callback con su propia hora.
         entorno.Reloj.Now = DateTimeOffset.UtcNow;
