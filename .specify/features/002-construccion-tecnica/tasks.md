@@ -77,7 +77,7 @@ Responsable: Alejandro Ponce; revisa Luis Alvarado Martinez. Empieza cuando el c
 ### 0.1 · Rotar credenciales de CONTPAQi y crear el usuario de solo lectura del conector (5 oct, 4 h)
 
 - [x] L1-T001 [US8] Crear `tools/sdk-lab/scripts/New-BridgeReadOnlyLogin.sql`. Recibe el nombre del login y la contraseña como parámetros de `sqlcmd` (`$(Login)`, `$(Password)`), nunca escritos en el archivo. Crea el login y le da `db_datareader` en `CompacWAdmin` y en las bases de empresa que lee el bridge. Revisar el archivo con `git diff`: no debe contener ningún secreto.
-- [ ] L1-T002 [US8] En el VPS:
+- [x] L1-T002 [US8] En el VPS:
   - crear el login con el script;
   - ~~rotar la contraseña de `sa` con Sistemas~~: pospuesto por D-129, CONTPAQi se conecta con `sa` (H-04);
   - cambiar `BridgeConfig__SqlConnectionString` del entorno del administrador al login de solo lectura.
@@ -94,7 +94,7 @@ Responsable: Alejandro Ponce; revisa Luis Alvarado Martinez. Empieza cuando el c
 
   Verificar con `dotnet build` y `dotnet test tests/Contpaq.Bridge.Tests`.
 - [ ] L1-T005 [US5] En el VPS, correr los bloques F y G de la matriz con `sdk-lab` en .NET 10 contra `_LAB` y comparar con la evidencia del 30 de septiembre en `tools/sdk-lab/evidence/`. Cada diferencia va a "Exploración y cambios". **Si F o G fallan**, el bridge vuelve temporalmente a .NET 8 y se registra (D-67). Evidencia: `tools/sdk-lab/evidence/F0/0.4.md`.
-- [ ] L1-T006 [US5] Publicar el bridge .NET 10 `win-x86` en el VPS. Comprobar que arranca en modo `Real`, abre la sesión del SDK y responde `/health` con `mode: "Real"` y `sdk_initialized: true`. Evidencia en el mismo archivo.
+- [x] L1-T006 [US5] Publicar el bridge .NET 10 `win-x86` en el VPS. Comprobar que arranca en modo `Real`, abre la sesión del SDK y responde `/health` con `mode: "Real"` y `sdk_initialized: true`. Evidencia en el mismo archivo.
 
 ### 0.7 · CONTPAQi simulado para probar PolyConecta sin el servidor real (7 – 9 oct, 16 h)
 
