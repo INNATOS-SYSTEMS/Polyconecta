@@ -14,6 +14,13 @@ function Test-Administrador {
     return $p.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
+# Arranca el bridge publicado sin ventana: cerrarla por error lo detenía (spec 002, 6-oct). Sigue en la
+# sesión del administrador (D-115); su log está en C:\PolyConecta\bridge\logs y se detiene con Stop-Process.
+function Start-BridgeOculto {
+    $exe = Join-Path $script:CarpetaBridge 'Contpaq.Bridge.exe'
+    Start-Process -FilePath $exe -WorkingDirectory $script:CarpetaBridge -WindowStyle Hidden
+}
+
 # Llama al bridge y devuelve el objeto, o $null si no responde.
 function Invoke-Bridge([string]$ruta, [int]$Puerto = 5005) {
     try { return Invoke-RestMethod -Uri ("http://localhost:{0}{1}" -f $Puerto, $ruta) -TimeoutSec 15 }

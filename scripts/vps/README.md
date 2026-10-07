@@ -23,7 +23,14 @@ Para correr un `.ps1` descargado: `powershell -ExecutionPolicy Bypass -File .\sc
 | :--- | :--- |
 | `Start-BridgeDebug.ps1` | Corre el bridge en Debug y x86 en esa consola, en modo Real o con `-Simulado`. Ver `PolyConecta.Contpaq/AGENTS.md` |
 
-Detén la tarea `PolyConecta-Bridge` (o el `Contpaq.Bridge.exe` publicado) antes de depurar: los dos usan el puerto 5005.
+El bridge publicado corre **sin ventana** (6-oct: cerrar su consola por error lo detenía). Para verlo y detenerlo:
+
+```powershell
+Get-Content C:\PolyConecta\bridge\logs\bridge-*.log -Wait -Tail 50   # log en vivo
+Stop-Process -Name Contpaq.Bridge                                       # detenerlo, por ejemplo antes de depurar
+```
+
+`Publish-Bridge.ps1 -Visible` lo arranca con su consola, para depurar. Detén el bridge publicado antes de usar `Start-BridgeDebug.ps1`: los dos usan el puerto 5005.
 
 ## Notas
 

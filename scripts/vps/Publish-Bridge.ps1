@@ -6,7 +6,8 @@
   1. Comprueba sesión interactiva y que nada más use el puerto (salvo un bridge anterior, que detiene).
   2. Publica en Release con -p:Bridge32=true a una carpeta temporal y la copia a C:\PolyConecta\bridge
      sin tocar la base local del bridge (bridge_outbox.db) ni sus logs.
-  3. Arranca Contpaq.Bridge.exe en una ventana aparte, con las variables de usuario (D-115).
+  3. Arranca Contpaq.Bridge.exe sin ventana, con las variables de usuario (D-115). Con -Visible abre su
+     consola, para depurar; cerrar esa ventana detiene el bridge.
   4. Verifica GET /health (mode Real, proceso x86) y GET /api/v1/catalogs/warehouses, que lee con el
      login de solo lectura (cierra la verificación pendiente de L1-T002).
   5. Sonda del SDK: el bridge abre la sesión del SDK solo cuando tiene un comando pendiente. Le manda
@@ -25,7 +26,8 @@
 param(
     [int]$Puerto = 5005,
     [switch]$SinArrancar,
-    [switch]$SinSonda
+    [switch]$SinSonda,
+    [switch]$Visible
 )
 
 $ErrorActionPreference = 'Stop'
@@ -75,7 +77,7 @@ foreach ($k in [Environment]::GetEnvironmentVariables('User').Keys) {
     if ($k -like 'BridgeConfig__*') { [Environment]::SetEnvironmentVariable($k, [Environment]::GetEnvironmentVariable($k, 'User'), 'Process') }
 }
 $env:BridgeConfig__DashboardPort = "$Puerto"
-Start-Process -FilePath $exe -WorkingDirectory $CarpetaBridge
+if ($Visible) { Start-Process -FilePath $exe -WorkingDirectory $CarpetaBridge } else { Start-BridgeOculto }
 Write-Host '  Esperando a que responda (hasta 2 minutos; abrir la sesión del SDK tarda unos segundos)...'
 $salud = $null
 for ($i = 0; $i -lt 40 -and -not $salud; $i++) { Start-Sleep -Seconds 3; $salud = Invoke-Bridge '/health' $Puerto }
@@ -140,4 +142,7 @@ if (-not $SinSonda) {
 
 Add-Evidencia '0.4.md' 'Publicación del bridge .NET 10 x86 (L1-T006)' $lineas
 Write-Host ''
+Write-Host ''
+Write-Host 'El bridge corre sin ventana. Log en vivo:  Get-Content C:\PolyConecta\bridge\logs\bridge-*.log -Wait -Tail 50'
+Write-Host 'Detenerlo:                              Stop-Process -Name Contpaq.Bridge'
 Write-Host 'Siguiente: Set-BridgeAutostart.ps1 (L1-T016), para que arranque solo al reiniciar.'

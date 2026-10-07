@@ -7,7 +7,8 @@
      probado en S-04: guarda la contraseña cifrada como secreto LSA, no en el registro en claro.
   2. Tarea programada "PolyConecta-Bridge", "al iniciar sesión" de ese usuario, con LogonType
      Interactive: levanta C:\PolyConecta\bridge\Contpaq.Bridge.exe en su sesión, donde el SDK abre
-     la empresa y donde están sus variables de entorno (BridgeConfig__*).
+     la empresa y donde están sus variables de entorno (BridgeConfig__*). Lo arranca sin ventana,
+     para que nadie lo detenga cerrándola por error.
   3. Evidencia, sin secretos, en tools\sdk-lab\evidence\F0\0.9.md.
 
   Requiere una consola de PowerShell abierta como administrador y el bridge ya publicado
@@ -77,7 +78,9 @@ if (Get-ScheduledTask -TaskName $NombreTarea -ErrorAction SilentlyContinue) {
     Aviso "La tarea $NombreTarea ya existía: se reemplazó."
 }
 $cuenta = "$env:COMPUTERNAME\$Usuario"
-$accion = New-ScheduledTaskAction -Execute $exe -WorkingDirectory $CarpetaBridge
+# PowerShell lanza el bridge con la consola oculta y termina; el bridge sigue en esta sesión.
+$lanzar = "Start-Process -FilePath '$exe' -WorkingDirectory '$CarpetaBridge' -WindowStyle Hidden"
+$accion = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ("-NoProfile -NonInteractive -WindowStyle Hidden -Command `"{0}`"" -f $lanzar) -WorkingDirectory $CarpetaBridge
 $disparo = New-ScheduledTaskTrigger -AtLogOn -User $cuenta
 $disparo.Delay = ('PT{0}S' -f $RetrasoSegundos)
 $principal = New-ScheduledTaskPrincipal -UserId $cuenta -LogonType Interactive -RunLevel Highest
@@ -93,7 +96,7 @@ foreach ($v in $viejas) { Aviso ("Otra tarea relacionada sigue registrada: {0} (
 Add-Evidencia '0.9.md' 'Arranque automático (L1-T016)' @(
     ("Inicio de sesión automático: {0}\{1}, AutoAdminLogon={2}, contraseña como secreto LSA (Autologon de Sysinternals)" -f $wl.DefaultDomainName, $wl.DefaultUserName, $wl.AutoAdminLogon),
     ("Tarea: {0}, estado {1}, disparo al iniciar sesión de {2} (+{3} s), LogonType Interactive, RunLevel Highest" -f $NombreTarea, $t.State, $cuenta, $RetrasoSegundos),
-    ("Acción: {0} (carpeta {1}); reintentos: 3 cada minuto; sin límite de tiempo" -f $exe, $CarpetaBridge)
+    ("Acción: {0} sin ventana (Start-Process -WindowStyle Hidden), carpeta {1}" -f $exe, $CarpetaBridge)
 )
 Write-Host ''
 Write-Host 'Siguiente: Remove-BridgeTestUser.ps1 (L1-T017) y después Measure-BridgeRestart.ps1 (L1-T018).'
