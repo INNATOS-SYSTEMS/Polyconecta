@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { Router } from '@angular/router';
 import { n0 } from '../../../core/format/numero';
 import { aplicar } from '../../../core/search/search-view';
@@ -12,7 +13,7 @@ import { OdooViewSwitcher } from '../../../shared/odoo-view-switcher/odoo-view-s
 /** Réplica de Pages/CapturaMasivaPage.razor: kg por rollo de las OF de Extrusión. */
 @Component({
   selector: 'pc-captura-masiva',
-  imports: [OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager],
+  imports: [OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager, OdooIcon],
   templateUrl: './captura-masiva.html',
   styles: ':host { display: contents; }',
 })

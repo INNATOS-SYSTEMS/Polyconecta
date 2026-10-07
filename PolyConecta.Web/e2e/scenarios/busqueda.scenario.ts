@@ -96,6 +96,8 @@ guion({
     abrirMenu,
     filtro('Hoy'),
     filtro('Bolseo'),
-    { control: 'incidencias filtradas', en: 'main' },
+    // El menú de Incidencias también agrupa y guarda favoritos (spec 011, D-135): se comparan la lista y las facetas.
+    { control: 'incidencias filtradas', en: 'main .p-4' },
+    { control: 'facetas de incidencias', en: '.o_search_bar' },
   ],
 });

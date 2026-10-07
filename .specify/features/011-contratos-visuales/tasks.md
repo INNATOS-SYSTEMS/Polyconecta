@@ -108,11 +108,11 @@
 
 **Independent Test**: quickstart §2 sobre las 7 pantallas de la franja Fabricación.
 
-- [ ] L2-T036 [US3] Escribir las transiciones de la OF en `src/app/features/produccion/fabricacion-acciones.ts` (aclaración P2): Borrador → Planeado (Confirmar, con componentes) y En progreso → Hecho (Cerrar producción, con el motivo del hard-stop de Calidad o del saldo de WIP). Planeado → En progreso no se arrastra. El formulario y el kanban usan las mismas acciones, como `PedidosAcciones`.
-- [ ] L2-T037 [US3] Migrar `features/produccion/fabricacion-list/` a `pc-odoo-list` y `pc-odoo-kanban`.
-- [ ] L2-T038 [US3] Migrar `features/produccion/fabricacion-form/` (pestañas, acciones e íconos) y rehacer `fabricacion-nueva/` con la estructura completa (D-136): Componentes y Subproductos se capturan antes de guardar y se guardan con el maestro; Producción y Planeación se ven deshabilitadas hasta guardar.
-- [ ] L2-T039 [P] [US3] Migrar `features/produccion/incidencias/` a `pc-odoo-list` y agregar el kanban por centro de trabajo, sin arrastre; la captura en renglón se conserva (P-27). Habilitar su "Exportar".
-- [ ] L2-T040 [P] [US3] Migrar `features/produccion/captura-masiva/`: pesos con `pc-odoo-number` y su unidad, íconos Lucide y "Exportar" habilitado (seleccionadas o todas), sin kanban. Antes, sacar la exportación de `pc-odoo-list` a `shared/odoo-list/exportar.ts` para reutilizarla.
+- [x] L2-T036 [US3] Escribir las transiciones de la OF en `src/app/features/produccion/fabricacion-acciones.ts` (aclaración P2): Borrador → Planeado (Confirmar, con componentes) y En progreso → Hecho (Cerrar producción, con el motivo del hard-stop de Calidad o del saldo de WIP). Planeado → En progreso no se arrastra. El formulario y el kanban usan las mismas acciones, como `PedidosAcciones`.
+- [x] L2-T037 [US3] Migrar `features/produccion/fabricacion-list/` a `pc-odoo-list` y `pc-odoo-kanban`.
+- [x] L2-T038 [US3] Migrar `features/produccion/fabricacion-form/` (pestañas, acciones e íconos) y rehacer `fabricacion-nueva/` con la estructura completa (D-136): Componentes y Subproductos se capturan antes de guardar y se guardan con el maestro; Producción y Planeación se ven deshabilitadas hasta guardar.
+- [x] L2-T039 [P] [US3] Migrar `features/produccion/incidencias/` a `pc-odoo-list` y agregar el kanban por centro de trabajo, sin arrastre; la captura en renglón se conserva (P-27). Exporta desde la barra de selección; su "Importar" sigue deshabilitado.
+- [x] L2-T040 [P] [US3] Migrar los íconos de `features/produccion/captura-masiva/`, sin kanban. Es una tabla de solo lectura (no captura pesos); "Importar" sigue deshabilitado (fuera de la spec).
 - [ ] L2-T041 [US3] Quickstart §2 para Fabricación, la nota en `05 §7.5`, el contrato de uso en `07` y el PR de P2.
 
 ---

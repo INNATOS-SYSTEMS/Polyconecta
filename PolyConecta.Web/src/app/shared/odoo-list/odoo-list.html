@@ -58,7 +58,7 @@
           <td></td>
         </tr>
       } @else if (row.original.dato; as d) {
-        <tr style="cursor:pointer;" [class.table-active]="row.getIsSelected()" (click)="abrirFila(row.original)">
+        <tr [style.cursor]="filasPulsables() ? 'pointer' : null" [class.table-active]="row.getIsSelected()" (click)="filasPulsables() && abrirFila(row.original)">
           @if (seleccion()) {
             <td (click)="$event.stopPropagation()"><input type="checkbox" class="form-check-input" [attr.aria-label]="'Seleccionar fila'" [checked]="row.getIsSelected()" (click)="row.getToggleSelectedHandler()($event)" /></td>
           }
@@ -87,5 +87,7 @@
   }
 </table>
 
+ @if (conPaginador()) {
 <pc-odoo-pager [count]="total()" [inicio]="inicio()" [fin]="fin()" [tamanos]="tamanos" [tamano]="tamano()"
                (anterior)="cambiarPagina(-1)" (siguiente)="cambiarPagina(1)" (cambiarTamano)="cambiarTamano($event)" />
+}

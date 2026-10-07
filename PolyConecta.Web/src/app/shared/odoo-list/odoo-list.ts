@@ -66,6 +66,10 @@ export class OdooList<T> implements OnInit {
   readonly ordenInicial = input<SortingState>([]);
   readonly tamanoInicial = input(80);
   readonly mensajeVacio = input('No hay registros que mostrar.');
+  /** Sin paginador, la lista muestra hasta `tamanoInicial` filas (pantallas del prototipo que no paginan). */
+  readonly conPaginador = input(true);
+  /** Filas que abren un formulario al pulsarlas. Sin formulario (incidencias), `false`. */
+  readonly filasPulsables = input(true);
 
   /** Estado de la barra de búsqueda, enlazado en dos sentidos para que un favorito lo pueda cambiar. */
   readonly busqueda = model('');
