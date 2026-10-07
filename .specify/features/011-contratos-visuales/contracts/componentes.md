@@ -72,6 +72,7 @@ Implementa `ControlValueAccessor`. "Buscar más…" abre un diálogo con `pc-odo
 - **`pc-odoo-tabs`:** pestañas de la hoja, sobre `BrnTabs`. Entrada: `pestanas: { id, titulo }[]`; el contenido va por `ng-template` con el id.
 - **`pc-odoo-action-menu`:** el botón "⚙ Acciones" con su menú, sobre el `Menu` del CDK. Entrada: `acciones: { nombre, icono, ejecutar, deshabilitada? }[]`.
 - **`pc-odoo-dialog`:** marco de los diálogos (título, cuerpo, botones primario y secundario), sobre el `Dialog` del CDK. Lo usan las confirmaciones, el hard-stop y los diálogos de las transiciones.
+- **`AvisosService`:** avisos flotantes de éxito, aviso y error, sobre el overlay del CDK. `exito(texto)`, `aviso(texto)` y `error(texto)`. Los dos primeros se cierran solos a los 4 s; el de error, solo con su botón.
 
 ---
 

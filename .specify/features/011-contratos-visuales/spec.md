@@ -106,7 +106,7 @@ Hay que refinar el acabado **sin cambiar la estructura** de ninguna barra ni hoj
 
 ### E4 · Galería viva (`/catalogo`)
 
-- **Contenido:** una ruta de `PolyConecta.Web` con cada componente en todos sus estados y datos de ejemplo, sin dependencias nuevas.
+- **Contenido:** una ruta de `PolyConecta.Web` con cada componente en todos sus estados y datos de ejemplo. Es parte de la aplicación: no usa Storybook ni otra herramienta de catálogo.
 - **Pruebas:** cada comportamiento del contrato tiene su prueba unitaria y una captura en el tablero.
 
 ### E5 · Migración de las 28 pantallas
@@ -228,6 +228,7 @@ Se corrió en una copia de `PolyConecta.Web` y pasaron **10 de 10 pruebas de Pla
 | :--- | :--- | :--- | :--- | :--- |
 | 2026-10-07 | La aplicación desplaza el contenido dentro de un contenedor, no la página, así que `fullPage` de Playwright no captura la pantalla completa. `npm run tablero` mide lo desplazable y agranda la ventana antes de capturar | Hallazgo al capturar | E1 | — |
 | 2026-10-07 | En la cadena de OF, la raíz es bolseo (`BOL-2026-0001`), su hija impresión y la hija de esta extrusión. El tablero las muestra en ese orden de navegación, no en el orden físico de producción | Semilla de `core/seed/flujo.ts` | E1 | — |
+| 2026-10-07 | Revisión de coherencia (analyze): sin críticos. Se corrigieron 5 hallazgos: contratos y galería también para los componentes existentes y los patrones (L2-T025, L2-T027), aviso flotante (L2-T018), estado cargando de botones (L2-T011), E4 sin Storybook y conteo de componentes del plan | Revisión antes de implementar | Tareas de US1 | — |
 | 2026-10-07 | Plan y tareas: research R-01 a R-10, tipos de lista, favoritos y kanban (data-model), contrato de 12 componentes, quickstart y 59 tareas en 9 historias (P1 = US1 + US2). La navegación pasa de `npm run parity` a `npm run audit`, y la verificación del build entra a la CI | Plan de la spec | Toda la spec | — |
 | 2026-10-07 | La aclaración del kanban partía de un dato falso: solo Pedidos y Fabricación tienen kanban hoy (Captura masiva e Incidencias lo tienen apagado). "Todas las listas de documentos" son 8; Captura masiva queda fuera. Las incidencias no tienen estado, así que su kanban agrupa por centro de trabajo sin arrastre | Revisión del código al planear | Kanban, P2 | — |
 | 2026-10-07 | Prueba técnica: 10/10 en Playwright. Hallazgos en "Prueba técnica": API nueva de TanStack 9, opciones del modo servidor, estilos y textos que Spartan deja a cargo de la aplicación, y dependencias de Tailwind que no entran al build | Verificar las librerías antes de planear | Plan de P1 | — |

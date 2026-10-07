@@ -38,7 +38,7 @@ Construir en `PolyConecta.Web` los componentes con contrato que pide la spec: li
 
 **Scale/Scope**:
 - 28 pantallas: 8 listas de documentos, 7 formularios, 7 hojas de "Nuevo", captura masiva, inicio e inventarios.
-- 12 componentes nuevos o reconstruidos y 45 íconos por migrar.
+- 10 componentes nuevos, 12 existentes por documentar y conectar, y 45 íconos por migrar.
 
 ## Constitution Check
 
