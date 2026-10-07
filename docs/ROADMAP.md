@@ -2,7 +2,7 @@
 
 La construcción avanza **fase a fase** según el [plan de trabajo](plan/Tarea%20(project.task)%20-%20replaneacion(2).xlsx) (D-116), por **dos caminos en paralelo**, cada uno con su líder y sus agentes. Las reglas de cómo se construye están en la [constitución técnica](diseno/06-constitucion-tecnica.md). Aquí están las fases, las specs, qué entrega cada camino y el tablero de avance.
 
-**Actualizado:** 5 de octubre de 2026 (replaneación por fases y líderes asignados).
+**Actualizado:** 6 de octubre de 2026 (cierre de F0).
 
 ---
 
@@ -85,7 +85,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Fase | Diseño cerrado | Spec | Cerrado en PolyConecta | Comandos entregados (camino 1) | Cerrado integrado | Revisión |
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
 | Réplica Angular (paralelo) | ✅ | `001-angular-presentation` | ⬜ | n/a | n/a | — |
-| F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · borrador, por ratificar | ⬜ | ⬜ | ⬜ | — |
+| F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · integrada en `docs/diseno/` y borrada | ✅ 6-oct · `d5eaf35` | ✅ 6-oct: contrato `1.0`, bridge simulado y bridge x86 en el VPS (evidencia `56da557`) | n/a: F0 no entrega comandos que escriban en CONTPAQi | — |
 | F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R1 |
 | F2 · Planeación de producción | ✅ | `004-planeacion-produccion` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R2 |
 | F3 · Almacén | ✅ | `005-almacen` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R3 |
@@ -106,11 +106,11 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | :--- | :--- |
 | F0 | ninguna |
 | F1 | T-06 (lectura de existencias, tarea 1.4): se puede especificar con la lectura directa de D-87 como supuesto. |
-| F2 a F5, F7 | Dependen del contrato `bridge-v1` (0.2). T-17 (costo de la Entrada) se resuelve en el contrato antes de F3 |
+| F2 a F5, F7 | Contrato `bridge-v1` `1.0` firmado el 6-oct (D-132). T-17 (costo de la Entrada) se resuelve antes de F3 |
 | F6 | D-114 (cancelar el pedido remisionado) por validar con la operación |
 | F8 | T-06 (la conciliación depende de F-05) |
 
-Para el **cierre integrado** de cualquier fase hace falta el inicio de sesión automático del administrador con la tarea del bridge (tarea 0.9, D-115). Para el **piloto**, el hosting de producción y los respaldos (H-01, H-02).
+El **cierre integrado** de cada fase usa el bridge real del VPS, que arranca solo con el inicio de sesión automático del administrador (tarea 0.9, D-115, hecha el 6-oct). Para el **piloto**, el hosting de producción y los respaldos (H-01, H-02).
 
 ## 6. Puesta en marcha
 
@@ -137,16 +137,16 @@ Lo que quedaba pendiente de la lista anterior lo absorben tareas del plan.
 | # | Trabajo | Estado | Ahora es |
 | :---: | :--- | :---: | :--- |
 | A-1 | Asignar a los dos líderes | ✅ 5-oct (D-117) | — |
-| A-2 | Crear el login de solo lectura del bridge (06-oct ✅) y definir `BridgeConfig__SqlConnectionString` en el VPS. La rotación de `sa` se pospone: CONTPAQi se conecta con `sa` (D-129, H-04) | 🟨 | 0.1 |
+| A-2 | Crear el login de solo lectura del bridge y definir `BridgeConfig__SqlConnectionString` en el VPS. La rotación de `sa` se pospone: CONTPAQi se conecta con `sa` (D-129, H-04) | ✅ 6-oct | — |
 | A-3 | Ejecutar la matriz del SDK. 30-sep, commit `7f0596e`: 35 de 36; queda F-05 | ✅ | — |
 | A-4 | Escribir el contrato `bridge-v1` (CT-18). `1.0` firmado el 6-oct (D-132) | ✅ | 0.2 |
-| A-5 | Bridge en modo simulado (CT-21) | ⬜ | 0.7 |
+| A-5 | Bridge en modo simulado (CT-21) | ✅ 6-oct | — |
 | A-6 | Decidir versiones: ratificadas el 29-sep (D-67 a D-73) | ✅ | — |
-| A-7 | Ejecutar la spec 001 (réplica en Angular) | ⬜ | En paralelo (D-118) |
-| A-8 | Crear la spec de Plataforma | ⬜ | Spec `002-construccion-tecnica` |
-| A-9 | Migrar PolyConecta a .NET 10, EF Core SQL Server, xUnit v3 y AwesomeAssertions; quitar Npgsql, EF InMemory de producción y MediatR; centralizar versiones (D-73) | ⬜ | 0.3 |
-| A-10 | Verificar el bridge en .NET 10 `win-x86` con `sdk-lab` (F y G) y migrarlo (D-67) | ⬜ | 0.4 |
-| A-11 | Pipeline de GitHub Actions (D-76, CT-27) | ⬜ | 0.8 |
+| A-7 | Ejecutar la spec 001 (réplica en Angular) | 🟨 | En paralelo (D-118) |
+| A-8 | Crear la spec de Plataforma | ✅ 6-oct | Spec `002-construccion-tecnica`, ya integrada |
+| A-9 | Migrar PolyConecta a .NET 10, EF Core SQL Server, xUnit v3 y AwesomeAssertions; quitar Npgsql, EF InMemory de producción y MediatR; centralizar versiones (D-73) | ✅ 6-oct | — |
+| A-10 | Verificar el bridge en .NET 10 `win-x86` y migrarlo (D-67). Se verificó con el propio bridge en el VPS, no con `sdk-lab` (D-130); F y G se repiten con cada comando en su fase | ✅ 6-oct | — |
+| A-11 | Pipeline de GitHub Actions (D-76, CT-27); `main` protegida con sus tres checks | ✅ 6-oct | — |
 | A-12 | Definir el hosting de producción y los respaldos (H-01, H-02) | ⬜ | Sin tarea; antes de 9.1 |
 | A-13 | Cotejar F-01, F-02 y F-05 con la UI de CONTPAQi (T-06). Los WIP por planta se crearon en S-09 | ⬜ | Con 1.4 |
 | A-14 | Corregir el gateway del bridge según la matriz (D-79 a D-82, D-88, D-91) | ⬜ | 1.1, 2.2, 3.1 |
@@ -154,7 +154,7 @@ Lo que quedaba pendiente de la lista anterior lo absorben tareas del plan.
 | A-16 | Probar el bridge como servicio y con inicio de sesión automático: corre en la sesión del administrador (D-115) | ✅ | — |
 | A-17 | Bloque S de la matriz. Hecho el 1-oct, salvo el movimiento a los almacenes de S-09 | 🟨 | 3.2 |
 | A-18 | Ventana de mantenimiento: S-04, S-09 y S-17 hechas el 1-oct | ✅ | — |
-| A-19 | Revertir el usuario de prueba `polyconecta-bridge` y configurar el inicio de sesión automático del administrador con la tarea del bridge (D-115) | ⬜ | 0.9 |
+| A-19 | Revertir el usuario de prueba `polyconecta-bridge` y configurar el inicio de sesión automático del administrador con la tarea del bridge (D-115) | ✅ 6-oct | — |
 
 ## 8. Ramas de contingencia de la matriz del SDK
 
