@@ -15,9 +15,9 @@ Estás en el VPS de Windows donde corre CONTPAQi Comercial, para desarrollar, de
 .\scripts\vps\Start-BridgeDebug.ps1 -Simulado  # sin SDK: para lógica del contrato que no toca CONTPAQi
 ```
 
-Compila en Debug y en x86 (`-p:Bridge32=true`), porque `MGW_SDK.dll` es de 32 bits. Escucha en `http://localhost:5005`. Los logs salen en la consola. Para depurar paso a paso, el usuario asocia Visual Studio al proceso `Contpaq.Bridge.exe`.
+Compila en Debug y en x86 (`-p:Bridge32=true`), porque `MGW_SDK.dll` es de 32 bits. Escucha en `http://localhost:9030` (D-128). Los logs salen en la consola. Para depurar paso a paso, el usuario asocia Visual Studio al proceso `Contpaq.Bridge.exe`.
 
-Si el bridge publicado está corriendo (la tarea `PolyConecta-Bridge` lo levanta al iniciar sesión), detenlo antes: los dos usan el puerto 5005. Publicar, el arranque automático y la medición del reinicio están en [`scripts/vps/README.md`](../scripts/vps/README.md).
+Si el bridge publicado está corriendo (la tarea `PolyConecta-Bridge` lo levanta al iniciar sesión), detenlo antes: los dos usan el puerto 9030 (D-128). Publicar, el arranque automático y la medición del reinicio están en [`scripts/vps/README.md`](../scripts/vps/README.md).
 
 ## Reglas duras
 
@@ -47,7 +47,7 @@ Si el bridge publicado está corriendo (la tarea `PolyConecta-Bridge` lo levanta
 | Qué | Cómo | Escribe en CONTPAQi |
 | :--- | :--- | :---: |
 | Pruebas del bridge | `dotnet test --project tests\Contpaq.Bridge.Tests` | No |
-| Suite de contrato contra el bridge real | Con el bridge arriba: `$env:BRIDGE_URL='http://localhost:5005'`, `$env:BRIDGE_CALLBACK_SECRET` igual a `BridgeConfig__CallbackSecret`, y `dotnet test --project tests\PolyConecta.Contract.Tests`. Las pruebas de `Simulado/` se omiten solas | **Sí**: las cargas válidas crean documentos. Corre la suite solo con la confirmación del usuario y después de revisar los códigos de `docs/contratos/ejemplos/` |
+| Suite de contrato contra el bridge real | Con el bridge arriba: `$env:BRIDGE_URL='http://localhost:9030'`, `$env:BRIDGE_CALLBACK_SECRET` igual a `BridgeConfig__CallbackSecret`, y `dotnet test --project tests\PolyConecta.Contract.Tests`. Las pruebas de `Simulado/` se omiten solas | **Sí**: las cargas válidas crean documentos. Corre la suite solo con la confirmación del usuario y después de revisar los códigos de `docs/contratos/ejemplos/` |
 | Lecturas | `GET /api/v1/catalogs/*` y `/api/v1/inventory/*` | No |
 
 ## Dónde se anota

@@ -30,7 +30,7 @@ Get-Content C:\PolyConecta\bridge\logs\bridge-*.log -Wait -Tail 50   # log en vi
 Stop-Process -Name Contpaq.Bridge                                       # detenerlo, por ejemplo antes de depurar
 ```
 
-`Publish-Bridge.ps1 -Visible` lo arranca con su consola, para depurar. Detén el bridge publicado antes de usar `Start-BridgeDebug.ps1`: los dos usan el puerto 5005.
+`Publish-Bridge.ps1 -Visible` lo arranca con su consola, para depurar. Detén el bridge publicado antes de usar `Start-BridgeDebug.ps1`: los dos usan el puerto 9030 (D-128).
 
 ## Notas
 
