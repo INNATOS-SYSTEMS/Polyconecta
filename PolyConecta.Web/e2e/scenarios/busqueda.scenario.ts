@@ -39,13 +39,16 @@ guion({
     abrirMenu,
     filtro('Extrusión'),
     filtro('Impresión'),
-    { control: 'dos procesos', en: 'main' },
+    // El menú de Fabricación también agrupa y guarda favoritos (spec 011, D-135): se comparan la lista y las facetas.
+    { control: 'dos procesos', en: 'main .p-4' },
     filtro('Borrador'),
-    { control: 'proceso y estado', en: 'main' },
+    { control: 'proceso y estado', en: 'main .p-4' },
+    { control: 'facetas de proceso y estado', en: '.o_search_bar' },
     { pulsar: '.o_search_facet_remove' },
-    { control: 'primera faceta quitada', en: 'main' },
+    { control: 'primera faceta quitada', en: 'main .p-4' },
+    { control: 'barra sin la primera faceta', en: '.o_search_bar' },
     { pulsar: MENU, texto: 'Quitar todos los filtros' },
-    { control: 'sin filtros', en: 'main' },
+    { control: 'sin filtros', en: 'main .p-4' },
   ],
 });
 

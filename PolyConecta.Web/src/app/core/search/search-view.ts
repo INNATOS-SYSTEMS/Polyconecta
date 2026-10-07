@@ -51,3 +51,14 @@ export function aplicar<T>(view: SearchView<T>, items: readonly T[], texto: stri
   }
   return res;
 }
+
+/** La misma vista de búsqueda sobre otro tipo de fila, que contiene al original (por ejemplo, la fila de una lista). */
+export function adaptarVista<A, B>(vista: SearchView<A>, origen: (fila: B) => A): SearchView<B> {
+  return {
+    campos: vista.campos.map(c => ({ etiqueta: c.etiqueta, valor: (b: B) => c.valor(origen(b)) })),
+    filtros: vista.filtros.map(f => ({ nombre: f.nombre, campo: f.campo, condicion: (b: B) => f.condicion(origen(b)) })),
+    agrupaciones: vista.agrupaciones.map(g => ({ etiqueta: g.etiqueta, clave: (b: B) => g.clave(origen(b)) })),
+    agrupacionesPorDefecto: vista.agrupacionesPorDefecto,
+    referencia: vista.referencia ? (b: B) => vista.referencia!(origen(b)) : undefined,
+  };
+}

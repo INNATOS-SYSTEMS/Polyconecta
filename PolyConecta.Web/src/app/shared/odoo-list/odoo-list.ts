@@ -22,6 +22,7 @@ import { AvisosService } from '../odoo-dialog/avisos';
 import { OdooIcon } from '../odoo-icon/odoo-icon';
 import { OdooPager } from '../odoo-pager/odoo-pager';
 import { AccionMasiva, ColumnaLista, esNumerica, formatear, leerColumna, textoColumna } from './columnas';
+import { exportarExcel } from './exportar';
 
 /** Fila de la tabla: un registro o un grupo (sintético, research R-02). */
 interface Fila<T> {
@@ -263,19 +264,7 @@ export class OdooList<T> implements OnInit {
   async exportar(): Promise<number> {
     const ids = this.idsSeleccionados();
     const r = await this.origen().consultar({ ...this.consulta(), pagina: 0, tamano: Number.MAX_SAFE_INTEGER, agruparPor: [], grupo: [], ids: ids.length ? ids : null });
-    const cols = this.columnasVisibles();
-    const hoja = [
-      cols.map(c => c.titulo),
-      ...r.filas.map(f => cols.map(c => {
-        const v = leerColumna(c, f);
-        if (v == null) return null;
-        if (esNumerica(c.tipo)) return Number(v);
-        if (v instanceof Date) return v;
-        return c.texto ? c.texto(f) : String(v);
-      })),
-    ];
-    const { default: writeExcelFile } = await import('write-excel-file/browser');
-    await writeExcelFile(hoja, { dateFormat: 'dd/mm/yyyy' }).toFile(`${this.lista()}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    await exportarExcel(this.lista(), this.columnasVisibles(), r.filas);
     return r.filas.length;
   }
 
