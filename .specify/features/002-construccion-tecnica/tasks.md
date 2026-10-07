@@ -144,13 +144,13 @@ Empieza cuando el contrato está firmado (C-T006).
 
 ### 0.9 · Inicio de sesión automático del administrador y arranque del conector en el servidor (9 oct, 4 h)
 
-- [ ] L1-T016 [US8] Crear `scripts/vps/Set-BridgeAutostart.ps1` (antes en `tools/sdk-lab/scripts`, retirado por D-130), que configura dos cosas en el VPS:
+- [x] L1-T016 [US8] Crear `scripts/vps/Set-BridgeAutostart.ps1` (antes en `tools/sdk-lab/scripts`, retirado por D-130), que configura dos cosas en el VPS:
   - el inicio de sesión automático del administrador, con el mecanismo probado en S-04;
   - la tarea programada "al iniciar sesión", que levanta el bridge con sus variables de entorno.
 
   El script no contiene secretos; la contraseña se pide al correrlo.
-- [ ] L1-T017 [US8] Revertir el usuario de prueba `polyconecta-bridge` en el VPS (A-19) y dejarlo registrado en `tools/sdk-lab/evidence/F0/0.9.md`.
-- [ ] L1-T018 [US8] Reiniciar el VPS sin intervención y medir. En menos de 5 minutos, `GET /health` debe responder y `GET /api/v1/catalogs/warehouses` debe leer con el login de solo lectura (SC-006). La evidencia, con la hora de reinicio y la de respuesta, va en `0.9.md`.
+- [x] L1-T017 [US8] Revertir el usuario de prueba `polyconecta-bridge` en el VPS (A-19) y dejarlo registrado en `tools/sdk-lab/evidence/F0/0.9.md`.
+- [x] L1-T018 [US8] Reiniciar el VPS sin intervención y medir. En menos de 5 minutos, `GET /health` debe responder y `GET /api/v1/catalogs/warehouses` debe leer con el login de solo lectura (SC-006). La evidencia, con la hora de reinicio y la de respuesta, va en `0.9.md`.
 
 ---
 
