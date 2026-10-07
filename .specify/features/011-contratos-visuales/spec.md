@@ -115,6 +115,40 @@ Hay que refinar el acabado **sin cambiar la estructura** de ninguna barra ni hoj
 - Los guiones de escenario (`npm run scenarios`) siguen en verde.
 - Las hojas de "Nuevo" pasan a la estructura completa (D-136).
 
+## Prueba técnica (7-oct)
+
+Se corrió en una copia de `PolyConecta.Web` y pasaron **10 de 10 pruebas de Playwright**. Las 76 pruebas unitarias de la aplicación siguieron en verde con las librerías instaladas. El código está en [`prueba-tecnica/`](prueba-tecnica/README.md).
+
+**Versiones verificadas** (exactas, CT-36; `npm audit` sin vulnerabilidades):
+
+| Paquete | Versión | Licencia |
+| :--- | :--- | :--- |
+| `@tanstack/angular-table` | 9.2.6 | MIT |
+| `@angular/cdk` | 22.2.2 | MIT |
+| `@spartan-ng/brain` | 1.6.1 | MIT |
+| `@lucide/angular` | 1.52.0 | ISC |
+| `write-excel-file` | 4.1.1 | MIT |
+
+**Qué quedó probado:**
+- **Tabla:** paginación y filas por página; orden de las 57 filas en el origen, no solo de la página; filtro; agrupación con conteo y total por grupo, y grupos que se abren bajo pedido; ocultar y reordenar columnas; exportar a `.xlsx` las seleccionadas o todo el filtro, con las columnas visibles.
+- **Kanban:** la transición válida mueve la tarjeta; la inválida la regresa con el motivo; la que pide datos abre su diálogo, y cancelar la regresa.
+- **Combobox:** filtra al escribir, se maneja con teclado y muestra "Sin resultados".
+- **Calendario:** está en español, navega por mes y elige una fecha.
+
+**Hallazgos que el plan debe recoger:**
+1. **TanStack 9 cambió su API** respecto de la 8: `injectTable`, `tableFeatures` y `createColumnHelper<features, T>`. Los ejemplos de internet suelen ser de la 8. Usar las guías que trae el paquete (`node_modules/@tanstack/*/skills/`).
+2. **Modo servidor:** además de `manualSorting` y `manualPagination` hacen falta `autoResetPageIndex: false` y `autoResetExpanded: false`. Si no, TanStack regresa a la página 1 al cambiar los datos y cierra los grupos.
+3. **Orden como Odoo:** `sortDescFirst: false`. Si no, las columnas numéricas empiezan de mayor a menor.
+4. **Agrupar en el servidor:** la agrupación de TanStack es del navegador. Los grupos del origen se pintan como filas sintéticas con `getSubRows` y expansión; abrir un grupo pide sus filas con el filtro del grupo.
+5. **Spartan `brain` no trae estilos ni textos:**
+   - las opciones filtradas (`data-hidden`) y el aviso "Sin resultados" (`data-empty`) se ocultan con nuestro CSS;
+   - el encabezado del calendario lo pintamos nosotros;
+   - los textos de accesibilidad vienen en inglés ("Go to the next month") si no se dan en `provideBrnCalendarI18n`.
+6. **`BrnComboboxImports` no sirve tal cual:** trae `BrnCombobox` y `BrnComboboxMultiple` con el mismo selector. Se importan directiva por directiva.
+7. **Dependencias de Spartan:** npm instala Tailwind 4, `tw-animate-css` y `clsx` porque Spartan las declara obligatorias. No entran al build (cero reglas de Tailwind en el CSS), pero quedan en `node_modules` y en `package-lock.json`.
+8. **Tamaño:** la página con todas las librerías pesa 87 kB comprimida y se carga solo al abrirla; la carga inicial creció 7 kB comprimidos. `write-excel-file` se importa dinámicamente al exportar, para no cargarlo con la lista.
+9. **Exportar:** se usa `write-excel-file/browser` (`toFile` o `toBlob`). El archivo resultante es un `.xlsx` válido.
+
 ## Contratos por escribir
 
 ### Patrones de pantalla
@@ -193,5 +227,6 @@ Hay que refinar el acabado **sin cambiar la estructura** de ninguna barra ni hoj
 | :--- | :--- | :--- | :--- | :--- |
 | 2026-10-07 | La aplicación desplaza el contenido dentro de un contenedor, no la página, así que `fullPage` de Playwright no captura la pantalla completa. `npm run tablero` mide lo desplazable y agranda la ventana antes de capturar | Hallazgo al capturar | E1 | — |
 | 2026-10-07 | En la cadena de OF, la raíz es bolseo (`BOL-2026-0001`), su hija impresión y la hija de esta extrusión. El tablero las muestra en ese orden de navegación, no en el orden físico de producción | Semilla de `core/seed/flujo.ts` | E1 | — |
+| 2026-10-07 | Prueba técnica: 10/10 en Playwright. Hallazgos en "Prueba técnica": API nueva de TanStack 9, opciones del modo servidor, estilos y textos que Spartan deja a cargo de la aplicación, y dependencias de Tailwind que no entran al build | Verificar las librerías antes de planear | Plan de P1 | — |
 | 2026-10-07 | Variante A de botones aplicada en `app.css` como variables. `npm run build`, `npm test` (76) y `npm run scenarios` (26) en verde: la estructura no cambió | Elección del usuario en el lienzo | E3 | — |
 | 2026-10-07 | Se eligió PrimeNG y después se descartó: desde la versión 19 (incluida la 22, la de Angular 22) pide llave de licencia y solo es gratis para organizaciones con menos de 1 millón de dólares de ingresos, 5 desarrolladores y 10 empleados. Se usa el stack MIT | Licencia leída en el paquete `primeng@22.1.2` | Toda la spec | D-135 |
