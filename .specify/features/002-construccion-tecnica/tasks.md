@@ -93,7 +93,7 @@ Responsable: Alejandro Ponce; revisa Luis Alvarado Martinez. Empieza cuando el c
   - `tests/Contpaq.Bridge.Tests` a xUnit v3 y AwesomeAssertions.
 
   Verificar con `dotnet build` y `dotnet test tests/Contpaq.Bridge.Tests`.
-- [ ] L1-T005 [US5] En el VPS, correr los bloques F y G de la matriz con `sdk-lab` en .NET 10 contra `_LAB` y comparar con la evidencia del 30 de septiembre en `tools/sdk-lab/evidence/`. Cada diferencia va a "Exploración y cambios". **Si F o G fallan**, el bridge vuelve temporalmente a .NET 8 y se registra (D-67). Evidencia: `tools/sdk-lab/evidence/F0/0.4.md`.
+- [x] ~~L1-T005~~ **Descartada el 6-oct (D-130):** `sdk-lab` se retiró y el bridge .NET 10 x86 ya abrió la empresa, leyó con el login de solo lectura y volvió solo tras reiniciar en el VPS (`evidence/F0/0.4.md`, `0.9.md`). Los bloques F y G se repiten con el bridge cuando cada comando llegue en su fase. Texto original: [US5] En el VPS, correr los bloques F y G de la matriz con `sdk-lab` en .NET 10 contra `_LAB` y comparar con la evidencia del 30 de septiembre en `tools/sdk-lab/evidence/`. Cada diferencia va a "Exploración y cambios". **Si F o G fallan**, el bridge vuelve temporalmente a .NET 8 y se registra (D-67). Evidencia: `tools/sdk-lab/evidence/F0/0.4.md`.
 - [x] L1-T006 [US5] Publicar el bridge .NET 10 `win-x86` en el VPS. Comprobar que arranca en modo `Real`, abre la sesión del SDK y responde `/health` con `mode: "Real"` y `sdk_initialized: true`. Evidencia en el mismo archivo.
 
 ### 0.7 · CONTPAQi simulado para probar PolyConecta sin el servidor real (7 – 9 oct, 16 h)
@@ -274,7 +274,7 @@ El modelo está en [data-model.md](data-model.md). Las piezas del contrato empie
 
 ## Cierre de la fase (los dos líderes)
 
-- [ ] C-T013 Correr [quickstart.md](quickstart.md) completo y anotar el resultado de cada sección en "Exploración y cambios".
+- [x] C-T013 Correr [quickstart.md](quickstart.md) completo y anotar el resultado de cada sección en "Exploración y cambios".
 - [ ] C-T014 Cerrar la spec:
   - integrar en `docs/diseno/` lo que cambió (contrato, base común, decisiones de research);
   - actualizar el tablero de `docs/ROADMAP.md` con la fecha y el commit (CT-35);
