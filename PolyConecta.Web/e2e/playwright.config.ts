@@ -7,6 +7,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: '.',
   testMatch: ['**/*.spec.ts', '**/*.scenario.ts'],
+  testIgnore: ['tablero/**'],
   timeout: 60_000,
   fullyParallel: false,
   workers: 1,

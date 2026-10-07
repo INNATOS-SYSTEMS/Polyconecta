@@ -31,6 +31,7 @@ Desde la raíz, `./run.sh` levanta la Web y la API, y `./run.sh --solo-web` solo
 | `npm run scenarios` | Guiones de escenario: los mismos pasos en Blazor y en Angular, con el texto y la captura de cada punto de control comparados. Los guiones `soloAngular` prueban el modo libre |
 | `npm run audit` | Auditor de primer nivel: en cada ruta pulsa cada botón o enlace en las dos aplicaciones y compara URL y texto. Informe en `auditoria-report/` |
 | `npm run chatter` | Chatter en vivo: dos pestañas con la API corriendo (el mensaje llega en menos de 1 s) y sin conexión |
+| `npm run tablero` | Tablero de flujo (spec 011): captura cada pantalla de `e2e/tablero/pantallas.ts` completa, a 1600 px, en `tablero-report/`. Solo levanta Angular |
 
 `parity`, `scenarios` y `audit` levantan el prototipo y Angular si no están corriendo; `chatter` también levanta la API.
 
@@ -48,4 +49,4 @@ Desde la raíz, `./run.sh` levanta la Web y la API, y `./run.sh --solo-web` solo
 - `src/app/core/`: modelos, semilla y servicios de estado portados del prototipo (`state/`), y el modo libre (`state/libre/`).
 - `src/app/shared/`: los componentes del prototipo (`odoo-*`, selectores de lotes, `poc-sales-order-form`), más `boton-nuevo` y `hoja-nueva`.
 - `src/app/features/`: las páginas, por módulo.
-- `e2e/`: `parity/`, `scenarios/`, `auditoria/` y `chatter/`.
+- `e2e/`: `parity/`, `scenarios/`, `auditoria/`, `chatter/` y `tablero/`.

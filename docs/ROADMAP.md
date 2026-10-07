@@ -38,6 +38,8 @@ Cada fase de F0 a F8 es **una spec** de Spec Kit en `.specify/features/NNN-<fase
 
 La spec `001-angular-presentation` (réplica del prototipo) **sigue en paralelo** al plan, sin horas asignadas en él (D-118).
 
+La spec `011-contratos-visuales` es una **fase abierta**, fuera del plan (D-134): el tablero de flujo de pantallas y los contratos visuales de cada componente. Va **antes del diseño de las pantallas de F1**; el backend de F1 no la espera.
+
 **Áreas del dominio.** Los 6 módulos de D-64 (Plataforma, Catálogos e Inventario, Ventas, Producción, Calidad y Logística) siguen siendo las áreas del modelo y sus esquemas (`inv`, `ven`, `prd`, `cal`, `log`). Ya no marcan el orden de construcción. La conversión en Santa Cruz (impresión y bolseo) es parte de Producción (D-64).
 
 ## 3. Qué entrega cada camino por fase
@@ -85,6 +87,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Fase | Diseño cerrado | Spec | Cerrado en PolyConecta | Comandos entregados (camino 1) | Cerrado integrado | Revisión |
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
 | Réplica Angular (paralelo) | ✅ | `001-angular-presentation` · integrada en `docs/diseno/` y borrada | ✅ 7-oct · `db071b6` | n/a | n/a | — |
+| Contratos visuales (fase abierta) | 🟨 | `011-contratos-visuales` · tablero publicado; contratos en curso | ⬜ | n/a | n/a | — |
 | F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · integrada en `docs/diseno/` y borrada | ✅ 6-oct · `d5eaf35` | ✅ 6-oct: contrato `1.0`, bridge simulado y bridge x86 en el VPS (evidencia `56da557`) | n/a: F0 no entrega comandos que escriban en CONTPAQi | — |
 | F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R1 |
 | F2 · Planeación de producción | ✅ | `004-planeacion-produccion` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R2 |
