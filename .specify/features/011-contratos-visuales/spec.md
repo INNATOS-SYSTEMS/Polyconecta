@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-07
 
-**Status**: Definida en la sesión del 7-oct (D-134 a D-136). El tablero ya está publicado (E1); falta el resto.
+**Status**: Aclarada, probada y planeada el 7-oct: [plan.md](plan.md), [tasks.md](tasks.md) (59 tareas, P1 a P8). El tablero ya está publicado (E1) y los botones aplicados (E3).
 
 **Fase del plan**: ninguna. Es una fase abierta, fuera del plan de trabajo, como la 001 (D-134, D-118). Va **antes del diseño de las pantallas de F1**; el backend de F1 no la espera.
 
@@ -53,7 +53,7 @@ Que cada pantalla se construya **componiendo piezas con contrato**, sobre librer
 ### Session 2026-10-07
 
 - Q: Mientras no exista la API, ¿de dónde sacan los datos las listas migradas? → A: De una interfaz de origen de datos. La tabla trabaja en modo servidor desde ya; ahora la resuelve un origen en memoria sobre la semilla y en F1 uno por HTTP, sin cambiar la pantalla.
-- Q: ¿Qué pantallas llevan kanban en esta spec? → A: Todas las listas de documentos, 9 en total: Pedidos, Fabricación, Captura masiva e Incidencias (que ya lo tienen) más Recolecciones, Calidad, Traslados, Recepción y Entregas (kanban nuevo).
+- Q: ¿Qué pantallas llevan kanban en esta spec? → A: Todas las listas de documentos. Corregido al planear: son 8 (Pedidos y Fabricación, que ya lo tienen, más Incidencias, Recolecciones, Calidad, Traslados, Recepción y Entregas). La pregunta decía, por error, que Captura masiva e Incidencias ya tenían kanban; Captura masiva es una pantalla de captura, no una lista de documentos, y queda fuera.
 - Q: Sin usuarios hasta F1, ¿dónde se guardan las vistas favoritas? → A: En el navegador por ahora, con la forma de `SavedSearch`; en F1 pasan a la base por usuario detrás de la misma interfaz y lo guardado antes no se migra.
 - Q: ¿Cómo se exporta a Excel desde una lista? → A: Con `write-excel-file` (MIT), en el navegador, con lo que devuelve la consulta del origen de datos: las filas seleccionadas o, sin selección, todas las del filtro actual. SheetJS (`xlsx`) se descartó por dos vulnerabilidades conocidas en su versión de npm.
 - Q: ¿Quién dirige la spec y cómo se entrega? → A: L2, Luis Alvarado Martinez, por partes. Antes del 12-oct: componentes, galería y el flujo de Pedidos. Los otros 7 flujos se migran e integran uno por uno, en paralelo a F1 y antes de la fase que los usa.
@@ -165,7 +165,8 @@ Se corrió en una copia de `PolyConecta.Web` y pasaron **10 de 10 pruebas de Pla
   - todo en el servidor: la tabla trabaja en modo manual de TanStack y pide cada vista a un **origen de datos de lista** (`OrigenDeLista<T>`). La consulta lleva página, filas por página, orden, filtros y agrupación; la respuesta trae filas, grupos con sus totales y el total de registros;
   - en esta spec el origen es **en memoria** sobre la semilla actual; en F1 se agrega el origen **HTTP** con la misma interfaz, y la pantalla no cambia.
 - [ ] **Kanban.** Recibe la colección, las etapas (estado, título, orden, plegada sí o no) y la plantilla de la tarjeta. Agrupa por etapa, con un contador por columna. Arrastrar ejecuta la transición validada (D-135); la carga es por etapa, desde el mismo origen de datos que la lista.
-  - Va en **9 listas**: Pedidos, Fabricación, Captura masiva e Incidencias (ya lo tienen) y Recolecciones, Calidad, Traslados, Recepción y Entregas (nuevo).
+  - Va en **8 listas**: Pedidos y Fabricación (ya lo tienen) e Incidencias, Recolecciones, Calidad, Traslados, Recepción y Entregas (nuevo). Captura masiva no lleva kanban.
+  - Las incidencias no tienen estado: su kanban agrupa por centro de trabajo y no permite arrastrar.
   - Cada documento declara sus etapas (sus estados, en orden) y qué transición corresponde a cada movimiento entre etapas. Un movimiento sin transición, o hacia atrás, regresa la tarjeta con el motivo.
   - Si la transición pide datos (por ejemplo, la firma al autorizar un pedido o el resultado de un control de calidad), soltar abre su diálogo; la tarjeta se mueve solo si se confirma.
 - [ ] **Formulario de documento.** Panel con migas y botones inteligentes, barra de acciones, etapas, hoja (título, folio, maestro en dos columnas, pestañas y detalle) y chatter.
@@ -227,6 +228,8 @@ Se corrió en una copia de `PolyConecta.Web` y pasaron **10 de 10 pruebas de Pla
 | :--- | :--- | :--- | :--- | :--- |
 | 2026-10-07 | La aplicación desplaza el contenido dentro de un contenedor, no la página, así que `fullPage` de Playwright no captura la pantalla completa. `npm run tablero` mide lo desplazable y agranda la ventana antes de capturar | Hallazgo al capturar | E1 | — |
 | 2026-10-07 | En la cadena de OF, la raíz es bolseo (`BOL-2026-0001`), su hija impresión y la hija de esta extrusión. El tablero las muestra en ese orden de navegación, no en el orden físico de producción | Semilla de `core/seed/flujo.ts` | E1 | — |
+| 2026-10-07 | Plan y tareas: research R-01 a R-10, tipos de lista, favoritos y kanban (data-model), contrato de 12 componentes, quickstart y 59 tareas en 9 historias (P1 = US1 + US2). La navegación pasa de `npm run parity` a `npm run audit`, y la verificación del build entra a la CI | Plan de la spec | Toda la spec | — |
+| 2026-10-07 | La aclaración del kanban partía de un dato falso: solo Pedidos y Fabricación tienen kanban hoy (Captura masiva e Incidencias lo tienen apagado). "Todas las listas de documentos" son 8; Captura masiva queda fuera. Las incidencias no tienen estado, así que su kanban agrupa por centro de trabajo sin arrastre | Revisión del código al planear | Kanban, P2 | — |
 | 2026-10-07 | Prueba técnica: 10/10 en Playwright. Hallazgos en "Prueba técnica": API nueva de TanStack 9, opciones del modo servidor, estilos y textos que Spartan deja a cargo de la aplicación, y dependencias de Tailwind que no entran al build | Verificar las librerías antes de planear | Plan de P1 | — |
 | 2026-10-07 | Variante A de botones aplicada en `app.css` como variables. `npm run build`, `npm test` (76) y `npm run scenarios` (26) en verde: la estructura no cambió | Elección del usuario en el lienzo | E3 | — |
 | 2026-10-07 | Se eligió PrimeNG y después se descartó: desde la versión 19 (incluida la 22, la de Angular 22) pide llave de licencia y solo es gratis para organizaciones con menos de 1 millón de dólares de ingresos, 5 desarrolladores y 10 empleados. Se usa el stack MIT | Licencia leída en el paquete `primeng@22.1.2` | Toda la spec | D-135 |
