@@ -20,7 +20,8 @@ export class PcPestana {
     <div class="o_tabs" [brnTabs]="actual()" (brnTabsChange)="cambiar($event)">
       <ul class="nav nav-tabs mb-3" brnTabsList role="tablist">
         @for (p of pestanas(); track p.id) {
-          <li class="nav-item"><button type="button" class="nav-link" [class.active]="p.id === actual()" [brnTabsTrigger]="p.id" [attr.data-pestana]="p.id">{{ p.titulo }}</button></li>
+          <li class="nav-item"><button type="button" class="nav-link" [class.active]="p.id === actual()" [brnTabsTrigger]="p.id" [attr.data-pestana]="p.id"
+              [disabled]="!!p.deshabilitada" [attr.title]="p.deshabilitada || null">{{ p.titulo }}</button></li>
         }
       </ul>
       @for (p of pestanas(); track p.id) {
@@ -36,7 +37,8 @@ export class PcPestana {
   `,
 })
 export class OdooTabs {
-  readonly pestanas = input.required<{ id: string; titulo: string }[]>();
+  /** `deshabilitada` lleva el motivo, que se muestra al pasar el cursor. */
+  readonly pestanas = input.required<{ id: string; titulo: string; deshabilitada?: string }[]>();
   readonly activa = model<string | undefined>(undefined);
   protected readonly contenidos = contentChildren(PcPestana);
 

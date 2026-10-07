@@ -44,4 +44,16 @@ describe('OF libre (FR-012, D-54)', () => {
     expect(of.folio).toBe('EXT-2026-0012');
     expect(of.produccion[0]).toMatchObject({ lote: 'R001-EXT-2026-0012', estado: 'En revisión', unidad: 'KGS' });
   });
+
+  it('"Nuevo" guarda el maestro con sus componentes y subproductos (D-136)', () => {
+    const { of } = ofs.crearConLineas('Bolseo', 'PT1113 C567', 1000, [{ clave: 'PT3413 C4235', cantidad: 50 }], [{ clave: 'PT3413 C4235', cantidad: 5 }]);
+    expect(of?.componentes).toEqual([expect.objectContaining({ clave: 'PT3413 C4235', cantidad: 50 })]);
+    expect(of?.subproductos).toEqual([expect.objectContaining({ clave: 'PT3413 C4235', cantidad: 5, producido: false })]);
+  });
+
+  it('si una línea no es válida, no crea la OF', () => {
+    const antes = flow.manufacturingOrders.length;
+    expect(ofs.crearConLineas('Bolseo', 'PT1113 C567', 1000, [{ clave: 'NO-EXISTE', cantidad: 5 }], []).error).toBeDefined();
+    expect(flow.manufacturingOrders.length).toBe(antes);
+  });
 });

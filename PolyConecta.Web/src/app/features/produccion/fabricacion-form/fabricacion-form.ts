@@ -13,13 +13,16 @@ import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-dr
 import { LineDraft, OdooLineCapture, emptyDraft } from '../../../shared/odoo-line-capture/odoo-line-capture';
 import { OdooSmartButtons, SmartButtonModel } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
+import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
+import { OdooTabs } from '../../../shared/odoo-tabs/odoo-tabs';
+import { FabricacionAcciones } from '../fabricacion-acciones';
 
 type Tab = 'componentes' | 'subproductos' | 'produccion' | 'planeacion';
 
 /** Réplica de Pages/FabricacionFormView.razor. */
 @Component({
   selector: 'pc-fabricacion-form',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooLineCapture, OdooChatterDrawer],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooLineCapture, OdooChatterDrawer, OdooTabs, OdooIcon],
   templateUrl: './fabricacion-form.html',
   styles: ':host { display: contents; }',
 })
@@ -30,6 +33,7 @@ export class FabricacionForm {
   private readonly router = inject(Router);
   private readonly asignarWip = inject(AsignarSaldoWip);
   private readonly ofLibre = inject(OfLibre);
+  private readonly acciones = inject(FabricacionAcciones);
 
   /** "Asignar saldo de WIP" (FR-013): modal abierto y último error de la asignación. */
   protected readonly mostrarSaldoWip = signal(false);
@@ -74,6 +78,25 @@ export class FabricacionForm {
         ];
   });
 
+  protected readonly pestanas = [
+    { id: 'componentes', titulo: 'Componentes' }, { id: 'subproductos', titulo: 'Subproductos' },
+    { id: 'produccion', titulo: 'Producción' }, { id: 'planeacion', titulo: 'Planeación' },
+  ];
+
+  /** Las mismas acciones que el kanban (FabricacionAcciones). */
+  protected confirmar(): void {
+    this.acciones.confirmar(this.folioOf());
+  }
+
+  protected cerrar(): void {
+    this.acciones.cerrar(this.folioOf());
+  }
+
+  protected readonly motivoParaNoCerrar = computed(() => {
+    this.flow.cambios();
+    return this.acciones.motivoParaNoCerrar(this.folioOf());
+  });
+
   protected readonly puedeCerrar = computed(() => {
     const of = this.of();
     return (
@@ -90,15 +113,15 @@ export class FabricacionForm {
     // Primarias y secundarias llegan al pedido directamente; la jerarquía se navega en la lista.
     // FR-014: una OF libre no tiene pedido; el botón queda vacío y deshabilitado, nunca con un origen falso.
     const list: SmartButtonModel[] = this.of()?.libre
-      ? [{ label: 'Pedido', countBadge: 0, iconClass: 'bi bi-cart-check', targetRoute: '', deshabilitado: true }]
-      : [{ label: 'Pedido', countBadge: 1, iconClass: 'bi bi-cart-check', targetRoute: `/pedidos/${this.of()?.pedidoFolio}` }];
+      ? [{ label: 'Pedido', countBadge: 0, iconClass: 'pedido', targetRoute: '', deshabilitado: true }]
+      : [{ label: 'Pedido', countBadge: 1, iconClass: 'pedido', targetRoute: `/pedidos/${this.of()?.pedidoFolio}` }];
     // El traslado interplanta cuelga de la orden que tiene secundarias (la que genera el envío).
     if (this.flow.getSecondaries(folio).length > 0)
-      list.push({ label: 'Traslado', countBadge: 1, iconClass: 'bi bi-truck', targetRoute: `/traslados/${this.flow.traslado().folio}` });
+      list.push({ label: 'Traslado', countBadge: 1, iconClass: 'traslado', targetRoute: `/traslados/${this.flow.traslado().folio}` });
     const recolecciones = this.ops.deOf(folio);
     if (recolecciones.length > 0)
-      list.push({ label: 'Recolección', countBadge: recolecciones.length, iconClass: 'bi bi-box-arrow-right', targetRoute: `/recolecciones/${recolecciones[0].folio}` });
-    list.push({ label: 'Calidad', countBadge: 1, iconClass: 'bi bi-shield-check', targetRoute: `/calidad/${folio}` });
+      list.push({ label: 'Recolección', countBadge: recolecciones.length, iconClass: 'recoleccion', targetRoute: `/recolecciones/${recolecciones[0].folio}` });
+    list.push({ label: 'Calidad', countBadge: 1, iconClass: 'calidad', targetRoute: `/calidad/${folio}` });
     return list;
   });
 

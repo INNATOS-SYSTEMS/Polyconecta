@@ -13,19 +13,19 @@
         <div class="o_statusbar">
             <div class="d-flex align-items-center gap-2">
                 @if (of.state === 'Borrador') {
-                    <button class="btn btn-primary btn-sm fw-bold px-3" (click)="flow.planear(folioOf())" [disabled]="of.componentes.length === 0">
-                        <i class="bi bi-check-circle me-1"></i> Confirmar
+                    <button class="btn btn-primary btn-sm fw-bold px-3" (click)="confirmar()" [disabled]="of.componentes.length === 0">
+                        <pc-odoo-icon nombre="bi-check-circle" /> Confirmar
                     </button>
                     <button class="btn btn-outline-secondary btn-sm px-3" (click)="volverALista()">Cancelar</button>
                 } @else if (of.state !== 'Hecho') {
-                    <button class="btn btn-primary btn-sm fw-bold px-3" (click)="flow.cerrarProduccion(folioOf())" [disabled]="!puedeCerrar()">
-                        <i class="bi bi-box-arrow-in-down me-1"></i> Cerrar Producción
+                    <button class="btn btn-primary btn-sm fw-bold px-3" (click)="cerrar()" [disabled]="!puedeCerrar()" [attr.title]="motivoParaNoCerrar() ?? null">
+                        <pc-odoo-icon nombre="bi-box-arrow-in-down" /> Cerrar Producción
                     </button>
                     <button class="btn btn-outline-secondary btn-sm px-3" (click)="volverALista()">Cancelar</button>
                 }
                 @if (saldoWip().length > 0) {
                     <button class="btn btn-outline-primary btn-sm px-3" (click)="errorSaldoWip.set(undefined); mostrarSaldoWip.set(true)">
-                        <i class="bi bi-link-45deg me-1"></i> Asignar saldo de WIP
+                        <pc-odoo-icon nombre="bi-link-45deg" /> Asignar saldo de WIP
                     </button>
                 }
             </div>
@@ -53,12 +53,8 @@
                         </div>
                     </div>
 
-                    <ul class="nav nav-tabs mb-3" role="tablist">
-                        <li class="nav-item"><button class="nav-link" [class.active]="tab() === 'componentes'" (click)="goToTab('componentes')">Componentes</button></li>
-                        <li class="nav-item"><button class="nav-link" [class.active]="tab() === 'subproductos'" (click)="goToTab('subproductos')">Subproductos</button></li>
-                        <li class="nav-item"><button class="nav-link" [class.active]="tab() === 'produccion'" (click)="goToTab('produccion')">Producción</button></li>
-                        <li class="nav-item"><button class="nav-link" [class.active]="tab() === 'planeacion'" (click)="goToTab('planeacion')">Planeación</button></li>
-                    </ul>
+                    <!-- Solo el encabezado: el contenido de cada pestaña lo controla la página con tab(). -->
+                    <pc-odoo-tabs [pestanas]="pestanas" [activa]="tab()" (activaChange)="goToTab($any($event))" />
 
                     @if (tab() === 'componentes') {
                         @if (of.state === 'Borrador') {
@@ -78,11 +74,11 @@
                                         <td class="text-center text-nowrap">
                                             <button class="btn btn-sm btn-link p-0 me-2" [title]="of.state === 'Borrador' ? 'Editar' : 'La orden ya fue confirmada'"
                                                     [disabled]="of.state !== 'Borrador'" (click)="editarComponente(line)">
-                                                <i class="bi bi-pencil"></i>
+                                                <pc-odoo-icon nombre="bi-pencil" />
                                             </button>
                                             <button class="btn btn-sm btn-link text-danger p-0" [title]="of.state === 'Borrador' ? 'Eliminar' : 'La orden ya fue confirmada'"
                                                     [disabled]="of.state !== 'Borrador'" (click)="flow.quitarComponente(folioOf(), line)">
-                                                <i class="bi bi-x-circle-fill"></i>
+                                                <pc-odoo-icon nombre="bi-x-circle-fill" />
                                             </button>
                                         </td>
                                     </tr>
@@ -107,11 +103,11 @@
                                         <td class="text-center text-nowrap">
                                             <button class="btn btn-sm btn-link p-0 me-2" [title]="of.state === 'Hecho' || sp.producido ? 'Subproducto ya producido o la orden está cerrada' : 'Editar'"
                                                     [disabled]="of.state === 'Hecho' || sp.producido" (click)="editarSubproducto(sp)">
-                                                <i class="bi bi-pencil"></i>
+                                                <pc-odoo-icon nombre="bi-pencil" />
                                             </button>
                                             <button class="btn btn-sm btn-link text-danger p-0" [title]="of.state === 'Hecho' || sp.producido ? 'Subproducto ya producido o la orden está cerrada' : 'Eliminar'"
                                                     [disabled]="of.state === 'Hecho' || sp.producido" (click)="flow.quitarSubproducto(folioOf(), sp)">
-                                                <i class="bi bi-x-circle-fill"></i>
+                                                <pc-odoo-icon nombre="bi-x-circle-fill" />
                                             </button>
                                         </td>
                                     </tr>
@@ -139,7 +135,7 @@
                                         <td class="text-center text-nowrap">
                                             <button class="btn btn-sm btn-link text-danger p-0" [title]="of.state === 'Hecho' || lote.estado === 'Aprobado' ? 'El lote fue liberado por Calidad: no puede eliminarse' : 'Eliminar'"
                                                     [disabled]="of.state === 'Hecho' || lote.estado === 'Aprobado'" (click)="flow.quitarLoteProduccion(folioOf(), lote)">
-                                                <i class="bi bi-x-circle-fill"></i>
+                                                <pc-odoo-icon nombre="bi-x-circle-fill" />
                                             </button>
                                         </td>
                                     </tr>
@@ -162,7 +158,7 @@
                                         <td class="small">{{ pl.operador }}</td>
                                         <td>
                                             @if (of.state === 'Planeado' || of.state === 'En progreso') {
-                                                <button class="btn btn-sm btn-link p-0" title="Editar" (click)="editingPlaneacion.set(pl)"><i class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-link p-0" title="Editar" (click)="editingPlaneacion.set(pl)"><pc-odoo-icon nombre="bi-pencil" /></button>
                                             }
                                         </td>
                                     </tr>
@@ -180,11 +176,11 @@
             <div class="bg-white rounded shadow-lg p-4" style="width: 620px;" (click)="$event.stopPropagation()">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h5 class="fw-bold mb-0">Asignar saldo de WIP</h5>
-                    <button class="btn btn-sm btn-light" (click)="mostrarSaldoWip.set(false)"><i class="bi bi-x-lg"></i></button>
+                    <button class="btn btn-sm btn-light" (click)="mostrarSaldoWip.set(false)"><pc-odoo-icon nombre="bi-x-lg" /></button>
                 </div>
                 <p class="small text-muted mb-3">Saldo sin asignar de los componentes de {{ of.folio }}, que dejó una recolección libre. Solo se liga con esta acción.</p>
                 @if (errorSaldoWip()) {
-                    <div class="text-danger small mb-2"><i class="bi bi-exclamation-circle me-1"></i>{{ errorSaldoWip() }}</div>
+                    <div class="text-danger small mb-2"><pc-odoo-icon nombre="bi-exclamation-circle" />{{ errorSaldoWip() }}</div>
                 }
                 @if (saldoWip().length === 0) {
                     <div class="text-muted small fst-italic p-3 text-center">No queda saldo sin asignar.</div>

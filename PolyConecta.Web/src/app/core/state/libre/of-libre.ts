@@ -58,6 +58,30 @@ export class OfLibre {
     return { of };
   }
 
+  /**
+   * "Nuevo" con un solo guardado (D-136, aclaración P2): el maestro con sus componentes y subproductos.
+   * Valida todo antes de crear: si una línea no es válida, no crea nada.
+   */
+  crearConLineas(proceso: ProcessType, clave: string, cantidad: number,
+    componentes: { clave: string; cantidad: number }[], subproductos: { clave: string; cantidad: number }[]): { of?: ManufacturingOrder; error?: string } {
+    const validar = (l: { clave: string; cantidad: number }) => crearLineaLibre(this.inv.getProducto(l.clave), l.cantidad);
+    for (const l of [...componentes, ...subproductos]) {
+      const { error } = validar(l);
+      if (error) return { error };
+    }
+    const { of, error } = this.crear(proceso, clave, cantidad);
+    if (!of) return { error };
+    for (const l of componentes) {
+      const { linea } = validar(l);
+      this.flow.agregarComponente(of.folio, linea!.clave, linea!.producto, linea!.cantidad, linea!.unidad);
+    }
+    for (const l of subproductos) {
+      const { linea } = validar(l);
+      this.flow.agregarSubproducto(of.folio, linea!.clave, linea!.producto, linea!.cantidad, linea!.unidad);
+    }
+    return { of };
+  }
+
   /** Nombre que le toca al siguiente lote capturado en la OF (D-54). */
   siguienteLote(folio: string): string {
     const of = this.flow.getOrder(folio);
