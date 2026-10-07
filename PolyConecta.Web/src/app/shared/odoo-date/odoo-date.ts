@@ -33,11 +33,13 @@ const FORMATO = new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium' });
   ],
   template: `
     <div brnPopover align="start" [attr.data-fecha]="nombre()">
-      <button type="button" brnPopoverTrigger class="form-control form-control-sm text-start d-flex align-items-center gap-2"
-              [disabled]="soloLectura() || deshabilitado()" [attr.aria-label]="nombre() + ': ' + texto()">
-        <pc-odoo-icon nombre="calendario" />
-        <span data-fecha-texto [class.text-muted]="!valor()">{{ texto() }}</span>
-      </button>
+      <div class="o_field" [class.o_field_solo_lectura]="soloLectura()">
+        <button type="button" brnPopoverTrigger class="o_field_valor d-flex align-items-center gap-2"
+                [disabled]="soloLectura() || deshabilitado()" [attr.aria-label]="nombre() + ': ' + texto()">
+          <span data-fecha-texto class="flex-grow-1" [class.text-muted]="!valor()">{{ texto() }}</span>
+          @if (!soloLectura()) { <pc-odoo-icon nombre="calendario" class="text-muted" /> }
+        </button>
+      </div>
       <div *brnPopoverContent="let ctx" class="o_dropdown_panel o_calendar">
         <div brnCalendar [date]="valor() ?? undefined" [min]="min() ?? undefined" [max]="max() ?? undefined" (dateChange)="elegir($event); ctx.close()">
           <div class="o_calendar_header">

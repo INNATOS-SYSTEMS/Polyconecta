@@ -26,13 +26,13 @@ export function interpretarNumero(texto: string): number | null {
   selector: 'pc-odoo-number',
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => OdooNumber), multi: true }],
   template: `
-    <div class="input-group input-group-sm" [attr.data-numero]="nombre()">
-      @if (tipo() === 'moneda') { <span class="input-group-text">$</span> }
-      <input type="text" inputmode="decimal" class="form-control text-end" [attr.aria-label]="nombre()" [attr.aria-invalid]="invalido()"
+    <div class="o_field" [class.o_field_solo_lectura]="soloLectura()" [class.o_field_invalido]="invalido()" [attr.data-numero]="nombre()">
+      @if (tipo() === 'moneda') { <span class="o_field_extra">$</span> }
+      <input type="text" inputmode="decimal" class="text-end" [attr.aria-label]="nombre()" [attr.aria-invalid]="invalido()"
              [readOnly]="soloLectura()" [disabled]="deshabilitado()" [value]="enEdicion() ? crudo() : mostrado()"
              (focus)="enfocar()" (input)="crudo.set($any($event.target).value)" (blur)="confirmar()" />
-      @if (tipo() === 'moneda') { <span class="input-group-text">{{ moneda() }}</span> }
-      @if (tipo() === 'cantidad' && unidad()) { <span class="input-group-text" data-numero-unidad title="Unidad base del producto en CONTPAQi">{{ unidad() }}</span> }
+      @if (tipo() === 'moneda') { <span class="o_field_extra">{{ moneda() }}</span> }
+      @if (tipo() === 'cantidad' && unidad()) { <span class="o_field_extra" data-numero-unidad title="Unidad base del producto en CONTPAQi">{{ unidad() }}</span> }
     </div>
     @if (invalido()) { <div class="text-danger small mt-1" role="alert">{{ error() }}</div> }
   `,

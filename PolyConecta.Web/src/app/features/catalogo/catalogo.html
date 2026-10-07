@@ -58,21 +58,20 @@
     <!-- ============================================================ Formulario -->
     <section class="o_catalogo_seccion" id="formulario" data-catalogo="formulario">
       <h2>Formulario de documento</h2>
-      <p>Panel (Nuevo, migas, botones inteligentes), barra de acciones y etapas, hoja con pestañas, captura de líneas y chatter. El botón inteligente "Pedido" está deshabilitado: así se ve un documento libre sin origen.</p>
+      <p>Panel (Nuevo, migas con el engranaje de acciones al final, botones inteligentes), barra de acciones y etapas, hoja con pestañas, captura de líneas y chatter con el estado de sincronización arriba. El botón inteligente "Pedido" está deshabilitado: así se ve un documento libre sin origen.</p>
       <div class="o_control_panel px-0">
         <div class="d-flex align-items-center gap-3">
           <pc-boton-nuevo [ruta]="'/catalogo'" />
           <pc-odoo-breadcrumb [items]="migas" />
+          <pc-odoo-action-menu [acciones]="accionesMenu" />
         </div>
-        <pc-odoo-smart-buttons [buttons]="botonesInteligentes" />
+        <div class="o_button_box"><pc-odoo-smart-buttons [buttons]="botonesInteligentes" /></div>
         <div></div>
       </div>
       <div class="o_statusbar">
         <div class="d-flex gap-2 align-items-center">
           <button type="button" class="btn btn-primary"><pc-odoo-icon nombre="confirmar" />Confirmar</button>
           <button type="button" class="btn btn-outline-secondary">Cancelar</button>
-          <pc-odoo-action-menu [acciones]="accionesMenu" />
-          <pc-odoo-sync-status estado="Pendiente" />
         </div>
       </div>
       <div class="d-flex gap-3 align-items-start">
@@ -102,7 +101,11 @@
           </pc-odoo-tabs>
           </div>
         </div>
-        <div style="width:340px"><pc-odoo-chatter-drawer [(messages)]="mensajes" /></div>
+        <div style="width:340px">
+          <!-- Solo en documentos que envían un comando a CONTPAQi (contratos visuales §1.8). -->
+          <div class="o_chatter_cabecera"><pc-odoo-sync-status estado="Pendiente" /></div>
+          <pc-odoo-chatter-drawer [(messages)]="mensajes" />
+        </div>
       </div>
     </section>
 
@@ -176,7 +179,7 @@
     <!-- ============================================================ Sincronización -->
     <section class="o_catalogo_seccion" id="sincronizacion" data-catalogo="sincronizacion">
       <h2>Estado de sincronización · <code>pc-odoo-sync-status</code> (CT-15)</h2>
-      <p>Los cinco estados. "Reintentar" solo en error y solo para Sistemas (D-93).</p>
+      <p>Solo en documentos que envían un comando a CONTPAQi, arriba del chatter. Los cinco estados como ícono; al pulsarlo, el popover con el título y el detalle. "Reintentar" solo en error y solo para Sistemas (D-93).</p>
       <div class="d-flex flex-wrap gap-3 align-items-start">
         <pc-odoo-sync-status estado="NoAplica" />
         <pc-odoo-sync-status estado="Pendiente" />

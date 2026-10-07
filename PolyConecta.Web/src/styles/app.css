@@ -287,8 +287,11 @@ body {
     background: #F3F4F6;
     border-radius: 8px;
     padding: 0.75rem;
-    min-width: 240px;
-    flex-shrink: 0;
+    /* Ancho fijo de etapa (contratos visuales §1.2): todas las columnas miden lo mismo. */
+    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+    flex: 0 0 260px;
 }
 
 .o_kanban_column_title {
@@ -888,7 +891,7 @@ body {
 .o_calendar_dia[data-disabled="true"] { opacity: 0.3; pointer-events: none; }
 
 /* --- Kanban con arrastre (pc-odoo-kanban, CDK DragDrop) --- */
-.o_kanban_column.o_kanban_plegada { min-width: 48px; width: 48px; cursor: pointer; writing-mode: vertical-rl; }
+.o_kanban_column.o_kanban_plegada { min-width: 48px; max-width: 48px; width: 48px; flex-basis: 48px; cursor: pointer; writing-mode: vertical-rl; }
 .o_kanban_column .cdk-drop-list { min-height: 80px; }
 .o_kanban_column .cdk-drag-placeholder { opacity: 0.35; }
 .cdk-drag-preview { box-shadow: 0 8px 22px rgba(31, 41, 55, 0.2); border-radius: 6px; }
@@ -920,3 +923,45 @@ body {
 .o_sync_Pendiente, .o_sync_Enviado { color: #B54708; border-color: #F5D9B5; background: #FFF8EF; }
 .o_sync_Confirmado { color: #16794C; border-color: #BFE3CF; background: #F1FAF5; }
 .o_sync_Error { color: #B42318; border-color: #F4C7C3; background: #FEF3F2; }
+
+/* --- Formulario: sin línea entre el panel (migas y botones inteligentes) y la barra de acciones (contratos visuales §1.3) --- */
+.o_control_panel:has(.o_button_box) { border-bottom-color: transparent; }
+
+/* --- Campos capturables (contratos visuales §1.6): línea inferior y fondo transparente; al enfocar, la línea toma el color primario --- */
+.o_field {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-bottom: 1px solid var(--border-color);
+    background: transparent;
+    min-height: 31px;
+}
+.o_field:focus-within { border-bottom-color: var(--brand-primary); }
+.o_field input, .o_field button.o_field_valor {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    padding: 0.25rem 2px;
+    font-size: 0.875rem;
+    color: var(--text-main);
+    text-align: inherit;
+    outline: none;
+    box-shadow: none;
+}
+.o_field .o_field_extra { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
+.o_field.o_field_solo_lectura { border-bottom-color: transparent; }
+.o_field.o_field_invalido { border-bottom-color: #B42318; }
+
+/* --- Estado de sincronización (contratos visuales §1.8): ícono con popover, arriba del chatter --- */
+.o_sync_icono {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border-color); background: white; cursor: pointer; padding: 0;
+}
+.o_sync_icono.o_sync_NoAplica { color: var(--text-muted); }
+.o_sync_icono.o_sync_Pendiente, .o_sync_icono.o_sync_Enviado { color: #B54708; border-color: #F5D9B5; background: #FFF8EF; }
+.o_sync_icono.o_sync_Confirmado { color: #16794C; border-color: #BFE3CF; background: #F1FAF5; }
+.o_sync_icono.o_sync_Error { color: #B42318; border-color: #F4C7C3; background: #FEF3F2; }
+.o_sync_popover { padding: 0.75rem 0.9rem; min-width: 260px; max-width: 340px; font-size: 0.85rem; }
+.o_sync_popover_titulo { font-weight: 600; margin-bottom: 0.25rem; }
+.o_chatter_cabecera { display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; min-height: 30px; }

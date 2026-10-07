@@ -29,8 +29,8 @@ import { OdooBuscarMas } from './odoo-buscar-mas';
   template: `
     <div class="o_many2one" brnCombobox brnPopover [value]="valor()" (valueChange)="elegir($event)" [itemToString]="aTexto()"
          [filter]="sinFiltro" [disabled]="soloLectura() || deshabilitado()" (searchChange)="buscar($event)" [attr.data-many2one]="nombre()">
-      <div brnComboboxAnchor>
-        <input brnComboboxInput brnComboboxPopoverTrigger [closeOnTriggerClick]="false" class="form-control form-control-sm"
+      <div brnComboboxAnchor class="o_field" [class.o_field_solo_lectura]="soloLectura()">
+        <input brnComboboxInput brnComboboxPopoverTrigger [closeOnTriggerClick]="false"
                [placeholder]="placeholder()" [attr.aria-label]="nombre()" [attr.aria-required]="obligatorio()" />
       </div>
       <div *brnPopoverContent class="o_dropdown_panel" style="min-width:280px">
