@@ -267,7 +267,7 @@ El modelo está en [data-model.md](data-model.md). Las piezas del contrato empie
   - **`web`:** `npm ci`, build y pruebas en `PolyConecta.Web`.
 
   Secretos y contraseñas de prueba se generan en el propio trabajo; ninguno queda en el archivo (CT-29). Verificar con un push a la rama: los tres trabajos en verde.
-- [ ] L2-T025 [US7] Pedir a un administrador del repositorio que proteja `main`, con PR obligatorio y los checks `dotnet`, `contrato` y `web` requeridos. Puede hacerse con `gh api repos/INNATOS-SYSTEMS/Polyconecta/branches/main/protection`. Verificar con un PR que tenga una prueba rota a propósito: queda en rojo y no se puede integrar; al corregirla, en verde (SC-007).
+- [x] L2-T025 [US7] Pedir a un administrador del repositorio que proteja `main`, con PR obligatorio y los checks `dotnet`, `contrato` y `web` requeridos. Puede hacerse con `gh api repos/INNATOS-SYSTEMS/Polyconecta/branches/main/protection`. Verificar con un PR que tenga una prueba rota a propósito: queda en rojo y no se puede integrar; al corregirla, en verde (SC-007).
 - [x] L2-T026 [P] [US2] Actualizar `docs/diseno/05-arquitectura-tecnica.md` §3 a §5 con la nueva solución: proyectos, .NET 10, SQL Server, Application, bridge con modo simulado, CI y cómo correrlo. Marcar resuelta la deuda 1, 2 y 5 de §4 (SC-008). Actualizar el `README.md` de la raíz.
 
 ---
