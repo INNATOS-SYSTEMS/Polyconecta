@@ -1,5 +1,7 @@
 # Laboratorio SDK CONTPAQi — instrucciones para el agente
 
+> **Retirado (D-130, 2026-10-06).** El desarrollo y las pruebas contra el SDK real se hacen ahora con el bridge en modo debug en el VPS: sigue [`PolyConecta.Contpaq/AGENTS.md`](../../PolyConecta.Contpaq/AGENTS.md). Esta guía queda como registro de cómo se corrió la matriz del SDK (30-sep y 1-oct).
+
 Estás en una estación de trabajo Windows (VPS) con CONTPAQi Comercial Premium + `MGW_SDK.dll`.
 Tu trabajo: ejecutar la **matriz de pruebas** (`matrix/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md`) y registrar
 evidencia. **No construyes producto ni modificas el repositorio de PolyConecta aquí.**

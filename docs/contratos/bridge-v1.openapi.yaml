@@ -1,11 +1,11 @@
 openapi: 3.1.0
 info:
   title: Contrato bridge-v1 (PolyConecta ↔ bridge de CONTPAQi)
-  version: 1.0.0-propuesta
+  version: 1.0.0
   summary: API HTTP del bridge que cumplen por igual el bridge real y el simulado.
   description: |
     Se genera a partir de `docs/contratos/bridge-v1.md`, que manda si hay diferencias.
-    Estado: propuesta para firma de los dos líderes (CT-22). No es `1.0` hasta que se firme.
+    Estado: `1.0` aprobado por los dos líderes el 2026-10-06 (CT-22, D-132).
   license:
     name: Privado
     identifier: LicenseRef-Privado
@@ -314,6 +314,16 @@ components:
           items:
             $ref: '#/components/schemas/Lote'
 
+    LineaRemision:
+      allOf:
+        - $ref: '#/components/schemas/LineaConLotes'
+        - type: object
+          properties:
+            precio:
+              type: number
+              minimum: 0
+              description: Opcional en `1.0`. Precio por unidad base, copiado del pedido; se decide antes de F6 si es obligatorio (P-26).
+
     LineaConDestino:
       allOf:
         - $ref: '#/components/schemas/LineaConLotes'
@@ -442,7 +452,7 @@ components:
           type: array
           minItems: 1
           items:
-            $ref: '#/components/schemas/LineaConLotes'
+            $ref: '#/components/schemas/LineaRemision'
 
     Acuse:
       type: object
@@ -479,7 +489,7 @@ components:
           type: integer
         costo:
           type: number
-          description: Opcional mientras se resuelve T-17.
+          description: Opcional en `1.0`. Costo de la entrada cuando el bridge lo conoce; quién aplica la regla de D-79 sigue abierto (T-17).
 
     Resultado:
       type: object
@@ -551,6 +561,7 @@ components:
             - SDK_TIMEOUT
             - SDK_SESION
             - SDK_ERROR
+            - RECONCILIACION_AMBIGUA
         retryable:
           type: boolean
         message:

@@ -66,6 +66,18 @@ namespace Contpaq.Bridge.Tests.Contract
         }
 
         [Fact]
+        public void La_remision_admite_precio_opcional_por_linea_y_no_negativo()
+        {
+            var r = Entorno.Comando("remision.valido.json");
+            var conPrecio = r.Payload.GetRawText().Replace("\"unidad\": \"PZA\",", "\"unidad\": \"PZA\", \"precio\": 5.70,", System.StringComparison.Ordinal);
+            r.Payload = JsonDocument.Parse(conPrecio).RootElement;
+            LectorComandos.Leer(r).Error.Should().BeNull();
+
+            r.Payload = JsonDocument.Parse(conPrecio.Replace("5.70", "-1", System.StringComparison.Ordinal)).RootElement;
+            LectorComandos.Leer(r).Error!.Detail["campo"].Should().Be("lineas[0].precio");
+        }
+
+        [Fact]
         public void La_fecha_debe_ser_AAAA_MM_DD()
         {
             var r = Entorno.Comando("remision.valido.json");

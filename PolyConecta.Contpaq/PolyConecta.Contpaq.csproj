@@ -10,6 +10,15 @@
     <UserSecretsId>polyconecta-contpaq-bridge</UserSecretsId>
   </PropertyGroup>
 
+  <!-- El SDK de CONTPAQi (MGW_SDK.dll) es de 32 bits: en el VPS el bridge se compila y corre en x86
+       con -p:Bridge32=true (scripts/vps/Start-BridgeDebug.ps1). Sin la propiedad, la compilación no
+       cambia para la CI ni para el modo simulado. Necesita el SDK de .NET 10 x86 en el VPS. -->
+  <PropertyGroup Condition="'$(Bridge32)' == 'true'">
+    <PlatformTarget>x86</PlatformTarget>
+    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Dapper" />
     <PackageReference Include="Microsoft.Data.Sqlite" />

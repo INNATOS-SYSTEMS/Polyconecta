@@ -17,12 +17,14 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
     /// (que no tienen capas) y su verificación contra el laboratorio. Pendiente de F3:
     /// recepciones de compra (D-102). Hasta entonces responden 501.
     /// </summary>
+    /// <remarks>CONTPAQi guarda códigos y nombres como texto de ancho fijo: las lecturas quitan los espacios del final
+    /// (RTRIM) para que PolyConecta compare códigos exactos. Las comparaciones con = de SQL Server ya los ignoran.</remarks>
     public sealed class SqlContractReadRepository(string connectionString) : IReadRepository
     {
         private const string Productos = @"
-            SELECT p.CCODIGOPRODUCTO AS Codigo,
-                   p.CNOMBREPRODUCTO AS Nombre,
-                   ISNULL(u.CABREVIATURA, '') AS UnidadBase,
+            SELECT RTRIM(p.CCODIGOPRODUCTO) AS Codigo,
+                   RTRIM(p.CNOMBREPRODUCTO) AS Nombre,
+                   RTRIM(ISNULL(u.CABREVIATURA, '')) AS UnidadBase,
                    CAST(CASE WHEN (p.CCONTROLEXISTENCIA & 16) <> 0 THEN 1 ELSE 0 END AS bit) AS LlevaLote,
                    CAST(CASE WHEN p.CSTATUSPRODUCTO = 1 THEN 1 ELSE 0 END AS bit) AS Activo
             FROM admProductos p WITH (NOLOCK)
@@ -43,7 +45,7 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
             (await ConsultarAsync<ProductoContrato>($"{Productos} WHERE p.CCODIGOPRODUCTO = @codigo;", new { codigo })).FirstOrDefault();
 
         private const string Clientes = @"
-            SELECT CCODIGOCLIENTE AS Codigo, CRAZONSOCIAL AS RazonSocial, CRFC AS Rfc
+            SELECT RTRIM(CCODIGOCLIENTE) AS Codigo, RTRIM(CRAZONSOCIAL) AS RazonSocial, RTRIM(CRFC) AS Rfc
             FROM admClientes WITH (NOLOCK)";
 
         public async Task<Pagina<ClienteContrato>> ClientesAsync(string? search, DateTimeOffset? modifiedSince, int limit, string? cursor)
@@ -61,7 +63,7 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
             (await ConsultarAsync<ClienteContrato>($"{Clientes} WHERE CCODIGOCLIENTE = @codigo;", new { codigo })).FirstOrDefault();
 
         private const string Almacenes = @"
-            SELECT CCODIGOALMACEN AS Codigo, CNOMBREALMACEN AS Nombre, CAST(CIDALMACEN AS bigint) AS IdErp
+            SELECT RTRIM(CCODIGOALMACEN) AS Codigo, RTRIM(CNOMBREALMACEN) AS Nombre, CAST(CIDALMACEN AS bigint) AS IdErp
             FROM admAlmacenes WITH (NOLOCK)";
 
         public async Task<IReadOnlyList<AlmacenContrato>> AlmacenesAsync() =>
@@ -74,8 +76,8 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
         public async Task<IReadOnlyList<ExistenciaContrato>> ExistenciasAsync(IReadOnlyCollection<string> productos, string? almacen)
         {
             const string sql = @"
-                SELECT p.CCODIGOPRODUCTO AS Producto, a.CCODIGOALMACEN AS Almacen, ISNULL(u.CABREVIATURA, '') AS Unidad,
-                       CAST(cp.CEXISTENCIA AS decimal(18,4)) AS Cantidad, NULLIF(cp.CNUMEROLOTE, '') AS Lote
+                SELECT RTRIM(p.CCODIGOPRODUCTO) AS Producto, RTRIM(a.CCODIGOALMACEN) AS Almacen, RTRIM(ISNULL(u.CABREVIATURA, '')) AS Unidad,
+                       CAST(cp.CEXISTENCIA AS decimal(18,4)) AS Cantidad, NULLIF(RTRIM(cp.CNUMEROLOTE), '') AS Lote
                 FROM admCapasProducto cp WITH (NOLOCK)
                 JOIN admProductos p WITH (NOLOCK) ON cp.CIDPRODUCTO = p.CIDPRODUCTO
                 JOIN admAlmacenes a WITH (NOLOCK) ON cp.CIDALMACEN = a.CIDALMACEN

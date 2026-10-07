@@ -84,7 +84,8 @@ namespace Contpaq.Bridge.Core.Contract
                 Fecha(m.Fecha, "fecha") ?? Requerido(m.ReferenciaNegocio, "referencia_negocio")
                 ?? Requerido(m.Cliente, "cliente") ?? Requerido(m.Almacen, "almacen")
                 ?? (m.CierraPedido is null ? ErrorDe("cierra_pedido", "Es obligatorio.") : null)
-                ?? Lineas(m.Lineas, "lineas", minimo: 1),
+                ?? Lineas(m.Lineas, "lineas", minimo: 1)
+                ?? m.Lineas!.Select((l, i) => l.Precio < 0 ? ErrorDe($"lineas[{i}].precio", "No puede ser negativo.") : null).FirstOrDefault(e => e is not null),
             _ => ErrorDe("payload", "Carga desconocida."),
         };
 

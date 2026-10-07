@@ -7,10 +7,21 @@ Modelo **objetivo** de `PolyConecta.Domain`. Consolida la redefinición del domi
 - **Mixins, no campos repetidos.** Toda entidad de negocio hereda `AuditableEntity` (id técnico inmutable, creado y modificado por quién y cuándo) y `ArchivableEntity` (`is_active`, verdadero por defecto).
 - **Origen opcional (D-52).** Ningún documento exige un documento de origen para existir. Las referencias al origen (`sales_order_line_id`, `origin_order_id`, el origen de un `StockPicking`) son anulables, y las reglas del documento no dependen de que estén llenas.
 - **No se borra lo referenciado.** Un registro de negocio que otro referencia se archiva; no se elimina.
-- **Estados cerrados con transiciones nombradas.** Todo documento con ciclo de vida tiene un estado enumerado cerrado y cambia solo mediante operaciones con precondiciones, nunca editando el campo. Cada transición se registra en `StateTransitionLog`: entidad, id, estado origen y destino, usuario, rol ejercido, fecha y nota.
+- **Estados cerrados con transiciones nombradas.** Todo documento con ciclo de vida tiene un estado enumerado cerrado y cambia solo mediante operaciones con precondiciones, nunca editando el campo. Cada transición se registra en `StateTransitionLog`: entidad, id, estado origen y destino, usuario, rol ejercido, fecha y nota. En el código, el documento hereda `DocumentoConEstado<TEstado>`: cada método de transición valida sus precondiciones o lanza `TransicionInvalidaException`, y el `DbContext` guarda la bitácora en el mismo `SaveChanges` (CT-32).
+- **Estado de sincronización aparte (CT-15).** Todo documento que escribe en CONTPAQi lleva un `SyncState` independiente de su estado de negocio, con folio, id y documentos de CONTPAQi y el último error. Sus transiciones:
+
+  | Desde | Hacia | Qué la provoca |
+  | :--- | :--- | :--- |
+  | `NoAplica` | `Pendiente` | El documento encola un comando |
+  | `Pendiente` | `Enviado` | El bridge acepta el comando (`202`) |
+  | `Enviado` | `Confirmado` | Callback `CONFIRMED` |
+  | `Enviado` | `Error` | Callback `FAILED` o `DEAD_LETTER`, o reintentos de red agotados |
+  | `Error` | `Pendiente` | Sistemas reintenta (D-93) |
+
+  Un callback sobre un documento `Confirmado` no cambia nada.
 - **Delegación 1:1 para especializaciones.** Los atributos físicos por categoría viven en entidades delegadas de `Product` (`RawMaterialCatalog`, `RollSpecification`, `PtSpecification`), no como columnas nulas en `Product`.
 - **Multiempresa por derivación.** La entidad legal se resuelve `LegalEntity ← Plant ← entidad operativa`; no se copia un `legal_entity_id` en cada tabla.
-- **Numeración centralizada.** Todo folio visible (pedido, orden, lote, QC, operación) sale de `IReferenceSequenceService`, configurable por tipo de documento; nunca se arma concatenando cadenas.
+- **Numeración centralizada.** Todo folio visible (pedido, orden, lote, QC, operación) sale de `IReferenceSequenceService`, configurable por tipo de documento; nunca se arma concatenando cadenas. La configuración vive en `ReferenceSequence` (prefijo con `{yyyy}` o `{planta}`, relleno y reinicio nunca, anual o mensual); un tipo sin configurar es un error, no se crea solo.
 - **Cantidad y unidad base.** Toda línea, lote y movimiento guarda una cantidad en la unidad base del producto en CONTPAQi, sin peso en kg aparte y sin conversión (D-127, ver [02-flujo-y-reglas.md §6](02-flujo-y-reglas.md)). De dónde salen los kg de los cálculos internos está pendiente (P-25).
 - **Ninguna entidad llama a CONTPAQi.** Las escrituras al ERP se encolan en el outbox (`IBridgeSyncService`).
 
@@ -198,14 +209,14 @@ Estados de `ManufacturingOrder` (D-42): `Borrador → Confirmada → En progreso
 
 ## 5. Diferencia con el código actual
 
-Hoy `PolyConecta.Domain` contiene: `Product`, `StockLot`, `ManufacturingOrder` (autorreferenciado con `ParentId`), `Bom` y `BomLine` (con capas A/B/C), `StockLocation`, `PolyLocation`, `StockPicking` y `StockMove`, `QualityCheck` y `StockScrap`, `RawMaterialCatalog` y `SupplierProductMapping`, `MassBalanceAudit` con `MassBalanceService`, `LotGenealogy`, `OutboxMessage` y el value object `Folio`.
+**Base común (F0, 6-oct).** En `Domain/Common/`: `AuditableEntity` (id `bigint`, creado y modificado con `IClock` e `ICurrentUser`, `rowversion`), `ArchivableEntity` (con filtro global que oculta lo archivado), `DocumentoConEstado` y `SyncState`. En `Domain/Plataforma/`, esquema `plt`: `StateTransitionLog` (solo se inserta), `ReferenceSequence` y `OutboxMessage` (ver [05 §4](05-arquitectura-tecnica.md)). El value object `Folio` ya se retiró. `ICurrentUser` es "sistema" hasta F1.
 
-Ya se retiraron los duplicados legados (`MasterOrder`, `SubOrder`, `RolloMaestro`). Falta:
+Las entidades previas a F0 siguen sin rediseñar en `Domain/Entities/`, ya en su esquema (`inv` o `prd`): `Product`, `StockLot`, `ManufacturingOrder` (autorreferenciado con `ParentId`), `Bom` y `BomLine` (con capas A/B/C), `StockLocation`, `PolyLocation`, `StockPicking` y `StockMove`, `QualityCheck` y `StockScrap`, `RawMaterialCatalog` y `SupplierProductMapping`, `MassBalanceAudit` con `MassBalanceService` y `LotGenealogy`. Cada fase las rediseña al construirlas. Falta:
 
-- Mixins de auditoría y archivado, estados cerrados con transiciones y `StateTransitionLog`.
+- Que las entidades de negocio hereden la base común y usen estados cerrados.
 - `SalesOrder`, `SalesOrderLine`, `AuthorizationSignature`, `Customer`, `PackagingUnit` y la ficha técnica (`RollSpecification`, `PtSpecification`).
 - `ComponentLine` plana (sustituye a `BomLine` por capas), `SubProductLine`, `PlanningLine`, `ProductionSlot`, `QualityControl`, `ScrapEntry` con catálogo de motivos, `Incident`.
-- Toda el área de abastecimiento, `WipBalance`, el backorder en `StockPicking` y la seguridad.
-- Unificar `PolyLocation` y `StockLocation`, y sustituir el value object `Folio` por `IReferenceSequenceService`.
+- Toda el área de abastecimiento, `WipBalance`, el backorder en `StockPicking` y la seguridad (identidad y roles en F1).
+- Unificar `PolyLocation` y `StockLocation`.
 
 Las pantallas del prototipo modelan casi todo esto con clases propias en `PolyConecta.Presentation/Services/` (`OperationalFlowState`, `StockOperationState`, `InventoryState`). Sirven de referencia de comportamiento, no de modelo.

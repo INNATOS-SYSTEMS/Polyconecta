@@ -9,8 +9,8 @@ using PolyConecta.Infrastructure.Erp;
 namespace PolyConecta.Api.Controllers.Plataforma;
 
 /// <summary>
-/// Recibe los callbacks del bridge (contrato §3; contrato del endpoint en
-/// .specify/features/002-construccion-tecnica/contracts/callback-api.md). Solo traduce HTTP al
+/// Recibe los callbacks del bridge (contrato §3; reglas del endpoint en
+/// docs/diseno/05-arquitectura-tecnica.md §4). Solo traduce HTTP al
 /// caso de uso ConfirmarSincronizacion (CT-08).
 /// </summary>
 [ApiController]
