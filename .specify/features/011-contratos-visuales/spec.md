@@ -1,76 +1,149 @@
-# Feature Specification: Contratos visuales (fase abierta)
+# Feature Specification: Contratos visuales y componentes (fase abierta)
 
 **Feature Branch**: `011-contratos-visuales`
 
 **Created**: 2026-10-07
 
-**Status**: En curso. El tablero está publicado; los contratos se escriben uno por patrón.
+**Status**: Definida en la sesión del 7-oct (D-134 a D-136). El tablero ya está publicado (E1); falta el resto.
 
 **Fase del plan**: ninguna. Es una fase abierta, fuera del plan de trabajo, como la 001 (D-134, D-118). Va **antes del diseño de las pantallas de F1**; el backend de F1 no la espera.
 
-**Input**: la réplica en Angular (`PolyConecta.Web`, spec 001 cerrada), el sistema de diseño de [05 §7](../../../docs/diseno/05-arquitectura-tecnica.md) (CT-24) y los patrones de Odoo 19 (skills `odoo-design-system` y `odoo-model-philosophy`).
+**Input**:
+- la réplica en Angular (`PolyConecta.Web`, spec 001 cerrada);
+- el sistema de diseño de [05 §7](../../../docs/diseno/05-arquitectura-tecnica.md) (CT-24);
+- los patrones de Odoo 19 (skills `odoo-design-system` y `odoo-model-philosophy`).
 
 ---
 
 ## Objetivo
 
-Que cada pantalla nueva se diseñe **componiendo piezas con contrato**, no inventando. Para eso hacen falta dos cosas:
+Que cada pantalla se construya **componiendo piezas con contrato**, sobre librerías que ya traen los comportamientos esperados, y que la aplicación entera quede migrada a esas piezas antes de F1. Son cuatro resultados:
 
-1. **Ver todas las pantallas que existen, en el orden del flujo**, en un solo lugar.
-2. **Saber qué es cada pieza**: sus partes, qué datos recibe, qué eventos emite, sus estados y lo que nunca hace.
+1. Ver todas las pantallas en el orden del flujo (tablero).
+2. Saber qué es cada pieza: partes, entradas, salidas, estados y reglas (contratos).
+3. Tener esas piezas construidas y probadas en una galería viva.
+4. Migrar las 28 pantallas a esas piezas **sin cambiar su estructura**, con el acabado de botones e íconos refinado.
+
+## Decisiones de la sesión del 7-oct
+
+| Tema | Decisión | Registro |
+| :--- | :--- | :--- |
+| Librerías | **TanStack Table** (lógica de tablas), **Angular CDK** (drag & drop, overlay, diálogo, menú) y **Spartan `brain`** (primitivas sin estilo: autocompletar, pestañas, menús, diálogos). Todas MIT; el HTML y el estilo son nuestros, con las clases `o_*`. PrimeNG se descartó porque desde la versión 19 pide llave de licencia | D-135 |
+| Íconos | **Lucide** (`@lucide/angular`), en lugar de Bootstrap Icons | D-135 |
+| Paridad con el prototipo | La comparación de píxeles se **retira**. Los guiones de escenario se quedan y verifican textos y flujos | D-135 |
+| Datos de las listas | Orden, filtro, agrupación y paginación **en el servidor** | D-135 |
+| Kanban | Recibe la colección y las etapas. Soltar una tarjeta en otra etapa ejecuta la **transición con nombre**; si no procede, la tarjeta regresa con el motivo | D-135 |
+| Modo libre | Estructura **completa** del documento ligado; maestro y líneas en un solo guardado; el chatter se ve desde el inicio y se activa al guardar | D-136 |
+| Alcance | Se migran **las 28 pantallas** en esta spec | D-135 |
+| Entrega | Documento `07-contratos-visuales.md` más una **galería viva** en `/catalogo` | — |
+| Color primario | Se elige entre 2 o 3 variantes propuestas en el lienzo | Pendiente (E3) |
 
 ## Entregables
 
 ### E1 · Tablero de flujo ✅ 7-oct
 
-- Lienzo en claude.ai: **Tablero de pantallas PolyConecta** (https://claude.ai/artifact/Vt8o8ef4t9FuziZMKrvmyw). Privado hasta compartirlo desde su menú Share.
-- Una portada y una franja por flujo: Inicio e inventario, Pedidos, Fabricación, Recolección, Calidad, Traslados, Recepción y Entregas. Cada franja muestra sus pantallas en orden, la acción que lleva a la siguiente y, al final, la variante "Nuevo" (modo libre).
-- 28 pantallas capturadas de `PolyConecta.Web` con `npm run tablero`. La lista de flujos está en `PolyConecta.Web/e2e/tablero/pantallas.ts`: una pantalla nueva se agrega ahí, se recaptura y se sube al lienzo.
+- **Lienzo:** **Tablero de pantallas PolyConecta** (https://claude.ai/artifact/Vt8o8ef4t9FuziZMKrvmyw), privado hasta compartirlo desde su menú Share.
+- **Contenido:** una franja por flujo con sus pantallas en orden y, al final, la variante "Nuevo". Son 28 pantallas.
+- **Cómo se regenera:** con `npm run tablero`. La lista está en `PolyConecta.Web/e2e/tablero/pantallas.ts`.
+- **Cuándo se actualiza:** al cerrar, con las pantallas migradas y la galería.
 
 ### E2 · Contratos visuales
 
-Documento nuevo `docs/diseno/07-contratos-visuales.md`. Cada contrato tiene:
+En el documento nuevo `docs/diseno/07-contratos-visuales.md`, cada contrato lleva estas secciones:
 
 | Sección | Qué dice |
 | :--- | :--- |
-| Anatomía | Partes y su orden, con una captura |
-| Entradas | Datos que recibe (tipo y si es obligatorio) |
+| Anatomía | Partes y su orden, con una captura de la galería |
+| Entradas | Datos que recibe: tipo y si es obligatorio |
 | Salidas | Eventos que emite |
-| Estados | Vacío, cargando, solo lectura, deshabilitado, error, documento libre sin origen, sin conexión |
+| Estados | Vacío, cargando, solo lectura, deshabilitado, error, documento libre sin origen y sin conexión, según aplique |
+| Comportamientos | Lo que hace, con su criterio de aceptación |
 | Reglas | El patrón de Odoo 19 que sigue (CT-24) y lo que **nunca** hace |
+| Implementación | Librería y pieza que lo sostiene |
 | Dónde se usa | Pantallas del tablero que lo usan |
 
-**Patrones de pantalla** (componen a los componentes):
+### E3 · Botones e íconos
 
-- [ ] Lista (panel de control, búsqueda, agrupación, paginador, selección)
-- [ ] Formulario de documento (barra de acciones, etapas, hoja, chatter)
-- [ ] Hoja de "Nuevo" (modo libre, Principio X)
-- [ ] Pestañas de la hoja
-- [ ] Tabla de líneas (captura, columnas, totales, acciones por línea, bloqueo al autorizar)
-- [ ] Campos de la hoja en dos columnas (etiqueta, valor, editable, solo lectura)
-- [ ] Avisos y bloqueos (hard-stop, existencia insuficiente, confirmaciones)
-- [ ] Estado de sincronización con CONTPAQi (CT-15): nuevo, se diseña aquí para F1
+Hay que refinar el acabado **sin cambiar la estructura** de ninguna barra ni hoja.
+1. **Color y contraste:** el primario y el secundario se distinguen a simple vista, y el texto cumple 4.5:1.
+2. **Estados:** reposo, hover, foco visible, presionado, deshabilitado y cargando, iguales en todos los botones.
+3. **Íconos:** Lucide con un solo grosor de trazo y tamaño por contexto (barra, línea, botón inteligente), alineados con el texto.
+4. **Propuesta:** 2 o 3 variantes de paleta para el primario, el secundario y los botones de ícono, con todos sus estados, en el lienzo. Los líderes eligen una y la elegida se vuelve el token de color.
 
-**Componentes compartidos** (`PolyConecta.Web/src/app/shared/`):
+### E4 · Galería viva (`/catalogo`)
 
-- [ ] `odoo-topbar` y `main-layout`
-- [ ] `odoo-breadcrumb`
-- [ ] `odoo-search-panel` y `odoo-view-switcher`
-- [ ] `odoo-pager`
-- [ ] `odoo-smart-buttons`
-- [ ] `odoo-status-pipeline`
-- [ ] `odoo-line-capture`
-- [ ] `odoo-chatter-drawer`
-- [ ] `lot-picker-modal` y `lot-quantity-picker-modal`
-- [ ] `boton-nuevo` y `hoja-nueva`
-- [ ] `pagina-no-encontrada` y `pagina-pendiente`
+- **Contenido:** una ruta de `PolyConecta.Web` con cada componente en todos sus estados y datos de ejemplo, sin dependencias nuevas.
+- **Pruebas:** cada comportamiento del contrato tiene su prueba unitaria y una captura en el tablero.
+
+### E5 · Migración de las 28 pantallas
+
+- Cada pantalla pasa a los componentes nuevos, con la misma estructura de regiones: panel, barra de acciones, etapas, hoja, pestañas, detalle y chatter.
+- Los guiones de escenario (`npm run scenarios`) siguen en verde.
+- Las hojas de "Nuevo" pasan a la estructura completa (D-136).
+
+## Contratos por escribir
+
+### Patrones de pantalla
+
+- [ ] **Lista.** Panel de control con búsqueda, filtros, agrupación y favoritos, más la tabla y el paginador. Comportamientos (D-135):
+  - agrupar por una o varias columnas, con subtotales por grupo, contraer y expandir;
+  - ordenar por columna, ascendente o descendente;
+  - filtrar por columna y desde la barra de búsqueda;
+  - elegir las columnas visibles y su orden;
+  - elegir cuántas filas se ven por página y navegar con el paginador;
+  - seleccionar filas y aplicar acciones masivas (archivar, imprimir, exportar a Excel);
+  - guardar la combinación de filtros, agrupación y columnas como favorito del usuario (`SavedSearch`);
+  - todo en el servidor: la tabla manda página, orden, filtros y agrupación, y la API responde con filas, grupos y totales.
+- [ ] **Kanban.** Recibe la colección, las etapas (estado, título, orden, plegada sí o no) y la plantilla de la tarjeta. Agrupa por etapa, con un contador por columna. Arrastrar ejecuta la transición validada (D-135); la carga es por etapa y desde el servidor.
+- [ ] **Formulario de documento.** Panel con migas y botones inteligentes, barra de acciones, etapas, hoja (título, folio, maestro en dos columnas, pestañas y detalle) y chatter.
+- [ ] **"Nuevo" (modo libre).** El formulario anterior completo, en Borrador y sin origen; un solo guardado; el chatter se activa al guardar (D-136).
+- [ ] **Pestañas de la hoja.**
+- [ ] **Detalle y su captura.**
+  - Captura `[Clave / Producto] [Cantidad] [Unidad] [Agregar]`, con columnas, totales y acciones por línea.
+  - Bloqueo de líneas al autorizar.
+  - Unidad base no editable (D-127).
+- [ ] **Campos del maestro.** Etiqueta, valor, editable, solo lectura y obligatorio.
+- [ ] **Avisos y bloqueos.** Hard-stop, existencia insuficiente, confirmaciones y errores.
+- [ ] **Estado de sincronización con CONTPAQi (CT-15).** Es nuevo y se diseña aquí para F1. Muestra `No aplica`, `Pendiente`, `Enviado`, `Confirmado` y `Error`, con el folio de CONTPAQi o el error, y el reintento para Sistemas (D-93).
+
+### Componentes
+
+| Componente | Implementación |
+| :--- | :--- |
+| Tabla de lista | TanStack Table |
+| Kanban | Angular CDK (`DragDrop`) |
+| Barra superior y layout (`odoo-topbar`, `main-layout`) | Propio |
+| Migas (`odoo-breadcrumb`) | Propio |
+| Búsqueda y cambio de vista (`odoo-search-panel`, `odoo-view-switcher`) | Propio, con el overlay del CDK |
+| Paginador (`odoo-pager`) | Propio, sobre el estado de TanStack |
+| Botones inteligentes (`odoo-smart-buttons`) | Propio |
+| Etapas (`odoo-status-pipeline`) | Propio |
+| Captura de líneas (`odoo-line-capture`) | Propio, con el autocompletar de Spartan |
+| Chatter (`odoo-chatter-drawer`) | Propio |
+| Selección de registro (many2one: cliente, producto, almacén, con "Buscar más…") | Spartan `brain` (combobox) |
+| Fecha | Spartan `brain`, formato es-MX |
+| Número, moneda y cantidad con unidad | Propio, con `Intl.NumberFormat` es-MX |
+| Diálogo, confirmación y aviso flotante | CDK `Dialog` y Spartan |
+| Pestañas | Spartan `brain` |
+| Menú y botón con acciones ("⚙ Acciones") | CDK `Menu` |
+| Selección de lotes (`lot-picker-modal`, `lot-quantity-picker-modal`) | Diálogo del CDK con la tabla |
+| Botón "Nuevo" y hoja nueva (`boton-nuevo`, `hoja-nueva`) | Propio (D-136) |
+| Páginas vacías (`pagina-no-encontrada`, `pagina-pendiente`) | Propio |
+| Botones (primario, secundario, de ícono) | Propio, con los tokens de E3 |
 
 ## Criterios de cierre
 
-- Cada patrón y cada componente de la lista tiene su contrato en `07-contratos-visuales.md`, con captura y la lista de pantallas que lo usan.
-- El tablero tiene todas las rutas de `PolyConecta.Web`, regenerado con la versión de `main` al cerrar.
-- CT-24 apunta a `07-contratos-visuales.md`.
-- Los dos líderes revisaron el documento y el tablero.
+- Cada patrón y cada componente tiene su contrato en `07-contratos-visuales.md`, su entrada en `/catalogo` y sus pruebas.
+- Las 28 pantallas usan los componentes nuevos; `npm run build`, `npm test` y `npm run scenarios` están en verde.
+- El tablero está regenerado con las pantallas migradas e incluye la galería.
+- La paleta elegida (E3) quedó como tokens y CT-24 apunta a `07-contratos-visuales.md`.
+- La paridad de píxeles está retirada de `npm run parity` y de la CI, y `05 §7.5` lo dice.
+- Los dos líderes revisaron el documento, la galería y el tablero.
+
+## Preguntas abiertas
+
+- **Contrato de consulta de listas en el servidor:** página, orden, filtros, agrupación y totales. Se define aquí como forma; la API lo implementa en F1 con su primera lista.
+- **Acciones masivas por documento:** cuáles aplican a cada lista. Lo decide cada fase.
 
 ---
 
@@ -80,3 +153,4 @@ Documento nuevo `docs/diseno/07-contratos-visuales.md`. Cada contrato tiene:
 | :--- | :--- | :--- | :--- | :--- |
 | 2026-10-07 | La aplicación desplaza el contenido dentro de un contenedor, no la página, así que `fullPage` de Playwright no captura la pantalla completa. `npm run tablero` mide lo desplazable y agranda la ventana antes de capturar | Hallazgo al capturar | E1 | — |
 | 2026-10-07 | En la cadena de OF, la raíz es bolseo (`BOL-2026-0001`), su hija impresión y la hija de esta extrusión. El tablero las muestra en ese orden de navegación, no en el orden físico de producción | Semilla de `core/seed/flujo.ts` | E1 | — |
+| 2026-10-07 | Se eligió PrimeNG y después se descartó: desde la versión 19 (incluida la 22, la de Angular 22) pide llave de licencia y solo es gratis para organizaciones con menos de 1 millón de dólares de ingresos, 5 desarrolladores y 10 empleados. Se usa el stack MIT | Licencia leída en el paquete `primeng@22.1.2` | Toda la spec | D-135 |

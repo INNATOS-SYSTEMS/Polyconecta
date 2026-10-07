@@ -51,7 +51,9 @@ flowchart LR
 | Casos de uso | Servicios de `PolyConecta.Application`, sin MediatR (D-72) | La lógica transversal (transacción, auditoría, validación) va en decoradores propios |
 | Frontend | **Angular 22** con TypeScript 6.0 (D-68) | Componentes standalone |
 | Build del frontend | **Node 24 LTS** (D-69) | — |
-| Estilos | Bootstrap 5.3.2 y Bootstrap Icons 1.11.3 | Iguales al prototipo mientras dure la paridad de la spec 001 |
+| Estilos | Bootstrap 5.3.2 y las clases `o_*` del prototipo | La paridad de píxeles con el prototipo se retiró (D-135); el acabado lo fijan los contratos visuales (spec 011) |
+| Componentes de interfaz | TanStack Table (`@tanstack/angular-table`), Angular CDK y Spartan (`@spartan-ng/brain`), todos MIT (D-135) | Sin librerías con licencia comercial o llave. El HTML y el estilo son nuestros, con las clases `o_*` |
+| Íconos | Lucide (`@lucide/angular`, ISC) (D-135) | Sustituye a Bootstrap Icons al migrar cada pantalla en la spec 011 |
 | Tiempo real | SignalR (`@microsoft/signalr`) | Chatter y avisos de sincronización. Los mensajes del chatter se guardan en la base (D-78) |
 | Pruebas .NET | **xUnit v3** + AwesomeAssertions (D-71, D-72) | Una sola versión en todos los proyectos de prueba |
 | Pruebas extremo a extremo | Playwright | — |

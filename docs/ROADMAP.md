@@ -87,7 +87,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Fase | Diseño cerrado | Spec | Cerrado en PolyConecta | Comandos entregados (camino 1) | Cerrado integrado | Revisión |
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
 | Réplica Angular (paralelo) | ✅ | `001-angular-presentation` · integrada en `docs/diseno/` y borrada | ✅ 7-oct · `db071b6` | n/a | n/a | — |
-| Contratos visuales (fase abierta) | 🟨 | `011-contratos-visuales` · tablero publicado; contratos en curso | ⬜ | n/a | n/a | — |
+| Contratos visuales (fase abierta) | 🟨 | `011-contratos-visuales` · definida (D-134 a D-136); tablero publicado | ⬜ | n/a | n/a | — |
 | F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · integrada en `docs/diseno/` y borrada | ✅ 6-oct · `d5eaf35` | ✅ 6-oct: contrato `1.0`, bridge simulado y bridge x86 en el VPS (evidencia `56da557`) | n/a: F0 no entrega comandos que escriban en CONTPAQi | — |
 | F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R1 |
 | F2 · Planeación de producción | ✅ | `004-planeacion-produccion` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R2 |
