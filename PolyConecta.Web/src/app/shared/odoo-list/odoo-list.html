@@ -69,7 +69,7 @@
         </tr>
       }
     } @empty {
-      @if (!cargando()) {
+      @if (!cargando() && mensajeVacio()) {
         <tr><td [attr.colspan]="columnasVisibles().length + 2" class="o_list_vacio">{{ mensajeVacio() }}</td></tr>
       }
     }

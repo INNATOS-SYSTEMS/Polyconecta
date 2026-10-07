@@ -25,6 +25,8 @@ export class OdooChatterDrawer {
   readonly messages = model<ChatterEntry[]>([]);
   /** Folio del documento. Sin él, el panel es solo local (como el prototipo). */
   readonly documentId = input<string | undefined>(undefined);
+  /** Documento que todavía no se guarda ("Nuevo", D-136): el chatter se ve, pero se activa al guardar. */
+  readonly inactivo = input(false);
 
   protected readonly newMsgText = signal('');
   protected readonly avisoSinConexion = signal(false);

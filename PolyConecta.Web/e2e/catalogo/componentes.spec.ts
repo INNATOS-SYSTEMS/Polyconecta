@@ -148,6 +148,9 @@ test.describe('campos', () => {
     const entrada = campos(page).locator('[data-many2one="Producto"] input');
     await entrada.click();
     await entrada.pressSequentially('resina');
+    // Cada letra pide opciones nuevas; se espera a que todas sean del texto completo antes de usar el teclado.
+    await expect.poll(() => page.locator('[data-opcion]').allInnerTexts()).toEqual(expect.arrayContaining([expect.stringContaining('RESINA')]));
+    await expect.poll(async () => (await page.locator('[data-opcion]').allInnerTexts()).every(t => t.includes('RESINA'))).toBe(true);
     await expect(page.locator('[data-opcion]')).toHaveCount(8);
     await expect(page.locator('[data-many2one-mas]')).toBeVisible();
     // El foco sigue en el campo aunque aparezca "Buscar más…" (popover sin autoFocus).

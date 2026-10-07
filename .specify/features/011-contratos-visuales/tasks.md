@@ -72,7 +72,7 @@
 - [x] L2-T025 [US1] Poner en `/catalogo` cada componente, los 10 nuevos y los existentes (`odoo-topbar`, `main-layout`, `odoo-breadcrumb`, `odoo-search-panel`, `odoo-view-switcher`, `odoo-pager`, `odoo-smart-buttons`, `odoo-status-pipeline`, `odoo-line-capture`, `odoo-chatter-drawer`, `boton-nuevo`, `hoja-nueva`, `lot-picker-modal`, `lot-quantity-picker-modal`, `pagina-no-encontrada` y `pagina-pendiente`), con todos sus estados: vacío, cargando, solo lectura, deshabilitado, error, sin conexión y documento libre, según aplique. Los botones primario, secundario y de ícono van con los seis estados de E3.
 - [x] L2-T026 [US1] Pruebas de Playwright de la galería en `e2e/catalogo/` (con su `playwright.config.ts`, solo Angular), a partir de `prueba-tecnica/prueba.spec.ts`: un caso por comportamiento del contrato y la regla "la tabla nunca procesa en el navegador" (cuenta de consultas).
 - [x] L2-T027 [US1] Escribir en `docs/diseno/07-contratos-visuales.md` los contratos de los patrones de pantalla (lista, kanban, formulario de documento, "Nuevo", pestañas, detalle y su captura, campos del maestro, avisos y bloqueos, y estado de sincronización), con capturas del tablero, y el contrato de cada componente de L2-T025 (anatomía con captura de la galería, entradas, salidas, estados, comportamientos, reglas, implementación y dónde se usa), y apuntar CT-24 a ese documento.
-- [ ] L2-T028 [US1] Agregar `/catalogo` a `e2e/tablero/pantallas.ts`, correr `npm run tablero` y subir la galería al lienzo.
+- [x] L2-T028 [US1] Agregar `/catalogo` a `e2e/tablero/pantallas.ts`, correr `npm run tablero` y subir la galería al lienzo.
 
 **Checkpoint**: quickstart §1 en verde. Con esto, F1 ya puede diseñar componiendo contratos.
 
@@ -84,18 +84,18 @@
 
 **Independent Test**: quickstart §2 sobre `/pedidos`, `/pedidos/IV310-26` y `/pedidos/nuevo`.
 
-- [ ] L2-T029 [US2] Crear el origen de Pedidos en `src/app/features/ventas/pedidos-origen.ts`: `OrigenEnMemoria` sobre la colección de pedidos de `OperationalFlowState`, con las columnas de la lista actual y el total como sumable.
-- [ ] L2-T030 [US2] Migrar `features/ventas/pedidos-list/` a `pc-odoo-list` y `pc-odoo-kanban`, con las mismas columnas, el mismo orden y los mismos textos. El kanban usa las etapas y transiciones de Pedidos (data-model §3), con el diálogo de firma al autorizar, que llama al mismo `autorizar()` del formulario.
-- [ ] L2-T031 [US2] Migrar `features/ventas/pedido-form/`:
+- [x] L2-T029 [US2] Crear el origen de Pedidos en `src/app/features/ventas/pedidos-origen.ts`: `OrigenEnMemoria` sobre la colección de pedidos de `OperationalFlowState`, con las columnas de la lista actual y el total como sumable.
+- [x] L2-T030 [US2] Migrar `features/ventas/pedidos-list/` a `pc-odoo-list` y `pc-odoo-kanban`, con las mismas columnas, el mismo orden y los mismos textos. El kanban usa las etapas y transiciones de Pedidos (data-model §3), con el diálogo de firma al autorizar, que llama al mismo `autorizar()` del formulario.
+- [x] L2-T031 [US2] Migrar `features/ventas/pedido-form/`:
   - pestañas a `pc-odoo-tabs`;
   - cantidades y precios a `pc-odoo-number`;
   - fechas a `pc-odoo-date`;
   - acciones secundarias a `pc-odoo-action-menu`;
   - íconos a `pc-odoo-icon`;
   - captura de líneas con `pc-odoo-many2one` para el producto.
-- [ ] L2-T032 [US2] Rehacer `features/ventas/pedido-nuevo/` con la estructura completa de D-136: etapas en Borrador, cliente con `pc-odoo-many2one`, la pestaña Detalle con captura de líneas (cantidad, unidad base, precio y moneda) y el chatter visible, que se activa al guardar. Un solo "Guardar" crea el pedido con sus líneas. Ajustar `shared/hoja-nueva/` para que sirva a los demás documentos.
-- [ ] L2-T033 [P] [US2] Pruebas: guion nuevo en `e2e/scenarios/` para el "Nuevo" completo (maestro y líneas en un guardado, y chatter activo después); pruebas unitarias de las reglas que cambian en `core/state/libre/pedido-libre.spec.ts`.
-- [ ] L2-T034 [US2] Correr quickstart §2 para Pedidos: escenarios, auditoría y tablero en verde, y sin íconos `bi-` en `features/ventas/`. Anotar en `05 §7.5` las diferencias legítimas nuevas.
+- [x] L2-T032 [US2] Rehacer `features/ventas/pedido-nuevo/` con la estructura completa de D-136: etapas en Borrador, cliente con `pc-odoo-many2one`, la pestaña Detalle con captura de líneas (cantidad, unidad base, precio y moneda) y el chatter visible, que se activa al guardar. Un solo "Guardar" crea el pedido con sus líneas. Ajustar `shared/hoja-nueva/` para que sirva a los demás documentos.
+- [x] L2-T033 [P] [US2] Pruebas: guion nuevo en `e2e/scenarios/` para el "Nuevo" completo (maestro y líneas en un guardado, y chatter activo después); pruebas unitarias de las reglas que cambian en `core/state/libre/pedido-libre.spec.ts`.
+- [x] L2-T034 [US2] Correr quickstart §2 para Pedidos: escenarios, auditoría y tablero en verde, y sin íconos `bi-` en `features/ventas/`. Anotar en `05 §7.5` las diferencias legítimas nuevas.
 - [ ] L2-T035 [US2] Abrir el PR de P1 (US1 y US2) a `main` y, con la CI en verde, pedir la aprobación del merge (CT-44). Después del merge, traer `main` a la rama.
 
 **Checkpoint**: P1 en `main` antes del 12-oct.

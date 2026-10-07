@@ -16,12 +16,12 @@
             @switch (pedido().stage) {
                 @case ('Borrador') {
                     <button class="btn btn-primary btn-sm fw-bold px-3" (click)="confirmar()">
-                        <i class="bi bi-check-circle me-1"></i> Confirmar
+                        <pc-odoo-icon nombre="confirmar" /> Confirmar
                     </button>
                 }
                 @case ('Confirmado') {
                     <button class="btn btn-primary btn-sm fw-bold px-3" (click)="autorizar()">
-                        <i class="bi bi-check-circle me-1"></i> Autorizar
+                        <pc-odoo-icon nombre="confirmar" /> Autorizar
                         <span class="badge bg-light text-dark ms-1">{{ firmas() }}/2</span>
                     </button>
                 }
@@ -37,7 +37,7 @@
             <div class="o_sheet_body">
                 <pc-odoo-status-pipeline [stages]="stages" [currentStage]="pedido().stage" />
                 @if (error()) {
-                    <div class="alert alert-danger py-2 px-3 small mb-3"><i class="bi bi-x-octagon me-1"></i>{{ error() }}</div>
+                    <div class="alert alert-danger py-2 px-3 small mb-3"><pc-odoo-icon nombre="hard-stop" />{{ error() }}</div>
                 }
                 <pc-poc-sales-order-form [folio]="pedido().folio" />
             </div>

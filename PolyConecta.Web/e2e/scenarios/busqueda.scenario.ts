@@ -19,10 +19,13 @@ guion({
     abrirMenu,
     filtro('Borrador'),
     filtro('Confirmado'),
-    { control: 'dos estados', en: 'main' },
-    { control: 'menú', en: '.o_search_menu' },
+    { control: 'dos estados', en: 'main .p-4' },
+    // Desde la spec 011 el menú de Pedidos también agrupa y guarda favoritos (D-135), que el prototipo no tiene:
+    // se comparan las facetas aplicadas, no el menú completo.
+    { control: 'facetas', en: '.o_search_bar' },
     { pulsar: '.o_search_facet_remove' },
-    { control: 'faceta quitada', en: 'main' },
+    { control: 'faceta quitada', en: 'main .p-4' },
+    { control: 'barra sin faceta', en: '.o_search_bar' },
   ],
 });
 

@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, effect, inject, input, output, signal, TemplateRef, untracked } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal, TemplateRef, untracked } from '@angular/core';
 import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { Dialog } from '@angular/cdk/dialog';
 import { firstValueFrom } from 'rxjs';
@@ -76,6 +76,8 @@ export class OdooKanban<T> {
   readonly columnas = signal<Columna<T>[]>([]);
   readonly motivos = signal<Record<string, string>>({});
   readonly plegadas = signal(new Set<string>());
+  /** Documentos en todas las etapas: el paginador de la vista lo muestra como en la lista. */
+  readonly total = computed(() => this.columnas().reduce((t, c) => t + c.total, 0));
 
   constructor() {
     effect(() => {

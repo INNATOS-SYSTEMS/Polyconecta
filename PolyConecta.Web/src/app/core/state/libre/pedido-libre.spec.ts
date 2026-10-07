@@ -46,4 +46,16 @@ describe('pedido libre (D-53, D-74)', () => {
     expect([...pedido.firmas.keys()]).toEqual(['Comercial', 'Cobranza']);
     expect(flow.pedido().stage).toBe('Borrador');
   });
+
+  it('"Nuevo" guarda maestro y líneas juntos (D-136)', () => {
+    const { pedido } = libre.crearConLineas('CLIENTE LIBRE SA', 'OC-7', [{ clave: 'PT1113 C567', cantidad: 100, precioUnitario: 7.5, moneda: 'USD' }]);
+    expect(pedido?.lineas).toEqual([expect.objectContaining({ clave: 'PT1113 C567', cantidad: 100, unidad: 'MIL', precioUnitario: 7.5, moneda: 'USD' })]);
+  });
+
+  it('si una línea no es válida, no crea el pedido', () => {
+    const antes = flow.pedidos.length;
+    expect(libre.crearConLineas('CLIENTE', '', [{ clave: 'PT1113 C567', cantidad: 5, precioUnitario: 0, moneda: 'MXN' }]).error).toBe('El precio unitario debe ser mayor que cero.');
+    expect(libre.crearConLineas('', '', []).error).toBe('Capture el cliente.');
+    expect(flow.pedidos.length).toBe(antes);
+  });
 });
