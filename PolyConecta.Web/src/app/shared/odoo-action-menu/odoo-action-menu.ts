@@ -10,15 +10,16 @@ export interface AccionMenu {
 }
 
 /**
- * Botón "⚙ Acciones" con su menú (spec 011): `CdkMenu` del CDK, que se maneja con teclado (flechas,
- * Enter y Esc) y cierra al elegir. Lleva las acciones secundarias de un documento.
+ * Engranaje de acciones del documento (spec 011, contratos visuales §1.3): solo el ícono, junto a donde
+ * terminan las migas, como en Odoo. Abre el menú de acciones secundarias (duplicar, imprimir,
+ * archivar…) con `CdkMenu`: flechas, Enter y Esc, y cierra al elegir.
  */
 @Component({
   selector: 'pc-odoo-action-menu',
   imports: [CdkMenuTrigger, CdkMenu, CdkMenuItem, OdooIcon],
   template: `
-    <button type="button" class="btn btn-outline-secondary" [cdkMenuTriggerFor]="menu" [attr.aria-label]="titulo()" data-acciones>
-      <pc-odoo-icon nombre="acciones" />{{ titulo() }}
+    <button type="button" class="btn o_btn_icon" [cdkMenuTriggerFor]="menu" [attr.aria-label]="titulo()" [title]="titulo()" data-acciones>
+      <pc-odoo-icon nombre="acciones" contexto="icono" />
     </button>
     <ng-template #menu>
       <div class="o_dropdown_panel" cdkMenu>

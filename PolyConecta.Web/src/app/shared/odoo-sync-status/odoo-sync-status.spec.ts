@@ -4,23 +4,14 @@ import { AvisosService } from '../odoo-dialog/avisos';
 import { OdooSyncStatus } from './odoo-sync-status';
 
 describe('OdooSyncStatus (CT-15)', () => {
-  it('muestra el folio al confirmar y el reintento solo en error y solo si se permite', () => {
+  it('es solo un ícono con el estado como nombre accesible', () => {
     const f = TestBed.createComponent(OdooSyncStatus);
-    f.componentRef.setInput('estado', 'Confirmado');
-    f.componentRef.setInput('folio', 'F-1');
-    f.detectChanges();
-    expect(f.nativeElement.textContent).toContain('En CONTPAQi · F-1');
-    expect(f.nativeElement.querySelector('[data-sync-reintentar]')).toBeNull();
-
     f.componentRef.setInput('estado', 'Error');
-    f.componentRef.setInput('error', { codigo: 'SDK_ERROR', mensaje: 'Falló.' });
     f.detectChanges();
-    expect(f.nativeElement.querySelector('[data-sync-error]').textContent).toContain('SDK_ERROR');
-    expect(f.nativeElement.querySelector('[data-sync-reintentar]')).toBeNull();
-
-    f.componentRef.setInput('puedeReintentar', true);
-    f.detectChanges();
-    expect(f.nativeElement.querySelector('[data-sync-reintentar]')).not.toBeNull();
+    const boton: HTMLButtonElement = f.nativeElement.querySelector('[data-sync]');
+    expect(boton.textContent?.trim()).toBe('');
+    expect(boton.getAttribute('aria-label')).toBe('Sincronización con CONTPAQi: Error al enviar a CONTPAQi');
+    expect(boton.classList).toContain('o_sync_Error');
   });
 });
 

@@ -44,7 +44,7 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 
 ![Kanban](img/07/kanban.png)
 
-**Anatomía**: una columna por etapa, con título, cuenta y tarjetas. Las etapas terminales empiezan plegadas; doble clic en el título pliega o despliega.
+**Anatomía**: una columna por etapa, con título, cuenta y tarjetas. **Cada etapa mide 260 px de ancho, fijo**, tenga las tarjetas que tenga; si no caben, el tablero se desplaza a lo ancho. Las etapas terminales empiezan plegadas (48 px); doble clic en el título pliega o despliega.
 
 **Comportamientos**:
 
@@ -67,15 +67,15 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 ![Formulario](img/07/formulario.png)
 
 **Anatomía, en este orden**:
-1. panel de control: "Nuevo", migas y botones inteligentes;
-2. barra de acciones: primario, secundarios, "Acciones" y estado de sincronización;
+1. panel de control: "Nuevo", migas y, donde terminan las migas, el **engranaje de acciones** (solo el ícono, como Odoo); en el centro, los botones inteligentes;
+2. barra de acciones: primario y secundarios (Confirmar, Cancelar…). **Sin línea** que la separe del panel: el panel de un formulario no lleva borde inferior;
 3. hoja: etapas arriba a la derecha, título y folio, maestro en dos columnas, pestañas y detalle con su captura;
-4. chatter a la derecha.
+4. a la derecha, el estado de sincronización con CONTPAQi (solo si el documento lo tiene, §1.8) y debajo el chatter.
 
 **Reglas**:
 - Los botones inteligentes sin origen se ven atenuados y no navegan (documento libre).
 - La acción primaria es una sola.
-- Las secundarias poco frecuentes van en "Acciones".
+- Las secundarias poco frecuentes (duplicar, imprimir, archivar…) van en el menú del engranaje. No hay botón "Acciones" con texto en la barra.
 
 ### 1.4 "Nuevo" (modo libre)
 
@@ -103,7 +103,9 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 | Fecha | `pc-odoo-date` | Calendario en español, semana desde el lunes, `min` y `max`. Muestra "7 oct 2026" |
 | Número, moneda, porcentaje | `pc-odoo-number` | Muestra `5,500.0`; al enfocar, `5500`; al salir valida el mínimo y avisa. La cantidad lleva su unidad base, no editable |
 
-Todos tienen solo lectura (gris, no editable) y funcionan con formularios de Angular (`ngModel` o formularios reactivos).
+**Aspecto de todo campo capturable**: solo una **línea inferior** y fondo **transparente**, sin caja, antes y después de enfocarlo; al enfocarlo, la línea toma el color primario; con error, la línea es roja y el motivo va debajo. Lo extra del campo (signo de moneda, código de moneda, unidad, ícono del calendario) va en gris, sobre la misma línea. Es la clase `o_field` de `app.css` (y `o_inline_input` para un `input` suelto).
+
+En solo lectura el campo es texto sin línea. Todos funcionan con formularios de Angular (`ngModel` o formularios reactivos).
 
 ### 1.7 Avisos y bloqueos
 
@@ -120,9 +122,11 @@ Todos tienen solo lectura (gris, no editable) y funcionan con formularios de Ang
 
 ![Sincronización](img/07/sincronizacion.png)
 
-- **Dónde va:** en la barra de acciones del formulario.
-- **Estados:** `No aplica`, `Pendiente`, `Enviado`, `Confirmado` (con el folio de CONTPAQi) y `Error` (con código y mensaje del contrato).
-- **Reintentar:** aparece solo en `Error` y solo para Sistemas (D-93).
+- **Quién lo lleva:** solo los documentos que envían un comando del contrato `bridge-v1` (CT-13): pedido (`ALTA_PEDIDO`), orden de fabricación al cerrar (`CIERRE_PRODUCCION`), recolección, devolución, traslado y recepción (`TRASPASO`) y entrega (`REMISION`). Control de calidad e incidencias **no** lo llevan.
+- **Dónde va:** arriba del chatter, alineado a la derecha.
+- **Cómo se ve:** un **ícono** redondo, con el color y el ícono del estado, sin texto. Al pulsarlo abre un popover con el título del estado, su explicación y el detalle: folio e id de CONTPAQi al confirmar, código y mensaje del contrato en error.
+- **Estados:** `No aplica`, `Pendiente`, `Enviado`, `Confirmado` y `Error`.
+- **Reintentar:** dentro del popover, solo en `Error` y solo para Sistemas (D-93).
 - **Uso:** F1 lo conecta; en la réplica ningún documento sincroniza.
 - **Implementación:** `pc-odoo-sync-status`.
 
@@ -140,6 +144,7 @@ Todos tienen solo lectura (gris, no editable) y funcionan con formularios de Ang
 | Secundario | `btn btn-outline-secondary` | Cancelar, descartar y acciones secundarias |
 | Ícono | `btn o_btn_icon` + `aria-label` | Acciones de línea y de tabla |
 | Cargando | `o_btn_loading` + ícono `cargando` | Mientras la acción corre |
+| Engranaje de acciones | `pc-odoo-action-menu` (`btn o_btn_icon`) | Junto a las migas del formulario; solo ícono |
 
 - **Estados:** reposo, hover, foco con teclado (anillo de 2 px separado por 2 px de blanco), presionado, deshabilitado (45 %) y cargando. Los colores son las variables de E3 en `app.css`; los componentes no escriben colores sueltos.
 - **Íconos:** `pc-odoo-icon` con un nombre del catálogo (`confirmar`, `editar`, `hard-stop`…).

@@ -243,13 +243,30 @@ test.describe('formulario, avisos y sincronización', () => {
     await expect(page.locator('[data-aviso="error"]')).toHaveCount(0);
   });
 
-  test('estado de sincronización: cinco estados y reintento solo en error', async ({ page }) => {
+  test('estado de sincronización: cinco íconos con popover y reintento solo en error', async ({ page }) => {
     const s = page.locator('[data-catalogo="sincronizacion"]');
     for (const e of ['NoAplica', 'Pendiente', 'Enviado', 'Confirmado', 'Error']) await expect(s.locator(`[data-sync="${e}"]`)).toHaveCount(1);
-    await expect(s.locator('[data-sync="Confirmado"]')).toContainText('F-26200');
-    await expect(s.locator('[data-sync-error]')).toContainText('EXISTENCIA_INSUFICIENTE');
-    await expect(s.locator('[data-sync-reintentar]')).toHaveCount(1);
-    await s.locator('[data-sync-reintentar]').click();
+    await expect(s.locator('[data-sync="Confirmado"]')).toHaveText(''); // solo ícono
+    await s.locator('[data-sync="Confirmado"]').click();
+    await expect(page.locator('[data-sync-popover]')).toContainText('Registrado en CONTPAQi');
+    await expect(page.locator('[data-sync-folio]')).toContainText('F-26200');
+    await page.keyboard.press('Escape');
+    await s.locator('[data-sync="Error"]').click();
+    await expect(page.locator('[data-sync-error]')).toContainText('EXISTENCIA_INSUFICIENTE');
+    await page.locator('[data-sync-reintentar]').click();
     await expect(page.locator('[data-aviso="aviso"]')).toContainText('Reintento encolado.');
+  });
+
+  test('formulario: engranaje junto a las migas y sincronización arriba del chatter', async ({ page }) => {
+    const f = page.locator('[data-catalogo="formulario"]');
+    await expect(f.locator('.o_control_panel [data-acciones]')).toHaveText('');
+    await expect(f.locator('.o_statusbar [data-acciones]')).toHaveCount(0);
+    await expect(f.locator('.o_chatter_cabecera [data-sync]')).toHaveCount(1);
+    await expect(f.locator('.o_control_panel')).toHaveCSS('border-bottom-color', 'rgba(0, 0, 0, 0)');
+  });
+
+  test('kanban: etapas de 260 px', async ({ page }) => {
+    const anchos = await page.locator('[data-catalogo="kanban"] .o_kanban_column:not(.o_kanban_plegada)').evaluateAll(cs => cs.map(c => c.getBoundingClientRect().width));
+    expect(new Set(anchos)).toEqual(new Set([260]));
   });
 });
