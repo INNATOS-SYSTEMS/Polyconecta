@@ -27,7 +27,7 @@
     <input type="text" [placeholder]="placeholder()" [value]="texto()" (input)="onInput($event)" />
   </div>
 
-  @if (view().filtros.length > 0 || puedeAgrupar()) {
+  @if (view().filtros.length > 0 || puedeAgrupar() || conFavoritos()) {
     <button class="btn btn-sm btn-light border" (click)="menuAbierto.set(!menuAbierto())" title="Filtros del modelo">
       <i class="bi bi-funnel"></i>
       @if (filtrosActivos().length > 0) {
@@ -54,6 +54,21 @@
             <i class="bi" [class.bi-check-square-fill]="agrupacionesActivas().includes(agrupacion.etiqueta)" [class.bi-square]="!agrupacionesActivas().includes(agrupacion.etiqueta)"></i> {{ agrupacion.etiqueta }}
           </button>
         }
+      }
+      @if (conFavoritos()) {
+        <div class="o_search_menu_title border-top mt-1">Favoritos</div>
+        @for (f of favoritos(); track f.id) {
+          <div class="o_search_menu_item" [attr.data-favorito]="f.nombre">
+            <button type="button" class="btn btn-link p-0 text-reset text-decoration-none flex-grow-1 text-start" (click)="aplicarF(f)">{{ f.nombre }}@if (f.porOmision) { <span class="text-muted">(por omisión)</span>}</button>
+            <button type="button" class="btn o_btn_icon" style="width:24px;height:24px" [attr.aria-label]="'Borrar favorito ' + f.nombre" (click)="borrarFavorito.emit(f.id)">×</button>
+          </div>
+        }
+        <div class="px-3 py-2 d-flex flex-column gap-1">
+          <input type="text" class="form-control form-control-sm" placeholder="Nombre de la búsqueda" aria-label="Nombre del favorito"
+                 data-favorito-nombre [value]="nombreFavorito()" (input)="nombreFavorito.set($any($event.target).value)" />
+          <label class="small d-flex align-items-center gap-1"><input type="checkbox" class="form-check-input mt-0" [checked]="favoritoPorOmision()" (change)="favoritoPorOmision.set($any($event.target).checked)" /> Usar por omisión</label>
+          <button type="button" class="btn btn-primary btn-sm" data-favorito-guardar [disabled]="!nombreFavorito().trim()" (click)="guardar()">Guardar búsqueda actual</button>
+        </div>
       }
       @if (filtrosActivos().length > 0) {
         <button class="o_search_menu_item text-danger border-top" (click)="limpiarTodo()">

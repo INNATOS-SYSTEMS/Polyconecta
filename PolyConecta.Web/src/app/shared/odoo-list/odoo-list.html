@@ -1,0 +1,91 @@
+@if (idsSeleccionados().length > 0) {
+  <div class="o_list_selection_bar mb-2" data-lista="seleccion">
+    <span class="fw-semibold">{{ idsSeleccionados().length }} seleccionados</span>
+    @for (a of acciones(); track a.nombre) {
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="a.ejecutar(idsSeleccionados())">
+        @if (a.icono) { <pc-odoo-icon [nombre]="a.icono" /> }{{ a.nombre }}
+      </button>
+    }
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-lista="exportar" (click)="exportar()"><pc-odoo-icon nombre="excel" />Exportar</button>
+    <button type="button" class="btn btn-sm btn-link" (click)="limpiarSeleccion()">Quitar selección</button>
+  </div>
+}
+
+<table class="table table-hover align-middle bg-white shadow-sm" [attr.data-lista]="lista()" [attr.aria-busy]="cargando()">
+  <thead class="table-light">
+    <tr>
+      @if (seleccion()) {
+        <th style="width:36px;">
+          <input type="checkbox" class="form-check-input" aria-label="Seleccionar todo" [checked]="table.getIsAllPageRowsSelected()"
+                 [indeterminate]="table.getIsSomePageRowsSelected()" (click)="table.getToggleAllPageRowsSelectedHandler()($event)" />
+        </th>
+      }
+      @for (c of columnasVisibles(); track c.campo) {
+        <th [class.text-end]="esNumerica(c.tipo)" [class.o_list_sortable]="c.ordenable !== false" [style.width]="c.ancho"
+            [attr.aria-sort]="ordenDe(c.campo) === 'asc' ? 'ascending' : ordenDe(c.campo) === 'desc' ? 'descending' : null"
+            [attr.data-columna]="c.campo" (click)="alternarOrden(c.campo)">{{ c.titulo }}@if (ordenDe(c.campo); as o) {<span class="o_list_sort_icon"><pc-odoo-icon [nombre]="o === 'asc' ? 'contraer' : 'expandir'" /></span>}</th>
+      }
+      <th style="width:40px;" class="text-end position-relative">
+        <button type="button" class="btn o_btn_icon" aria-label="Columnas" data-lista="columnas" (click)="menuColumnas.set(!menuColumnas())"><pc-odoo-icon nombre="columnas" contexto="icono" /></button>
+        @if (menuColumnas()) {
+          <div class="o_dropdown_panel o_list_columnas_menu position-absolute end-0 text-start" style="z-index:20;" role="menu">
+            @for (campo of ordenColumnas(); track campo; let i = $index, ultimo = $last) {
+              @let col = table.getColumn(campo);
+              <div class="o_search_menu_item">
+                <label class="d-flex align-items-center gap-2 mb-0 flex-grow-1">
+                  <input type="checkbox" class="form-check-input mt-0" [checked]="visibilidad()[campo] !== false" (change)="alternarColumna(campo)" [attr.data-columna-visible]="campo" />
+                  {{ col?.columnDef?.header }}
+                </label>
+                <button type="button" class="btn o_btn_icon" style="width:24px;height:24px" [disabled]="i === 0" [attr.aria-label]="'Subir ' + col?.columnDef?.header" (click)="moverColumna(campo, -1)" [attr.data-columna-subir]="campo">▲</button>
+                <button type="button" class="btn o_btn_icon" style="width:24px;height:24px" [disabled]="ultimo" [attr.aria-label]="'Bajar ' + col?.columnDef?.header" (click)="moverColumna(campo, 1)">▼</button>
+              </div>
+            }
+          </div>
+        }
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of table.getRowModel().rows; track row.id) {
+      @if (row.original.grupo; as g) {
+        <tr class="o_group_row" [attr.data-grupo]="g.valor" (click)="alternarGrupo(row.original)">
+          <td [attr.colspan]="seleccion() ? 2 : 1" [style.padding-left.px]="12 + g.nivel * 20">
+            <span class="o_group_name"><pc-odoo-icon [nombre]="row.getIsExpanded() ? 'contraer' : 'expandir'" />{{ g.etiqueta }} <span class="text-muted">({{ g.cantidad }})</span></span>
+          </td>
+          @for (c of columnasVisibles().slice(1); track c.campo) {
+            <td [class.text-end]="esNumerica(c.tipo)">{{ totalDe(c, g.totales) }}</td>
+          }
+          <td></td>
+        </tr>
+      } @else if (row.original.dato; as d) {
+        <tr style="cursor:pointer;" [class.table-active]="row.getIsSelected()" (click)="abrirFila(row.original)">
+          @if (seleccion()) {
+            <td (click)="$event.stopPropagation()"><input type="checkbox" class="form-check-input" [attr.aria-label]="'Seleccionar fila'" [checked]="row.getIsSelected()" (click)="row.getToggleSelectedHandler()($event)" /></td>
+          }
+          @for (c of columnasVisibles(); track c.campo) {
+            <td [class]="(c.clase ?? '') + (esNumerica(c.tipo) ? ' text-end' : '')">@if (c.celda) {<ng-container *ngTemplateOutlet="c.celda; context: { $implicit: d }" />} @else if (c.tipo === 'estado') {<span class="badge badge-brand">{{ texto(c, d) }}</span>} @else {{{ texto(c, d) }}}</td>
+          }
+          <td></td>
+        </tr>
+      }
+    } @empty {
+      @if (!cargando()) {
+        <tr><td [attr.colspan]="columnasVisibles().length + 2" class="o_list_vacio">{{ mensajeVacio() }}</td></tr>
+      }
+    }
+  </tbody>
+  @if (hayTotales() && agruparPor().length === 0 && total() > 0) {
+    <tfoot class="o_list_footer">
+      <tr>
+        @if (seleccion()) { <td></td> }
+        @for (c of columnasVisibles(); track c.campo) {
+          <td [class.text-end]="esNumerica(c.tipo)">{{ totalDe(c, totales()) }}</td>
+        }
+        <td></td>
+      </tr>
+    </tfoot>
+  }
+</table>
+
+<pc-odoo-pager [count]="total()" [inicio]="inicio()" [fin]="fin()" [tamanos]="tamanos" [tamano]="tamano()"
+               (anterior)="cambiarPagina(-1)" (siguiente)="cambiarPagina(1)" (cambiarTamano)="cambiarTamano($event)" />
