@@ -4,6 +4,17 @@
 :root {
     --brand-primary: #2E3889;
     --brand-primary-hover: #232C6B;
+    /* Botones, variante A "Índigo afinado" (spec 011, E3). */
+    --brand-primary-active: #1B2254;
+    --btn-secondary-bg: #FFFFFF;
+    --btn-secondary-border: #C5CAD6;
+    --btn-secondary-color: #374151;
+    --btn-secondary-hover-bg: #F3F4F6;
+    --btn-secondary-hover-border: #AEB4C2;
+    --btn-secondary-active-bg: #E5E7EB;
+    --btn-icon-hover-bg: #EEF0FA;
+    --focus-ring: #6F78C2;
+    --btn-disabled-opacity: 0.45;
     --brand-secondary: #017E84;
     --brand-light: #EEF0FA;
     --app-bg: #F3F4F6;
@@ -42,11 +53,35 @@ body {
     --bs-btn-border-color: var(--brand-primary);
     --bs-btn-hover-bg: var(--brand-primary-hover);
     --bs-btn-hover-border-color: var(--brand-primary-hover);
-    --bs-btn-active-bg: var(--brand-primary-hover);
-    --bs-btn-active-border-color: var(--brand-primary-hover);
+    --bs-btn-active-bg: var(--brand-primary-active);
+    --bs-btn-active-border-color: var(--brand-primary-active);
     --bs-btn-disabled-bg: var(--brand-primary);
     --bs-btn-disabled-border-color: var(--brand-primary);
+    --bs-btn-disabled-opacity: var(--btn-disabled-opacity);
     --bs-btn-focus-shadow-rgb: 46, 56, 137;
+}
+
+/* Secundario de la variante A: blanco, borde neutro y texto oscuro. */
+.btn-outline-secondary {
+    --bs-btn-color: var(--btn-secondary-color);
+    --bs-btn-bg: var(--btn-secondary-bg);
+    --bs-btn-border-color: var(--btn-secondary-border);
+    --bs-btn-hover-color: #1F2937;
+    --bs-btn-hover-bg: var(--btn-secondary-hover-bg);
+    --bs-btn-hover-border-color: var(--btn-secondary-hover-border);
+    --bs-btn-active-color: #1F2937;
+    --bs-btn-active-bg: var(--btn-secondary-active-bg);
+    --bs-btn-active-border-color: var(--btn-secondary-hover-border);
+    --bs-btn-disabled-color: var(--btn-secondary-color);
+    --bs-btn-disabled-bg: var(--btn-secondary-bg);
+    --bs-btn-disabled-border-color: var(--btn-secondary-border);
+    --bs-btn-disabled-opacity: var(--btn-disabled-opacity);
+}
+
+/* Foco visible solo con teclado, igual en todos los botones: anillo de 2 px separado por 2 px de blanco. */
+.btn:focus-visible {
+    box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--focus-ring);
+    outline: none;
 }
 
 .btn-outline-primary {

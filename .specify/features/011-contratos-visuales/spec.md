@@ -36,7 +36,7 @@ Que cada pantalla se construya **componiendo piezas con contrato**, sobre librer
 | Modo libre | Estructura **completa** del documento ligado; maestro y líneas en un solo guardado; el chatter se ve desde el inicio y se activa al guardar | D-136 |
 | Alcance | Se migran **las 28 pantallas** en esta spec | D-135 |
 | Entrega | Documento `07-contratos-visuales.md` más una **galería viva** en `/catalogo` | — |
-| Color primario | Se elige entre 2 o 3 variantes propuestas en el lienzo | Pendiente (E3) |
+| Color de botones | **Variante A, "Índigo afinado"**, elegida entre tres en la página Botones del lienzo: primario índigo `#2E3889` y secundario blanco con borde neutro | 7-oct (E3) |
 
 ## Entregables
 
@@ -68,7 +68,21 @@ Hay que refinar el acabado **sin cambiar la estructura** de ninguna barra ni hoj
 1. **Color y contraste:** el primario y el secundario se distinguen a simple vista, y el texto cumple 4.5:1.
 2. **Estados:** reposo, hover, foco visible, presionado, deshabilitado y cargando, iguales en todos los botones.
 3. **Íconos:** Lucide con un solo grosor de trazo y tamaño por contexto (barra, línea, botón inteligente), alineados con el texto.
-4. **Propuesta:** 2 o 3 variantes de paleta para el primario, el secundario y los botones de ícono, con todos sus estados, en el lienzo. Los líderes eligen una y la elegida se vuelve el token de color.
+4. **Propuesta:** tres variantes en la página Botones del lienzo. Se eligió la **A, "Índigo afinado"**, el 7-oct. Sus colores ya son variables de `src/styles/app.css`:
+
+   | Variable | Valor | Uso |
+   | :--- | :--- | :--- |
+   | `--brand-primary` | `#2E3889` | Primario |
+   | `--brand-primary-hover` | `#232C6B` | Primario, hover |
+   | `--brand-primary-active` | `#1B2254` | Primario, presionado |
+   | `--btn-secondary-bg`, `-border`, `-color` | `#FFFFFF`, `#C5CAD6`, `#374151` | Secundario |
+   | `--btn-secondary-hover-bg`, `-hover-border` | `#F3F4F6`, `#AEB4C2` | Secundario, hover |
+   | `--btn-secondary-active-bg` | `#E5E7EB` | Secundario, presionado |
+   | `--btn-icon-hover-bg` | `#EEF0FA` | Botón de ícono, hover (se aplica al migrar a Lucide) |
+   | `--focus-ring` | `#6F78C2` | Anillo de foco con teclado: 2 px separado por 2 px de blanco |
+   | `--btn-disabled-opacity` | `0.45` | Deshabilitado |
+
+   Ya se aplicaron a `btn-primary`, `btn-outline-secondary` y al foco de todos los botones, sin cambiar la estructura. Los íconos Lucide y el botón de ícono llegan con la migración de cada pantalla (E5).
 
 ### E4 · Galería viva (`/catalogo`)
 
@@ -153,4 +167,5 @@ Hay que refinar el acabado **sin cambiar la estructura** de ninguna barra ni hoj
 | :--- | :--- | :--- | :--- | :--- |
 | 2026-10-07 | La aplicación desplaza el contenido dentro de un contenedor, no la página, así que `fullPage` de Playwright no captura la pantalla completa. `npm run tablero` mide lo desplazable y agranda la ventana antes de capturar | Hallazgo al capturar | E1 | — |
 | 2026-10-07 | En la cadena de OF, la raíz es bolseo (`BOL-2026-0001`), su hija impresión y la hija de esta extrusión. El tablero las muestra en ese orden de navegación, no en el orden físico de producción | Semilla de `core/seed/flujo.ts` | E1 | — |
+| 2026-10-07 | Variante A de botones aplicada en `app.css` como variables. `npm run build`, `npm test` (76) y `npm run scenarios` (26) en verde: la estructura no cambió | Elección del usuario en el lienzo | E3 | — |
 | 2026-10-07 | Se eligió PrimeNG y después se descartó: desde la versión 19 (incluida la 22, la de Angular 22) pide llave de licencia y solo es gratis para organizaciones con menos de 1 millón de dólares de ingresos, 5 desarrolladores y 10 empleados. Se usa el stack MIT | Licencia leída en el paquete `primeng@22.1.2` | Toda la spec | D-135 |
