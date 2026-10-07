@@ -43,8 +43,7 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 
-# Informe de paridad con el prototipo (spec 001, FR-017)
-/parity-report/
+# Informes de las pruebas de Playwright
 /test-results/
 auditoria-report/
 /scenario-report/

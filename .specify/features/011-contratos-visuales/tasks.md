@@ -29,10 +29,10 @@
 
 ## Phase 1: Setup (P1)
 
-- [ ] L2-T001 Instalar con versión exacta `@tanstack/angular-table@9.2.6`, `@angular/cdk@22.2.2`, `@spartan-ng/brain@1.6.1`, `@lucide/angular@1.52.0` y `write-excel-file@4.1.1` (research R-01) en `package.json`. Verificar que `npm audit` no reporte vulnerabilidades, y anotar en la exploración que Tailwind, `tw-animate-css` y `clsx` quedan en `package-lock.json` como dependencias de Spartan.
-- [ ] L2-T002 [P] Crear `scripts/verificar-build.mjs` y su script `npm run verificar-build`: falla si el CSS de `dist/` contiene reglas de Tailwind (`--tw-`) o si la carga inicial pasa de lo permitido en el plan (Performance Goals). Agregarlo al trabajo `web` de `.github/workflows/ci.yml`, después de `npm run build` (quickstart §1).
-- [ ] L2-T003 [P] Mover `e2e/parity/rutas.ts` a `e2e/soporte/rutas.ts` y `e2e/parity/navigation.spec.ts` a `e2e/auditoria/navigation.spec.ts`; actualizar sus imports y los de `e2e/auditoria/botones.spec.ts`. Verificar que `npm run audit` corre la navegación (research R-09).
-- [ ] L2-T004 Borrar `npm run parity`, `e2e/parity/` y el `globalTeardown` de `e2e/playwright.config.ts`. Actualizar la tabla de scripts de `README.md` y `docs/diseno/05-arquitectura-tecnica.md` §7.5: la paridad de píxeles se retiró (D-135).
+- [x] L2-T001 Instalar con versión exacta `@tanstack/angular-table@9.2.6`, `@angular/cdk@22.2.2`, `@spartan-ng/brain@1.6.1`, `@lucide/angular@1.52.0` y `write-excel-file@4.1.1` (research R-01) en `package.json`. Verificar que `npm audit` no reporte vulnerabilidades, y anotar en la exploración que Tailwind, `tw-animate-css` y `clsx` quedan en `package-lock.json` como dependencias de Spartan.
+- [x] L2-T002 [P] Crear `scripts/verificar-build.mjs` y su script `npm run verificar-build`: falla si el CSS de `dist/` contiene reglas de Tailwind (`--tw-`) o si la carga inicial pasa de lo permitido en el plan (Performance Goals). Agregarlo al trabajo `web` de `.github/workflows/ci.yml`, después de `npm run build` (quickstart §1).
+- [x] L2-T003 [P] Mover `e2e/parity/rutas.ts` a `e2e/soporte/rutas.ts` y `e2e/parity/navigation.spec.ts` a `e2e/auditoria/navigation.spec.ts`; actualizar sus imports y los de `e2e/auditoria/botones.spec.ts`. Verificar que `npm run audit` corre la navegación (research R-09).
+- [x] L2-T004 Borrar `npm run parity`, `e2e/parity/` y el `globalTeardown` de `e2e/playwright.config.ts`. Actualizar la tabla de scripts de `README.md` y `docs/diseno/05-arquitectura-tecnica.md` §7.5: la paridad de píxeles se retiró (D-135).
 
 ---
 

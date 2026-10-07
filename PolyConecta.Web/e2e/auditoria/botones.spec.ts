@@ -2,7 +2,7 @@ import { Page, test } from '@playwright/test';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { abrir, ANGULAR, BLAZOR } from '../soporte/apps';
-import { rutasSeleccionadas } from '../parity/rutas';
+import { rutasSeleccionadas } from '../soporte/rutas';
 
 /**
  * Auditoría de comportamiento de primer nivel: en cada ruta, para cada botón o enlace visible,

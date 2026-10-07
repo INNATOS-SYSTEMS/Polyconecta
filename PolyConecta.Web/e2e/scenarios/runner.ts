@@ -1,14 +1,11 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { Page, expect, test } from '@playwright/test';
-import pixelmatch from 'pixelmatch';
-import { PNG } from 'pngjs';
 import { ANGULAR, BLAZOR, abrir } from '../soporte/apps';
 
 /**
  * Guiones de escenario (spec 001, FR-018): la misma lista de pasos se ejecuta contra Blazor y contra
  * Angular, y se comparan los textos visibles de cada punto de control. Un guion `soloAngular` (modo
- * libre, que Blazor no tiene) solo verifica sus puntos de control contra lo esperado.
+ * libre, que Blazor no tiene) solo verifica sus puntos de control contra lo esperado. Desde la spec 011 ya
+ * no se comparan píxeles (D-135): los componentes nuevos cambian el acabado, no los textos ni el flujo.
  */
 export type Paso =
   | { ir: string }
@@ -34,23 +31,13 @@ export interface Guion {
 
 const normalizar = (texto: string): string => texto.replace(/\s+/g, ' ').trim();
 
-/** Mismo umbral que la paridad de rutas (regla 8): cada punto de control también se compara en píxeles. */
-const UMBRAL = 0.01;
-const DIRECTORIO = join(__dirname, '..', '..', 'scenario-report');
 
 interface Corrida {
   controles: Record<string, string>;
-  capturas: Record<string, Buffer>;
-}
-
-async function capturar(page: Page): Promise<Buffer> {
-  // "Nuevo" es la única diferencia permitida (D-59): se enmascara en los dos lados.
-  return page.screenshot({ mask: [page.getByRole('button', { name: 'Nuevo' })], maskColor: '#ff00ff' });
 }
 
 async function ejecutar(page: Page, base: string, pasos: Paso[]): Promise<Corrida> {
   const controles: Record<string, string> = {};
-  const capturas: Record<string, Buffer> = {};
   for (const paso of pasos) {
     if ('ir' in paso) {
       await abrir(page, base, paso.ir);
@@ -95,40 +82,20 @@ async function ejecutar(page: Page, base: string, pasos: Paso[]): Promise<Corrid
       const valor = await campo.inputValue();
       const editable = await campo.isEditable();
       controles[paso.control] = `${valor} (${editable ? 'editable' : 'no editable'})`;
-      capturas[paso.control] = await capturar(page);
       if (paso.esperado !== undefined) expect(valor, paso.control).toMatch(paso.esperado);
       if (paso.editable !== undefined) expect(editable, `${paso.control}: editable`).toBe(paso.editable);
     } else if ('habilitado' in paso) {
       const boton = paso.texto ? page.locator(paso.habilitado, { hasText: paso.texto }).first() : page.locator(paso.habilitado).first();
       const habilitado = await boton.isEnabled();
       controles[paso.control] = habilitado ? 'habilitado' : 'deshabilitado';
-      capturas[paso.control] = await capturar(page);
       if (paso.esperado !== undefined) expect(habilitado, paso.control).toBe(paso.esperado);
     } else {
       const texto = normalizar(await page.locator(paso.en).first().innerText());
       controles[paso.control] = texto;
-      capturas[paso.control] = await capturar(page);
       if (paso.esperado !== undefined) expect(texto, paso.control).toMatch(paso.esperado);
     }
   }
-  return { controles, capturas };
-}
-
-/** Proporción de píxeles distintos; si pasa del umbral, deja las tres imágenes en scenario-report/. */
-function compararCapturas(nombre: string, control: string, b: Buffer, a: Buffer): number {
-  const blazor = PNG.sync.read(b);
-  const angular = PNG.sync.read(a);
-  const { width, height } = blazor;
-  const diferencia = new PNG({ width, height });
-  const proporcion = pixelmatch(blazor.data, angular.data, diferencia.data, width, height, { threshold: 0.1 }) / (width * height);
-  if (proporcion > UMBRAL) {
-    const base = join(DIRECTORIO, `${nombre} - ${control}`.replace(/[^\p{L}\p{N} _-]/gu, '_'));
-    mkdirSync(DIRECTORIO, { recursive: true });
-    writeFileSync(`${base}.blazor.png`, b);
-    writeFileSync(`${base}.angular.png`, a);
-    writeFileSync(`${base}.diff.png`, PNG.sync.write(diferencia));
-  }
-  return proporcion;
+  return { controles };
 }
 
 /** Registra el guion como prueba de Playwright. */
@@ -140,10 +107,6 @@ export function guion(g: Guion): void {
     if (!blazor) return;
     for (const control of Object.keys(blazor.controles)) {
       expect(angular.controles[control], `punto de control "${control}"`).toBe(blazor.controles[control]);
-    }
-    for (const control of Object.keys(blazor.capturas)) {
-      const proporcion = compararCapturas(g.nombre, control, blazor.capturas[control], angular.capturas[control]);
-      expect.soft(proporcion, `"${control}": ${(proporcion * 100).toFixed(2)} % de píxeles distintos`).toBeLessThanOrEqual(UMBRAL);
     }
   });
 }

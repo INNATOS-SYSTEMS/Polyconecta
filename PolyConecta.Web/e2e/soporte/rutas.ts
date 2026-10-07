@@ -21,7 +21,7 @@ export const RUTAS: readonly string[] = [
   '/incidencias',
 ];
 
-/** `npm run parity -- --routes=/pedidos,/fabricacion` limita la corrida (cada agente verifica las suyas). */
+/** `PARITY_ROUTES=/pedidos,/fabricacion npm run audit` limita las rutas (cada agente verifica las suyas). */
 export function rutasSeleccionadas(): readonly string[] {
   const filtro = process.env['PARITY_ROUTES'];
   return filtro ? filtro.split(',').map(r => r.trim()).filter(r => r !== '') : RUTAS;
