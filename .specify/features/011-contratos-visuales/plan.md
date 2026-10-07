@@ -15,7 +15,7 @@ Construir en `PolyConecta.Web` los componentes con contrato que pide la spec: li
 **Language/Version**: TypeScript 6.0, Angular 22.2 (D-68), Node 24.16 (D-69)
 
 **Primary Dependencies**:
-- nuevas: `@tanstack/angular-table` 9.2.6, `@angular/cdk` 22.2.2, `@spartan-ng/brain` 1.6.1, `@lucide/angular` 1.52.0 y `write-excel-file` 4.1.1 (research R-01);
+- nuevas: `@tanstack/angular-table` 9.2.6, `@angular/cdk` 22.2.2, `@spartan-ng/brain` 1.6.1, `lucide` 1.52.0 (un módulo por ícono) y `write-excel-file` 4.1.1 (research R-01);
 - se quedan Bootstrap 5.3.2 y las clases `o_*`;
 - Bootstrap Icons se retira al cerrar.
 

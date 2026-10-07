@@ -38,7 +38,7 @@ Que cada pantalla se construya **componiendo piezas con contrato**, sobre librer
 | Tema | Decisión | Registro |
 | :--- | :--- | :--- |
 | Librerías | **TanStack Table** (lógica de tablas), **Angular CDK** (drag & drop, overlay, diálogo, menú) y **Spartan `brain`** (primitivas sin estilo: autocompletar, pestañas, menús, diálogos). Todas MIT; el HTML y el estilo son nuestros, con las clases `o_*`. PrimeNG se descartó porque desde la versión 19 pide llave de licencia | D-135 |
-| Íconos | **Lucide** (`@lucide/angular`), en lugar de Bootstrap Icons | D-135 |
+| Íconos | **Lucide** (paquete `lucide`, un módulo por ícono), en lugar de Bootstrap Icons | D-135 |
 | Exportar a Excel | **`write-excel-file`** (MIT), en el navegador | Clarificación del 7-oct |
 | Paridad con el prototipo | La comparación de píxeles se **retira**: se quitan `npm run parity` y su informe. Los guiones de escenario (`npm run scenarios`) y el auditor (`npm run audit`) se quedan y siguen levantando el prototipo, porque comparan textos, URL y flujos | D-135 |
 | Datos de las listas | Orden, filtro, agrupación y paginación **en el servidor** | D-135 |
@@ -126,7 +126,7 @@ Se corrió en una copia de `PolyConecta.Web` y pasaron **10 de 10 pruebas de Pla
 | `@tanstack/angular-table` | 9.2.6 | MIT |
 | `@angular/cdk` | 22.2.2 | MIT |
 | `@spartan-ng/brain` | 1.6.1 | MIT |
-| `@lucide/angular` | 1.52.0 | ISC |
+| `lucide` (antes `@lucide/angular`, ver exploración) | 1.52.0 | ISC |
 | `write-excel-file` | 4.1.1 | MIT |
 
 **Qué quedó probado:**
