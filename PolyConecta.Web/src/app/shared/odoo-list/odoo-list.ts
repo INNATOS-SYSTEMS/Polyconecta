@@ -244,10 +244,12 @@ export class OdooList<T> implements OnInit {
     this.visibilidad.update(v => ({ ...v, [campo]: v[campo] === false }));
   }
 
+  /** Mueve una columna un lugar entre las visibles: salta las ocultas para que el cambio se vea. */
   moverColumna(campo: string, delta: number): void {
     const orden = [...this.ordenColumnas()];
     const i = orden.indexOf(campo);
-    const j = i + delta;
+    let j = i + delta;
+    while (j >= 0 && j < orden.length && this.visibilidad()[orden[j]] === false) j += delta;
     if (i < 0 || j < 0 || j >= orden.length) return;
     [orden[i], orden[j]] = [orden[j], orden[i]];
     this.ordenColumnas.set(orden);
@@ -273,7 +275,7 @@ export class OdooList<T> implements OnInit {
       })),
     ];
     const { default: writeExcelFile } = await import('write-excel-file/browser');
-    await writeExcelFile(hoja).toFile(`${this.lista()}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    await writeExcelFile(hoja, { dateFormat: 'dd/mm/yyyy' }).toFile(`${this.lista()}-${new Date().toISOString().slice(0, 10)}.xlsx`);
     return r.filas.length;
   }
 

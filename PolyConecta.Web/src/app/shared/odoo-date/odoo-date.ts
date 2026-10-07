@@ -46,7 +46,7 @@ const FORMATO = new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium' });
             <button type="button" brnCalendarNextButton class="btn o_btn_icon"><pc-odoo-icon nombre="siguiente" /></button>
           </div>
           <table brnCalendarGrid>
-            <thead><tr><th *brnCalendarWeekday="let d" scope="col">{{ d }}</th></tr></thead>
+            <thead><tr><th *brnCalendarWeekday="let d" scope="col" [attr.aria-label]="diasLargos[d]">{{ dias[d] }}</th></tr></thead>
             <tbody>
               <tr *brnCalendarWeek="let semana">
                 @for (d of semana; track d.getTime()) {
@@ -67,6 +67,8 @@ export class OdooDate implements ControlValueAccessor {
   readonly soloLectura = input(false);
   readonly obligatorio = input(false);
 
+  protected readonly dias = DIAS;
+  protected readonly diasLargos = DIAS_LARGOS;
   readonly valor = signal<Date | null>(null);
   readonly deshabilitado = signal(false);
   private readonly calendario = viewChild(BrnCalendar);

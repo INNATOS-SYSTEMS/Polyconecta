@@ -13,7 +13,7 @@ Decisiones técnicas para construir la spec. Las de alcance están en la spec (D
 | `@tanstack/angular-table` | 9.2.6 | Lógica de la tabla de lista |
 | `@angular/cdk` | 22.2.2 | Drag & drop del kanban, overlay, diálogo y menú |
 | `@spartan-ng/brain` | 1.6.1 | Combobox, calendario, popover y pestañas, sin estilos |
-| `@lucide/angular` | 1.52.0 | Íconos |
+| `lucide` | 1.52.0 | Íconos: un módulo por ícono (`lucide/dist/esm/icons/*.mjs`). Se descartó `@lucide/angular`: un solo módulo de 15 MB |
 | `write-excel-file` | 4.1.1 | Exportar a `.xlsx` en el navegador |
 
 **Consecuencias**:

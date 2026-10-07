@@ -7,7 +7,7 @@ import {
   BrnCombobox, BrnComboboxAnchor, BrnComboboxContent, BrnComboboxEmpty, BrnComboboxInput, BrnComboboxItem, BrnComboboxList,
   BrnComboboxPopoverTrigger,
 } from '@spartan-ng/brain/combobox';
-import { BrnPopover, BrnPopoverContent } from '@spartan-ng/brain/popover';
+import { BrnPopover, BrnPopoverContent, provideBrnPopoverConfig, provideBrnPopoverDefaultOptions } from '@spartan-ng/brain/popover';
 import { consultaInicial, OrigenDeLista } from '../../core/lista/origen';
 import { abrirDialogo } from '../odoo-dialog/odoo-dialog';
 import { OdooBuscarMas } from './odoo-buscar-mas';
@@ -20,7 +20,12 @@ import { OdooBuscarMas } from './odoo-buscar-mas';
   selector: 'pc-odoo-many2one',
   imports: [BrnCombobox, BrnComboboxAnchor, BrnComboboxContent, BrnComboboxEmpty, BrnComboboxInput, BrnComboboxItem, BrnComboboxList,
     BrnComboboxPopoverTrigger, BrnPopover, BrnPopoverContent],
-  providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => OdooMany2one), multi: true }],
+  providers: [
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => OdooMany2one), multi: true },
+    // El foco se queda en el campo: si el popover enfoca su primer botón ("Buscar más…"), se pierde lo que se escribe.
+    provideBrnPopoverConfig({ align: 'start', sideOffset: 4 }),
+    provideBrnPopoverDefaultOptions({ role: null, autoFocus: false }),
+  ],
   template: `
     <div class="o_many2one" brnCombobox brnPopover [value]="valor()" (valueChange)="elegir($event)" [itemToString]="aTexto()"
          [filter]="sinFiltro" [disabled]="soloLectura() || deshabilitado()" (searchChange)="buscar($event)" [attr.data-many2one]="nombre()">
