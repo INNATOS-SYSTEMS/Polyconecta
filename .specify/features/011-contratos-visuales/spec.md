@@ -58,6 +58,13 @@ Que cada pantalla se construya **componiendo piezas con contrato**, sobre librer
 - Q: ¿Cómo se exporta a Excel desde una lista? → A: Con `write-excel-file` (MIT), en el navegador, con lo que devuelve la consulta del origen de datos: las filas seleccionadas o, sin selección, todas las del filtro actual. SheetJS (`xlsx`) se descartó por dos vulnerabilidades conocidas en su versión de npm.
 - Q: ¿Quién dirige la spec y cómo se entrega? → A: L2, Luis Alvarado Martinez, por partes. Antes del 12-oct: componentes, galería y el flujo de Pedidos. Los otros 7 flujos se migran e integran uno por uno, en paralelo a F1 y antes de la fase que los usa.
 
+### Session 2026-10-07 (P2 · Fabricación)
+
+- Q: En el kanban de Fabricación, ¿qué movimientos de la OF se pueden arrastrar? → A: Borrador → Planeado (Confirmar: pide componentes y libera la recolección) y En progreso → Hecho (cerrar la producción: si falta Calidad o queda saldo en WIP, la tarjeta regresa con el motivo). Planeado → En progreso no se arrastra: lo avanza el sistema al planear en un centro de trabajo.
+- Q: En el "Nuevo" de la OF, ¿qué pestañas se capturan antes del primer guardado? → A: Componentes y Subproductos, que se guardan junto con el maestro (D-136). Producción y Planeación se ven, deshabilitadas hasta guardar porque la OF todavía no existe; después rigen las reglas del formulario (Producción se captura desde Borrador, Planeación desde Planeado).
+- Q: ¿Cómo quedan las incidencias en P2? → A: Igual que hoy (captura en renglón, sin formulario), con la lista en `pc-odoo-list` y el kanban por centro de trabajo, sin arrastre. Convertirla en documento con "Nuevo" queda para F4 (P-27).
+- Q: ¿Qué cambia en Captura masiva? → A: Se conserva su tabla de captura (no es una lista de documentos); los pesos usan `pc-odoo-number` con su unidad, los íconos pasan a Lucide y "Exportar" se habilita con la exportación a Excel de la spec (seleccionadas o todas). Por consistencia, el "Exportar" deshabilitado de Incidencias también se habilita. La exportación sale de `pc-odoo-list` a una función compartida.
+
 ## Entregables
 
 ### E1 · Tablero de flujo ✅ 7-oct

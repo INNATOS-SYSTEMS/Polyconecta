@@ -118,7 +118,7 @@ Salen de los estados que ya existen en `core/models` y `core/state`. La tabla de
 | Lista | Etapas | Transiciones con arrastre | Parte |
 | :--- | :--- | :--- | :---: |
 | Pedidos | Borrador, Confirmado, Autorizado, En progreso, Hecho | Borrador → Confirmado (Confirmar); Confirmado → Autorizado (Autorizar, con diálogo de firma) | P1 |
-| Fabricación | Borrador, Planeado, En progreso, Hecho | Las de `OperationalFlowState` para la OF, por confirmar en P2 | P2 |
+| Fabricación | Borrador, Planeado, En progreso, Hecho | Borrador → Planeado (Confirmar: requiere componentes y libera la recolección); En progreso → Hecho (Cerrar producción: hard-stop de Calidad y saldo de WIP en cero). Planeado → En progreso la avanza el sistema al planear | P2 |
 | Incidencias | Por centro de trabajo | Ninguna: no tienen estado | P2 |
 | Recolecciones | Borrador, En espera, Listo, Hecho | Listo → Hecho (Validar, con diálogo de cantidades si es parcial) | P3 |
 | Calidad | En revisión, Aprobado, Rechazado (por lote) | En revisión → Aprobado o Rechazado (con diálogo del resultado) | P4 |
