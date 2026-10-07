@@ -1,0 +1,40 @@
+<div class="o_control_panel">
+    <div class="d-flex align-items-center gap-3">
+        <pc-boton-nuevo [ruta]="'/recolecciones'" />
+        <pc-odoo-breadcrumb [items]="[{ label: 'Recolecciones' }]" />
+    </div>
+    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" />
+    <div class="d-flex align-items-center gap-2">
+        <div class="btn-group btn-group-sm o_view_switcher">
+            <button class="btn-view active" disabled><i class="bi bi-list-ul"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="p-4">
+    <table class="table table-hover align-middle bg-white shadow-sm">
+        <thead class="table-light">
+            <tr>
+                <th style="width:36px;"><input type="checkbox" class="form-check-input" (change)="toggleAll($event)" /></th>
+                <th>Folio</th><th>Operación</th><th>Origen</th><th>Destino</th><th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (op of filtradas(); track op.folio) {
+                <tr style="cursor:pointer;" [class.table-active]="seleccionadas().has(op.folio)" (click)="router.navigateByUrl('/recolecciones/' + op.folio)">
+                    <td (click)="$event.stopPropagation()">
+                        <input type="checkbox" class="form-check-input" [checked]="seleccionadas().has(op.folio)" (change)="toggle(op.folio)" />
+                    </td>
+                    <td class="fw-semibold text-primary">
+                        {{ op.folio }}@if (op.backorderDe !== undefined) {<span class="badge bg-secondary-subtle text-secondary-emphasis ms-1" style="font-size:.65rem;">backorder</span>}
+                    </td>
+                    <td>{{ op.operacion }}</td>
+                    <td>{{ op.origen }}</td>
+                    <td>{{ op.destino }}</td>
+                    <td><span class="badge badge-brand">{{ op.state }}</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <pc-odoo-pager [count]="filtradas().length" />
+</div>

@@ -1,0 +1,59 @@
+<div class="o_control_panel">
+    <div class="d-flex align-items-center gap-3">
+        <pc-boton-nuevo [ruta]="'/fabricacion'" />
+        <pc-odoo-breadcrumb [items]="breadcrumb()" />
+    </div>
+    <pc-odoo-search-panel [view]="vista" [facetasContexto]="facetas()" [(texto)]="searchText" [(filtrosActivos)]="filtros" />
+    <div class="d-flex align-items-center gap-2">
+        <pc-odoo-view-switcher />
+    </div>
+</div>
+
+<div class="p-4">
+    @if (viewState.viewMode() === 'Kanban') {
+        <div class="o_kanban_board">
+            @for (stage of stages; track stage) {
+                <div class="o_kanban_column">
+                    <div class="o_kanban_column_title">
+                        <span>{{ stage }}</span>
+                        <span class="badge bg-secondary">{{ enColumna(stage).length }}</span>
+                    </div>
+                    @for (of of enColumna(stage); track of.folio) {
+                        <div class="kanban-card" (click)="abrir(of.folio)">
+                            <div class="fw-bold text-dark small">{{ of.folio }}</div>
+                            <div class="text-muted small">{{ of.processLabel }}</div>
+                            <div class="badge badge-brand mt-2">{{ of.state }}</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    } @else {
+        <table class="table table-hover align-middle bg-white shadow-sm">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:36px;"><input type="checkbox" class="form-check-input" (change)="toggleAll($event)" /></th>
+                    <th>Folio</th>
+                    <th>Producto</th>
+                    <th>Proceso</th>
+                    <th class="text-end">Cantidad</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (nodo of arbolPlano(); track nodo.of.folio) {
+                    <tr style="cursor:pointer;" [class.table-active]="selected().has(nodo.of.folio)" (click)="abrir(nodo.of.folio)">
+                        <td (click)="$event.stopPropagation()"><input type="checkbox" class="form-check-input" [checked]="selected().has(nodo.of.folio)" (change)="toggleOne(nodo.of.folio)" /></td>
+                        <!-- Razor recorta el espacio alrededor de los bloques @if: aquí se escribe en una línea. -->
+                        <td class="fw-semibold text-primary" [style.padding-left.px]="12 + nodo.nivel * 26">@if (nodo.nivel > 0) {<i class="bi bi-arrow-return-right text-muted me-1" style="opacity:.55;"></i>}{{ nodo.of.folio }}@if (nodo.nivel === 0 && nodo.hijos.length > 0) {<span class="badge bg-secondary-subtle text-secondary-emphasis ms-2" style="font-size:.65rem;">maestra</span>}</td>
+                        <td>{{ nodo.of.producto }}</td>
+                        <td>{{ nodo.of.processLabel }}</td>
+                        <td class="text-end">{{ n1(nodo.of.cantidad) }} {{ nodo.of.unidad }}</td>
+                        <td><span class="badge badge-brand">{{ nodo.of.state }}</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <pc-odoo-pager [count]="filteredOrders().length" />
+</div>

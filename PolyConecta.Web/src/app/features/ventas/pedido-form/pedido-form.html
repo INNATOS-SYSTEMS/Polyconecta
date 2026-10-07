@@ -1,0 +1,47 @@
+<div class="o_control_panel">
+    <div class="d-flex align-items-center gap-3">
+        <pc-boton-nuevo [ruta]="'/pedidos'" />
+        <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos', url: '/pedidos' }, { label: folio() }]" />
+    </div>
+    <div class="o_button_box">
+        <pc-odoo-smart-buttons [buttons]="smartButtons()" (smartNavigate)="navegar($event)" />
+    </div>
+</div>
+
+<div class="p-4">
+    <!-- Fuera de .o_form_sheet: los botones de acción flotan sobre el fondo de la página,
+         no dentro del cuadro blanco del documento (ver .o_statusbar en app.css). -->
+    <div class="o_statusbar">
+        <div class="d-flex align-items-center gap-2">
+            @switch (pedido().stage) {
+                @case ('Borrador') {
+                    <button class="btn btn-primary btn-sm fw-bold px-3" (click)="confirmar()">
+                        <i class="bi bi-check-circle me-1"></i> Confirmar
+                    </button>
+                }
+                @case ('Confirmado') {
+                    <button class="btn btn-primary btn-sm fw-bold px-3" (click)="autorizar()">
+                        <i class="bi bi-check-circle me-1"></i> Autorizar
+                        <span class="badge bg-light text-dark ms-1">{{ firmas() }}/2</span>
+                    </button>
+                }
+            }
+            @if (pedido().stage !== 'Hecho') {
+                <button class="btn btn-outline-secondary btn-sm px-3" (click)="navegar('/pedidos')">Cancelar</button>
+            }
+        </div>
+    </div>
+
+    <div class="d-flex gap-3 align-items-start">
+        <div class="o_form_sheet flex-grow-1">
+            <div class="o_sheet_body">
+                <pc-odoo-status-pipeline [stages]="stages" [currentStage]="pedido().stage" />
+                @if (error()) {
+                    <div class="alert alert-danger py-2 px-3 small mb-3"><i class="bi bi-x-octagon me-1"></i>{{ error() }}</div>
+                }
+                <pc-poc-sales-order-form [folio]="pedido().folio" />
+            </div>
+        </div>
+        <pc-odoo-chatter-drawer [messages]="chatterEntries()" [documentId]="pedido().folio" />
+    </div>
+</div>

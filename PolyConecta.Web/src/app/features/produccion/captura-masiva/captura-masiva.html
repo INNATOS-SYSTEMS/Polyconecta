@@ -1,0 +1,43 @@
+<div class="o_control_panel">
+    <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-outline-secondary btn-sm" disabled title="Fuera de alcance de esta demo"><i class="bi bi-file-earmark-excel me-1"></i> Importar</button>
+        <pc-odoo-breadcrumb [items]="[{ label: 'Producción' }]" />
+    </div>
+    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" />
+    <div class="d-flex align-items-center gap-2">
+        <pc-odoo-view-switcher [kanbanEnabled]="false" />
+    </div>
+</div>
+
+<div class="p-4">
+    <div class="table-responsive">
+        <table class="table table-hover table-sm align-middle bg-white shadow-sm">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:36px;"><input type="checkbox" class="form-check-input" (change)="toggleAll($event)" /></th>
+                    <th>Orden de fabricación</th><th>Producto</th><th>Estado</th><th>Pedido</th>
+                    <th class="text-end">Cantidad</th><th>Unidad</th><th class="text-end">Producido</th>
+                    @for (i of rollos; track i) { <th class="text-end o_rollo_col">R{{ i + 1 }}</th> }
+                </tr>
+            </thead>
+            <tbody>
+                @for (of of filteredOrders(); track of.folio) {
+                    <tr style="cursor:pointer;" [class.table-active]="selected().has(of.folio)" (click)="router.navigateByUrl('/fabricacion/' + of.folio)">
+                        <td (click)="$event.stopPropagation()"><input type="checkbox" class="form-check-input" [checked]="selected().has(of.folio)" (change)="toggleOne(of.folio)" /></td>
+                        <td class="fw-semibold text-primary small">{{ of.folio }}</td>
+                        <td class="small">{{ of.producto }}</td>
+                        <td><span class="badge {{ stateBadgeClass(of.state) }}">{{ of.state }}</span></td>
+                        <td class="small">{{ of.pedidoFolio }}</td>
+                        <td class="text-end small">{{ n0(of.cantidad) }}</td>
+                        <td class="small">{{ of.unidad }}</td>
+                        <td class="text-end small fw-bold">{{ n0(of.producidoTotal) }}</td>
+                        @for (i of rollos; track i) {
+                            <td class="text-end small o_rollo_col">{{ i < of.produccion.length ? n0(of.produccion[i].real) : '' }}</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <pc-odoo-pager [count]="filteredOrders().length" />
+</div>

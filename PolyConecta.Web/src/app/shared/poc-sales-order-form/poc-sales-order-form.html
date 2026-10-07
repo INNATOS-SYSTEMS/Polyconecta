@@ -1,0 +1,167 @@
+<div>
+    <h3 class="fw-bold mb-1">Pedido</h3>
+    <h4 class="fw-bold text-primary mb-3">{{ pedido().folio }}</h4>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="o_form_label_row">
+                <span class="o_form_label">Cliente</span>
+                @if (!pedido().libre) {
+                <span class="o_form_value fw-semibold">
+                    EMPRESA MEXICANA DE MANUFACTURA
+                    <span class="d-block small text-muted fw-normal">Av. Pedro Ramirez Vazquez # 200-13 Piso 5</span>
+                    <span class="d-block small text-muted fw-normal">Col. Valle Oriente, San Pedro Garza Garcia, N.L. C.P. 66269</span>
+                    <span class="d-block small text-muted fw-normal">RFC: EMM 750712 7Z2</span>
+                </span>
+                } @else {
+                <span class="o_form_value fw-semibold">{{ pedido().cliente }}</span>
+                }
+            </div>
+            <div class="o_form_label_row">
+                <span class="o_form_label">Agente</span>
+                <span class="o_form_value">{{ pedido().agente }}</span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="o_form_label_row">
+                <span class="o_form_label">Fecha</span>
+                <span class="o_form_value">{{ pedido().libre ? '—' : '27/04/2026' }}</span>
+            </div>
+            <div class="o_form_label_row">
+                <span class="o_form_label">Fecha Est. Entrega</span>
+                <span class="o_form_value">{{ pedido().libre ? '—' : '05/05/2026' }}</span>
+            </div>
+            <div class="o_form_label_row">
+                <span class="o_form_label">Orden de Compra</span>
+                <span class="o_form_value">{{ pedido().ordenCompraCliente }}</span>
+            </div>
+            <div class="o_form_label_row">
+                <span class="o_form_label">Contpaq ID</span>
+                <span class="o_form_value">{{ pedido().libre && pedido().contpaqId === '' ? '— (se asigna al confirmar)' : pedido().contpaqId }}</span>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-3" role="tablist">
+        <li class="nav-item"><button class="nav-link active">Detalle</button></li>
+    </ul>
+    <div class="mb-4">
+        @if (pedidoAbierto()) {
+            <pc-odoo-line-capture [(draft)]="draftLinea" [catalogo]="inv.catalogo" [unidadFija]="pedido().libre" [conPrecio]="pedido().libre" (submitted)="agregarLinea($event)" />
+            @if (errorLinea()) {
+                <div class="alert alert-danger py-2 px-3 small mb-3"><i class="bi bi-x-octagon me-1"></i>{{ errorLinea() }}</div>
+            }
+        }
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr class="text-muted small">
+                    <th style="width:15%;">Clave</th>
+                    <th>Producto</th>
+                    <th class="text-center" style="width: 110px;">Cantidad</th>
+                    <th class="text-center" style="width: 110px;" title="Disponible en ubicaciones vendibles (CONTPAQi)">Existencia</th>
+                    <th class="text-center" style="width: 80px;">Unidad</th>
+                    <th class="text-end" style="width: 140px;">Precio Unitario</th>
+                    <th class="text-end" style="width: 110px;">Subtotal</th>
+                    <th class="text-center" style="width: 88px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (linea of lineas(); track $index) {
+                    <tr>
+                        <td class="fw-semibold text-primary small">{{ linea.clave }}</td>
+                        <td class="small">
+                            {{ linea.producto }}
+                            <button class="btn btn-sm btn-link p-0 ms-1" title="Ficha técnica" (click)="showFichaTecnica.set(true)">
+                                <i class="bi bi-file-text"></i>
+                            </button>
+                        </td>
+                        <td class="text-center">{{ n1(linea.cantidad) }}</td>
+                        <td class="text-center fw-semibold" [class.text-danger]="existencia(linea.clave) < linea.cantidad" [class.text-primary]="existencia(linea.clave) >= linea.cantidad" title="Disponible en ubicaciones vendibles (CONTPAQi)">{{ n1(existencia(linea.clave)) }}</td>
+                        <td class="text-center small text-muted">{{ linea.unidad }}</td>
+                        <td class="text-end text-muted">${{ n2(linea.precioUnitario) }}@if (linea.moneda) { {{ linea.moneda }}}</td>
+                        <td class="text-end fw-semibold">${{ n2(subtotalDe(linea)) }}</td>
+                        <td class="text-center text-nowrap">
+                            <button class="btn btn-sm btn-link p-0 me-2" [title]="pedidoAbierto() ? 'Editar' : 'El pedido ya fue autorizado'"
+                                    [disabled]="!pedidoAbierto()" (click)="editarLinea(linea)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-link text-danger p-0" [title]="pedidoAbierto() ? 'Eliminar' : 'El pedido ya fue autorizado'"
+                                    [disabled]="!pedidoAbierto()" (click)="flow.quitarLineaPedido(linea, folio())">
+                                <i class="bi bi-x-circle-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (pedido().libre) {
+            <p class="small text-muted mt-2 mb-0">IVA, descuentos y totales los calcula CONTPAQi al dar de alta el pedido (D-74).</p>
+        } @else {
+        <div class="row">
+            <div class="col-md-8"></div>
+            <div class="col-md-4">
+                <div class="o_form_label_row"><span class="o_form_label">Subtotal</span><span class="o_form_value">${{ n2(subtotal()) }}</span></div>
+                <div class="o_form_label_row"><span class="o_form_label">IVA</span><span class="o_form_value">${{ n2(iva()) }}</span></div>
+                <div class="o_form_label_row"><span class="o_form_label fw-bold">Total</span><span class="o_form_value fw-bold">${{ n2(total()) }}</span></div>
+            </div>
+        </div>
+        }
+    </div>
+
+    @if (!pedido().libre) {
+    <h6 class="text-uppercase text-muted small fw-bold mb-2">Procesos Requeridos</h6>
+    <div class="o_section_card">
+        <table class="table table-sm align-middle mb-0">
+            <thead class="text-muted small"><tr><th style="width:40px;"></th><th>Proceso</th><th>Origen</th><th>Producto</th></tr></thead>
+            <tbody>
+                @for (proc of pedido().procesos; track proc.proceso) {
+                    <tr>
+                        <td><input type="checkbox" class="form-check-input" [checked]="proc.activo" disabled /></td>
+                        <td class="fw-semibold">{{ procesoLabel(proc.proceso) }}</td>
+                        <td class="small">{{ proc.origen }}</td>
+                        <td class="small">{{ proc.producto }}</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    }
+</div>
+
+@if (showFichaTecnica()) {
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.35); z-index: 1050;" (click)="showFichaTecnica.set(false)">
+        <div class="bg-white rounded shadow-lg p-4" style="width: 820px;" (click)="$event.stopPropagation()">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Especificaciones de producción</h5>
+                <button class="btn btn-sm btn-light" (click)="showFichaTecnica.set(false)"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="o_form_label_row"><span class="o_form_label">Tipo Material</span><input class="form-control form-control-sm o_inline_input" [value]="materialType()" (change)="materialType.set(valor($event))" /></div>
+                    <div class="o_form_label_row"><span class="o_form_label">Media de Rollo</span><input class="form-control form-control-sm o_inline_input" [value]="rollTypeDescriptor()" (change)="rollTypeDescriptor.set(valor($event))" /></div>
+                    <div class="o_form_label_row"><span class="o_form_label">Calibre</span><input class="form-control form-control-sm o_inline_input" [value]="gaugeMicron()" (change)="gaugeMicron.set(valor($event))" /></div>
+                    <div class="o_form_label_row"><span class="o_form_label">KG/Rollo</span><input class="form-control form-control-sm o_inline_input" [value]="kgPerRoll()" (change)="kgPerRoll.set(valor($event))" /></div>
+                    <div class="o_form_label_row"><span class="o_form_label">Tratado</span><input class="form-control form-control-sm o_inline_input" [value]="treatment()" (change)="treatment.set(valor($event))" /></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="o_form_label_row"><span class="o_form_label">Pigmento</span><input class="form-control form-control-sm o_inline_input" [value]="pigment()" (change)="pigment.set(valor($event))" /></div>
+                    <div class="o_form_label_row"><span class="o_form_label">Aditivo</span><input class="form-control form-control-sm o_inline_input" [value]="additive()" (change)="additive.set(valor($event))" /></div>
+                    <div class="o_form_label_row"><span class="o_form_label">Perforación</span><input class="form-control form-control-sm o_inline_input" [value]="perforacion()" (change)="perforacion.set(valor($event))" /></div>
+                    <div class="o_form_label_row"><span class="o_form_label">Impresión</span><input class="form-control form-control-sm o_inline_input" [value]="impresion()" (change)="impresion.set(valor($event))" /></div>
+                    <div class="o_form_label_row">
+                        <span class="o_form_label">Kg Por fabricar</span>
+                        <div class="d-flex align-items-center gap-2 flex-grow-1">
+                            <input class="form-control form-control-sm o_inline_input" [value]="targetProductionKgDesde()" (change)="targetProductionKgDesde.set(valor($event))" />
+                            <span class="text-muted small">a</span>
+                            <input class="form-control form-control-sm o_inline_input" [value]="targetProductionKg()" (change)="targetProductionKg.set(valor($event))" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <button class="btn btn-outline-secondary btn-sm px-3" (click)="showFichaTecnica.set(false)">Cancelar</button>
+                <button class="btn btn-primary btn-sm px-3" (click)="showFichaTecnica.set(false)">Aceptar</button>
+            </div>
+        </div>
+    </div>
+}

@@ -1,5 +1,5 @@
 <div class="border rounded bg-white shadow-sm d-flex flex-column" style="width: 340px; flex-shrink: 0; min-height: 480px;">
-  <div class="p-2 border-bottom bg-light">
+  <div class="p-2 border-bottom bg-light" [attr.title]="tituloConexion() || null">
     <span class="fw-bold small text-uppercase text-muted">Bitácora Seguimiento</span>
   </div>
 
@@ -30,5 +30,8 @@
       <input type="text" class="form-control" placeholder="Escribir nota..." [value]="newMsgText()" (change)="newMsgText.set($any($event.target).value)" (keydown.enter)="newMsgText.set($any($event.target).value); send()" />
       <button class="btn text-white fw-semibold" style="background-color: var(--brand-primary);" (click)="send()">Enviar</button>
     </div>
+    @if (avisoSinConexion()) {
+      <div class="small text-muted mt-1"><i class="bi bi-wifi-off me-1"></i>Sin conexión en vivo</div>
+    }
   </div>
 </div>

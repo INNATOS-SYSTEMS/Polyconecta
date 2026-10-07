@@ -1,0 +1,39 @@
+<div class="o_control_panel">
+    <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-outline-secondary btn-sm" disabled title="Fuera de alcance de esta demo"><i class="bi bi-file-earmark-excel me-1"></i> Importar</button>
+        <pc-odoo-breadcrumb [items]="[{ label: 'Captura de Incidencias' }]" />
+    </div>
+    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" />
+    <div class="d-flex align-items-center gap-2">
+        <pc-odoo-view-switcher [kanbanEnabled]="false" />
+    </div>
+</div>
+
+<div class="p-4">
+    <div class="row g-2 align-items-end mb-3">
+        <div class="col-md-2"><label class="form-label small text-muted">Centro de trabajo</label><input class="form-control form-control-sm o_inline_input" [value]="centro()" (change)="centro.set(valor($event))" /></div>
+        <div class="col-md-2"><label class="form-label small text-muted">Tipo</label><input class="form-control form-control-sm o_inline_input" [value]="tipo()" (change)="tipo.set(valor($event))" /></div>
+        <div class="col-md-3"><label class="form-label small text-muted">Comentarios</label><input class="form-control form-control-sm o_inline_input" [value]="comentarios()" (change)="comentarios.set(valor($event))" /></div>
+        <div class="col-md-1"><label class="form-label small text-muted">Inicio</label><input class="form-control form-control-sm o_inline_input" [value]="horaInicio()" (change)="horaInicio.set(valor($event))" placeholder="19:00" /></div>
+        <div class="col-md-1"><label class="form-label small text-muted">Fin</label><input class="form-control form-control-sm o_inline_input" [value]="horaFin()" (change)="horaFin.set(valor($event))" placeholder="07:00" /></div>
+        <div class="col-md-3"><button class="btn btn-sm btn-outline-primary w-100" (click)="agregar()"><i class="bi bi-plus-lg"></i> Agregar Incidencia</button></div>
+    </div>
+
+    <table class="table table-sm align-middle bg-white shadow-sm">
+        <thead class="table-light">
+            <tr><th>Fecha</th><th>Centro de trabajo</th><th>Tipo de incidencia</th><th>Comentarios</th><th>Hora Inicio</th><th>Hora Fin</th></tr>
+        </thead>
+        <tbody>
+            @for (inc of filteredIncidencias(); track $index) {
+                <tr>
+                    <td class="small">{{ fechaGuion(inc.fecha) }}</td>
+                    <td class="small">{{ inc.centroTrabajo }}</td>
+                    <td class="small">{{ inc.tipo }}</td>
+                    <td class="small">{{ inc.comentarios }}</td>
+                    <td class="small">{{ inc.horaInicio }}</td>
+                    <td class="small">{{ inc.horaFin }}</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

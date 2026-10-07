@@ -22,7 +22,7 @@ function Start-BridgeOculto {
 }
 
 # Llama al bridge y devuelve el objeto, o $null si no responde.
-function Invoke-Bridge([string]$ruta, [int]$Puerto = 5005) {
+function Invoke-Bridge([string]$ruta, [int]$Puerto = 9030) {
     try { return Invoke-RestMethod -Uri ("http://localhost:{0}{1}" -f $Puerto, $ruta) -TimeoutSec 15 }
     catch { return $null }
 }

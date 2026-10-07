@@ -1,0 +1,83 @@
+@if (of(); as of) {
+    <div class="o_control_panel">
+        <div class="d-flex align-items-center gap-3">
+            <pc-boton-nuevo [ruta]="'/calidad'" />
+            <pc-odoo-breadcrumb [items]="[{ label: 'Control de Calidad', url: '/calidad' }, { label: qcFolio() }]" />
+        </div>
+        <div class="o_button_box">
+            <pc-odoo-smart-buttons [buttons]="smartButtons()" (smartNavigate)="navegar($event)" />
+        </div>
+    </div>
+
+    <div class="p-4">
+        <div class="o_statusbar">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-success btn-sm px-3" (click)="aprobarTodo()" [disabled]="pendientes() === 0">
+                    <i class="bi bi-check-circle me-1"></i> Aprueba
+                </button>
+                <button class="btn btn-outline-danger btn-sm px-3" (click)="fallarUltimo()" [disabled]="pendientes() === 0">
+                    <i class="bi bi-x-circle me-1"></i> Falla
+                </button>
+            </div>
+            <span class="badge badge-brand px-3 py-2">{{ estado() }}</span>
+        </div>
+
+        <div class="d-flex gap-3 align-items-start">
+            <div class="o_form_sheet flex-grow-1">
+                <div class="o_sheet_body">
+                    <h3 class="fw-bold mb-1">Control de calidad</h3>
+                    <h4 class="fw-bold text-primary mb-3">{{ qcFolio() }}</h4>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="o_form_label_row"><span class="o_form_label">Producto</span><span class="o_form_value fw-semibold">{{ of.producto }}</span></div>
+                            <div class="o_form_label_row"><span class="o_form_label">Orden de Fabricación</span><span class="o_form_value"><a [routerLink]="'/fabricacion/' + of.folio" class="text-decoration-none">{{ of.folio }}</a></span></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="o_form_label_row"><span class="o_form_label">Auditor</span><span class="o_form_value">Armando Silva</span></div>
+                            <div class="o_form_label_row"><span class="o_form_label">Proceso</span><span class="o_form_value">{{ of.processLabel }}</span></div>
+                            <div class="o_form_label_row"><span class="o_form_label">Estado</span><span class="o_form_value">{{ estado() }}</span></div>
+                        </div>
+                    </div>
+
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item"><button class="nav-link" [class.active]="tab() === 'controles'" (click)="tab.set('controles')">Controles</button></li>
+                        <li class="nav-item"><button class="nav-link" [class.active]="tab() === 'notas'" (click)="tab.set('notas')">Notas</button></li>
+                    </ul>
+
+                    @if (tab() === 'controles') {
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="text-muted small"><tr><th>#</th><th>Producto</th><th>Lote</th><th class="text-end">Cantidad</th><th class="text-end">Real</th><th>Aprueba</th></tr></thead>
+                            <tbody>
+                                @if (of.produccion.length === 0) {
+                                    <tr><td colspan="6" class="text-muted small fst-italic">Sin lotes capturados todavía en Producción.</td></tr>
+                                }
+                                @for (lote of of.produccion; track $index; let i = $index) {
+                                    <tr>
+                                        <td>{{ i + 1 }}</td>
+                                        <td class="small">{{ of.producto }}</td>
+                                        <td><code>{{ lote.lote }}</code></td>
+                                        <td class="text-end">{{ n1(cantidadPlaneadaPorLote()) }}</td>
+                                        <td class="text-end">{{ n1(lote.real) }} {{ lote.unidad }}</td>
+                                        <td>
+                                            @if (lote.estado === 'En revisión') {
+                                                <button class="btn btn-sm btn-outline-success me-1" (click)="flow.aprobarLote(lote)">Aprueba</button>
+                                                <button class="btn btn-sm btn-outline-danger" (click)="flow.rechazarLote(lote)">Falla</button>
+                                            } @else {
+                                                <span class="badge" [class.bg-success]="lote.estado === 'Aprobado'" [class.bg-danger]="lote.estado !== 'Aprobado'">{{ lote.estado }}</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    } @else {
+                        <textarea class="form-control" rows="4" placeholder="Notas de calidad..."></textarea>
+                    }
+                </div>
+            </div>
+            <pc-odoo-chatter-drawer [messages]="chatterEntries" [documentId]="qcFolio()" />
+        </div>
+    </div>
+} @else {
+    <div class="p-4">Orden de Fabricación no encontrada.</div>
+}

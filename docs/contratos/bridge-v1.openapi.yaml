@@ -10,7 +10,7 @@ info:
     name: Privado
     identifier: LicenseRef-Privado
 servers:
-  - url: http://localhost:5005
+  - url: http://localhost:9030
     description: Bridge local (modo simulado en macOS, Linux y CI)
 security: []
 tags:

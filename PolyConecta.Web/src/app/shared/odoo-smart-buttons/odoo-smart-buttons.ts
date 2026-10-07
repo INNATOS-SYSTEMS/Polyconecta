@@ -5,6 +5,8 @@ export interface SmartButtonModel {
   countBadge: number;
   iconClass: string;
   targetRoute: string;
+  /** Documento libre sin ese origen (FR-014): se ve atenuado y no navega. */
+  deshabilitado?: boolean;
 }
 
 /** Réplica de Components/Forms/OdooSmartButtons.razor. */
@@ -13,7 +15,7 @@ export interface SmartButtonModel {
   template: `
     <div class="d-flex gap-1 flex-wrap">
       @for (btn of buttons(); track btn.label) {
-        <div class="o_smart_button" (click)="smartNavigate.emit(btn.targetRoute)">
+        <div class="o_smart_button" [class.opacity-50]="btn.deshabilitado" [attr.title]="btn.deshabilitado ? 'Documento libre: sin documento de origen' : null" (click)="btn.deshabilitado || smartNavigate.emit(btn.targetRoute)">
           <div class="d-flex align-items-center gap-1">
             <i [class]="btn.iconClass"></i>
             <span class="stat-label">{{ btn.label }}</span>

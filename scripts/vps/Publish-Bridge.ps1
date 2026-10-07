@@ -24,7 +24,7 @@
 #>
 [CmdletBinding()]
 param(
-    [int]$Puerto = 5005,
+    [int]$Puerto = 9030,
     [switch]$SinArrancar,
     [switch]$SinSonda,
     [switch]$Visible

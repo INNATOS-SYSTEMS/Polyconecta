@@ -21,3 +21,11 @@ export interface LotBalance {
   /** Folio del documento que lo tiene comprometido (pedido u OF), si aplica. */
   comprometidoPor?: string;
 }
+
+/** Renglón del Inventario Actual: la existencia de un lote en una ubicación. */
+export interface StockQuant {
+  producto: ProductRef;
+  ubicacion: string;
+  lote: string;
+  cantidad: number;
+}
