@@ -116,7 +116,7 @@ flowchart LR
 
 ## 6. Interfaz
 
-- **CT-24** La interfaz sigue los patrones de Odoo 19 (Principio IX) y el sistema de diseño de `PolyConecta.Web` ([05 §6.1](05-arquitectura-tecnica.md#61-sistema-de-diseño-ct-24)).
+- **CT-24** La interfaz sigue los patrones de Odoo 19 (Principio IX) y el sistema de diseño de `PolyConecta.Web` ([05 §7.1](05-arquitectura-tecnica.md#71-sistema-de-diseño-ct-24)).
 - **CT-25** Todo documento tiene sus dos modos: ligado y libre, con "Nuevo" (Principio X).
 - **CT-26** Las acciones que un rol no puede ejecutar se muestran deshabilitadas, con la razón visible.
 

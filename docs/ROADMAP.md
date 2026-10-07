@@ -2,7 +2,7 @@
 
 La construcción avanza **fase a fase** según el [plan de trabajo](plan/Tarea%20(project.task)%20-%20replaneacion(2).xlsx) (D-116), por **dos caminos en paralelo**, cada uno con su líder y sus agentes. Las reglas de cómo se construye están en la [constitución técnica](diseno/06-constitucion-tecnica.md). Aquí están las fases, las specs, qué entrega cada camino y el tablero de avance.
 
-**Actualizado:** 6 de octubre de 2026 (cierre de F0).
+**Actualizado:** 7 de octubre de 2026 (cierre de F0 y de la réplica en Angular).
 
 ---
 
@@ -84,7 +84,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 
 | Fase | Diseño cerrado | Spec | Cerrado en PolyConecta | Comandos entregados (camino 1) | Cerrado integrado | Revisión |
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
-| Réplica Angular (paralelo) | ✅ | `001-angular-presentation` · tareas terminadas; la 002 ya está en `main` y la 001 va a su PR (CT-44) | 🟨 | n/a | n/a | — |
+| Réplica Angular (paralelo) | ✅ | `001-angular-presentation` · integrada en `docs/diseno/` y borrada | ✅ 7-oct · `db071b6` | n/a | n/a | — |
 | F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · integrada en `docs/diseno/` y borrada | ✅ 6-oct · `d5eaf35` | ✅ 6-oct: contrato `1.0`, bridge simulado y bridge x86 en el VPS (evidencia `56da557`) | n/a: F0 no entrega comandos que escriban en CONTPAQi | — |
 | F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R1 |
 | F2 · Planeación de producción | ✅ | `004-planeacion-produccion` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R2 |
@@ -142,7 +142,7 @@ Lo que quedaba pendiente de la lista anterior lo absorben tareas del plan.
 | A-4 | Escribir el contrato `bridge-v1` (CT-18). `1.0` firmado el 6-oct (D-132) | ✅ | 0.2 |
 | A-5 | Bridge en modo simulado (CT-21) | ✅ 6-oct | — |
 | A-6 | Decidir versiones: ratificadas el 29-sep (D-67 a D-73) | ✅ | — |
-| A-7 | Ejecutar la spec 001 (réplica en Angular). 06-oct: las 73 tareas hechas y verificadas; la 002 ya está en `main` (7-oct) y la 001 va a su PR (CT-44) | 🟨 | En paralelo (D-118) |
+| A-7 | Ejecutar la spec 001 (réplica en Angular). Verificada el 7-oct con `main` integrada: 130 pruebas .NET, 76 web, paridad 25/25, escenarios 26/26 y chatter 2/2 | ✅ 7-oct | — |
 | A-8 | Crear la spec de Plataforma | ✅ 6-oct | Spec `002-construccion-tecnica`, ya integrada |
 | A-9 | Migrar PolyConecta a .NET 10, EF Core SQL Server, xUnit v3 y AwesomeAssertions; quitar Npgsql, EF InMemory de producción y MediatR; centralizar versiones (D-73) | ✅ 6-oct | — |
 | A-10 | Verificar el bridge en .NET 10 `win-x86` y migrarlo (D-67). Se verificó con el propio bridge en el VPS, no con `sdk-lab` (D-130); F y G se repiten con cada comando en su fase | ✅ 6-oct | — |

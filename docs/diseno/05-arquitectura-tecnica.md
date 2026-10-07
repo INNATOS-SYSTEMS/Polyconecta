@@ -131,11 +131,11 @@ BRIDGE_URL=http://localhost:9030 BRIDGE_CALLBACK_SECRET=<el de BridgeConfig__Cal
 | `scripts/screenshots.sh` | Recorre el prototipo con Playwright y guarda capturas en `docs/screenshots/` |
 | `scripts/sql/logins-desarrollo.sql` | Base y logins de PolyConecta para desarrollo y CI (CT-30) |
 
-## 6. Interfaz: `PolyConecta.Web`
+## 7. Interfaz: `PolyConecta.Web`
 
 Viene de la spec 001 (réplica del prototipo en Angular). Es la base de las pantallas de F1 en adelante (D-118).
 
-### 6.1 Sistema de diseño (CT-24)
+### 7.1 Sistema de diseño (CT-24)
 
 - **Estilo**: el `app.css` del prototipo sin cambios, Bootstrap 5.3.2, Bootstrap Icons 1.11.3 y la fuente Inter. Las clases `o_*` reproducen Odoo 19 (Principio IX).
 - **Estructura de todo documento**, en este orden: panel de control (`o_control_panel`: "Nuevo", migas y smart buttons) → barra de acciones (`o_statusbar`: acción primaria, secundarias y estado) → hoja (`o_form_sheet`: etapas, título y folio, campos en dos columnas, pestañas y líneas) → chatter a la derecha. Las listas usan el mismo panel con la barra de búsqueda y el paginador.
@@ -143,13 +143,13 @@ Viene de la spec 001 (réplica del prototipo en Angular). Es la base de las pant
 - **Captura de líneas**: `[Clave / Producto] [Cantidad] [Unidad] [Agregar]`. Si el producto está en el catálogo de CONTPAQi, la unidad se precarga. En modo libre la unidad es la base del producto y no se edita (D-127), y el pedido libre agrega precio unitario y moneda (D-74).
 - **Smart buttons** de un documento libre: vacíos o deshabilitados, nunca con un origen falso (FR-014 de la spec 001).
 
-### 6.2 Estado mientras no hay API
+### 7.2 Estado mientras no hay API
 
 - Los servicios de `Presentation/Services` están portados a `src/app/core/state/` con signals: mutan los mismos objetos y exponen la señal `cambios`. Un `computed` que devuelve el mismo objeto mutado lleva `{ equal: () => false }`.
 - Lo que en el prototipo era un documento único (pedido, traslado, recepción y entrega) es una **colección con su documento semilla**; las operaciones reciben el folio. Así "Nuevo" puede crear otro sin romper la paridad.
 - El estado vive en memoria y se pierde al recargar, igual que el circuito de Blazor.
 
-### 6.3 Modo libre ("Nuevo", D-59)
+### 7.3 Modo libre ("Nuevo", D-59)
 
 "Nuevo" abre `<lista>/nuevo`: la hoja del documento en su estado inicial, con los campos mínimos, "Guardar" y "Descartar". Al guardar se crea el documento libre y se abre su formulario. Las reglas viven en `src/app/core/state/libre/`, cada una con su prueba:
 
@@ -165,6 +165,13 @@ Viene de la spec 001 (réplica del prototipo en Angular). Es la base de las pant
 
 Los folios libres (`PV-2026-0001`, `QC-2026-0001`, la siguiente OF de su proceso) son de la réplica; al conectar la API los dará `IReferenceSequenceService`.
 
-### 6.4 Verificación
+### 7.4 Chatter en vivo (D-58)
+
+`PolyConecta.Api` expone `ChatterHub` en `/hubs/chatter`, copia del hub del prototipo. Su CORS admite el origen de `PolyConecta.Web` **con credenciales**, porque el cliente de SignalR negocia con ellas y `AllowAnyOrigin` no sirve.
+- El cliente envía `SendMessage(documentId, author, text)` y agrega el mensaje cuando le llega su propio `ReceiveChatterMessage`, así no se duplica. Solo muestra los del documento abierto, con la hora local de recepción (`h:mm tt`).
+- Sin conexión, el mensaje se agrega solo en local, como en Blazor, y el panel avisa "Sin conexión en vivo". La conexión se reintenta sola.
+- Los mensajes no se guardan: guardarlos en la base (D-78) es la tarea 1.6.
+
+### 7.5 Verificación
 
 `PolyConecta.Web/README.md` describe los scripts. La paridad se mide contra el prototipo corriendo: ≤ 1 % de píxeles distintos por ruta y por punto de control de cada guion, con "Nuevo" enmascarado. Las diferencias legítimas con el prototipo son tres: el pedido aplica al instante el bloqueo de líneas al autorizar (el prototipo no se vuelve a pintar), una ruta inexistente muestra "Página no encontrada" (el prototipo devuelve un 404 vacío) y "Nuevo".
