@@ -14,8 +14,9 @@ La spec no agrega entidades de negocio. Lo que define son los **tipos de la inte
 | `tamano` | `number` | Filas por página: 20, 40, 80 o 200. Por omisión, 80, como Odoo |
 | `orden` | `{ campo: string; desc: boolean }[]` | En orden de prioridad. Vacío = orden por omisión de la lista |
 | `filtros` | `FiltroLista[]` | Combinados con Y. Los de un mismo campo se combinan con O (05 §7.1) |
+| `nombrados` | `string[]` | Filtros con nombre de la vista de búsqueda (`core/search`), como en Odoo: el origen los evalúa por nombre. Los del mismo campo de la vista se unen con O |
 | `busqueda` | `string \| null` | Texto libre de la barra de búsqueda, sobre los campos que la lista declara buscables |
-| `agruparPor` | `string[]` | Niveles de agrupación, en orden. Vacío = sin agrupar |
+| `agruparPor` | `string[]` | Niveles de agrupación, en orden: un campo o la etiqueta de una agrupación de la vista. Vacío = sin agrupar |
 | `grupo` | `{ campo: string; valor: string }[]` | Ruta del grupo que se abre. Vacío = primer nivel |
 | `ids` | `string[] \| null` | Solo esas filas: para exportar las seleccionadas |
 

@@ -38,13 +38,13 @@
 
 ## Phase 2: Foundational (P1, bloquea todo lo demás)
 
-- [ ] L2-T005 Crear `src/app/core/lista/origen.ts` con `ConsultaLista`, `FiltroLista`, `ResultadoLista`, `GrupoLista` y `OrigenDeLista` (data-model §1).
-- [ ] L2-T006 Crear `src/app/core/lista/origen-en-memoria.ts`: filtros con operadores (`contiene`, `igual`, `entre`, `en`), búsqueda, orden por varios campos, agrupación de varios niveles con totales, ruta de grupo, `ids` y paginación. Partir de `prueba-tecnica/origen.ts`.
-- [ ] L2-T007 [P] Pruebas en `src/app/core/lista/origen-en-memoria.spec.ts`: cada operador, el orden estable con empates, dos niveles de agrupación, los totales por grupo y del filtro, la paginación de grupos, `ids`, y 1,000 filas en menos de 100 ms (plan, Performance Goals).
-- [ ] L2-T008 [P] Crear `src/app/core/lista/favoritos.ts` con `Favorito`, `AlmacenDeFavoritos` y `FavoritosEnNavegador`, con la llave `polyconecta.favoritos.<lista>`, todo en `try/catch` (research R-08), y sus pruebas en `favoritos.spec.ts`: guardar, listar, borrar, un solo favorito por omisión y `localStorage` que falla.
-- [ ] L2-T009 [P] Crear `src/app/core/kanban/kanban.ts` con `EtapaKanban` y `TransicionKanban` (data-model §3).
-- [ ] L2-T010 [P] Crear `src/app/shared/odoo-icon/` (`pc-odoo-icon`) con el catálogo de nombres de PolyConecta, la equivalencia de los 45 íconos de Bootstrap a Lucide y los tamaños por contexto (research R-07), con sus pruebas.
-- [ ] L2-T011 [P] Agregar a `src/styles/app.css` la base de los componentes nuevos, con las variables de E3 y las clases `o_*`: `o_btn_icon`; las opciones filtradas (`[data-hidden]`) y el aviso "Sin resultados" (`[data-empty]`) del combobox; los días del calendario (`data-selected`, `data-today`, `data-outside`); las columnas y tarjetas del kanban; el foco (research R-04); y el estado cargando de los botones (`o_btn_loading`: deshabilitado y con el ícono girando, E3).
+- [x] L2-T005 Crear `src/app/core/lista/origen.ts` con `ConsultaLista`, `FiltroLista`, `ResultadoLista`, `GrupoLista` y `OrigenDeLista` (data-model §1).
+- [x] L2-T006 Crear `src/app/core/lista/origen-en-memoria.ts`: filtros con operadores (`contiene`, `igual`, `entre`, `en`), búsqueda, orden por varios campos, agrupación de varios niveles con totales, ruta de grupo, `ids` y paginación. Partir de `prueba-tecnica/origen.ts`.
+- [x] L2-T007 [P] Pruebas en `src/app/core/lista/origen-en-memoria.spec.ts`: cada operador, el orden estable con empates, dos niveles de agrupación, los totales por grupo y del filtro, la paginación de grupos, `ids`, y 1,000 filas en menos de 100 ms (plan, Performance Goals).
+- [x] L2-T008 [P] Crear `src/app/core/lista/favoritos.ts` con `Favorito`, `AlmacenDeFavoritos` y `FavoritosEnNavegador`, con la llave `polyconecta.favoritos.<lista>`, todo en `try/catch` (research R-08), y sus pruebas en `favoritos.spec.ts`: guardar, listar, borrar, un solo favorito por omisión y `localStorage` que falla.
+- [x] L2-T009 [P] Crear `src/app/core/kanban/kanban.ts` con `EtapaKanban` y `TransicionKanban` (data-model §3).
+- [x] L2-T010 [P] Crear `src/app/shared/odoo-icon/` (`pc-odoo-icon`) con el catálogo de nombres de PolyConecta, la equivalencia de los 45 íconos de Bootstrap a Lucide y los tamaños por contexto (research R-07), con sus pruebas.
+- [x] L2-T011 [P] Agregar a `src/styles/app.css` la base de los componentes nuevos, con las variables de E3 y las clases `o_*`: `o_btn_icon`; las opciones filtradas (`[data-hidden]`) y el aviso "Sin resultados" (`[data-empty]`) del combobox; los días del calendario (`data-selected`, `data-today`, `data-outside`); las columnas y tarjetas del kanban; el foco (research R-04); y el estado cargando de los botones (`o_btn_loading`: deshabilitado y con el ícono girando, E3).
 
 **Checkpoint**: tipos, origen y favoritos probados. Los componentes se pueden construir en paralelo.
 
