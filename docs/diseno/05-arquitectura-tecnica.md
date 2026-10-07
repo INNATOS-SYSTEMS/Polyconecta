@@ -17,7 +17,7 @@ Cómo está armada la solución, qué hace hoy cada proyecto y qué deuda técni
 
 ## 2. Solución
 
-`Polyconecta.slnx` · **.NET 10** (SDK 10.0.300 en `global.json`), versiones exactas en `Directory.Packages.props` (CT-36). La única excepción es `PolyConecta.Presentation`, que sigue en .NET 8 porque el prototipo no se modifica (D-60).
+`Polyconecta.slnx` · **.NET 10** (SDK 10.0.300 o mayor de la misma versión 10.0, `global.json` con `latestFeature`, D-133), versiones exactas en `Directory.Packages.props` (CT-36). La única excepción es `PolyConecta.Presentation`, que sigue en .NET 8 porque el prototipo no se modifica (D-60).
 
 ```mermaid
 flowchart LR

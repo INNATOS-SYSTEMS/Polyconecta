@@ -57,7 +57,7 @@ flowchart LR
 | Pruebas extremo a extremo | Playwright | — |
 | Bridge | .NET 10 `win-x86`, SQLite, SDK de CONTPAQi (`MGWServicios.dll`) | Proceso aparte en una sesión interactiva de Windows; único usuario del SDK (Principio II, D-88) |
 
-- **CT-36** **Política de versiones (D-73).** Las versiones se fijan exactas y centralizadas: `global.json` (SDK de .NET), `Directory.Packages.props` (paquetes NuGet), `.nvmrc` (Node) y `package.json` sin `^` ni `~`. Parches y versiones menores se actualizan una vez al mes en un PR propio, con todas las pruebas en verde. Una versión mayor solo cambia por decisión registrada. No se usan paquetes con licencia comercial sin decisión registrada.
+- **CT-36** **Política de versiones (D-73).** Las versiones se fijan exactas y centralizadas: `global.json` (SDK de .NET; es el mínimo y acepta cualquier SDK 10.0.x igual o mayor, D-133), `Directory.Packages.props` (paquetes NuGet), `.nvmrc` (Node) y `package.json` sin `^` ni `~`. Parches y versiones menores se actualizan una vez al mes en un PR propio, con todas las pruebas en verde. Una versión mayor solo cambia por decisión registrada. No se usan paquetes con licencia comercial sin decisión registrada.
 
 ## 3. Capas y módulos
 
