@@ -1,0 +1,71 @@
+@if (show() && line(); as linea) {
+  <div class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.35); z-index: 1050;" (click)="closed.emit()">
+    <div class="bg-white rounded shadow-lg p-4" style="width: 560px;" (click)="$event.stopPropagation()">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Selección de Lotes</h5>
+        <button class="btn btn-sm btn-light" (click)="closed.emit()"><i class="bi bi-x-lg"></i></button>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-3 small">
+        <span class="text-muted">Requerido: <span class="fw-semibold text-dark">{{ n1(pendiente(linea)) }} {{ linea.unidad }}</span></span>
+        <span class="text-muted">Declarado: <span class="fw-semibold" [class.text-success]="declarado(linea) >= pendiente(linea)" [class.text-dark]="declarado(linea) < pendiente(linea)">{{ n1(declarado(linea)) }} {{ linea.unidad }}</span></span>
+        @if (declarado(linea) >= pendiente(linea) && pendiente(linea) > 0) {
+          <span class="badge bg-success">Completo</span>
+        } @else if (linea.asignaciones.length > 0) {
+          <span class="badge bg-warning text-dark">Parcial</span>
+        }
+      </div>
+
+      <div class="input-group input-group-sm mb-2">
+        <span class="input-group-text bg-light"><i class="bi bi-upc-scan"></i></span>
+        <input class="form-control" placeholder="Escanear o capturar folio de lote..." [value]="scanValue()" (input)="scanValue.set($any($event.target).value)" (keydown.enter)="agregar()" />
+        <input type="number" step="0.1" class="form-control" style="max-width:110px;" placeholder="Cantidad" [value]="scanQty()" (change)="onQty($event)" />
+        <button class="btn btn-outline-primary" (click)="agregar()"><i class="bi bi-plus-lg"></i></button>
+      </div>
+      @if (errorMsg()) {
+        <div class="text-danger small mb-2"><i class="bi bi-exclamation-circle me-1"></i>{{ errorMsg() }}</div>
+      }
+
+      <div class="border rounded" style="max-height: 260px; overflow-y: auto;">
+        @if (linea.asignaciones.length === 0) {
+          <div class="text-muted small fst-italic p-3 text-center">Sin lotes capturados todavía.</div>
+        } @else {
+          <table class="table table-sm align-middle mb-0">
+            <tbody>
+              @for (a of linea.asignaciones; track $index) {
+                <tr>
+                  <td><code>{{ a.lote }}</code></td>
+                  <td class="text-end small">{{ n1(a.cantidad) }} {{ linea.unidad }}</td>
+                  <td style="width:30px;"><button class="btn btn-sm btn-link text-danger p-0" (click)="removed.emit(a)"><i class="bi bi-x-circle-fill"></i></button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+
+      @if (availableLots().length > 0) {
+        <div class="small text-uppercase fw-semibold text-muted mt-3 mb-1" style="font-size:.7rem;">Disponibles en {{ origen() }}</div>
+        <div class="border rounded" style="max-height: 150px; overflow-y: auto;">
+          <table class="table table-sm align-middle mb-0">
+            <tbody>
+              @for (lote of availableLots(); track lote.lote + lote.ubicacion) {
+                <tr>
+                  <td><code>{{ lote.lote }}</code></td>
+                  <td class="text-end small text-muted">{{ n1(lote.cantidad) }} {{ linea.unidad }}</td>
+                  <td style="width:90px;" class="text-end">
+                    <button class="btn btn-sm btn-link p-0 text-decoration-none" (click)="proponer(lote)">Tomar</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <div class="d-flex justify-content-end mt-3">
+        <button class="btn btn-primary btn-sm px-3" (click)="closed.emit()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+}

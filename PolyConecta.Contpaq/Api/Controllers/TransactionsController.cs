@@ -1,127 +1,116 @@
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Contpaq.Bridge.Core.Commands;
+using Contpaq.Bridge.Core.Contract;
 using Contpaq.Bridge.Core.Models;
+using Contpaq.Bridge.Core.Services;
 using Contpaq.Bridge.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Contpaq.Bridge.Api.Controllers
 {
+    /// <summary>Comandos del contrato bridge-v1 (§2 a §5).</summary>
     [ApiController]
     [Route("api/v1/transactions")]
-    public class TransactionsController : ControllerBase
+    public class TransactionsController(IOutboxRepository outbox) : ControllerBase
     {
-        private readonly IOutboxRepository _outboxRepository;
-
-        public TransactionsController(IOutboxRepository outboxRepository)
-        {
-            _outboxRepository = outboxRepository;
-        }
-
         [HttpPost]
-        public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionRequest request)
+        [Consumes("application/json")]
+        public async Task<IActionResult> CrearTransaccion()
         {
-            if (!ModelState.IsValid)
+            ComandoRequest? request;
+            try
             {
-                return BadRequest(ModelState);
+                request = await JsonSerializer.DeserializeAsync<ComandoRequest>(Request.Body);
             }
-
-            if (!string.IsNullOrEmpty(request.IdempotencyKey))
+            catch (JsonException ex)
             {
-                var existing = await _outboxRepository.GetByIdempotencyKeyAsync(request.IdempotencyKey);
-                if (existing != null)
+                return BadRequest(ErrorContrato.De(CodigosError.CargaInvalida, $"JSON inválido: {ex.Message}"));
+            }
+            if (request is null)
+                return BadRequest(ErrorContrato.De(CodigosError.CargaInvalida, "Falta el cuerpo."));
+
+            // Un reenvío con la misma idempotency_key nunca duplica (CT-19): devuelve el original. Si el
+            // original terminó en FAILED o DEAD_LETTER, no dejó documento en CONTPAQi y el reenvío es el
+            // reintento de PolyConecta (CT-20): se vuelve a encolar con la carga guardada (§3).
+            if (!string.IsNullOrWhiteSpace(request.IdempotencyKey) &&
+                await outbox.GetByIdempotencyKeyAsync(request.IdempotencyKey) is { } existente)
+            {
+                if (existente.Status is Estados.Failed or Estados.DeadLetter &&
+                    await outbox.ReencolarAsync(existente.TransactionId, null))
                 {
-                    return Accepted(new
-                    {
-                        transaction_id = existing.TransactionId,
-                        correlation_id = existing.CorrelationId,
-                        status = existing.Status,
-                        created_at = existing.CreatedAt,
-                        is_duplicate = true
-                    });
+                    existente = (await outbox.GetByIdAsync(existente.TransactionId))!;
                 }
+                return Accepted(Acuse(existente, esDuplicado: true));
             }
 
-            var correlationId = request.CorrelationId ?? HttpContext.Items["X-Correlation-ID"]?.ToString() ?? Guid.NewGuid().ToString();
+            var (_, error) = LectorComandos.Leer(request);
+            if (error is not null)
+                return BadRequest(error);
 
-            var transaction = new BridgeTransaction
+            var ahora = DateTime.UtcNow.ToString("o");
+            var tx = new BridgeTransaction
             {
                 TransactionId = Guid.NewGuid().ToString(),
-                CorrelationId = correlationId,
-                ClientAppId = request.ClientAppId,
+                CorrelationId = request.CorrelationId!,
+                ClientAppId = request.ClientAppId!,
                 IdempotencyKey = request.IdempotencyKey,
-                CommandType = request.CommandType,
-                PayloadJson = JsonSerializer.Serialize(request.Payload),
+                CommandType = request.CommandType!,
+                ContractVersion = request.ContractVersion!,
+                Variant = request.Variant,
+                PayloadJson = request.Payload.GetRawText(),
                 CallbackUrl = request.CallbackUrl,
-                Status = "PENDING",
-                CreatedAt = DateTime.UtcNow.ToString("o"),
-                UpdatedAt = DateTime.UtcNow.ToString("o")
+                Status = Estados.Pending,
+                NextAttemptAt = ahora,
+                CreatedAt = ahora,
+                UpdatedAt = ahora,
             };
 
-            var success = await _outboxRepository.AddTransactionAsync(transaction);
-            if (!success)
+            if (!await outbox.AddTransactionAsync(tx))
             {
-                return Conflict(new { error = "Duplicate transaction idempotency key" });
+                // Carrera entre dos reenvíos simultáneos: gana el primero.
+                var original = await outbox.GetByIdempotencyKeyAsync(tx.IdempotencyKey!);
+                return Accepted(Acuse(original!, esDuplicado: true));
             }
 
-            Contpaq.Bridge.Core.Services.PerformanceMetrics.RecordWriteOp();
-
-            return Accepted(new
-            {
-                transaction_id = transaction.TransactionId,
-                correlation_id = transaction.CorrelationId,
-                status = transaction.Status,
-                created_at = transaction.CreatedAt
-            });
+            PerformanceMetrics.RecordWriteOp();
+            return Accepted(Acuse(tx, esDuplicado: false));
         }
 
+        /// <summary>Lo mismo que el callback (§3), para cuando el callback no llega.</summary>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTransactionStatus(string id)
+        public async Task<IActionResult> Consultar(string id)
         {
-            var transaction = await _outboxRepository.GetByIdAsync(id);
-            if (transaction == null)
-            {
-                return NotFound(new { error = $"Transaction {id} not found" });
-            }
-
-            return Ok(new
-            {
-                transaction_id = transaction.TransactionId,
-                correlation_id = transaction.CorrelationId,
-                client_app_id = transaction.ClientAppId,
-                command_type = transaction.CommandType,
-                status = transaction.Status,
-                retry_count = transaction.RetryCount,
-                contpaqi_doc_id = transaction.ContpaqiDocId,
-                contpaqi_folio = transaction.ContpaqiFolio,
-                last_error_code = transaction.LastErrorCode,
-                last_error_message = transaction.LastErrorMessage,
-                created_at = transaction.CreatedAt,
-                updated_at = transaction.UpdatedAt
-            });
+            var tx = await outbox.GetByIdAsync(id);
+            return tx is null ? NotFound() : Content(CuerpoCallback.Serializar(tx), "application/json");
         }
+
+        // Rutas de operación (§7): las usa el tablero del bridge, no PolyConecta.
 
         [HttpDelete("pending")]
         public async Task<IActionResult> DeletePendingTransactions()
         {
-            var deletedCount = await _outboxRepository.DeletePendingTransactionsAsync();
+            var deletedCount = await outbox.DeletePendingTransactionsAsync();
             return Ok(new { message = $"Purged {deletedCount} pending transactions from Outbox", deleted_count = deletedCount });
         }
 
         [HttpDelete("purge-all")]
         public async Task<IActionResult> PurgeAllTransactions()
         {
-            var deletedCount = await _outboxRepository.PurgeAllTransactionsAsync();
+            var deletedCount = await outbox.PurgeAllTransactionsAsync();
             return Ok(new { message = $"Purged all {deletedCount} transactions from Outbox", deleted_count = deletedCount });
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTransaction(string id)
         {
-            var success = await _outboxRepository.DeleteTransactionAsync(id);
-            if (!success) return NotFound(new { error = $"Transaction {id} not found" });
+            if (!await outbox.DeleteTransactionAsync(id)) return NotFound(new { error = $"Transaction {id} not found" });
             return Ok(new { message = $"Transaction {id} deleted successfully" });
         }
+
+        private static object Acuse(BridgeTransaction tx, bool esDuplicado) => esDuplicado
+            ? new { transaction_id = tx.TransactionId, correlation_id = tx.CorrelationId, status = tx.Status, created_at = tx.CreatedAt, is_duplicate = true }
+            : new { transaction_id = tx.TransactionId, correlation_id = tx.CorrelationId, status = tx.Status, created_at = tx.CreatedAt };
     }
 }

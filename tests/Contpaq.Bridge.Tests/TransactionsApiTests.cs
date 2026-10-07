@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Contpaq.Bridge.Core.Commands;
 using Contpaq.Bridge.Core.Models;
 using Contpaq.Bridge.Infrastructure.Persistence;
 using Contpaq.Bridge.Infrastructure.Sdk;
@@ -71,6 +70,27 @@ namespace Contpaq.Bridge.Tests
 
             Assert.True(res1);
             Assert.False(res2);
+        }
+
+        [Fact]
+        public async Task OutboxRepository_Borra_una_transaccion_con_bitacora_y_callbacks()
+        {
+            var dbName = $"Data Source=test_outbox_{Guid.NewGuid():N}.db";
+            new DbInitializer(dbName).Initialize();
+            var repo = new OutboxRepository(dbName);
+
+            var tx = new BridgeTransaction { TransactionId = Guid.NewGuid().ToString(), IdempotencyKey = "dev:sonda:1", ClientAppId = "polyconecta", CommandType = "ALTA_ALMACEN", PayloadJson = "{}", Status = "FAILED" };
+            await repo.AddTransactionAsync(tx);
+            await repo.AddLogAsync(new TransactionLog { TransactionId = tx.TransactionId, SdkFunctionName = "fAbreEmpresa", ErrorMessage = "procesada" });
+            await repo.RegistrarEntregaCallbackAsync(tx.TransactionId, "http://localhost:9/sonda", null, "Connection refused", 1);
+
+            Assert.True(await repo.DeleteTransactionAsync(tx.TransactionId));
+            Assert.Null(await repo.GetByIdAsync(tx.TransactionId));
+
+            var otra = new BridgeTransaction { TransactionId = Guid.NewGuid().ToString(), IdempotencyKey = "dev:sonda:2", ClientAppId = "polyconecta", CommandType = "ALTA_ALMACEN", PayloadJson = "{}", Status = "PENDING" };
+            await repo.AddTransactionAsync(otra);
+            await repo.AddLogAsync(new TransactionLog { TransactionId = otra.TransactionId, SdkFunctionName = "fAbreEmpresa", ErrorMessage = "encolada" });
+            Assert.Equal(1, await repo.PurgeAllTransactionsAsync());
         }
     }
 }

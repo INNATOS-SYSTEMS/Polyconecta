@@ -1,0 +1,13 @@
+{
+  "contract_version": "1.0",
+  "command_type": "ALTA_ALMACEN",
+  "variant": null,
+  "idempotency_key": "almacen:13:alta",
+  "correlation_id": "1d2e3f40-2222-4000-8000-000000000013",
+  "client_app_id": "polyconecta",
+  "callback_url": "https://api.polyconecta.local/api/v1/plataforma/bridge/callbacks",
+  "payload": {
+    "nombre": "Almacén sin código",
+    "fecha_alta": "2026-10-13"
+  }
+}

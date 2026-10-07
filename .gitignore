@@ -25,8 +25,17 @@ scripts/screenshots/package-lock.json
 
 ## sdk-lab (artefactos locales y evidencia de pruebas contra el SDK real)
 tools/sdk-lab/dist/
-tools/sdk-lab/evidence/
+tools/sdk-lab/evidence/*
+# Los resúmenes de F0 sí se versionan: no llevan secretos ni datos de la empresa (spec 002).
+!tools/sdk-lab/evidence/F0/
+tools/sdk-lab/evidence/F0/*
+!tools/sdk-lab/evidence/F0/*.md
 tools/sdk-lab/lab.config.json
 
 ## Claude Code (configuración personal)
 .claude/settings.local.json
+
+## Bridge (bases SQLite del outbox y del simulador, logs)
+PolyConecta.Contpaq/*.db
+PolyConecta.Contpaq/*.db-*
+PolyConecta.Contpaq/logs/

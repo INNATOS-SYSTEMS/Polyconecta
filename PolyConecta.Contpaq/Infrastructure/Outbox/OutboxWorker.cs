@@ -1,0 +1,204 @@
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Contpaq.Bridge.Core.Configuration;
+using Contpaq.Bridge.Core.Contract;
+using Contpaq.Bridge.Core.Models;
+using Contpaq.Bridge.Core.Services;
+using Contpaq.Bridge.Core.Validation;
+using Contpaq.Bridge.Infrastructure.Persistence;
+using Contpaq.Bridge.Infrastructure.Sdk;
+using Contpaq.Bridge.Infrastructure.Webhooks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+namespace Contpaq.Bridge.Infrastructure.Outbox
+{
+    /// <summary>
+    /// Ciclo del outbox del bridge, separado del gateway (D-122): toma las transacciones en orden de
+    /// llegada y una a la vez (CT-41), valida (CT-39), ejecuta en el gateway del modo activo,
+    /// guarda el resultado y avisa por callback. Corre en un solo hilo, STA en Windows, porque el
+    /// SDK real lo exige; es el mismo código en modo real y simulado.
+    /// </summary>
+    public sealed partial class OutboxWorker(
+        IOutboxRepository repo,
+        ISdkGateway gateway,
+        ValidadorComandos validador,
+        IWebhookDispatcher callbacks,
+        BridgeOptions opciones,
+        CircuitBreakerPolicy circuito,
+        ILogger<OutboxWorker> logger) : BackgroundService
+    {
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            var tcs = new TaskCompletionSource();
+            var hilo = new Thread(() =>
+            {
+                try
+                {
+                    Ciclo(stoppingToken);
+                    tcs.SetResult();
+                }
+                catch (Exception ex)
+                {
+                    tcs.SetException(ex);
+                }
+            })
+            { IsBackground = true, Name = "bridge-outbox" };
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                hilo.SetApartmentState(ApartmentState.STA);
+            hilo.Start();
+            return tcs.Task;
+        }
+
+        private void Ciclo(CancellationToken stoppingToken)
+        {
+            LogInicio(logger, gateway.EsReal ? "Real" : "Simulated");
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                gateway.BombearMensajes();
+                try
+                {
+                    MetricCollectorService.CircuitState = circuito.State;
+                    if (!circuito.AllowExecution())
+                    {
+                        Thread.Sleep(2000);
+                        continue;
+                    }
+
+                    var pendientes = repo.GetPendingTransactionsAsync(10).GetAwaiter().GetResult().ToList();
+                    if (pendientes.Count == 0)
+                    {
+                        gateway.CerrarSiInactiva();
+                        Thread.Sleep(200);
+                        continue;
+                    }
+
+                    if (!gateway.AsegurarSesion())
+                    {
+                        circuito.RecordFailure();
+                        Thread.Sleep(3000);
+                        continue;
+                    }
+                    MetricCollectorService.IsSdkSessionActive = gateway.SesionActiva;
+
+                    foreach (var tx in pendientes)
+                    {
+                        if (stoppingToken.IsCancellationRequested) break;
+                        Procesar(tx);
+                        PerformanceMetrics.RecordWriteOp();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogErrorCiclo(logger, ex);
+                    circuito.RecordFailure();
+                    Thread.Sleep(2000);
+                }
+            }
+            gateway.Apagar();
+        }
+
+        /// <summary>Procesa una transacción. Público para las pruebas, que lo llaman sin el hilo.</summary>
+        public void Procesar(BridgeTransaction tx)
+        {
+            repo.MarcarProcesandoAsync(tx.TransactionId).GetAwaiter().GetResult();
+            var reloj = Stopwatch.StartNew();
+            ResultadoEjecucion resultado;
+            try
+            {
+                var (comando, errorLectura) = LectorComandos.Leer(Reconstruir(tx));
+                var errorValidacion = errorLectura ?? validador.ValidarAsync(comando!).GetAwaiter().GetResult();
+                resultado = errorValidacion is not null
+                    ? ResultadoEjecucion.Fallo(errorValidacion)
+                    : gateway.Ejecutar(tx.TransactionId, comando!);
+            }
+            catch (Exception ex)
+            {
+                resultado = ResultadoEjecucion.Fallo(ErrorContrato.De(CodigosError.SdkError, ex.Message,
+                    new() { ["excepcion"] = ex.GetType().Name }));
+            }
+            reloj.Stop();
+            MetricCollectorService.AverageSdkLatencyMs = reloj.ElapsedMilliseconds;
+            Registrar(tx, resultado, reloj.ElapsedMilliseconds);
+
+            if (resultado.Error is null)
+            {
+                circuito.RecordSuccess();
+                Terminar(tx, Estados.Confirmed, JsonSerializer.Serialize(resultado.Resultado), null, null, resultado.OmitirCallback);
+                return;
+            }
+
+            var error = resultado.Error;
+            var errorJson = JsonSerializer.Serialize(error);
+            if (!error.Retryable)
+            {
+                Terminar(tx, Estados.Failed, null, errorJson, error.Message, resultado.OmitirCallback);
+                return;
+            }
+
+            // Reintentable (SDK_TIMEOUT, SDK_SESION): no se notifica hasta agotar los reintentos (§3).
+            circuito.RecordFailure();
+            var intento = tx.RetryCount + 1;
+            if (intento >= opciones.MaxRetries)
+            {
+                Terminar(tx, Estados.DeadLetter, null, errorJson, error.Message, resultado.OmitirCallback);
+                return;
+            }
+            repo.ProgramarReintentoAsync(tx.TransactionId, intento, DateTime.UtcNow.Add(Espera(intento)), errorJson, error.Message)
+                .GetAwaiter().GetResult();
+        }
+
+        private void Terminar(BridgeTransaction tx, string estado, string? resultJson, string? errorJson, string? mensaje, bool omitirCallback)
+        {
+            repo.CompletarAsync(tx.TransactionId, estado, resultJson, errorJson, mensaje).GetAwaiter().GetResult();
+            if (omitirCallback) return;
+            var actualizada = repo.GetByIdAsync(tx.TransactionId).GetAwaiter().GetResult()!;
+            // El callback no bloquea la cola: sus reintentos corren aparte.
+            _ = Task.Run(() => callbacks.DeliverAsync(actualizada));
+        }
+
+        private void Registrar(BridgeTransaction tx, ResultadoEjecucion resultado, long ms) =>
+            repo.AddLogAsync(new TransactionLog
+            {
+                TransactionId = tx.TransactionId,
+                CorrelationId = tx.CorrelationId,
+                AttemptNumber = tx.RetryCount + 1,
+                SdkFunctionName = tx.CommandType,
+                SdkErrorCode = resultado.Error is null ? 0 : -1,
+                ErrorMessage = resultado.Error is null ? null : $"{resultado.Error.Code}: {resultado.Error.Message}",
+                DurationMs = ms,
+            }).GetAwaiter().GetResult();
+
+        /// <summary>Espera antes del siguiente intento: 1, 5, 15 y 60 segundos.</summary>
+        public static TimeSpan Espera(int intento) => TimeSpan.FromSeconds(intento switch
+        {
+            1 => 1,
+            2 => 5,
+            3 => 15,
+            _ => 60,
+        });
+
+        private static ComandoRequest Reconstruir(BridgeTransaction tx) => new()
+        {
+            ContractVersion = tx.ContractVersion,
+            CommandType = tx.CommandType,
+            Variant = tx.Variant,
+            IdempotencyKey = tx.IdempotencyKey,
+            CorrelationId = tx.CorrelationId,
+            ClientAppId = tx.ClientAppId,
+            CallbackUrl = tx.CallbackUrl,
+            Payload = JsonDocument.Parse(tx.PayloadJson).RootElement.Clone(),
+        };
+
+        [LoggerMessage(Level = LogLevel.Information, Message = "Ciclo del outbox del bridge iniciado (modo {Modo})")]
+        private static partial void LogInicio(ILogger logger, string modo);
+
+        [LoggerMessage(Level = LogLevel.Error, Message = "Error no controlado en el ciclo del outbox")]
+        private static partial void LogErrorCiclo(ILogger logger, Exception ex);
+    }
+}

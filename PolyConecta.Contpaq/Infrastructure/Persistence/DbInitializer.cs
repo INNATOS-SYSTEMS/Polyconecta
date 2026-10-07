@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
@@ -85,6 +86,30 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
             ";
 
             connection.Execute(sql);
+            MigrarAContrato(connection);
+        }
+
+        /// <summary>
+        /// Columnas y estados del contrato bridge-v1 (§2, §3). Idempotente: agrega solo lo que falta y
+        /// renombra los estados previos (COMPLETED → CONFIRMED, DEAD_LETTER_QUEUE → DEAD_LETTER).
+        /// </summary>
+        private static void MigrarAContrato(SqliteConnection connection)
+        {
+            var columnas = connection.Query<string>("SELECT name FROM pragma_table_info('bridge_transactions');").ToHashSet();
+            foreach (var (columna, tipo) in new[]
+                     {
+                         ("contract_version", "TEXT NOT NULL DEFAULT ''"),
+                         ("variant", "TEXT"),
+                         ("result_json", "TEXT"),
+                         ("error_json", "TEXT"),
+                     })
+            {
+                if (!columnas.Contains(columna))
+                    connection.Execute($"ALTER TABLE bridge_transactions ADD COLUMN {columna} {tipo};");
+            }
+            connection.Execute(@"
+                UPDATE bridge_transactions SET status = 'CONFIRMED' WHERE status = 'COMPLETED';
+                UPDATE bridge_transactions SET status = 'DEAD_LETTER' WHERE status = 'DEAD_LETTER_QUEUE';");
         }
     }
 }

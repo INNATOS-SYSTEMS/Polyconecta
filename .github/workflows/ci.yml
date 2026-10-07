@@ -1,0 +1,92 @@
+# Integración continua (CT-27, D-76, research R-08 de la spec 002). Corre en cada PR y en cada push a
+# main y a las ramas de spec. Ningún secreto vive aquí (CT-29): las contraseñas de prueba se generan
+# en cada corrida.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - '[0-9][0-9][0-9]-*'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  dotnet:
+    name: dotnet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Restaurar
+        run: dotnet restore Polyconecta.slnx
+      - name: Compilar
+        run: dotnet build Polyconecta.slnx --no-restore -c Release
+      - name: Probar (dominio, aplicación e integración con SQL Server en contenedor)
+        # La suite de contrato y el ciclo completo se omiten sin BRIDGE_URL; los corre el trabajo contrato.
+        run: dotnet test --solution Polyconecta.slnx --no-build -c Release
+
+  contrato:
+    name: contrato
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Compilar
+        run: dotnet build Polyconecta.slnx -c Release
+      - name: Levantar el bridge en modo simulado
+        run: |
+          SECRETO="$(openssl rand -hex 24)"
+          echo "::add-mask::$SECRETO"
+          echo "BRIDGE_CALLBACK_SECRET=$SECRETO" >> "$GITHUB_ENV"
+          BridgeConfig__Mode=Simulated \
+          BridgeConfig__CallbackSecret="$SECRETO" \
+          BridgeConfig__SqliteConnectionString="Data Source=${RUNNER_TEMP}/bridge.db" \
+          BridgeConfig__DashboardPort=5005 \
+            nohup dotnet run --project PolyConecta.Contpaq -c Release --no-build > "${RUNNER_TEMP}/bridge.log" 2>&1 &
+          for _ in $(seq 1 60); do curl -sf http://localhost:5005/health && exit 0; sleep 1; done
+          cat "${RUNNER_TEMP}/bridge.log"; exit 1
+      - name: Suite de contrato contra el simulador (CT-23)
+        env:
+          BRIDGE_URL: http://localhost:5005
+        run: dotnet test --project tests/PolyConecta.Contract.Tests --no-build -c Release
+      - name: Ciclo completo de PolyConecta contra el simulador (SC-004)
+        env:
+          BRIDGE_URL: http://localhost:5005
+        run: >
+          dotnet test --project tests/PolyConecta.IntegrationTests --no-build -c Release --
+          --filter-class "PolyConecta.IntegrationTests.Ciclo.CicloCompletoTests"
+      - name: Log del bridge
+        if: failure()
+        run: cat "${RUNNER_TEMP}/bridge.log"
+
+  web:
+    name: web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: PolyConecta.Web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: PolyConecta.Web/.nvmrc
+          cache: npm
+          cache-dependency-path: PolyConecta.Web/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test

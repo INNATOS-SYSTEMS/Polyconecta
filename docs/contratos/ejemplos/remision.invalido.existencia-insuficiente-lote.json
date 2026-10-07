@@ -1,0 +1,24 @@
+{
+  "contract_version": "1.0",
+  "command_type": "REMISION",
+  "variant": null,
+  "idempotency_key": "entrega:78:validar",
+  "correlation_id": "1d2e3f40-4444-4000-8000-000000000078",
+  "client_app_id": "polyconecta",
+  "callback_url": "https://api.polyconecta.local/api/v1/plataforma/bridge/callbacks",
+  "payload": {
+    "fecha": "2026-10-28",
+    "referencia_negocio": "SC/OUT/31689",
+    "cliente": "EMM-001",
+    "almacen": "PT-SC",
+    "cierra_pedido": false,
+    "lineas": [
+      {
+        "producto": "PT1113 C567",
+        "cantidad": 99999,
+        "unidad": "PZA",
+        "lotes": [ { "numero": "B001-IV310-26", "cantidad": 99999 } ]
+      }
+    ]
+  }
+}
