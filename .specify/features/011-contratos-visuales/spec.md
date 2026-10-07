@@ -8,6 +8,15 @@
 
 **Fase del plan**: ninguna. Es una fase abierta, fuera del plan de trabajo, como la 001 (D-134, D-118). Va **antes del diseño de las pantallas de F1**; el backend de F1 no la espera.
 
+**Líder**: L2 · Luis Alvarado Martinez (camino 2, dueño de `PolyConecta.Web`).
+
+**Entregas por partes** (cada una se integra a `main` por su propio PR, CT-44):
+
+| Parte | Contenido | Para cuándo |
+| :--- | :--- | :--- |
+| P1 | Componentes, galería `/catalogo`, contratos y el flujo de **Pedidos** migrado | Antes del 12-oct, inicio de F1 |
+| P2 a P8 | Un flujo por parte: Fabricación, Recolección, Calidad, Traslados, Recepción, Entregas e Inicio e inventario | En paralelo a F1, cada uno antes de la fase que lo usa |
+
 **Input**:
 - la réplica en Angular (`PolyConecta.Web`, spec 001 cerrada);
 - el sistema de diseño de [05 §7](../../../docs/diseno/05-arquitectura-tecnica.md) (CT-24);
@@ -17,7 +26,7 @@
 
 ## Objetivo
 
-Que cada pantalla se construya **componiendo piezas con contrato**, sobre librerías que ya traen los comportamientos esperados, y que la aplicación entera quede migrada a esas piezas antes de F1. Son cuatro resultados:
+Que cada pantalla se construya **componiendo piezas con contrato**, sobre librerías que ya traen los comportamientos esperados, y que la aplicación entera quede migrada a esas piezas, flujo por flujo, antes de la fase que usa cada uno. Son cuatro resultados:
 
 1. Ver todas las pantallas en el orden del flujo (tablero).
 2. Saber qué es cada pieza: partes, entradas, salidas, estados y reglas (contratos).
@@ -30,13 +39,24 @@ Que cada pantalla se construya **componiendo piezas con contrato**, sobre librer
 | :--- | :--- | :--- |
 | Librerías | **TanStack Table** (lógica de tablas), **Angular CDK** (drag & drop, overlay, diálogo, menú) y **Spartan `brain`** (primitivas sin estilo: autocompletar, pestañas, menús, diálogos). Todas MIT; el HTML y el estilo son nuestros, con las clases `o_*`. PrimeNG se descartó porque desde la versión 19 pide llave de licencia | D-135 |
 | Íconos | **Lucide** (`@lucide/angular`), en lugar de Bootstrap Icons | D-135 |
-| Paridad con el prototipo | La comparación de píxeles se **retira**. Los guiones de escenario se quedan y verifican textos y flujos | D-135 |
+| Exportar a Excel | **`write-excel-file`** (MIT), en el navegador | Clarificación del 7-oct |
+| Paridad con el prototipo | La comparación de píxeles se **retira**: se quitan `npm run parity` y su informe. Los guiones de escenario (`npm run scenarios`) y el auditor (`npm run audit`) se quedan y siguen levantando el prototipo, porque comparan textos, URL y flujos | D-135 |
 | Datos de las listas | Orden, filtro, agrupación y paginación **en el servidor** | D-135 |
 | Kanban | Recibe la colección y las etapas. Soltar una tarjeta en otra etapa ejecuta la **transición con nombre**; si no procede, la tarjeta regresa con el motivo | D-135 |
 | Modo libre | Estructura **completa** del documento ligado; maestro y líneas en un solo guardado; el chatter se ve desde el inicio y se activa al guardar | D-136 |
 | Alcance | Se migran **las 28 pantallas** en esta spec | D-135 |
 | Entrega | Documento `07-contratos-visuales.md` más una **galería viva** en `/catalogo` | — |
 | Color de botones | **Variante A, "Índigo afinado"**, elegida entre tres en la página Botones del lienzo: primario índigo `#2E3889` y secundario blanco con borde neutro | 7-oct (E3) |
+
+## Clarifications
+
+### Session 2026-10-07
+
+- Q: Mientras no exista la API, ¿de dónde sacan los datos las listas migradas? → A: De una interfaz de origen de datos. La tabla trabaja en modo servidor desde ya; ahora la resuelve un origen en memoria sobre la semilla y en F1 uno por HTTP, sin cambiar la pantalla.
+- Q: ¿Qué pantallas llevan kanban en esta spec? → A: Todas las listas de documentos, 9 en total: Pedidos, Fabricación, Captura masiva e Incidencias (que ya lo tienen) más Recolecciones, Calidad, Traslados, Recepción y Entregas (kanban nuevo).
+- Q: Sin usuarios hasta F1, ¿dónde se guardan las vistas favoritas? → A: En el navegador por ahora, con la forma de `SavedSearch`; en F1 pasan a la base por usuario detrás de la misma interfaz y lo guardado antes no se migra.
+- Q: ¿Cómo se exporta a Excel desde una lista? → A: Con `write-excel-file` (MIT), en el navegador, con lo que devuelve la consulta del origen de datos: las filas seleccionadas o, sin selección, todas las del filtro actual. SheetJS (`xlsx`) se descartó por dos vulnerabilidades conocidas en su versión de npm.
+- Q: ¿Quién dirige la spec y cómo se entrega? → A: L2, Luis Alvarado Martinez, por partes. Antes del 12-oct: componentes, galería y el flujo de Pedidos. Los otros 7 flujos se migran e integran uno por uno, en paralelo a F1 y antes de la fase que los usa.
 
 ## Entregables
 
@@ -106,9 +126,14 @@ Hay que refinar el acabado **sin cambiar la estructura** de ninguna barra ni hoj
   - elegir las columnas visibles y su orden;
   - elegir cuántas filas se ven por página y navegar con el paginador;
   - seleccionar filas y aplicar acciones masivas (archivar, imprimir, exportar a Excel);
-  - guardar la combinación de filtros, agrupación y columnas como favorito del usuario (`SavedSearch`);
-  - todo en el servidor: la tabla manda página, orden, filtros y agrupación, y la API responde con filas, grupos y totales.
-- [ ] **Kanban.** Recibe la colección, las etapas (estado, título, orden, plegada sí o no) y la plantilla de la tarjeta. Agrupa por etapa, con un contador por columna. Arrastrar ejecuta la transición validada (D-135); la carga es por etapa y desde el servidor.
+  - exportar a Excel genera un `.xlsx` en el navegador con `write-excel-file`: las filas seleccionadas o, sin selección, todas las del filtro actual, con las columnas visibles en su orden y los números como números;
+  - guardar la combinación de filtros, agrupación y columnas como favorito (`SavedSearch`), detrás de una interfaz de almacén de favoritos. En esta spec el almacén es el navegador; en F1, la base por usuario. Lo guardado en el navegador no se migra; si el navegador no permite guardar, la lista funciona igual y "Guardar favorito" avisa que no se pudo;
+  - todo en el servidor: la tabla trabaja en modo manual de TanStack y pide cada vista a un **origen de datos de lista** (`OrigenDeLista<T>`). La consulta lleva página, filas por página, orden, filtros y agrupación; la respuesta trae filas, grupos con sus totales y el total de registros;
+  - en esta spec el origen es **en memoria** sobre la semilla actual; en F1 se agrega el origen **HTTP** con la misma interfaz, y la pantalla no cambia.
+- [ ] **Kanban.** Recibe la colección, las etapas (estado, título, orden, plegada sí o no) y la plantilla de la tarjeta. Agrupa por etapa, con un contador por columna. Arrastrar ejecuta la transición validada (D-135); la carga es por etapa, desde el mismo origen de datos que la lista.
+  - Va en **9 listas**: Pedidos, Fabricación, Captura masiva e Incidencias (ya lo tienen) y Recolecciones, Calidad, Traslados, Recepción y Entregas (nuevo).
+  - Cada documento declara sus etapas (sus estados, en orden) y qué transición corresponde a cada movimiento entre etapas. Un movimiento sin transición, o hacia atrás, regresa la tarjeta con el motivo.
+  - Si la transición pide datos (por ejemplo, la firma al autorizar un pedido o el resultado de un control de calidad), soltar abre su diálogo; la tarjeta se mueve solo si se confirma.
 - [ ] **Formulario de documento.** Panel con migas y botones inteligentes, barra de acciones, etapas, hoja (título, folio, maestro en dos columnas, pestañas y detalle) y chatter.
 - [ ] **"Nuevo" (modo libre).** El formulario anterior completo, en Borrador y sin origen; un solo guardado; el chatter se activa al guardar (D-136).
 - [ ] **Pestañas de la hoja.**
@@ -148,7 +173,8 @@ Hay que refinar el acabado **sin cambiar la estructura** de ninguna barra ni hoj
 ## Criterios de cierre
 
 - Cada patrón y cada componente tiene su contrato en `07-contratos-visuales.md`, su entrada en `/catalogo` y sus pruebas.
-- Las 28 pantallas usan los componentes nuevos; `npm run build`, `npm test` y `npm run scenarios` están en verde.
+- Cada parte (P1 a P8) se cierra cuando sus pantallas usan los componentes nuevos y `npm run build`, `npm test`, `npm run scenarios` y `npm run audit` están en verde; la spec se cierra con la P8.
+- Las 28 pantallas usan los componentes nuevos.
 - El tablero está regenerado con las pantallas migradas e incluye la galería.
 - La paleta elegida (E3) quedó como tokens y CT-24 apunta a `07-contratos-visuales.md`.
 - La paridad de píxeles está retirada de `npm run parity` y de la CI, y `05 §7.5` lo dice.
@@ -156,7 +182,7 @@ Hay que refinar el acabado **sin cambiar la estructura** de ninguna barra ni hoj
 
 ## Preguntas abiertas
 
-- **Contrato de consulta de listas en el servidor:** página, orden, filtros, agrupación y totales. Se define aquí como forma; la API lo implementa en F1 con su primera lista.
+- **Contrato HTTP de la consulta de listas:** la forma de `OrigenDeLista<T>` se fija en esta spec; la ruta y el formato en la API se definen en F1 con su primera lista.
 - **Acciones masivas por documento:** cuáles aplican a cada lista. Lo decide cada fase.
 
 ---
