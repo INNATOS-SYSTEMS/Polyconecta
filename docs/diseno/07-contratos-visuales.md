@@ -183,6 +183,17 @@ Todo producto se muestra como **"Clave - Nombre"**: en campos, tablas, tarjetas,
 - Van en el marco de `pc-odoo-dialog`: atrapan el foco y cierran con Esc, con clic fuera o con "Cerrar". El folio del lote y la cantidad son campos de línea (`o_field`); cada lote capturado se quita con un botón de ícono.
 - Solo ofrecen lotes que pueden moverse: liberados por Calidad (hard-stop). Si se captura un lote que existe pero Calidad no ha liberado, lo dicen con el motivo ("Hard-stop de Calidad: el lote … está en revisión"), no como "no encontrado".
 
+### 2.3 bis Íconos de módulo (Inicio, D-144)
+
+Cada módulo tiene un cuadro de 88 px con radio de 18 px: fondo muy claro de su color, ícono en su tono oscuro y borde de 1 px en un tono intermedio. Ventas en verde azulado, Fabricación en el índigo de PolyConecta, Calidad en verde e Inventario en ocre. El color va en el trazo, no en un fondo saturado.
+
+| Módulo | Fondo | Ícono | Borde |
+| :--- | :--- | :--- | :--- |
+| Ventas | `#E3F0F1` | `#17676C` | `#C9E2E4` |
+| Fabricación | `#E8EAF6` | `#2E3889` | `#D3D7EE` |
+| Calidad | `#E4F1EA` | `#276B47` | `#CBE4D6` |
+| Inventario | `#F4ECE1` | `#80552A` | `#E6D6C0` |
+
 ### 2.4 Páginas vacías
 
 ![Páginas](img/07/paginas.png)

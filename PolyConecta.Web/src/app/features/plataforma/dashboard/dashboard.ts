@@ -5,7 +5,10 @@ import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 interface AppTile {
   label: string;
   icon: string;
-  color: string;
+  /** Variante B, tonal (D-144): fondo claro del color del módulo, ícono y borde en sus tonos. */
+  fondo: string;
+  icono: string;
+  borde: string;
   route: string;
 }
 
@@ -18,7 +21,7 @@ interface AppTile {
     <div class="o_app_grid">
         @for (app of apps; track app.label) {
             <button class="o_app_tile" (click)="router.navigateByUrl(app.route)">
-                <span class="o_app_icon" [style.background]="app.color"><pc-odoo-icon [nombre]="app.icon" contexto="aplicacion" /></span>
+                <span class="o_app_icon" [style.background]="app.fondo" [style.color]="app.icono" [style.border-color]="app.borde"><pc-odoo-icon [nombre]="app.icon" contexto="aplicacion" /></span>
                 <span class="o_app_label">{{ app.label }}</span>
             </button>
         }
@@ -60,9 +63,9 @@ interface AppTile {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-size: 2.2rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        border: 1px solid transparent;
+        box-sizing: border-box;
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.06);
     }
     .o_app_label {
         font-size: 0.82rem;
@@ -76,9 +79,9 @@ export class Dashboard {
   protected readonly router = inject(Router);
 
   protected readonly apps: AppTile[] = [
-    { label: 'Ventas', icon: 'pedido', color: '#017E84', route: '/pedidos' },
-    { label: 'Fabricación', icon: 'fabricacion', color: '#2E3889', route: '/fabricacion' },
-    { label: 'Calidad', icon: 'calidad', color: '#2C7A4B', route: '/calidad' },
-    { label: 'Inventario', icon: 'inventario', color: '#8A5A2B', route: '/inventario' },
+    { label: 'Ventas', icon: 'pedido', fondo: '#E3F0F1', icono: '#17676C', borde: '#C9E2E4', route: '/pedidos' },
+    { label: 'Fabricación', icon: 'fabricacion', fondo: '#E8EAF6', icono: '#2E3889', borde: '#D3D7EE', route: '/fabricacion' },
+    { label: 'Calidad', icon: 'calidad', fondo: '#E4F1EA', icono: '#276B47', borde: '#CBE4D6', route: '/calidad' },
+    { label: 'Inventario', icon: 'inventario', fondo: '#F4ECE1', icono: '#80552A', borde: '#E6D6C0', route: '/inventario' },
   ];
 }
