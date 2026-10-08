@@ -62,6 +62,7 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 - No hay transiciones que solo existan en el kanban.
 - Las que avanza el sistema, como Autorizado → En progreso, no se arrastran.
 - **Sin estado:** un documento sin estado (incidencias) agrupa por otro campo y no se arrastra.
+- **Estado derivado:** si el estado sale del detalle (el control de calidad, de sus lotes), el kanban agrupa por él pero no se arrastra; las acciones van en el formulario.
 
 **Implementación**: `pc-odoo-kanban` (CDK `DragDrop` y `Dialog`).
 
@@ -119,6 +120,7 @@ En solo lectura el campo es texto sin línea. Todos funcionan con formularios de
 | :--- | :--- | :--- |
 | Confirmación | `pc-odoo-dialog` (o `OdooConfirmacion`) | Título, mensaje, primario y "Cancelar". Esc y clic fuera cancelan; el foco queda dentro |
 | Hard-stop (Calidad, existencia) | `pc-odoo-dialog` | Explica por qué no procede y qué hacer; no ofrece continuar |
+| Acción irreversible (fallar un lote) | `OdooConfirmacion` | Dice la consecuencia y nombra el botón con la acción ("Fallar lote"), no "Aceptar" |
 | Resultado de una acción | `AvisosService` | Éxito y aviso se cierran solos a los 4 s; el error se queda hasta cerrarlo |
 | Error en la hoja | Alerta en la hoja | Junto al campo o arriba de la hoja, en rojo |
 

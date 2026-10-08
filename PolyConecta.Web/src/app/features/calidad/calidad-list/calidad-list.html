@@ -3,51 +3,33 @@
         <pc-boton-nuevo [ruta]="'/calidad'" />
         <pc-odoo-breadcrumb [items]="[{ label: 'Control de Calidad' }]" />
     </div>
-    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" />
+    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" [(agrupacionesActivas)]="agrupaciones"
+                          [permiteAgrupar]="viewState.viewMode() !== 'Kanban'" [conFavoritos]="viewState.viewMode() !== 'Kanban'"
+                          [favoritos]="lista()?.favoritos() ?? []" (guardarFavorito)="lista()?.guardarFavorito($event.nombre, $event.porOmision)"
+                          (aplicarFavorito)="lista()?.aplicarFavorito($event)" (borrarFavorito)="lista()?.borrarFavorito($event)" />
     <div class="d-flex align-items-center gap-2">
-        <div class="btn-group btn-group-sm o_view_switcher">
-            <button class="btn-view active" disabled><i class="bi bi-list-ul"></i></button>
-        </div>
+        <pc-odoo-view-switcher />
     </div>
 </div>
 
 <div class="p-4">
-    <table class="table table-hover align-middle bg-white shadow-sm">
-        <thead class="table-light">
-            <tr>
-                <th style="width:36px;"><input type="checkbox" class="form-check-input" (change)="toggleAll($event)" /></th>
-                <th>Folio</th>
-                <th>Producto</th>
-                <th>Orden de Fabricación</th>
-                <th>Proceso</th>
-                <th class="text-end">Lotes</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (of of filteredOrders(); track of.folio) {
-                <tr style="cursor:pointer;" [class.table-active]="selected().has(of.folio)" (click)="router.navigateByUrl('/calidad/' + of.folio)">
-                    <td (click)="$event.stopPropagation()"><input type="checkbox" class="form-check-input" [checked]="selected().has(of.folio)" (change)="toggleOne(of.folio)" /></td>
-                    <td class="fw-semibold text-primary">{{ qcFolio(of.folio) }}</td>
-                    <td>{{ of.producto }}</td>
-                    <td>{{ of.folio }}</td>
-                    <td>{{ of.processLabel }}</td>
-                    <td class="text-end">{{ of.produccion.length }}</td>
-                    <td><span class="badge badge-brand">{{ estadoQc(of) }}</span></td>
-                </tr>
+    @if (viewState.viewMode() === 'Kanban') {
+        <pc-odoo-kanban #kanban [origen]="origen" campoEtapa="estado" [etapas]="etapas" [tarjeta]="tarjeta"
+                        [idDe]="idControl" [etapaDe]="etapaControl" [nombrados]="filtros()" [busqueda]="searchText()" (abrir)="abrir($event)" />
+        <ng-template #tarjeta let-f>
+            <div class="o_kanban_card_cabecera">
+                <div class="fw-semibold text-dark small">{{ f.folio }}</div>
+                <span class="badge badge-brand">{{ f.estado }}</span>
+            </div>
+            <div class="text-muted small">{{ f.libre ? 'Control libre' : f.producto }}</div>
+            @if (!f.libre) {
+                <div class="o_kanban_card_dato"><pc-odoo-icon nombre="fabricacion" />{{ f.orden }} · {{ f.proceso }}</div>
             }
-            @for (c of controlesLibres(); track c.folio) {
-                <tr style="cursor:pointer;" (click)="router.navigateByUrl('/calidad/' + c.folio)">
-                    <td (click)="$event.stopPropagation()"><input type="checkbox" class="form-check-input" /></td>
-                    <td class="fw-semibold text-primary">{{ c.folio }}</td>
-                    <td class="text-muted">—</td>
-                    <td class="text-muted">— (libre)</td>
-                    <td class="text-muted">—</td>
-                    <td class="text-end">{{ c.lotes.length }}</td>
-                    <td><span class="badge badge-brand">{{ qc.estado(c) }}</span></td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <pc-odoo-pager [count]="filteredOrders().length + controlesLibres().length" />
+            <div class="o_kanban_card_dato"><pc-odoo-icon nombre="lotes" />{{ f.lotes }} lote(s)@if (f.enRevision > 0) { · {{ f.enRevision }} en revisión}</div>
+        </ng-template>
+        <pc-odoo-pager [count]="kanban.total()" />
+    } @else {
+        <pc-odoo-list lista="calidad.controles" [origen]="origen" [columnas]="columnas" [idDe]="idControl" mensajeVacio=""
+                      [(busqueda)]="searchText" [(nombrados)]="filtros" [(agruparPor)]="agrupaciones" (abrir)="abrir($event)" />
+    }
 </div>

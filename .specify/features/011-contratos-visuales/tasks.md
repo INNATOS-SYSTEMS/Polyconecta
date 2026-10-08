@@ -127,8 +127,8 @@
 
 ## Phase 7: US5 · Calidad (P4)
 
-- [ ] L2-T045 [US5] Confirmar las transiciones de Calidad (aprobar o rechazar el lote, con el diálogo del resultado) contra `OperationalFlowState` y `calidad-libre.ts`; escribirlas en `src/app/features/calidad/calidad-kanban.ts`.
-- [ ] L2-T046 [US5] Migrar `features/calidad/calidad-list/` (lista y kanban nuevo) y `calidad-form/`, y rehacer `calidad-nuevo/` y `calidad-libre-form/` con la estructura completa (D-136). El hard-stop se muestra con `pc-odoo-dialog`.
+- [x] L2-T045 [US5] Confirmar las transiciones de Calidad (aprobar o rechazar el lote, con el diálogo del resultado) contra `OperationalFlowState` y `calidad-libre.ts`; escribirlas en `src/app/features/calidad/calidad-kanban.ts`.
+- [x] L2-T046 [US5] Migrar `features/calidad/calidad-list/` (lista y kanban nuevo) y `calidad-form/`, y rehacer `calidad-nuevo/` y `calidad-libre-form/` con la estructura completa (D-136). El hard-stop se muestra con `pc-odoo-dialog`.
 - [ ] L2-T047 [US5] Quickstart §2 para Calidad, incluido el guion del hard-stop, y el PR de P4.
 
 ---

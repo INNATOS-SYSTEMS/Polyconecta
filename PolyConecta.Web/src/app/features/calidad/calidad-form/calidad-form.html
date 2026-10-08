@@ -13,18 +13,18 @@
         <div class="o_statusbar">
             <div class="d-flex align-items-center gap-2">
                 <button class="btn btn-outline-success btn-sm px-3" (click)="aprobarTodo()" [disabled]="pendientes() === 0">
-                    <i class="bi bi-check-circle me-1"></i> Aprueba
+                    <pc-odoo-icon nombre="confirmar" /> Aprueba
                 </button>
                 <button class="btn btn-outline-danger btn-sm px-3" (click)="fallarUltimo()" [disabled]="pendientes() === 0">
-                    <i class="bi bi-x-circle me-1"></i> Falla
+                    <pc-odoo-icon nombre="cancelar" /> Falla
                 </button>
             </div>
-            <span class="badge badge-brand px-3 py-2">{{ estado() }}</span>
         </div>
 
         <div class="d-flex gap-3 align-items-start">
             <div class="o_form_sheet flex-grow-1">
                 <div class="o_sheet_body">
+                    <pc-odoo-status-pipeline [stages]="etapas" [currentStage]="estado()" />
                     <h3 class="fw-bold mb-1">Control de calidad</h3>
                     <h4 class="fw-bold text-primary mb-3">{{ qcFolio() }}</h4>
                     <div class="row g-4 mb-4">
@@ -39,14 +39,12 @@
                         </div>
                     </div>
 
-                    <ul class="nav nav-tabs mb-3" role="tablist">
-                        <li class="nav-item"><button class="nav-link" [class.active]="tab() === 'controles'" (click)="tab.set('controles')">Controles</button></li>
-                        <li class="nav-item"><button class="nav-link" [class.active]="tab() === 'notas'" (click)="tab.set('notas')">Notas</button></li>
-                    </ul>
+                    <!-- Solo el encabezado: el contenido de cada pestaña lo controla la página con tab(). -->
+                    <pc-odoo-tabs [pestanas]="pestanas" [activa]="tab()" (activaChange)="tab.set($any($event))" />
 
                     @if (tab() === 'controles') {
                         <table class="table table-sm align-middle mb-0">
-                            <thead class="text-muted small"><tr><th>#</th><th>Producto</th><th>Lote</th><th class="text-end">Cantidad</th><th class="text-end">Real</th><th>Aprueba</th></tr></thead>
+                            <thead><tr><th>#</th><th>Producto</th><th>Lote</th><th class="text-end">Cantidad</th><th class="text-end">Real</th><th>Aprueba</th></tr></thead>
                             <tbody>
                                 @if (of.produccion.length === 0) {
                                     <tr><td colspan="6" class="text-muted small fst-italic">Sin lotes capturados todavía en Producción.</td></tr>
@@ -61,7 +59,7 @@
                                         <td>
                                             @if (lote.estado === 'En revisión') {
                                                 <button class="btn btn-sm btn-outline-success me-1" (click)="flow.aprobarLote(lote)">Aprueba</button>
-                                                <button class="btn btn-sm btn-outline-danger" (click)="flow.rechazarLote(lote)">Falla</button>
+                                                <button class="btn btn-sm btn-outline-danger" (click)="acciones.fallar(lote)">Falla</button>
                                             } @else {
                                                 <span class="badge" [class.bg-success]="lote.estado === 'Aprobado'" [class.bg-danger]="lote.estado !== 'Aprobado'">{{ lote.estado }}</span>
                                             }

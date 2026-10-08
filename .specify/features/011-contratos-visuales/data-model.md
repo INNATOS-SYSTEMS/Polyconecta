@@ -122,7 +122,7 @@ Salen de los estados que ya existen en `core/models` y `core/state`. La tabla de
 | Fabricación | Borrador, Planeado, En progreso, Hecho | Borrador → Planeado (Confirmar: requiere componentes y libera la recolección); En progreso → Hecho (Cerrar producción: hard-stop de Calidad y saldo de WIP en cero). Planeado → En progreso la avanza el sistema al planear | P2 |
 | Incidencias | Por centro de trabajo | Ninguna: no tienen estado | P2 |
 | Recolecciones | Borrador, En espera, Listo, Hecho | Listo → Hecho (Validar, con diálogo de cantidades si es parcial, el mismo que abre el botón del formulario). Borrador → En espera lo avanza el sistema al confirmar la OF, y En espera → Listo, al declarar lotes | P3 |
-| Calidad | En revisión, Aprobado, Rechazado (por lote) | En revisión → Aprobado o Rechazado (con diálogo del resultado) | P4 |
+| Calidad | Planeado, Parcial, Aprobado (por control, como la lista) | Ninguna: el estado sale de los lotes (aclaración P4). Se aprueba o falla lote por lote en el formulario; fallar pide confirmación | P4 |
 | Traslados | Borrador, En espera de operación, En espera, Listo, Hecho | Listo → Hecho (Validar) | P5 |
 | Recepción | Borrador, En espera, Listo, Hecho | Listo → Hecho (Validar) | P6 |
 | Entregas | Borrador, En espera, Listo, Hecho | Listo → Hecho (Validar) | P7 |
