@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using PolyConecta.Api.Hubs;
 using PolyConecta.Api.Middleware;
+using PolyConecta.Api.Seguridad;
 using PolyConecta.Application;
 using PolyConecta.Infrastructure;
 
@@ -25,6 +26,7 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddAutenticacionPolyConecta(builder.Environment);
 
 builder.Services.AddCors(options =>
 {
@@ -62,6 +64,7 @@ catch (Exception ex) when (ex is Microsoft.Data.SqlClient.SqlException or Invali
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ProblemDetailsMiddleware>();
+app.UseEncabezadoAntiFalsificacion();
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -69,6 +72,7 @@ app.UseRouting();
 // Después de UseRouting: así ve la política propia del hub (RequireCors). Antes solo aplicaba la
 // política por omisión y la negociación de SignalR fallaba.
 app.UseCors();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ChatterHub>("/hubs/chatter").RequireCors(PoliticaChatter);

@@ -135,7 +135,8 @@ public class CicloCompletoTests(SqlServerFixture sql)
             Guid mensajeId;
             await using (var db = s.Entorno.Contexto())
                 mensajeId = (await db.OutboxMessages.SingleAsync()).Id;
-            (await s.Api.CreateClient().PostAsync($"/api/v1/plataforma/outbox/{mensajeId}/reintentar", null))
+            // El reintento es una ruta con sesión (FR-009); el callback del bridge no.
+            (await (await s.Api.ClienteAsync()).PostAsync($"/api/v1/plataforma/outbox/{mensajeId}/reintentar", null))
                 .StatusCode.Should().Be(HttpStatusCode.NoContent);
 
             doc = await EsperarAsync(s, id, SyncStatus.Confirmado);

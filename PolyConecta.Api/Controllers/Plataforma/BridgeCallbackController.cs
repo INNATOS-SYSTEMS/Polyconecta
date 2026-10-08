@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using PolyConecta.Application.Common;
@@ -14,6 +15,7 @@ namespace PolyConecta.Api.Controllers.Plataforma;
 /// caso de uso ConfirmarSincronizacion (CT-08).
 /// </summary>
 [ApiController]
+[AllowAnonymous] // Se autentica con la firma del callback, no con sesión (FR-009).
 [Route("api/v1/plataforma/bridge/callbacks")]
 public sealed class BridgeCallbackController(
     IUseCase<ResultadoBridge, EfectoCallback> confirmar, IOptions<ErpOptions> opciones, IClock clock) : ControllerBase
