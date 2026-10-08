@@ -41,6 +41,8 @@ Paso '1. Comprobaciones'
 if ($env:SSH_CONNECTION -or $env:SSH_CLIENT) { Falla 'Consola de SSH: abre Escritorio remoto. El SDK necesita la sesión iniciada (S-02).'; exit 1 }
 Ok ("Sesión interactiva de {0}" -f $env:USERNAME)
 
+# Primero el supervisor y después el bridge: si no, el supervisor lo relanza (L1-T011).
+if ((Stop-BridgeSupervisor) -gt 0) { Aviso 'Se detuvo el supervisor del bridge.' }
 $anterior = Get-Process -Name 'Contpaq.Bridge' -ErrorAction SilentlyContinue
 $ocupado = Get-NetTCPConnection -LocalPort $Puerto -State Listen -ErrorAction SilentlyContinue
 if ($ocupado -and -not ($anterior | Where-Object { $_.Id -eq $ocupado[0].OwningProcess })) {
@@ -77,7 +79,19 @@ foreach ($k in [Environment]::GetEnvironmentVariables('User').Keys) {
     if ($k -like 'BridgeConfig__*') { [Environment]::SetEnvironmentVariable($k, [Environment]::GetEnvironmentVariable($k, 'User'), 'Process') }
 }
 $env:BridgeConfig__DashboardPort = "$Puerto"
-if ($Visible) { Start-Process -FilePath $exe -WorkingDirectory $CarpetaBridge } else { Start-BridgeOculto }
+# Lo normal es arrancar la tarea, que corre el supervisor (L1-T011). -Visible lo lanza en consola y sin
+# supervisor, para depurar; con otro puerto también se lanza directo, porque la tarea no recibe -Puerto.
+$tarea = Get-ScheduledTask -TaskName $script:NombreTareaBridge -ErrorAction SilentlyContinue
+if ($Visible) {
+    Start-Process -FilePath $exe -WorkingDirectory $CarpetaBridge
+} elseif ($tarea -and $Puerto -eq 9030) {
+    Start-ScheduledTask -TaskName $script:NombreTareaBridge
+    Ok "Arrancó la tarea $script:NombreTareaBridge (supervisor del bridge)."
+} else {
+    if (-not $tarea) { Aviso 'No está la tarea del supervisor (Set-BridgeAutostart.ps1): se lanza el bridge sin supervisor.' }
+    else { Aviso "Con -Puerto $Puerto se lanza el bridge sin supervisor." }
+    Start-BridgeOculto
+}
 Write-Host '  Esperando a que responda (hasta 2 minutos; abrir la sesión del SDK tarda unos segundos)...'
 $salud = $null
 for ($i = 0; $i -lt 40 -and -not $salud; $i++) { Start-Sleep -Seconds 3; $salud = Invoke-Bridge '/health' $Puerto }
@@ -144,5 +158,6 @@ Add-Evidencia '0.4.md' 'Publicación del bridge .NET 10 x86 (L1-T006)' $lineas
 Write-Host ''
 Write-Host ''
 Write-Host 'El bridge corre sin ventana. Log en vivo:  Get-Content C:\PolyConecta\bridge\logs\bridge-*.log -Wait -Tail 50'
-Write-Host 'Detenerlo:                              Stop-Process -Name Contpaq.Bridge'
+Write-Host 'Log del supervisor:                     Get-Content C:\PolyConecta\bridge\logs\supervisor-*.log -Tail 20'
+Write-Host 'Detenerlo (supervisor y bridge):        Stop-ScheduledTask PolyConecta-Bridge; Stop-Process -Name Contpaq.Bridge'
 Write-Host 'Siguiente: Set-BridgeAutostart.ps1 (L1-T016), para que arranque solo al reiniciar.'

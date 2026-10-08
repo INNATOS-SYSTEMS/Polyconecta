@@ -118,7 +118,7 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
                 }
             }
             gateway.Apagar();
-            if (reiniciar) proceso?.Salir(0); // la tarea de D-115 lo vuelve a levantar
+            if (reiniciar) proceso?.Salir(0); // el supervisor del VPS lo vuelve a levantar
         }
 
         /// <summary>
@@ -267,7 +267,7 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
         [LoggerMessage(Level = LogLevel.Information, Message = "Reinicio diario ({Hora}): ya no se toman transacciones; se cierra el SDK y el proceso sale con código 0")]
         private static partial void LogReinicio(ILogger logger, string hora);
 
-        [LoggerMessage(Level = LogLevel.Critical, Message = "SDK_TIMEOUT: la llamada {Llamada} no regresó en {Segundos} s (correlation_id {CorrelationId}); el proceso sale para que lo levante la tarea programada")]
+        [LoggerMessage(Level = LogLevel.Critical, Message = "SDK_TIMEOUT: la llamada {Llamada} no regresó en {Segundos} s (correlation_id {CorrelationId}); el proceso sale para que lo relance el supervisor del VPS")]
         private static partial void LogTimeout(ILogger logger, string llamada, string correlationId, double segundos);
 
         [LoggerMessage(Level = LogLevel.Error, Message = "Error no controlado en el ciclo del outbox")]

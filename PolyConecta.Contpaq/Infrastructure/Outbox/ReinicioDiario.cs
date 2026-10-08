@@ -6,7 +6,7 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
     /// <summary>
     /// Reinicio diario del bridge (FR-006, R-07, L1-T004): a la hora configurada (BridgeConfig__ReinicioDiario,
     /// HH:mm en hora local, 03:00 por omisión) el worker deja de tomar transacciones, termina la actual,
-    /// cierra empresa y SDK y sale con código 0; la tarea programada de D-115 lo levanta. La hora se
+    /// cierra empresa y SDK y sale con código 0; el supervisor (scripts/vps/Start-BridgeSupervisado.ps1) lo vuelve a levantar. La hora se
     /// compara con la del arranque del proceso: el reinicio llega a la primera ocurrencia de la hora
     /// después de arrancar, así un proceso recién levantado a las 03:00:05 no vuelve a salir.
     /// </summary>
