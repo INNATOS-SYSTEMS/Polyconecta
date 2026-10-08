@@ -1,30 +1,61 @@
 {
-  "_nota": "Catálogo del bridge en modo simulado. Usa los códigos de docs/contratos/ejemplos/; L1 lo amplía con el catálogo de la empresa _LAB (Principio VIII). No lleva datos de producción.",
+  "_nota": "Catálogo del bridge en modo simulado, en la forma 1.1 del contrato (id_erp, clasificación, moneda y domicilios de clientes, agentes). Usa los códigos de docs/contratos/ejemplos/. No lleva datos de producción. Se cambia en caliente con PUT y DELETE /admin/simulated/catalog (C-T006).",
   "productos": [
-    { "codigo": "PEBD-001", "nombre": "Polietileno baja densidad", "unidad_base": "KG", "lleva_lote": false, "activo": true },
-    { "codigo": "R-IV310", "nombre": "Rollo maestro IV310", "unidad_base": "KG", "lleva_lote": true, "activo": true },
-    { "codigo": "PT3413 C455", "nombre": "ROLLO TUB 20.5 370 (Maestro)", "unidad_base": "KG", "lleva_lote": true, "activo": true },
-    { "codigo": "PT1113 C567", "nombre": "BOLSA MEDIANA 44X84 C.430 BOL-004 [77]", "unidad_base": "PZA", "lleva_lote": true, "activo": true },
-    { "codigo": "SCR-BD-001", "nombre": "Scrap resina residual tpte (BD)", "unidad_base": "KG", "lleva_lote": false, "activo": true },
-    { "codigo": "MP-BAJA", "nombre": "Producto dado de baja", "unidad_base": "KG", "lleva_lote": false, "activo": false }
+    {"codigo": "PEBD-001", "nombre": "Polietileno baja densidad", "unidad_base": "KG", "lleva_lote": false, "activo": true, "id_erp": 201, "clasificacion": {"codigo": "MP", "nombre": "MATERIA PRIMA"}},
+    {"codigo": "R-IV310", "nombre": "Rollo maestro IV310", "unidad_base": "KG", "lleva_lote": true, "activo": true, "id_erp": 310, "clasificacion": {"codigo": "RO", "nombre": "ROLLO"}},
+    {"codigo": "PT3413 C455", "nombre": "ROLLO TUB 20.5 370 (Maestro)", "unidad_base": "KG", "lleva_lote": true, "activo": true, "id_erp": 3413, "clasificacion": {"codigo": "RO", "nombre": "ROLLO"}},
+    {"codigo": "PT1113 C567", "nombre": "BOLSA MEDIANA 44X84 C.430 BOL-004 [77]", "unidad_base": "PZA", "lleva_lote": true, "activo": true, "id_erp": 1113, "clasificacion": {"codigo": "PT", "nombre": "PRODUCTO TERMINADO"}},
+    {"codigo": "SCR-BD-001", "nombre": "Scrap resina residual tpte (BD)", "unidad_base": "KG", "lleva_lote": false, "activo": true, "id_erp": 901, "clasificacion": {"codigo": "SC", "nombre": "SCRAP"}},
+    {"codigo": "MP-BAJA", "nombre": "Producto dado de baja", "unidad_base": "KG", "lleva_lote": false, "activo": false, "id_erp": 202, "clasificacion": null},
+    {"codigo": "MP-PEAD-002", "nombre": "Polietileno alta densidad", "unidad_base": "KG", "lleva_lote": false, "activo": true, "id_erp": 203, "clasificacion": {"codigo": "MP", "nombre": "MATERIA PRIMA"}},
+    {"codigo": "MP-PELBD-003", "nombre": "Polietileno lineal baja densidad", "unidad_base": "KG", "lleva_lote": false, "activo": true, "id_erp": 204, "clasificacion": {"codigo": "MP", "nombre": "MATERIA PRIMA"}},
+    {"codigo": "MP-MB-NEGRO", "nombre": "Masterbatch negro", "unidad_base": "KG", "lleva_lote": false, "activo": true, "id_erp": 205, "clasificacion": {"codigo": "MP", "nombre": "MATERIA PRIMA"}},
+    {"codigo": "MP-ADIT-001", "nombre": "Aditivo deslizante", "unidad_base": "KG", "lleva_lote": false, "activo": true, "id_erp": 206, "clasificacion": {"codigo": "MP", "nombre": "MATERIA PRIMA"}},
+    {"codigo": "R-IV320", "nombre": "Rollo maestro IV320", "unidad_base": "KG", "lleva_lote": true, "activo": true, "id_erp": 320, "clasificacion": {"codigo": "RO", "nombre": "ROLLO"}},
+    {"codigo": "R-IV330", "nombre": "Rollo maestro IV330", "unidad_base": "KG", "lleva_lote": true, "activo": true, "id_erp": 330, "clasificacion": {"codigo": "RO", "nombre": "ROLLO"}},
+    {"codigo": "R-TUB205", "nombre": "Rollo tubular 20.5", "unidad_base": "KG", "lleva_lote": true, "activo": true, "id_erp": 3205, "clasificacion": {"codigo": "RO", "nombre": "ROLLO"}},
+    {"codigo": "PT1113 C568", "nombre": "BOLSA MEDIANA 44X84 C.450 BOL-005", "unidad_base": "PZA", "lleva_lote": true, "activo": true, "id_erp": 1114, "clasificacion": {"codigo": "PT", "nombre": "PRODUCTO TERMINADO"}},
+    {"codigo": "PT1120 C430", "nombre": "BOLSA CHICA 30X50 C.430", "unidad_base": "PZA", "lleva_lote": true, "activo": true, "id_erp": 1120, "clasificacion": {"codigo": "PT", "nombre": "PRODUCTO TERMINADO"}},
+    {"codigo": "PT2201 C300", "nombre": "BOLSA CAMISETA 25X45 C.300 (millar)", "unidad_base": "MIL", "lleva_lote": true, "activo": true, "id_erp": 2201, "clasificacion": {"codigo": "PT", "nombre": "PRODUCTO TERMINADO"}},
+    {"codigo": "PT2202 C300", "nombre": "BOLSA CAMISETA 30X50 C.300 (millar)", "unidad_base": "MIL", "lleva_lote": false, "activo": true, "id_erp": 2202, "clasificacion": {"codigo": "PT", "nombre": "PRODUCTO TERMINADO"}},
+    {"codigo": "PT3413 C456", "nombre": "ROLLO TUB 20.5 380", "unidad_base": "KG", "lleva_lote": true, "activo": true, "id_erp": 3414, "clasificacion": {"codigo": "PT", "nombre": "PRODUCTO TERMINADO"}},
+    {"codigo": "PT-DESC-001", "nombre": "Bolsa descontinuada", "unidad_base": "PZA", "lleva_lote": false, "activo": false, "id_erp": 1199, "clasificacion": null},
+    {"codigo": "SCR-AD-001", "nombre": "Scrap de arranque", "unidad_base": "KG", "lleva_lote": false, "activo": true, "id_erp": 902, "clasificacion": {"codigo": "SC", "nombre": "SCRAP"}}
   ],
   "clientes": [
-    { "codigo": "EMM-001", "razon_social": "EMPRESA MEXICANA DE MANUFACTURA", "rfc": "EMM010101AAA" }
+    {"codigo": "EMM-001", "razon_social": "EMPRESA MEXICANA DE MANUFACTURA", "rfc": "EMM010101AAA", "id_erp": 57, "activo": true, "moneda": "USD", "domicilios": [{"id_erp": 901, "tipo": "fiscal", "calle": "Av. Industrial", "numero_exterior": "120", "numero_interior": "", "colonia": "Parque Industrial", "codigo_postal": "66600", "ciudad": "Apodaca", "municipio": "Apodaca", "estado": "Nuevo León", "pais": "México", "sucursal": ""}, {"id_erp": 902, "tipo": "envio", "calle": "Carretera Miguel Alemán", "numero_exterior": "Km 18", "numero_interior": "Nave 4", "colonia": "Centro", "codigo_postal": "66600", "ciudad": "Apodaca", "municipio": "Apodaca", "estado": "Nuevo León", "pais": "México", "sucursal": "Planta Norte"}, {"id_erp": 903, "tipo": "envio", "calle": "Blvd. Saltillo", "numero_exterior": "455", "numero_interior": "", "colonia": "Derramadero", "codigo_postal": "25300", "ciudad": "Saltillo", "municipio": "Saltillo", "estado": "Coahuila", "pais": "México", "sucursal": "CEDIS Saltillo"}]},
+    {"codigo": "CLI-002", "razon_social": "COMERCIALIZADORA DEL NORTE", "rfc": "CNO020202BBB", "id_erp": 58, "activo": true, "moneda": "MXN", "domicilios": []},
+    {"codigo": "CLI-003", "razon_social": "ALIMENTOS DEL VALLE", "rfc": "ADV030303CCC", "id_erp": 59, "activo": true, "moneda": "MXN", "domicilios": [{"id_erp": 904, "tipo": "fiscal", "calle": "Calle Hidalgo", "numero_exterior": "45", "numero_interior": "", "colonia": "Centro", "codigo_postal": "64000", "ciudad": "Monterrey", "municipio": "Monterrey", "estado": "Nuevo León", "pais": "México", "sucursal": ""}, {"id_erp": 905, "tipo": "envio", "calle": "Av. Las Torres", "numero_exterior": "800", "numero_interior": "", "colonia": "Cumbres", "codigo_postal": "64610", "ciudad": "Monterrey", "municipio": "Monterrey", "estado": "Nuevo León", "pais": "México", "sucursal": "Bodega Cumbres"}]},
+    {"codigo": "CLI-004", "razon_social": "EXPORTADORA TEXAS MEX", "rfc": "ETM040404DDD", "id_erp": 60, "activo": true, "moneda": "USD", "domicilios": [{"id_erp": 906, "tipo": "fiscal", "calle": "Blvd. Díaz Ordaz", "numero_exterior": "1500", "numero_interior": "", "colonia": "Industrial", "codigo_postal": "66470", "ciudad": "San Nicolás", "municipio": "San Nicolás de los Garza", "estado": "Nuevo León", "pais": "México", "sucursal": ""}, {"id_erp": 907, "tipo": "envio", "calle": "Carretera a Laredo", "numero_exterior": "Km 12", "numero_interior": "", "colonia": "Zona Aduanal", "codigo_postal": "88000", "ciudad": "Nuevo Laredo", "municipio": "Nuevo Laredo", "estado": "Tamaulipas", "pais": "México", "sucursal": "Aduana Laredo"}, {"id_erp": 908, "tipo": "envio", "calle": "Calle 5 de Mayo", "numero_exterior": "210", "numero_interior": "", "colonia": "Centro", "codigo_postal": "88500", "ciudad": "Reynosa", "municipio": "Reynosa", "estado": "Tamaulipas", "pais": "México", "sucursal": "Reynosa"}]},
+    {"codigo": "CLI-005", "razon_social": "DISTRIBUIDORA LA PERLA", "rfc": "DLP050505EEE", "id_erp": 61, "activo": true, "moneda": "MXN", "domicilios": [{"id_erp": 909, "tipo": "fiscal", "calle": "Av. Constitución", "numero_exterior": "300", "numero_interior": "", "colonia": "Centro", "codigo_postal": "64000", "ciudad": "Monterrey", "municipio": "Monterrey", "estado": "Nuevo León", "pais": "México", "sucursal": ""}]}
+  ],
+  "agentes": [
+    {"codigo": "AG-01", "nombre": "Celia Villarreal", "id_erp": 3, "tipo": "venta"},
+    {"codigo": "AG-02", "nombre": "Agente de cobranza", "id_erp": 4, "tipo": "cobro"},
+    {"codigo": "AG-03", "nombre": "Ramiro Salinas", "id_erp": 5, "tipo": "venta_cobro"},
+    {"codigo": "AG-04", "nombre": "Patricia Garza", "id_erp": 6, "tipo": "venta"}
   ],
   "almacenes": [
-    { "codigo": "MP-PIM", "nombre": "Materia prima Apodaca", "id_erp": 1 },
-    { "codigo": "WIP-PIM", "nombre": "WIP Apodaca", "id_erp": 2 },
-    { "codigo": "PT-PIM", "nombre": "Producto terminado Apodaca", "id_erp": 3 },
-    { "codigo": "SCRAP-PIM", "nombre": "Scrap Apodaca", "id_erp": 4 },
-    { "codigo": "PT-SC", "nombre": "Producto terminado Santa Cruz", "id_erp": 5 },
-    { "codigo": "TRANS-PIM-SC", "nombre": "Tránsito Apodaca a Santa Cruz", "id_erp": 6 }
+    {"codigo": "MP-PIM", "nombre": "Materia prima Apodaca", "id_erp": 1},
+    {"codigo": "WIP-PIM", "nombre": "WIP Apodaca", "id_erp": 2},
+    {"codigo": "PT-PIM", "nombre": "Producto terminado Apodaca", "id_erp": 3},
+    {"codigo": "SCRAP-PIM", "nombre": "Scrap Apodaca", "id_erp": 4},
+    {"codigo": "PT-SC", "nombre": "Producto terminado Santa Cruz", "id_erp": 5},
+    {"codigo": "TRANS-PIM-SC", "nombre": "Tránsito Apodaca a Santa Cruz", "id_erp": 6},
+    {"codigo": "MP-SC", "nombre": "Materia prima Santa Cruz", "id_erp": 7},
+    {"codigo": "WIP-SC", "nombre": "WIP Santa Cruz", "id_erp": 8},
+    {"codigo": "SCRAP-SC", "nombre": "Scrap Santa Cruz", "id_erp": 9}
   ],
   "existencias": [
-    { "producto": "PEBD-001", "almacen": "MP-PIM", "lote": null, "cantidad": 5000 },
-    { "producto": "R-IV310", "almacen": "MP-PIM", "lote": "R001-IV310-26", "cantidad": 500 },
-    { "producto": "R-IV310", "almacen": "MP-PIM", "lote": "R002-IV310-26", "cantidad": 500 },
-    { "producto": "PEBD-001", "almacen": "WIP-PIM", "lote": null, "cantidad": 1000 },
-    { "producto": "PT1113 C567", "almacen": "PT-SC", "lote": "B001-IV310-26", "cantidad": 6000 }
+    {"producto": "PEBD-001", "almacen": "MP-PIM", "lote": null, "cantidad": 5000},
+    {"producto": "R-IV310", "almacen": "MP-PIM", "lote": "R001-IV310-26", "cantidad": 500},
+    {"producto": "R-IV310", "almacen": "MP-PIM", "lote": "R002-IV310-26", "cantidad": 500},
+    {"producto": "PEBD-001", "almacen": "WIP-PIM", "lote": null, "cantidad": 1000},
+    {"producto": "PT1113 C567", "almacen": "PT-SC", "lote": "B001-IV310-26", "cantidad": 6000},
+    {"producto": "MP-PEAD-002", "almacen": "MP-PIM", "lote": null, "cantidad": 3000},
+    {"producto": "PT1113 C568", "almacen": "PT-PIM", "lote": "B002-IV310-26", "cantidad": 8000},
+    {"producto": "PT2201 C300", "almacen": "PT-PIM", "lote": "B003-IV320-26", "cantidad": 120},
+    {"producto": "R-IV320", "almacen": "MP-SC", "lote": "R003-IV320-26", "cantidad": 700}
   ],
   "recepciones_compra": [
     {
@@ -32,7 +63,14 @@
       "fecha": "2026-10-01",
       "proveedor": "LYONDELL",
       "almacen": "MP-PIM",
-      "lineas": [ { "producto": "PEBD-001", "cantidad": 5000, "unidad": "KG", "lotes": [] } ]
+      "lineas": [
+        {
+          "producto": "PEBD-001",
+          "cantidad": 5000,
+          "unidad": "KG",
+          "lotes": []
+        }
+      ]
     }
   ]
 }

@@ -71,6 +71,7 @@ namespace Contpaq.Bridge.Core.Contract
             CargaAltaPedido p =>
                 Fecha(p.Fecha, "fecha") ?? Requerido(p.ReferenciaNegocio, "referencia_negocio")
                 ?? Requerido(p.Cliente, "cliente") ?? Requerido(p.Moneda, "moneda")
+                ?? (p.Agente is not null && string.IsNullOrWhiteSpace(p.Agente) ? ErrorDe("agente", "Si viene, no puede estar vacío.") : null)
                 ?? (p.TipoCambio is null or <= 0 ? ErrorDe("tipo_cambio", "Debe ser mayor que cero.") : null)
                 ?? LineasPedido(p.Lineas),
             CargaAltaAlmacen a =>

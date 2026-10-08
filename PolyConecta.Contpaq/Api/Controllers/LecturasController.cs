@@ -23,6 +23,10 @@ namespace Contpaq.Bridge.Api.Controllers
         public Task<IActionResult> Clientes(string? search, DateTimeOffset? modified_since, int limit = 100, string? cursor = null) =>
             Leer(limit, () => lecturas.ClientesAsync(search, modified_since, limit, cursor));
 
+        [HttpGet("catalogs/agents")]
+        public Task<IActionResult> Agentes(int limit = 100, string? cursor = null) =>
+            Leer(limit, () => lecturas.AgentesAsync(limit, cursor));
+
         [HttpGet("catalogs/warehouses")]
         public Task<IActionResult> Almacenes() => Leer(1, () => lecturas.AlmacenesAsync());
 
@@ -47,6 +51,15 @@ namespace Contpaq.Bridge.Api.Controllers
             try
             {
                 return Ok(await lectura());
+            }
+            catch (ArgumentException ex) when (ex.ParamName == "cursor")
+            {
+                return BadRequest(ErrorContrato.De(CodigosError.CargaInvalida, ex.Message.Split(" (Parameter")[0], new() { ["campo"] = "cursor" }));
+            }
+            catch (EjercicioVigenteException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    ErrorContrato.De(CodigosError.SdkError, ex.Message, new() { ["motivo"] = "SIN_EJERCICIO_VIGENTE" }));
             }
             catch (LecturaNoDisponibleException ex)
             {

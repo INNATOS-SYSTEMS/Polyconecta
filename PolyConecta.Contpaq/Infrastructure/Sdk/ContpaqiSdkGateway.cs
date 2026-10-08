@@ -1,12 +1,6 @@
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Contpaq.Bridge.Core.Contract;
-using Contpaq.Bridge.Core.Models;
 using Contpaq.Bridge.Core.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -14,34 +8,45 @@ using Microsoft.Extensions.Logging;
 namespace Contpaq.Bridge.Infrastructure.Sdk
 {
     /// <summary>
-    /// Gateway real: única puerta al SDK de CONTPAQi (MGWServicios.dll, Principio II). Conserva la
-    /// sesión y las llamadas nativas; el ciclo del outbox vive en OutboxWorker, que lo llama siempre
-    /// desde su mismo hilo STA (D-122).
+    /// Gateway real: única puerta al SDK de CONTPAQi (MGWServicios.dll, Principio II). Separa dos ciclos
+    /// de vida (R-07): el del SDK, una vez por proceso (<see cref="IniciarSdk"/>: directorio, los dos
+    /// inicios de sesión de D-108), y el de la empresa, por lote (<see cref="AbrirEmpresa"/> y
+    /// <see cref="CerrarEmpresa"/>). IdleSessionTimeoutSeconds solo cierra la empresa; fTerminaSDK se
+    /// llama una vez, al apagar. El ciclo del outbox vive en OutboxWorker, que lo llama siempre desde su
+    /// mismo hilo STA (D-122).
     /// </summary>
-    public class ContpaqiSdkGateway : ISdkGateway
+    public partial class ContpaqiSdkGateway : ISdkGateway
     {
         private readonly ILogger<ContpaqiSdkGateway> _logger;
+        private readonly ISdkNativo _nativo;
+        private readonly TimeProvider _reloj;
 
         private readonly string _sdkPath;
         private readonly string _companyPath;
-        private readonly int _timeoutSeconds;
         private readonly int _idleTimeoutSeconds;
+        private readonly string? _comercialUsuario;
+        private readonly string _comercialContrasena;
+        private readonly string? _contpaqiUsuario;
+        private readonly string _contpaqiContrasena;
 
-        private bool _isSdkInitialized = false;
-        private bool _isCompanyOpen = false;
-        private DateTime _lastActivityTime = DateTime.MinValue;
+        private bool _sdkIniciado;
+        private bool _empresaAbierta;
+        private DateTimeOffset _ultimaActividad = DateTimeOffset.MinValue;
 
         public bool EsReal => true;
 
-        public bool SesionActiva => _isCompanyOpen;
+        public bool SdkIniciado => _sdkIniciado;
 
-        public ContpaqiSdkGateway(IConfiguration configuration, ILogger<ContpaqiSdkGateway> logger)
+        public bool SesionActiva => _empresaAbierta;
+
+        public ContpaqiSdkGateway(IConfiguration configuration, ILogger<ContpaqiSdkGateway> logger, ISdkNativo nativo, TimeProvider? reloj = null)
         {
             _logger = logger;
+            _nativo = nativo;
+            _reloj = reloj ?? TimeProvider.System;
 
             _sdkPath = configuration["BridgeConfig:SdkPath"] ?? @"C:\Program Files (x86)\Compac\COMERCIAL";
             _companyPath = configuration["BridgeConfig:CompanyPath"] ?? @"C:\Compac\Empresas\adPOLYEMPAQUES";
-            _timeoutSeconds = int.TryParse(configuration["BridgeConfig:TransactionTimeoutSeconds"], out var t) ? t : 8;
             _idleTimeoutSeconds = int.TryParse(configuration["BridgeConfig:IdleSessionTimeoutSeconds"], out var i) ? i : 5;
             // Las dos sesiones de D-108. Solo de variables de entorno (CT-29): BridgeConfig__Sesion__ComercialUsuario, etc.
             _comercialUsuario = configuration["BridgeConfig:Sesion:ComercialUsuario"];
@@ -50,20 +55,20 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
             _contpaqiContrasena = configuration["BridgeConfig:Sesion:ContpaqiContrasena"] ?? string.Empty;
         }
 
-        private readonly string? _comercialUsuario;
-        private readonly string _comercialContrasena;
-        private readonly string? _contpaqiUsuario;
-        private readonly string _contpaqiContrasena;
-
-        public bool AsegurarSesion() => EnsureCompanySessionOpen();
+        /// <summary>El SDK y la empresa listos para un lote: el SDK solo se inicia la primera vez.</summary>
+        public bool AsegurarSesion() => IniciarSdk() && AbrirEmpresa();
 
         public void CerrarSiInactiva()
         {
-            if (_isCompanyOpen && (DateTime.UtcNow - _lastActivityTime).TotalSeconds > _idleTimeoutSeconds)
-                CloseCompanySession();
+            if (_empresaAbierta && (_reloj.GetUtcNow() - _ultimaActividad).TotalSeconds > _idleTimeoutSeconds)
+                CerrarEmpresa();
         }
 
-        public void Apagar() => ShutdownSdk();
+        public void Apagar()
+        {
+            CerrarEmpresa();
+            TerminarSdk();
+        }
 
         public void BombearMensajes() => PumpWin32Messages();
 
@@ -74,142 +79,162 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
         /// </summary>
         public ResultadoEjecucion Ejecutar(string transactionId, ComandoLeido comando)
         {
-            _lastActivityTime = DateTime.UtcNow;
+            _ultimaActividad = _reloj.GetUtcNow();
             return ResultadoEjecucion.Fallo(ErrorContrato.De(CodigosError.SdkError,
                 $"El comando {comando.CommandType} todavía no está implementado contra el SDK real.",
                 new() { ["motivo"] = "COMANDO_NO_IMPLEMENTADO", ["command_type"] = comando.CommandType }));
         }
 
-        private bool EnsureCompanySessionOpen()
+        /// <summary>
+        /// Inicia el SDK una sola vez por proceso, con los dos inicios de sesión de D-108 en este orden:
+        /// Comercial ANTES de fSetNombrePAQ y el usuario centralizado de CONTPAQi DESPUÉS. Sin ellos CONTPAQi
+        /// abre una ventana de ingreso que nadie ve y la llamada espera para siempre (S-02). Sin usuarios
+        /// configurados se usa fInicializaSDK.
+        /// </summary>
+        public bool IniciarSdk()
         {
-            if (_isCompanyOpen) return true;
-
+            if (_sdkIniciado) return true;
             try
             {
-                if (!_isSdkInitialized)
+                if (_nativo.Preparar(_sdkPath) is { } motivo)
                 {
-                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        _logger.LogError("El SDK de CONTPAQi solo existe en Windows: usa el modo Simulated.");
-                        return false;
-                    }
-                    if (Environment.Is64BitProcess)
-                    {
-                        _logger.LogError("[ARCHITECTURE] El proceso es de 64 bits y MGW_SDK.dll es de 32: compila con -p:Bridge32=true (scripts/vps).");
-                        return false;
-                    }
-                    if (!System.IO.File.Exists(System.IO.Path.Combine(_sdkPath, ContpaqiSdkNative.DllName)))
-                    {
-                        _logger.LogError("No está {Dll} en BridgeConfig:SdkPath ({SdkPath}).", ContpaqiSdkNative.DllName, _sdkPath);
-                        return false;
-                    }
+                    LogError(_logger, motivo);
+                    return false;
+                }
+                LogSdk(_logger, _sdkPath);
 
-                    // Igual que sdk-lab, que abrió la empresa en todas las pruebas de la matriz: una sola carpeta,
-                    // la del SDK de Comercial. Mezclar DLL de otros productos (Bancos, AdminPAQ, Facturación)
-                    // carga versiones que no coinciden ("entry point _gSaciEndpointDSL could not be located").
-                    _logger.LogInformation("[ARCHITECTURE CHECK] Proceso x86. SDK de CONTPAQi en {SdkPath}.", _sdkPath);
-                    SetDllDirectory(_sdkPath);
-                    System.IO.Directory.SetCurrentDirectory(_sdkPath);
-
-                    // Dos inicios de sesión, en este orden (D-108, S-02): Comercial ANTES de fSetNombrePAQ y el usuario
-                    // centralizado de CONTPAQi DESPUÉS. Sin ellos CONTPAQi abre una ventana de ingreso que nadie ve
-                    // y la llamada espera para siempre. Sin usuarios configurados se usa fInicializaSDK.
-                    int initErr;
-                    if (!string.IsNullOrEmpty(_comercialUsuario) || !string.IsNullOrEmpty(_contpaqiUsuario))
+                int initErr;
+                if (!string.IsNullOrEmpty(_comercialUsuario) || !string.IsNullOrEmpty(_contpaqiUsuario))
+                {
+                    if (!string.IsNullOrEmpty(_comercialUsuario))
                     {
-                        if (!string.IsNullOrEmpty(_comercialUsuario))
-                        {
-                            _logger.LogInformation("Calling native fInicioSesionSDK('{Usuario}')...", _comercialUsuario);
-                            ContpaqiSdkNative.fInicioSesionSDK(_comercialUsuario, _comercialContrasena);
-                        }
-                        _logger.LogInformation("Calling native fSetNombrePAQ('CONTPAQ I COMERCIAL')...");
-                        initErr = ContpaqiSdkNative.fSetNombrePAQ("CONTPAQ I COMERCIAL");
-                        if (initErr == ContpaqiSdkNative.kSIN_ERRORES && !string.IsNullOrEmpty(_contpaqiUsuario))
-                        {
-                            _logger.LogInformation("Calling native fInicioSesionSDKCONTPAQi('{Usuario}')...", _contpaqiUsuario);
-                            ContpaqiSdkNative.fInicioSesionSDKCONTPAQi(_contpaqiUsuario, _contpaqiContrasena);
-                        }
+                        LogLlamada(_logger, "fInicioSesionSDK");
+                        _nativo.InicioSesionSdk(_comercialUsuario, _comercialContrasena);
                     }
-                    else
+                    LogLlamada(_logger, "fSetNombrePAQ");
+                    initErr = _nativo.SetNombrePaq("CONTPAQ I COMERCIAL");
+                    if (initErr == ContpaqiSdkNative.kSIN_ERRORES && !string.IsNullOrEmpty(_contpaqiUsuario))
                     {
-                        _logger.LogWarning("Sin BridgeConfig__Sesion__*: se usa fInicializaSDK. Si CONTPAQi pide ingreso, la llamada se queda esperando (D-108).");
-                        initErr = ContpaqiSdkNative.fInicializaSDK();
+                        LogLlamada(_logger, "fInicioSesionSDKCONTPAQi");
+                        _nativo.InicioSesionSdkContpaqi(_contpaqiUsuario, _contpaqiContrasena);
                     }
-                    if (initErr != ContpaqiSdkNative.kSIN_ERRORES)
-                    {
-                        _logger.LogError("La inicialización del SDK falló con el código {ErrCode}: {Msg}", initErr, ContpaqiSdkNative.GetErrorMessage(initErr));
-                        return false;
-                    }
-
-                    _isSdkInitialized = true;
-                    _logger.LogInformation("CONTPAQi Native SDK Initialized Successfully.");
+                }
+                else
+                {
+                    LogSinSesion(_logger);
+                    initErr = _nativo.InicializaSdk();
+                }
+                if (initErr != ContpaqiSdkNative.kSIN_ERRORES)
+                {
+                    LogInicioFallo(_logger, initErr, _nativo.MensajeError(initErr));
+                    return false;
                 }
 
-                _logger.LogInformation("Calling native fAbreEmpresa('{CompanyPath}')...", _companyPath);
-                int openErr = ContpaqiSdkNative.fAbreEmpresa(_companyPath);
-                if (openErr == ContpaqiSdkNative.kSIN_ERRORES || openErr == 126209)
+                _sdkIniciado = true;
+                LogIniciado(_logger);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogExcepcion(_logger, ex);
+                return false;
+            }
+        }
+
+        /// <summary>Abre la empresa para un lote. Si ya está abierta no hace nada.</summary>
+        public bool AbrirEmpresa()
+        {
+            if (!_sdkIniciado) return false;
+            if (_empresaAbierta) return true;
+            try
+            {
+                LogLlamada(_logger, "fAbreEmpresa");
+                var err = _nativo.AbreEmpresa(_companyPath);
+                // 126209: la empresa ya está abierta en la sesión activa de Comercial; se sigue con esa.
+                if (err == ContpaqiSdkNative.kSIN_ERRORES || err == 126209)
                 {
-                    if (openErr == 126209)
-                    {
-                        _logger.LogInformation("fAbreEmpresa returned 126209: Company is already open in active CONTPAQi Comercial session. Proceeding with active session.");
-                    }
-                    _isCompanyOpen = true;
-                    _lastActivityTime = DateTime.UtcNow;
+                    _empresaAbierta = true;
+                    _ultimaActividad = _reloj.GetUtcNow();
                     MetricCollectorService.IsSdkSessionActive = true;
-                    _logger.LogInformation("Opened CONTPAQi Company session successfully: {Path}", _companyPath);
+                    LogEmpresaAbierta(_logger, _companyPath);
                     return true;
                 }
-
-                _logger.LogError("Native fAbreEmpresa failed for company path '{Path}' with error code {ErrCode}: {Msg}", _companyPath, openErr, ContpaqiSdkNative.GetErrorMessage(openErr));
+                LogEmpresaFallo(_logger, _companyPath, err, _nativo.MensajeError(err));
                 return false;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to initialize native SDK DLL bindings or open company session");
+                LogExcepcion(_logger, ex);
                 return false;
             }
         }
 
-        private void CloseCompanySession()
+        /// <summary>Cierra la empresa (al vaciarse la cola o por inactividad). El SDK sigue iniciado.</summary>
+        public void CerrarEmpresa()
         {
-            if (_isCompanyOpen)
+            if (!_empresaAbierta) return;
+            try
             {
-                try 
-                { 
-                    _logger.LogInformation("Calling native fCierraEmpresa()...");
-                    ContpaqiSdkNative.fCierraEmpresa(); 
-                } 
-                catch (Exception ex) 
-                { 
-                    _logger.LogWarning(ex, "fCierraEmpresa encountered an exception during close"); 
-                }
-                _isCompanyOpen = false;
-                MetricCollectorService.IsSdkSessionActive = false;
-                _logger.LogInformation("Closed CONTPAQi Company session");
+                LogLlamada(_logger, "fCierraEmpresa");
+                _nativo.CierraEmpresa();
             }
+            catch (Exception ex)
+            {
+                LogCierreExcepcion(_logger, ex);
+            }
+            _empresaAbierta = false;
+            MetricCollectorService.IsSdkSessionActive = false;
+            LogEmpresaCerrada(_logger);
         }
 
-        private void ShutdownSdk()
+        /// <summary>fTerminaSDK, una sola vez, al apagar el proceso.</summary>
+        private void TerminarSdk()
         {
-            CloseCompanySession();
-
-            if (_isSdkInitialized)
+            if (!_sdkIniciado) return;
+            try
             {
-                try 
-                { 
-                    _logger.LogInformation("Calling native fTerminaSDK() on worker thread shutdown...");
-                    ContpaqiSdkNative.fTerminaSDK(); 
-                } 
-                catch (Exception ex) 
-                { 
-                    _logger.LogWarning(ex, "fTerminaSDK encountered an exception during SDK shutdown"); 
-                }
-                _isSdkInitialized = false;
+                LogLlamada(_logger, "fTerminaSDK");
+                _nativo.TerminaSdk();
             }
+            catch (Exception ex)
+            {
+                LogCierreExcepcion(_logger, ex);
+            }
+            _sdkIniciado = false;
         }
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern bool SetDllDirectory(string lpPathName);
+        [LoggerMessage(Level = LogLevel.Error, Message = "{Motivo}")]
+        private static partial void LogError(ILogger logger, string motivo);
+
+        [LoggerMessage(Level = LogLevel.Information, Message = "[ARCHITECTURE CHECK] Proceso x86. SDK de CONTPAQi en {SdkPath}.")]
+        private static partial void LogSdk(ILogger logger, string sdkPath);
+
+        [LoggerMessage(Level = LogLevel.Information, Message = "Llamada nativa {Llamada}")]
+        private static partial void LogLlamada(ILogger logger, string llamada);
+
+        [LoggerMessage(Level = LogLevel.Warning, Message = "Sin BridgeConfig__Sesion__*: se usa fInicializaSDK. Si CONTPAQi pide ingreso, la llamada se queda esperando (D-108).")]
+        private static partial void LogSinSesion(ILogger logger);
+
+        [LoggerMessage(Level = LogLevel.Error, Message = "La inicialización del SDK falló con el código {ErrCode}: {Msg}")]
+        private static partial void LogInicioFallo(ILogger logger, int errCode, string msg);
+
+        [LoggerMessage(Level = LogLevel.Information, Message = "SDK de CONTPAQi iniciado (una vez por proceso).")]
+        private static partial void LogIniciado(ILogger logger);
+
+        [LoggerMessage(Level = LogLevel.Information, Message = "Empresa de CONTPAQi abierta: {Path}")]
+        private static partial void LogEmpresaAbierta(ILogger logger, string path);
+
+        [LoggerMessage(Level = LogLevel.Error, Message = "fAbreEmpresa falló para '{Path}' con el código {ErrCode}: {Msg}")]
+        private static partial void LogEmpresaFallo(ILogger logger, string path, int errCode, string msg);
+
+        [LoggerMessage(Level = LogLevel.Information, Message = "Empresa de CONTPAQi cerrada; el SDK sigue iniciado.")]
+        private static partial void LogEmpresaCerrada(ILogger logger);
+
+        [LoggerMessage(Level = LogLevel.Error, Message = "No se pudo iniciar el SDK ni abrir la empresa")]
+        private static partial void LogExcepcion(ILogger logger, Exception ex);
+
+        [LoggerMessage(Level = LogLevel.Warning, Message = "Excepción al cerrar el SDK o la empresa")]
+        private static partial void LogCierreExcepcion(ILogger logger, Exception ex);
 
         [DllImport("user32.dll")]
         private static extern bool PeekMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);

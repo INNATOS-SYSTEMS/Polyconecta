@@ -24,6 +24,7 @@ namespace Contpaq.Bridge.Tests.Validation
         [Theory]
         [InlineData("traspaso.valido.json")]
         [InlineData("alta-pedido.valido.json")]
+        [InlineData("alta-pedido.valido.con-agente.json")]
         [InlineData("alta-almacen.valido.json")]
         [InlineData("cierre-produccion.valido.json")]
         [InlineData("remision.valido.json")]
@@ -32,6 +33,7 @@ namespace Contpaq.Bridge.Tests.Validation
         [Theory]
         [InlineData("traspaso.invalido.lotes-no-cuadran.json", CodigosError.LotesNoCuadran)]
         [InlineData("alta-pedido.invalido.cliente-no-existe.json", CodigosError.ClienteNoExiste)]
+        [InlineData("alta-pedido.invalido.agente-no-existe.json", CodigosError.AgenteNoExiste)]
         [InlineData("cierre-produccion.invalido.unidad-no-admitida.json", CodigosError.UnidadNoAdmitida)]
         [InlineData("remision.invalido.existencia-insuficiente-lote.json", CodigosError.ExistenciaInsuficienteLote)]
         public async Task Los_ejemplos_invalidos_dan_su_codigo(string ejemplo, string codigo) =>
