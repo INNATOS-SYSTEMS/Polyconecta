@@ -36,6 +36,7 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 - **Nunca** ordena, filtra, agrupa ni pagina en el navegador: todo lo pide al `OrigenDeLista` (§4.1).
 - Hasta F1 el origen es en memoria; en F1, HTTP, sin cambiar la pantalla.
 - Clic en la fila abre el formulario; la casilla no.
+- **Jerarquía:** una lista no sangra filas ni dibuja flechas para mostrar dependencias; la relación se consulta con una agrupación (en Fabricación, "Orden maestra", D-142).
 - **Aspecto:** la barra de búsqueda es blanca, con borde gris y radio de 6 px, como los botones (no es una píldora); al enfocarla, el borde toma el color primario. En la tabla, los encabezados van en peso medio (500) y el contenido en peso normal, a 0.85rem; ni el folio ni los totales van en negrita.
 - **Sin registros:** muestra "No hay registros que mostrar."
 

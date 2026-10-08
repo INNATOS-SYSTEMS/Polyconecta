@@ -4,7 +4,6 @@ import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Router } from '@angular/router';
 import { fechaCampo, n1 } from '../../../core/format/numero';
 import { FiltroLista } from '../../../core/lista/origen';
-import { FABRICACION } from '../../../core/search/views';
 import { UiViewState } from '../../../core/state/ui-view-state';
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { Crumb, OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
@@ -33,7 +32,6 @@ export class FabricacionList {
   private readonly router = inject(Router);
   private readonly acciones = inject(FabricacionAcciones);
   protected readonly viewState = inject(UiViewState);
-  protected readonly vista = FABRICACION;
   protected readonly n1 = n1;
   protected readonly lista = viewChild(OdooList<FilaOf>);
   private readonly celdaFolio = viewChild.required<TemplateRef<{ $implicit: FilaOf }>>('celdaFolio');
@@ -42,6 +40,8 @@ export class FabricacionList {
   readonly pedido = input<string | undefined>(undefined);
 
   protected readonly origen = this.acciones.origen(() => this.pedido());
+  /** FABRICACION más la agrupación "Orden maestra", que muestra la cadena de cada OF (D-142). */
+  protected readonly vista = this.origen.vista;
   protected readonly transiciones = this.acciones.transiciones();
   protected readonly fechaCampo = fechaCampo;
   protected readonly etapas = ETAPAS_OF.map(e => ({ valor: e, titulo: e }));

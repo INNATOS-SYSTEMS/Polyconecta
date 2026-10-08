@@ -31,5 +31,5 @@
     }
 </div>
 
-<!-- Cadena de OF: sangría por nivel, flecha en las hijas e insignia "maestra" en la raíz con hijas. En una línea: Razor recorta los espacios. -->
-<ng-template #celdaFolio let-f><span [style.margin-left.px]="f.nivel * 26">@if (f.nivel > 0) {<pc-odoo-icon nombre="devolucion" class="text-muted me-1" style="opacity:.55;" />}{{ f.folio }}@if (f.maestra) {<span class="badge bg-secondary-subtle text-secondary-emphasis ms-2" style="font-size:.65rem;">maestra</span>}</span></ng-template>
+<!-- Insignia "maestra" en la raíz con hijas. La cadena se ve agrupando por "Orden maestra", sin sangría ni flecha (D-142). En una línea: Razor recorta los espacios. -->
+<ng-template #celdaFolio let-f>{{ f.folio }}@if (f.maestra) {<span class="badge bg-secondary-subtle text-secondary-emphasis ms-2" style="font-size:.65rem;">maestra</span>}</ng-template>
