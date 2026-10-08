@@ -12,7 +12,7 @@
 
 **Input**: Tareas 1.1 a 1.7 del [plan de trabajo](../../../docs/plan/Tarea%20(project.task)%20-%20replaneacion(2).xlsx) y la fila F1 de [ROADMAP.md §3](../../../docs/ROADMAP.md).
 
-**Decisiones que la rigen** (`docs/diseno/decisiones.md`): D-15, D-32 a D-38 (roles, firmas y suplentes), D-52, D-53, D-74, D-78, D-86, D-87, D-88, D-91, D-93, D-108, D-113, D-123, D-124, D-127, D-116 a D-120 (fases y specs), D-134 a D-144 (contratos visuales), D-145 (alcance de F1), D-146 (moneda del pedido, propuesta), D-147 (editar con firmas) y D-148 (grupos y permisos).
+**Decisiones que la rigen** (`docs/diseno/decisiones.md`): D-15, D-32 a D-38 (roles, firmas y suplentes), D-52, D-53, D-74, D-78, D-86, D-87, D-88, D-91, D-93, D-108, D-113, D-123, D-124, D-127, D-116 a D-120 (fases y specs), D-134 a D-144 (contratos visuales), D-145 (alcance de F1), D-146 (moneda del pedido), D-147 (editar con firmas), D-148 (grupos y permisos) y D-149 (domicilios del cliente).
 
 ---
 
@@ -20,7 +20,7 @@
 
 - **Objetivo de la fase.** Atención a Clientes captura un pedido libre en PolyConecta, lo confirma, y lo autorizan Comercial y Cobranza con dos firmas de personas distintas. Para eso la fase entrega usuarios, roles y permisos por planta, la sincronización de productos, clientes y almacenes, la ficha técnica y la clasificación propia del producto, la sesión permanente del bridge con sus lecturas, y la búsqueda, los favoritos y el chatter que usarán todas las pantallas.
 - **Diseño que la sostiene.** [02 §0 y §1](../../../docs/diseno/02-flujo-y-reglas.md) (documento libre, pedido, estados y dos firmas), [02 §6](../../../docs/diseno/02-flujo-y-reglas.md) (unidades), [02 §7](../../../docs/diseno/02-flujo-y-reglas.md) (interfaz), [01 §3](../../../docs/diseno/01-modulos-y-roles.md) (roles, matriz y reglas de fila), [04 §3](../../../docs/diseno/04-modelo-de-dominio.md) (Catálogo de productos, Comercial, Seguridad y auditoría, Configuración de interfaz), [07](../../../docs/diseno/07-contratos-visuales.md) (contratos visuales), CT-13, CT-14, CT-24 a CT-26, CT-40.
-- **Contrato.** Lecturas `GET /catalogs/products`, `/catalogs/clients`, `/catalogs/warehouses` e `/inventory/stocks` (§6 de [`bridge-v1.md`](../../../docs/contratos/bridge-v1.md)). Ningún comando de escritura: `ALTA_PEDIDO` es de F2. Propuesta de cambio compatible (`1.1`): la clasificación de CONTPAQi en la lectura de productos (FR-003).
+- **Contrato.** Lecturas `GET /catalogs/products`, `/catalogs/clients`, `/catalogs/warehouses` e `/inventory/stocks` (§6 de [`bridge-v1.md`](../../../docs/contratos/bridge-v1.md)). Ningún comando de escritura: `ALTA_PEDIDO` es de F2. Propuesta de cambio compatible (`1.1`): la clasificación en la lectura de productos, y la moneda y los domicilios en la de clientes (FR-003).
 - **Interfaz.** Las pantallas de Pedidos (lista, kanban, formulario y "Nuevo") ya existen en `PolyConecta.Web` sobre estado en memoria, armadas con los contratos visuales (spec 011). F1 las conecta a la API sin cambiar su estructura: la lista cambia `OrigenEnMemoria` por `OrigenHttp` (07 §4.1). Las pantallas nuevas (inicio de sesión, usuarios, productos, clientes) se componen con los mismos contratos (CT-24).
 - **Depende de.** F0: contrato `bridge-v1`, base común (auditoría, bitácora, folios y outbox), simulador, aplicación web y CI. Spec 011: contratos visuales.
 - **Objetivo primario y exploración (CT-43).** Esta spec es el objetivo primario de F1. Lo que se descubra al construirla se registra al final, en "Exploración y cambios", y se hace aquí mismo. No se abre otra spec por un ajuste.
@@ -46,7 +46,7 @@ Horas: L1 28 · L2 47 · Común 0. Lo que D-145 agrega (revocación, clasificaci
 | Dentro | Fuera |
 | :--- | :--- |
 | Las tareas del plan de esta fase | El motor de abastecimiento: al autorizar solo cambia el estado; el motor se conecta en F2 |
-| Pedido libre ("Nuevo") con precio, moneda y tipo de cambio | `ALTA_PEDIDO` y el estado de sincronización del pedido (F2). El ícono de sincronización del pedido muestra `No aplica` hasta entonces |
+| Pedido libre ("Nuevo") con precio unitario por línea, y moneda, tipo de cambio y domicilio de entrega en el maestro | `ALTA_PEDIDO` y el estado de sincronización del pedido (F2). El ícono de sincronización del pedido muestra `No aplica` hasta entonces |
 | Revocación de la autorización, sin documentos generados que descartar (D-33, D-145) | Descartar documentos generados al revocar: se agrega en F2, con el motor |
 | Clasificación propia del producto (D-86) y ficha técnica, bloques Rollo y PT (D-145) | **Pedido capturado en CONTPAQi que entra por sincronización** (D-53): fuera de alcance del proyecto por ahora (D-145) |
 | Cotejo de F-01, F-02 y F-05 con la UI de CONTPAQi, junto con 1.4 (T-06, D-145) | Tablero de sincronización (2.7, F2) |
@@ -56,7 +56,7 @@ Horas: L1 28 · L2 47 · Común 0. Lo que D-145 agrega (revocación, clasificaci
 
 - **T-06** (frescura de la lectura de existencias, tarea 1.4): se especifica con la lectura directa de D-87 como supuesto. El cotejo de esta fase la cierra o la deja con su resultado registrado.
 - **P-28** (contrato HTTP de la consulta de listas): se fija en el plan de esta fase con la lista de Pedidos, la primera que lee de la API, y pasa a `docs/diseno/` al cerrar.
-- **D-146** (propuesta): moneda y tipo de cambio por pedido, no por línea, como ya lo fija `ALTA_PEDIDO` en el contrato `1.0` firmado. Se ratifica con la spec.
+- **D-146**: moneda y tipo de cambio por pedido, no por línea, como ya lo fija `ALTA_PEDIDO` en el contrato `1.0`. La moneda se propone con la del cliente y AC la puede cambiar en el maestro.
 - **P-25** (de dónde salen los kg): la meta de producción por línea se captura como dato; su uso en cálculos es de F2 en adelante.
 
 ### Puesta en marcha
@@ -105,7 +105,7 @@ Cada persona entra con su usuario y contraseña de PolyConecta. Los **grupos** s
 3. **Given** el Administrador, **When** crea un usuario y le asigna uno o varios grupos, cada uno con su planta y la marca de suplente, **Then** el usuario entra con los permisos de esos grupos. Un usuario activo tiene al menos un grupo.
 4. **Given** un usuario cuyos grupos no tienen el permiso de una acción, **When** el usuario abre el documento, **Then** la acción aparece deshabilitada con su razón (CT-26); **When** la pide directo a la API, **Then** la API la rechaza con `403` y la misma razón.
 5. **Given** un usuario archivado, **When** intenta entrar, **Then** no puede; sus firmas y transiciones anteriores siguen atribuidas a él.
-6. **Given** un grupo, **When** el Administrador abre sus permisos, **Then** los ve en dos paneles: a la izquierda los disponibles y a la derecha los asignados; los pasa de un lado al otro para asignar o quitar, y al guardar el cambio aplica a todos sus miembros sin tocar código de negocio (01 §3).
+6. **Given** un grupo, **When** el Administrador abre sus permisos, **Then** los ve en dos paneles, a la izquierda los disponibles y a la derecha los asignados, los dos agrupados en árbol por módulo, documento o funcionalidad, y acción; pasa de un lado al otro una acción o un nodo completo (todo un documento o todo un módulo) para asignar o quitar, y al guardar el cambio aplica a todos sus miembros sin tocar código de negocio (01 §3).
 7. **Given** el catálogo de grupos, **When** el Administrador crea un grupo nuevo (por ejemplo, un nivel más de Producción), **Then** puede partir de un grupo existente para copiar sus permisos y ajustarlos.
 
 ---
@@ -120,7 +120,7 @@ Productos, clientes y almacenes llegan de CONTPAQi por el bridge y se mantienen 
 
 **Acceptance Scenarios**:
 
-1. **Given** una base vacía, **When** corre la primera sincronización, **Then** quedan en PolyConecta todos los productos (con clave, nombre, unidad base, si lleva lote y si está activo), clientes y almacenes que lee el bridge, con su `erp_*` (CT-13).
+1. **Given** una base vacía, **When** corre la primera sincronización, **Then** quedan en PolyConecta todos los productos (con clave, nombre, unidad base, si lleva lote y si está activo), clientes (con su moneda y sus domicilios fiscal y de envío) y almacenes que lee el bridge, con su `erp_*` (CT-13).
 2. **Given** una sincronización previa, **When** corre la siguiente, **Then** solo pide lo modificado desde la última (`modified_since`) y actualiza lo que cambió.
 3. **Given** un producto que pasa a inactivo en CONTPAQi, **When** se sincroniza, **Then** se archiva: no aparece al capturar una línea nueva y los pedidos que ya lo tienen no cambian.
 4. **Given** el bridge caído, **When** toca sincronizar, **Then** la sincronización queda en error con su motivo, se reintenta en la siguiente vuelta y no borra ni archiva nada de lo ya sincronizado.
@@ -191,7 +191,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 
 - **FR-001**: Las lecturas de §6 del contrato (`products`, `clients`, `warehouses` e `inventory/stocks`) MUST cumplir lo que el contrato `1.0` marca para F1: paginación con `limit` y `cursor`, `modified_since` en productos y clientes, unidad base y lote en productos, varios productos por consulta en existencias y nombres en `snake_case`.
 - **FR-002**: La suite de contrato (CT-23) MUST cubrir esas lecturas y pasar contra el simulador en CI y contra el bridge real en el VPS.
-- **FR-003**: Se propone el contrato `1.1` (cambio compatible, §8 del contrato) con un campo opcional `clasificacion` en `GET /catalogs/products`: el valor de la clasificación "TIPO DE PRODUCTOS" de CONTPAQi (A-05). Lo aprueban los dos líderes (CT-22); si no se aprueba, la clasificación propia empieza vacía.
+- **FR-003**: Se propone el contrato `1.1` (cambio compatible, §8 del contrato) con tres campos opcionales: `clasificacion` en `GET /catalogs/products`, el valor de la clasificación "TIPO DE PRODUCTOS" de CONTPAQi (A-05); y en `GET /catalogs/clients`, `moneda` (código ISO de la moneda por omisión del cliente, D-146) y `domicilios[]` (los de `admDomicilios` del cliente: tipo fiscal o envío, calle, números, colonia, código postal, ciudad, municipio, estado, país y sucursal, D-149). Lo aprueban los dos líderes (CT-22). Sin `clasificacion`, la clasificación propia empieza vacía; sin `moneda`, el pedido propone la moneda base; sin `domicilios`, el pedido no ofrece domicilio de entrega.
 
 **L1 · Integración (1.1, 1.4)**
 
@@ -199,17 +199,17 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 - **FR-005**: Toda llamada al SDK MUST tener tiempo límite configurable; al vencer, el bridge MUST registrarla con su `correlation_id` y responder con el error del contrato.
 - **FR-006**: El bridge MUST reiniciarse en una ventana diaria configurable, cerrando siempre empresa y SDK (D-91, H-7).
 - **FR-007**: Las lecturas reales MUST salir por SQL de solo lectura (CT-30), con las columnas documentadas en `docs/contpaq/` (Principio VII): existencia por producto y almacén de `admExistenciaCosto` del ejercicio vigente, y por lote de `admCapasProducto` agrupada por número de lote (D-87).
-- **FR-008**: L1 MUST ejecutar F-05 y cotejar F-01 y F-02 con la UI de CONTPAQi en el VPS (T-06), registrar el resultado en la matriz del SDK y llevar la conclusión a `decisiones.md` o a `preguntas-abiertas.md`.
+- **FR-008**: L1 MUST ejecutar F-05 y cotejar F-01 y F-02 con la UI de CONTPAQi en el VPS (T-06), registrar el resultado en la matriz del SDK y llevar la conclusión a `decisiones.md` o a `preguntas-abiertas.md`. Para FR-003 MUST verificar además, con una consulta de solo lectura y la UI: cuál de `admClientes.CIDMONEDA` y `CIDMONEDA2` es la moneda que CONTPAQi propone en los documentos del cliente, y cuántos domicilios de cada tipo tiene un cliente en `admDomicilios` (`CTIPOCATALOGO = 1`).
 
 **L2 · PolyConecta**
 
 *Identidad y permisos (1.2)*
 
 - **FR-009**: PolyConecta MUST autenticar con usuarios propios (ASP.NET Identity, D-32). Toda ruta de la API, salvo el inicio de sesión y el callback del bridge, MUST exigir sesión.
-- **FR-010**: MUST existir `User`, `Group` (catálogo de grupos), `GroupAssignment` (usuario × grupo × planta, con marca de suplente), `Permission` (tipo de documento × acción, catálogo cerrado que define el código) y su asignación a grupos, y `RecordRule` (04 §3, D-148). Los datos iniciales son los diez roles de 01 §3 como grupos, con la matriz de la capa 1 como sus permisos. Un usuario activo MUST tener al menos un grupo.
+- **FR-010**: MUST existir `User`, `Group` (catálogo de grupos), `GroupAssignment` (usuario × grupo × planta, con marca de suplente), `Permission` (módulo › documento o funcionalidad › acción, catálogo cerrado que define el código) y su asignación a grupos, y `RecordRule` (04 §3, D-148). Los datos iniciales son los diez roles de 01 §3 como grupos, con la matriz de la capa 1 como sus permisos. Un usuario activo MUST tener al menos un grupo.
 - **FR-011**: Cada caso de uso MUST verificar el permiso de la acción y las reglas de fila en `Application`, no en la interfaz ni en el controlador (CT-11). La API MUST devolver, por documento, las acciones disponibles y la razón de las que no lo están, para mostrarlas deshabilitadas (CT-26).
 - **FR-012**: `ICurrentUser` MUST dar el usuario de la sesión y el grupo con el que actúa (el "rol ejercido" de CT-32); la auditoría, `StateTransitionLog` y el chatter MUST guardar los dos (CT-32).
-- **FR-013**: El Administrador MUST poder crear, editar y archivar usuarios, asignarles grupos por planta como titular o suplente y restablecer su contraseña; y crear, copiar, editar y archivar grupos y asignarles permisos con **dos paneles con selección de izquierda a derecha** (disponibles y asignados) para asignar o quitar (D-148). Todo con pantallas armadas con los contratos visuales; los dos paneles son un componente nuevo y entran primero a 07 y a la galería `/catalogo` (CT-24).
+- **FR-013**: El Administrador MUST poder crear, editar y archivar usuarios, asignarles grupos por planta como titular o suplente y restablecer su contraseña; y crear, copiar, editar y archivar grupos y asignarles permisos con **dos paneles con selección de izquierda a derecha** (disponibles y asignados) para asignar o quitar, los dos agrupados en árbol **Módulo › Documento o funcionalidad › Acción**, donde se puede mover una acción o un nodo completo (D-148). "Funcionalidad" es lo que no es un documento: sincronización, catálogos, ficha técnica, usuarios y grupos. Todo con pantallas armadas con los contratos visuales; los dos paneles son un componente nuevo y entran primero a 07 y a la galería `/catalogo` (CT-24).
 
 *Catálogos (1.3)*
 
@@ -222,7 +222,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 *Pedido de venta (1.5)*
 
 - **FR-019**: `SalesOrder` y `SalesOrderLine` MUST seguir 04 §3 con `origin = Manual`, heredar la base común y cambiar de estado solo por transiciones nombradas (CT-32). Sus estados son los de 02 §1; en F1 se usan Borrador, Confirmado, Autorizado y Cancelado.
-- **FR-020**: El maestro MUST llevar cliente (sincronizado y activo), orden de compra del cliente, agente, fecha del pedido, fecha estimada de entrega (`promise_date`, D-140), moneda y tipo de cambio (D-146). Cada línea MUST llevar producto activo, cantidad en la unidad base del producto (no editable, D-127), precio unitario (D-74), meta de producción y tolerancia opcionales (02 §1).
+- **FR-020**: El maestro MUST llevar cliente (sincronizado y activo), orden de compra del cliente, agente, fecha del pedido, fecha estimada de entrega (`promise_date`, D-140), domicilio de entrega elegido entre los del cliente (propone el de envío, D-149), moneda (propone la del cliente y AC la puede cambiar) y tipo de cambio (D-146). Cada línea MUST llevar producto activo, cantidad en la unidad base del producto (no editable, D-127), **precio unitario como columna capturable de la captura de líneas** (`[Producto] [Cantidad] [Unidad] [Precio unitario] [Agregar]`, D-74), y meta de producción y tolerancia opcionales (02 §1). El precio es por la unidad base, que es la que viaja a CONTPAQi (`admMovimientos.CPRECIO`).
 - **FR-021**: El folio MUST salir de `IReferenceSequenceService`, con un tipo de documento propio del pedido de venta.
 - **FR-022**: "Confirmar" (AC, Administrador) MUST exigir cliente, al menos una línea y, en cada línea, cantidad mayor que cero y precio; y tipo de cambio si la moneda no es la base.
 - **FR-023**: "Autorizar" MUST ser un solo botón para Comercial y Cobranza que registra la firma del grupo (Comercial o Cobranza) con el que actúa el usuario (titular o suplente). Un grupo no firma dos veces, un grupo sin el permiso de firmar no firma, y **ninguna persona aporta las dos firmas del mismo pedido** (RF-3, RF-4, D-34). La segunda firma pasa el pedido a Autorizado.
@@ -245,7 +245,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 ### Key Entities
 
 - **`User`, `Group`, `GroupAssignment`, `Permission`, `RecordRule`**: identidad y permisos (04 §3, 01 §3, D-148). Los grupos son un catálogo con permisos configurables; la asignación lleva planta y marca de suplente.
-- **`Customer`**: cliente sincronizado de CONTPAQi, de solo lectura.
+- **`Customer`**, **`CustomerAddress`**: cliente sincronizado de CONTPAQi, de solo lectura, con su moneda por omisión y sus domicilios fiscal y de envío (D-149).
 - **`Product`**, **`PackagingUnit`**: producto sincronizado con su unidad base y si lleva lote.
 - **`ProductClassification`**: clasificación de PolyConecta (D-86).
 - **`RollSpecification`**, **`PtSpecification`**: ficha técnica, bloques Rollo y PT.
@@ -296,7 +296,8 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 ## Assumptions
 
 - **Solo pedido libre.** El pedido capturado en CONTPAQi no entra por sincronización (D-145); todo pedido nace en PolyConecta y en F2 se da de alta en CONTPAQi (D-113).
-- **Moneda por pedido.** Moneda y tipo de cambio van en el maestro y el precio en la línea, como `ALTA_PEDIDO` en el contrato `1.0` (D-146, propuesta). Las monedas admitidas son las que el bridge sabe traducir (MXN y USD por omisión).
+- **Moneda por pedido.** Moneda y tipo de cambio van en el maestro y el precio en la línea, como `ALTA_PEDIDO` en el contrato `1.0` (D-146). La moneda se propone con la del cliente y se puede cambiar; el tipo de cambio lo captura AC. Las monedas admitidas son las que el bridge sabe traducir (MXN y USD por omisión).
+- **Domicilio de entrega.** El pedido guarda el domicilio de entrega elegido. Llevarlo a CONTPAQi en `ALTA_PEDIDO` y usarlo en la entrega (F6) se resuelve en esas fases; en F1 es dato del pedido (D-149).
 - **Editar con firmas revoca.** Un pedido con firmas se puede editar en Borrador o Confirmado, pero guardar el cambio revoca la autorización en automático, con aviso previo y registro en el chatter (D-147).
 - **El pedido no tiene planta.** Las reglas de fila por planta (RF-1, RF-2) se construyen como mecanismo y se prueban, pero su primera entidad con planta es la OF (F2). En F1 aplican RF-3 y RF-4 al pedido.
 - **Los permisos son configurables por grupo.** El catálogo de permisos (tipo de documento × acción) lo define el código; qué permisos tiene cada grupo es dato y lo edita el Administrador (D-148).
@@ -313,8 +314,10 @@ Las secciones anteriores son el **objetivo primario** de la fase, fijado al rati
 | Fecha | Camino | Cambio | Motivo | Impacto (requisitos y tareas) | Decisión |
 | :--- | :---: | :--- | :--- | :--- | :---: |
 | 2026-10-08 | Común | Alcance del "Diseño sin tarea en el plan": el pedido sincronizado queda fuera de alcance; la revocación, la clasificación propia, la ficha técnica y el cotejo de T-06 entran en F1 | Decisión del usuario al completar la spec | US1, US3, US5; FR-008, FR-017, FR-018, FR-025 | D-145 |
-| 2026-10-08 | Común | Moneda y tipo de cambio por pedido, no por línea, alineado con `ALTA_PEDIDO` del contrato `1.0` | D-74 y 04 §3 dicen "por línea"; el contrato firmado lleva una moneda por documento | FR-020, FR-022 | D-146 (propuesta) |
-| 2026-10-08 | Común | Propuesta de contrato `1.1`: `clasificacion` opcional en la lectura de productos | La clasificación de CONTPAQi es el valor inicial de D-86, pero el contrato no la lee | FR-003, FR-017 | Pendiente de los dos líderes |
+| 2026-10-08 | Común | Moneda y tipo de cambio por pedido, no por línea, alineado con `ALTA_PEDIDO` del contrato `1.0` | D-74 y 04 §3 dicen "por línea"; el contrato firmado lleva una moneda por documento | FR-020, FR-022 | D-146 |
+| 2026-10-08 | Común | Propuesta de contrato `1.1`: `clasificacion` opcional en la lectura de productos; `moneda` y `domicilios[]` en la de clientes | La clasificación de CONTPAQi es el valor inicial de D-86, la moneda del cliente propone la del pedido (D-146) y los domicilios definen la entrega (D-149); el contrato no lee ninguno | FR-003, FR-008, FR-017, FR-020 | Pendiente de los dos líderes |
 | 2026-10-08 | L2 | Editar un pedido con firmas revoca la autorización en automático, con aviso antes de guardar y registro en el chatter; sustituye "la primera firma bloquea la edición" | Revisión de supuestos con el usuario | US1, FR-024, casos límite | D-147 |
 | 2026-10-08 | L2 | Grupos como catálogo con permisos configurables, un grupo por nivel, y asignación de permisos con dos paneles de izquierda a derecha; el componente de dos paneles entra a 07 y a la galería | Revisión de supuestos con el usuario | US2, FR-010, FR-013 | D-148 |
 | 2026-10-08 | L2 | "Sincronizar ahora" por catálogo y en general | Revisión de supuestos con el usuario | US3, FR-014 | — |
+| 2026-10-08 | Común | La moneda del pedido se propone con la del cliente y se cambia en el maestro; el pedido lleva domicilio de entrega elegido entre los del cliente sincronizados; el precio unitario es columna de la captura de líneas (verificado: `aPrecio` de `tMovimiento` y S-14) | Revisión con el usuario | FR-003, FR-008, FR-020 | D-146, D-149 |
+| 2026-10-08 | L2 | En los dos paneles de permisos, los permisos se agrupan en árbol Módulo › Documento o funcionalidad › Acción | Revisión con el usuario | US2, FR-013 | D-148 |

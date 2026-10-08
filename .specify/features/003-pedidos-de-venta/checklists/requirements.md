@@ -24,9 +24,9 @@
 
 - [x] Cada requisito tiene su escenario o criterio
 - [x] Las historias cubren el flujo principal (pedido libre con dos firmas)
-- [ ] Ratificada por los dos líderes, con D-146 y el contrato `1.1` (FR-003)
+- [ ] Ratificada por los dos líderes, con el contrato `1.1` (FR-003)
 
 ## Notas
 
-- Pendiente de ratificar: D-146 (moneda por pedido) y la propuesta de contrato `1.1`.
+- Pendiente de ratificar: la propuesta de contrato `1.1` (clasificación, moneda y domicilios). D-146 la validó el usuario el 8-oct.
 - P-28 se resuelve en el plan, no en la spec.
