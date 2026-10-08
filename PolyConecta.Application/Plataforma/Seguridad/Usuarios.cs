@@ -157,3 +157,23 @@ public sealed class RestablecerContrasenaCaso(IAlmacen<User> usuarios, ICredenci
         return Unit.Value;
     }
 }
+
+/// <summary>Liga el usuario a su agente de CONTPAQi; el pedido lo propone (D-153). Null lo desliga.</summary>
+public sealed record LigarAgente(long Id, long? AgenteId) : IRequierePermiso
+{
+    public string Permiso => Permisos.UsuariosLigarAgente;
+}
+
+public sealed class LigarAgenteCaso(IAlmacen<User> usuarios, IAlmacen<Domain.Ventas.ErpAgent> agentes, CatalogoDeSeguridad catalogo, IUnitOfWork uow)
+    : IUseCase<LigarAgente, UsuarioDetalle>
+{
+    public async Task<UsuarioDetalle> ExecuteAsync(LigarAgente request, CancellationToken cancellationToken = default)
+    {
+        var usuario = await usuarios.ObtenerAsync(request.Id, "el usuario", cancellationToken);
+        if (request.AgenteId is { } id && !await agentes.ExisteAsync(a => a.Id == id, cancellationToken: cancellationToken))
+            throw new ValidacionException([new ErrorValidacion("agenteId", "El agente no existe o ya no está en CONTPAQi.")]);
+        usuario.LigarAgente(request.AgenteId);
+        await uow.SaveChangesAsync(cancellationToken);
+        return await catalogo.DetalleAsync(usuario, cancellationToken);
+    }
+}

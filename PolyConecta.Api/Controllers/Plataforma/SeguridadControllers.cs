@@ -38,6 +38,11 @@ public sealed class UsuariosController(IServiceProvider servicios) : ControllerB
     [HttpPost("{id:long}/restaurar")]
     public Task<UsuarioDetalle> Restaurar(long id, CancellationToken ct) => Ejecutar<ArchivarUsuario, UsuarioDetalle>(new(id, false), ct);
 
+    public sealed record AgenteRequest(long? AgenteId);
+
+    [HttpPut("{id:long}/agente")]
+    public Task<UsuarioDetalle> Agente(long id, AgenteRequest r, CancellationToken ct) => Ejecutar<LigarAgente, UsuarioDetalle>(new(id, r.AgenteId), ct);
+
     [HttpPost("{id:long}/contrasena")]
     public async Task<IActionResult> Contrasena(long id, ContrasenaRequest r, CancellationToken ct)
     {

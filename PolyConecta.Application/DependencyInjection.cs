@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddUseCase<EditarUsuario, UsuarioDetalle, EditarUsuarioCaso>();
         services.AddUseCase<ArchivarUsuario, UsuarioDetalle, ArchivarUsuarioCaso>();
         services.AddUseCase<RestablecerContrasena, Unit, RestablecerContrasenaCaso>();
+        services.AddUseCase<LigarAgente, UsuarioDetalle, LigarAgenteCaso>();
         services.AddUseCase<ObtenerGrupo, GrupoDetalle, ObtenerGrupoCaso>();
         services.AddUseCase<ArbolDePermisos, IReadOnlyList<ModuloDePermiso>, ArbolDePermisosCaso>();
         services.AddUseCase<CrearGrupo, GrupoDetalle, CrearGrupoCaso>();

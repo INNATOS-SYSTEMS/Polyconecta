@@ -168,4 +168,27 @@ public class UsuariosYGruposTests(SqlServerFixture sql)
             .StatusCode.Should().Be(HttpStatusCode.NoContent);
         await api.ClienteAsync("cobranza1", "Nueva2026x");
     }
+
+    [Fact]
+    public async Task D153_el_Administrador_liga_el_usuario_a_su_agente_de_CONTPAQi()
+    {
+        var (entorno, api, admin, _) = await LevantarAsync(sql);
+        await using var _ = api;
+        var id = await api.CrearUsuarioAsync("ac1", "Celia Villarreal", (GruposIniciales.AtencionClientes, "PIM", false));
+        long agente;
+        await using (var db = entorno.Contexto())
+        {
+            var a = new PolyConecta.Domain.Ventas.ErpAgent(3, "AG-01", "Celia Villarreal", PolyConecta.Domain.Ventas.TipoAgente.Venta);
+            db.AgentesErp.Add(a);
+            await db.SaveChangesAsync();
+            agente = a.Id;
+        }
+
+        var u = await JsonAsync(await admin.PutAsJsonAsync($"/api/v1/plataforma/usuarios/{id}/agente", new { agenteId = agente }));
+        u["agenteId"]!.GetValue<long>().Should().Be(agente);
+        (await admin.PutAsJsonAsync($"/api/v1/plataforma/usuarios/{id}/agente", new { agenteId = 999_999 })).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var ac = await api.ClienteAsync("ac1");
+        (await ac.PutAsJsonAsync($"/api/v1/plataforma/usuarios/{id}/agente", new { agenteId = agente })).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 }
