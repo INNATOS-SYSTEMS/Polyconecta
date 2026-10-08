@@ -51,6 +51,8 @@ dbInit.Initialize();
 // Lo común a los dos modos (D-122): API, outbox, validaciones, idempotencia y callbacks.
 builder.Services.AddSingleton(logStreamService);
 builder.Services.AddSingleton(opciones);
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<ICierreProceso, CierreProceso>();
 builder.Services.AddSingleton<IOutboxRepository>(new OutboxRepository(sqliteConn));
 builder.Services.AddSingleton<ConfiguracionConceptos>();
 builder.Services.AddSingleton<ValidadorComandos>();
@@ -74,6 +76,12 @@ if (opciones.Mode == BridgeMode.Real)
     int? clasificacionProductos = int.TryParse(config["BridgeConfig:Clasificacion:Productos"], out var clasif) ? clasif : null;
     builder.Services.AddSingleton<IReadRepository>(sp =>
         new SqlContractReadRepository(sqlConn, sp.GetRequiredService<ConfiguracionConceptos>(), clasificacionProductos));
+    // Reinicio diario (FR-006, L1-T004): solo en modo real; el simulador no se reinicia solo.
+    builder.Services.AddSingleton(sp => new ReinicioDiario(config["BridgeConfig:ReinicioDiario"], sp.GetRequiredService<TimeProvider>()));
+    // Cada llamada nativa corre bajo el vigilante de tiempo límite (FR-005, L1-T003); el OutboxWorker le pone el AlVencer.
+    var timeoutSdk = TimeSpan.FromSeconds(int.TryParse(config["BridgeConfig:Sdk:TimeoutSegundos"], out var ts) && ts > 0 ? ts : 60);
+    builder.Services.AddSingleton(sp => new VigilanteSdk(timeoutSdk, sp.GetRequiredService<TimeProvider>()));
+    builder.Services.AddSingleton<ISdkNativo>(sp => new SdkNativoVigilado(new SdkNativo(), sp.GetRequiredService<VigilanteSdk>()));
     builder.Services.AddSingleton<ISdkGateway, ContpaqiSdkGateway>();
 }
 else
@@ -166,7 +174,8 @@ app.MapGet("/health", (ISdkGateway gateway) => Results.Ok(new
     mode = opciones.Mode.ToString(),
     contract_version = Contrato.VersionActual,
     worker_architecture = Environment.Is64BitProcess ? "x64" : "x86",
-    sdk_initialized = gateway.SesionActiva,
+    sdk_initialized = gateway.SdkIniciado,
+    company_open = gateway.SesionActiva,
     circuit_state = MetricCollectorService.CircuitState,
     timestamp = DateTime.UtcNow.ToString("o"),
 }));
