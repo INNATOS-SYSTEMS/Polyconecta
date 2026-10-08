@@ -89,7 +89,7 @@ Implementa `ControlValueAccessor`. "Buscar más…" abre un diálogo con `pc-odo
 | :--- | :--- |
 | `reintentar()` | Sistemas pulsa "Reintentar" |
 
-Solo en los documentos que envían un comando a CONTPAQi, arriba del chatter: un ícono por estado y un popover con el título y el detalle (contratos visuales §1.8). En esta spec se construye y se muestra en la galería con los cinco estados; ningún documento lo usa todavía, porque la réplica no sincroniza. F1 lo conecta.
+Solo en los documentos que envían un comando a CONTPAQi, en el extremo derecho de la barra de acciones (la línea de Confirmar y Cancelar): un ícono por estado y un popover con el título y el detalle (contratos visuales §1.8). En esta spec se construye y se muestra en la galería con los cinco estados; ningún documento lo usa todavía, porque la réplica no sincroniza. F1 lo conecta.
 
 ---
 

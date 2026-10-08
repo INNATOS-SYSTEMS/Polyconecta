@@ -14,7 +14,7 @@
             <div class="d-flex align-items-center gap-2">
                 @if (of.state === 'Borrador') {
                     <button class="btn btn-primary btn-sm fw-bold px-3" (click)="confirmar()" [disabled]="of.componentes.length === 0">
-                        <pc-odoo-icon nombre="bi-check-circle" /> Confirmar
+                        Confirmar
                     </button>
                     <button class="btn btn-outline-secondary btn-sm px-3" (click)="volverALista()">Cancelar</button>
                 } @else if (of.state !== 'Hecho') {

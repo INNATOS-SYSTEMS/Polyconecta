@@ -21,6 +21,9 @@ const dos = (n: number) => String(n).padStart(2, '0');
 /** `dd MMM yy`: 23 sept 26. */
 export const fechaCorta = (d: Date): string => `${dos(d.getDate())} ${MESES[d.getMonth()]} ${dos(d.getFullYear() % 100)}`;
 
+/** Como el campo de fecha (contratos visuales §1.6): 7 oct 2026. */
+export const fechaCampo = (d: Date): string => `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
+
 /** `dd-MMM-yy`: 05-may-26. */
 export const fechaGuion = (d: Date): string => `${dos(d.getDate())}-${MESES[d.getMonth()]}-${dos(d.getFullYear() % 100)}`;
 

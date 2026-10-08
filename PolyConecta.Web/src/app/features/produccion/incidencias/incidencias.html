@@ -19,7 +19,7 @@
         <div class="col-md-3"><label class="form-label small text-muted">Comentarios</label><input class="form-control form-control-sm o_inline_input" [value]="comentarios()" (change)="comentarios.set(valor($event))" /></div>
         <div class="col-md-1"><label class="form-label small text-muted">Inicio</label><input class="form-control form-control-sm o_inline_input" [value]="horaInicio()" (change)="horaInicio.set(valor($event))" placeholder="19:00" /></div>
         <div class="col-md-1"><label class="form-label small text-muted">Fin</label><input class="form-control form-control-sm o_inline_input" [value]="horaFin()" (change)="horaFin.set(valor($event))" placeholder="07:00" /></div>
-        <div class="col-md-3"><button class="btn btn-sm btn-outline-primary w-100" (click)="agregar()"><pc-odoo-icon nombre="nuevo" /> Agregar Incidencia</button></div>
+        <div class="col-md-3"><button class="btn btn-sm btn-outline-primary w-100" (click)="agregar()">Agregar Incidencia</button></div>
     </div>
 
     @if (viewState.viewMode() === 'Kanban') {

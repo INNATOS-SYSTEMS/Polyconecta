@@ -9,6 +9,8 @@ export interface PedidoEjemplo {
   estado: string;
   total: number;
   fecha: Date;
+  /** Fecha estimada de entrega. */
+  entrega: Date;
 }
 
 export interface ProductoEjemplo {
@@ -29,6 +31,7 @@ export function pedidosEjemplo(): PedidoEjemplo[] {
     estado: ESTADOS[(i * 7) % ESTADOS.length],
     total: 1000 + ((i * 3779) % 50000),
     fecha: new Date(2026, 9, 1 + (i % 28)),
+    entrega: new Date(2026, 9, 8 + (i % 28) + (i % 3) * 7),
   }));
 }
 

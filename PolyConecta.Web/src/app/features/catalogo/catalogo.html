@@ -25,10 +25,15 @@
       <h2>Lista · <code>pc-odoo-list</code> con <code>pc-odoo-search-panel</code></h2>
       <p>57 pedidos de ejemplo. Ordena, filtra, agrupa, pagina, elige columnas, selecciona, exporta y guarda favoritos; todo lo resuelve el origen de datos.</p>
       <div class="o_control_panel px-0">
+        <div class="d-flex align-items-center gap-3">
+          <pc-boton-nuevo [ruta]="'/catalogo'" />
+          <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos' }]" />
+        </div>
         <pc-odoo-search-panel [view]="vista" [(texto)]="busqueda" [(filtrosActivos)]="nombrados" [(agrupacionesActivas)]="agrupaciones"
                               [permiteAgrupar]="true" [conFavoritos]="true" [favoritos]="lista.favoritos()"
                               (guardarFavorito)="lista.guardarFavorito($event.nombre, $event.porOmision)"
                               (aplicarFavorito)="lista.aplicarFavorito($event)" (borrarFavorito)="lista.borrarFavorito($event)" />
+        <div class="d-flex align-items-center gap-2"><pc-odoo-view-switcher /></div>
       </div>
       <pc-odoo-list #lista lista="catalogo.pedidos" [tamanoInicial]="20" [origen]="origen" [columnas]="columnas" [idDe]="idPedido"
                     [(busqueda)]="busqueda" [(nombrados)]="nombrados" [(agruparPor)]="agrupaciones"
@@ -49,16 +54,19 @@
                       (movida)="ultimoEvento.set($event.fila.folio + ': ' + $event.desde + ' → ' + $event.hacia); lista.recargar()"
                       (rechazada)="ultimoEvento.set($event.motivo)" (abrir)="ultimoEvento.set('Abrir ' + $event.folio)" />
       <ng-template #tarjeta let-p>
-        <div class="fw-bold text-dark small">{{ p.folio }}</div>
+        <div class="o_kanban_card_cabecera">
+          <div class="fw-semibold text-dark small">{{ p.folio }}</div>
+          <span class="badge badge-brand">{{ p.estado }}</span>
+        </div>
         <div class="text-muted small">{{ p.cliente }}</div>
-        <div class="badge badge-brand mt-2">{{ p.estado }}</div>
+        <div class="o_kanban_card_dato" data-catalogo="entrega"><pc-odoo-icon nombre="calendario" />Entrega estimada: {{ fechaCampo(p.entrega) }}</div>
       </ng-template>
     </section>
 
     <!-- ============================================================ Formulario -->
     <section class="o_catalogo_seccion" id="formulario" data-catalogo="formulario">
       <h2>Formulario de documento</h2>
-      <p>Panel (Nuevo, migas con el engranaje de acciones al final, botones inteligentes), barra de acciones y etapas, hoja con pestañas, captura de líneas y chatter con el estado de sincronización arriba. El botón inteligente "Pedido" está deshabilitado: así se ve un documento libre sin origen.</p>
+      <p>Panel (Nuevo, migas con el engranaje de acciones al final, botones inteligentes), barra de acciones con el estado de sincronización a la derecha, etapas, hoja con pestañas, captura de líneas y chatter. El botón inteligente "Pedido" está deshabilitado: así se ve un documento libre sin origen.</p>
       <div class="o_control_panel px-0">
         <div class="d-flex align-items-center gap-3">
           <pc-boton-nuevo [ruta]="'/catalogo'" />
@@ -70,9 +78,11 @@
       </div>
       <div class="o_statusbar">
         <div class="d-flex gap-2 align-items-center">
-          <button type="button" class="btn btn-primary"><pc-odoo-icon nombre="confirmar" />Confirmar</button>
+          <button type="button" class="btn btn-primary">Confirmar</button>
           <button type="button" class="btn btn-outline-secondary">Cancelar</button>
         </div>
+        <!-- Solo en documentos que envían un comando a CONTPAQi (contratos visuales §1.8). -->
+        <pc-odoo-sync-status estado="Pendiente" />
       </div>
       <div class="d-flex gap-3 align-items-start">
         <div class="o_form_sheet flex-grow-1">
@@ -102,8 +112,6 @@
           </div>
         </div>
         <div style="width:340px">
-          <!-- Solo en documentos que envían un comando a CONTPAQi (contratos visuales §1.8). -->
-          <div class="o_chatter_cabecera"><pc-odoo-sync-status estado="Pendiente" /></div>
           <pc-odoo-chatter-drawer [(messages)]="mensajes" />
         </div>
       </div>
@@ -146,10 +154,10 @@
           <pc-odoo-number nombre="Merma" tipo="porcentaje" [decimales]="1" [(ngModel)]="porcentaje" />
         </div>
         <div class="o_catalogo_campo">
-          <label>Selección de lotes</label>
+          <label>Líneas de otro documento</label>
           <div class="d-flex gap-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" data-catalogo="abrir-lotes" (click)="verLotes.set(true)"><pc-odoo-icon nombre="lotes" />Lotes</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" data-catalogo="abrir-cantidades" (click)="verCantidades.set(true)"><pc-odoo-icon nombre="lotes" />Lotes y cantidades</button>
+            <button type="button" class="btn btn-sm o_btn_link" data-catalogo="abrir-lotes" (click)="verLotes.set(true)"><pc-odoo-icon nombre="lotes" />Seleccionar líneas</button>
+            <button type="button" class="btn btn-sm o_btn_link" data-catalogo="abrir-cantidades" (click)="verCantidades.set(true)"><pc-odoo-icon nombre="lotes" />Seleccionar con cantidades</button>
           </div>
           <div class="small mt-1" data-catalogo="lotes">{{ lotesElegidos.join(', ') || '—' }}</div>
           <pc-lot-picker-modal [show]="verLotes()" [availableLots]="lotes" [(selectedFolios)]="lotesElegidos" [requiredQty]="1500" unidad="PZA" (closed)="verLotes.set(false)" />
@@ -198,9 +206,9 @@
         <span class="o_catalogo_estado">Reposo</span><span class="o_catalogo_estado">Foco</span><span class="o_catalogo_estado">Deshabilitado</span>
         <span class="o_catalogo_estado">Cargando</span>
         <strong>Primario</strong>
-        <div><button type="button" class="btn btn-primary"><pc-odoo-icon nombre="confirmar" />Confirmar</button></div>
-        <div><button type="button" class="btn btn-primary" style="box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--focus-ring)"><pc-odoo-icon nombre="confirmar" />Confirmar</button></div>
-        <div><button type="button" class="btn btn-primary" disabled><pc-odoo-icon nombre="confirmar" />Confirmar</button></div>
+        <div><button type="button" class="btn btn-primary">Confirmar</button></div>
+        <div><button type="button" class="btn btn-primary" style="box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--focus-ring)">Confirmar</button></div>
+        <div><button type="button" class="btn btn-primary" disabled>Confirmar</button></div>
         <div><button type="button" class="btn btn-primary o_btn_loading" aria-busy="true"><pc-odoo-icon nombre="cargando" />Confirmando…</button></div>
         <strong>Secundario</strong>
         <div><button type="button" class="btn btn-outline-secondary">Cancelar</button></div>

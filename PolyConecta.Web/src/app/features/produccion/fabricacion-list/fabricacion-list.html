@@ -17,9 +17,12 @@
         <pc-odoo-kanban #kanban [origen]="origen" campoEtapa="estado" [etapas]="etapas" [transiciones]="transiciones" [tarjeta]="tarjeta"
                         [idDe]="idOf" [etapaDe]="etapaOf" [nombrados]="filtros()" [busqueda]="searchText()" [filtros]="filtroPedido()" (abrir)="abrir($event)" />
         <ng-template #tarjeta let-f>
-            <div class="fw-bold text-dark small">{{ f.folio }}</div>
+            <div class="o_kanban_card_cabecera">
+                <div class="fw-semibold text-dark small">{{ f.folio }}</div>
+                <span class="badge badge-brand">{{ f.estado }}</span>
+            </div>
             <div class="text-muted small">{{ f.proceso }}</div>
-            <div class="badge badge-brand mt-2">{{ f.estado }}</div>
+            <div class="o_kanban_card_dato"><pc-odoo-icon nombre="calendario" />Fecha esperada: {{ fechaCampo(f.of.fechaEsperada) }}</div>
         </ng-template>
         <pc-odoo-pager [count]="kanban.total()" />
     } @else {

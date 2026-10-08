@@ -33,7 +33,7 @@
     }
     <div class="col-12 col-md-2 d-flex gap-1">
       <button class="btn btn-sm btn-primary flex-grow-1" (click)="submit()" [disabled]="!valido()">
-        <i class="bi" [class.bi-check-lg]="enEdicion()" [class.bi-plus-lg]="!enEdicion()"></i> {{ enEdicion() ? 'Guardar' : 'Agregar' }}
+        {{ enEdicion() ? 'Guardar' : 'Agregar' }}
       </button>
       @if (enEdicion()) {
         <button class="btn btn-sm btn-light border" title="Cancelar" (click)="cancelled.emit()">

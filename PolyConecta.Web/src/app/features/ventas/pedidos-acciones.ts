@@ -12,6 +12,8 @@ import { FirmaPedido } from './firma-pedido';
 export interface FilaPedido extends SalesOrderRow {
   id: string;
   cantidad: string;
+  /** Fecha estimada de entrega; la tarjeta del kanban la muestra. */
+  entrega: Date | null;
   pedido: SalesOrder;
 }
 
@@ -58,6 +60,7 @@ export class PedidosAcciones {
         producto: linea?.clave ?? '',
         estado: p.stage,
         cantidad: linea ? `${n1(linea.cantidad)} ${linea.unidad}` : '',
+        entrega: p.fechaPromesa,
         pedido: p,
       };
     });

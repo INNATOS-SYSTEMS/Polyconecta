@@ -26,6 +26,7 @@ export const pedidoSemilla = (): SalesOrder =>
     agente: 'Celia Villarreal',
     contpaqId: '26200',
     cantidadPedido: 5500,
+    fechaPromesa: new Date(2026, 9, 30),
     lineas: [{ clave: 'PT1113 C567', producto: 'BOLSA MEDIANA 44X84 C.430 BOL-004 [77]', cantidad: 5500, unidad: 'PZA', precioUnitario: 5.7 }],
     procesos: [
       { proceso: 'Extrusion', activo: true, origen: 'PIM', producto: 'PT3413 C455' },

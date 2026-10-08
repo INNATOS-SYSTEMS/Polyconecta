@@ -4,6 +4,7 @@ import { PEDIDOS } from '../../../core/search/views';
 import { UiViewState } from '../../../core/state/ui-view-state';
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
+import { fechaCampo } from '../../../core/format/numero';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooKanban } from '../../../shared/odoo-kanban/odoo-kanban';
 import { ColumnaLista } from '../../../shared/odoo-list/columnas';
@@ -29,6 +30,7 @@ export class PedidosList {
 
   protected readonly origen = this.acciones.origen();
   protected readonly transiciones = this.acciones.transiciones();
+  protected readonly fechaCampo = fechaCampo;
   protected readonly etapas = ETAPAS_PEDIDO.map(e => ({ valor: e, titulo: e }));
   protected readonly idPedido = (f: FilaPedido) => f.id;
   protected readonly etapaPedido = (f: FilaPedido) => f.estado;

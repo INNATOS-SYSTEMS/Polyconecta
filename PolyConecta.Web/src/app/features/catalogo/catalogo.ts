@@ -1,3 +1,4 @@
+import { fechaCampo } from '../../core/format/numero';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DIALOG_DATA, Dialog, DialogRef } from '@angular/cdk/dialog';
@@ -100,6 +101,7 @@ export class Catalogo {
   protected readonly origenVacio = new OrigenEnMemoria<PedidoEjemplo>({ datos: () => [], id: p => p.id });
   protected readonly idPedido = (p: PedidoEjemplo) => p.id;
   protected readonly etapaPedido = (p: PedidoEjemplo) => p.estado;
+  protected readonly fechaCampo = fechaCampo;
   protected readonly columnas: ColumnaLista<PedidoEjemplo>[] = [
     { campo: 'folio', titulo: 'Folio', clase: 'fw-semibold text-primary' },
     { campo: 'cliente', titulo: 'Cliente' },

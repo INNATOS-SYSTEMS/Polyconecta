@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { n1 } from '../../../core/format/numero';
+import { fechaCampo, n1 } from '../../../core/format/numero';
 import { FiltroLista } from '../../../core/lista/origen';
 import { FABRICACION } from '../../../core/search/views';
 import { UiViewState } from '../../../core/state/ui-view-state';
@@ -39,6 +39,7 @@ export class FabricacionList {
 
   protected readonly origen = this.acciones.origen(() => this.pedido());
   protected readonly transiciones = this.acciones.transiciones();
+  protected readonly fechaCampo = fechaCampo;
   protected readonly etapas = ETAPAS_OF.map(e => ({ valor: e, titulo: e }));
   protected readonly idOf = (f: FilaOf) => f.id;
   protected readonly etapaOf = (f: FilaOf) => f.estado;
