@@ -65,7 +65,16 @@ public static class DependencyInjection
         services.AddSingleton<IClock, SystemClock>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUserDesdeCookie>();
+        services.AddAlmacenes();
+        return services;
+    }
+
+    /// <summary>Permisos del usuario, reglas de fila y almacenes genéricos de los agregados (R-02).</summary>
+    public static IServiceCollection AddAlmacenes(this IServiceCollection services)
+    {
         services.AddScoped<IPermisosDelUsuario, PermisosDelUsuario>();
+        services.AddScoped(typeof(PolyConecta.Application.Plataforma.Seguridad.ReglasDeFila<>));
+        services.AddScoped(typeof(IAlmacen<>), typeof(PolyConecta.Infrastructure.Persistence.Almacenes.AlmacenEf<>));
         return services;
     }
 
