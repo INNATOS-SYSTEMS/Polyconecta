@@ -54,16 +54,18 @@ Toda petición que escribe lleva `X-Requested-With: PolyConecta` (R-01) y propag
 
 ## Catálogos
 
+Con el prefijo de su módulo (D-155): productos, clasificaciones y almacenes son de Inventario; clientes y agentes, de Ventas.
+
 | Método y ruta | Qué hace | Permiso |
 | :--- | :--- | :--- |
-| `GET /api/v1/catalogos/productos/{id}` | Producto con unidad, clasificación y ficha técnica | `catalogos.producto.leer` |
-| `PUT /api/v1/catalogos/productos/{id}/clasificacion` | `{ clasificacionId }` | `catalogos.producto.clasificar` |
-| `PUT /api/v1/catalogos/productos/{id}/ficha-tecnica` | `{ rollo: {…}, pt: {…} }`, los dos (FR-018) | `catalogos.ficha.editar` |
-| `GET /api/v1/catalogos/clasificaciones` · `POST` · `PUT /{id}` | Catálogo de clasificación (D-86) | leer / `catalogos.producto.clasificar` |
-| `GET /api/v1/catalogos/clientes/{id}` | Cliente con moneda y domicilios | `catalogos.cliente.leer` |
-| `GET /api/v1/catalogos/clientes/buscar?texto=` | Para el selector del pedido: activos, hasta 20, con moneda y domicilios | `ventas.pedido.crear` |
-| `GET /api/v1/catalogos/productos/buscar?texto=` | Para la captura de líneas: activos, hasta 20, con unidad base | `ventas.pedido.crear` |
-| `GET /api/v1/catalogos/almacenes` | Almacenes de CONTPAQi sincronizados | `catalogos.almacen.leer` |
+| `GET /api/v1/inventario/productos/{id}` | Producto con unidad, clasificación y ficha técnica | `inventario.producto.leer` |
+| `PUT /api/v1/inventario/productos/{id}/clasificacion` | `{ clasificacionId }` | `inventario.producto.clasificar` |
+| `PUT /api/v1/inventario/productos/{id}/ficha-tecnica` | `{ rollo: {…}, pt: {…} }`, los dos (FR-018) | `inventario.ficha.editar` |
+| `GET /api/v1/inventario/clasificaciones` · `POST` · `PUT /{id}` | Catálogo de clasificación (D-86) | leer / `inventario.producto.clasificar` |
+| `GET /api/v1/ventas/clientes/{id}` | Cliente con moneda y domicilios | `ventas.cliente.leer` |
+| `GET /api/v1/ventas/clientes/buscar?texto=` | Para el selector del pedido: activos, hasta 20, con moneda y domicilios | `ventas.pedido.crear` |
+| `GET /api/v1/inventario/productos/buscar?texto=` | Para la captura de líneas: activos, hasta 20, con unidad base | `ventas.pedido.crear` |
+| `GET /api/v1/inventario/almacenes` | Almacenes de CONTPAQi sincronizados | `inventario.almacen.leer` |
 | `GET /api/v1/ventas/agentes` | Agentes de CONTPAQi sincronizados, para el selector del pedido y el usuario (D-153) | `ventas.agente.leer` |
 | `PUT /api/v1/plataforma/usuarios/{id}/agente` | `{ agenteId }`: liga el usuario a su agente de CONTPAQi | `plataforma.usuarios.ligar_agente` |
 

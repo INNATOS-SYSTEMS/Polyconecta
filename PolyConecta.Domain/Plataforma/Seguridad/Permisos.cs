@@ -21,12 +21,12 @@ public static class Permisos
     public const string PedidoRevocar = "ventas.pedido.revocar";
     public const string AgenteLeer = "ventas.agente.leer";
 
-    public const string ProductoLeer = "catalogos.producto.leer";
-    public const string ProductoClasificar = "catalogos.producto.clasificar";
-    public const string FichaLeer = "catalogos.ficha.leer";
-    public const string FichaEditar = "catalogos.ficha.editar";
-    public const string ClienteLeer = "catalogos.cliente.leer";
-    public const string AlmacenLeer = "catalogos.almacen.leer";
+    public const string ProductoLeer = "inventario.producto.leer";
+    public const string ProductoClasificar = "inventario.producto.clasificar";
+    public const string FichaLeer = "inventario.ficha.leer";
+    public const string FichaEditar = "inventario.ficha.editar";
+    public const string ClienteLeer = "ventas.cliente.leer";
+    public const string AlmacenLeer = "inventario.almacen.leer";
 
     public const string SincronizacionLeer = "plataforma.sincronizacion.leer";
     public const string SincronizacionEjecutar = "plataforma.sincronizacion.ejecutar";
@@ -54,12 +54,12 @@ public static class Permisos
         P(PedidoRevocar, TipoObjeto.Documento, "Ventas", "Pedido", "Revocar autorización"),
         P(AgenteLeer, TipoObjeto.Funcionalidad, "Ventas", "Agente de CONTPAQi", "Leer"),
 
-        P(ProductoLeer, TipoObjeto.Funcionalidad, "Catálogos", "Producto", "Leer"),
-        P(ProductoClasificar, TipoObjeto.Funcionalidad, "Catálogos", "Producto", "Clasificar"),
-        P(FichaLeer, TipoObjeto.Funcionalidad, "Catálogos", "Ficha técnica", "Leer"),
-        P(FichaEditar, TipoObjeto.Funcionalidad, "Catálogos", "Ficha técnica", "Editar"),
-        P(ClienteLeer, TipoObjeto.Funcionalidad, "Catálogos", "Cliente", "Leer"),
-        P(AlmacenLeer, TipoObjeto.Funcionalidad, "Catálogos", "Almacén de CONTPAQi", "Leer"),
+        P(ProductoLeer, TipoObjeto.Funcionalidad, "Inventario", "Producto", "Leer"),
+        P(ProductoClasificar, TipoObjeto.Funcionalidad, "Inventario", "Producto", "Clasificar"),
+        P(FichaLeer, TipoObjeto.Funcionalidad, "Inventario", "Ficha técnica", "Leer"),
+        P(FichaEditar, TipoObjeto.Funcionalidad, "Inventario", "Ficha técnica", "Editar"),
+        P(ClienteLeer, TipoObjeto.Funcionalidad, "Ventas", "Cliente", "Leer"),
+        P(AlmacenLeer, TipoObjeto.Funcionalidad, "Inventario", "Almacén de CONTPAQi", "Leer"),
 
         P(SincronizacionLeer, TipoObjeto.Funcionalidad, "Plataforma", "Sincronización", "Leer"),
         P(SincronizacionEjecutar, TipoObjeto.Funcionalidad, "Plataforma", "Sincronización", "Sincronizar ahora"),

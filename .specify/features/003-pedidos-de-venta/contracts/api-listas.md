@@ -15,8 +15,8 @@ Listas de F1:
 | `{modulo}/{lista}` | Llave de favoritos | Permiso de lectura |
 | :--- | :--- | :--- |
 | `ventas/pedidos` | `ventas.pedidos` | `ventas.pedido.leer` |
-| `catalogos/productos` | `catalogos.productos` | `catalogos.producto.leer` |
-| `catalogos/clientes` | `catalogos.clientes` | `catalogos.cliente.leer` |
+| `inventario/productos` | `inventario.productos` | `inventario.producto.leer` |
+| `ventas/clientes` | `ventas.clientes` | `ventas.cliente.leer` |
 | `plataforma/usuarios` | `plataforma.usuarios` | `plataforma.usuarios.leer` |
 | `plataforma/grupos` | `plataforma.grupos` | `plataforma.grupos.leer` |
 
