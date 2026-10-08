@@ -1,0 +1,8 @@
+{
+  "_nota": "Respuesta de GET /api/v1/catalogs/products?limit=2 en la forma 1.1. modified_since en esta ruta responde 501 (D-150).",
+  "items": [
+    { "codigo": "PT1113 C567", "nombre": "BOLSA MEDIANA 44X84 C.430 BOL-004 [77]", "unidad_base": "PZA", "lleva_lote": true, "activo": true, "id_erp": 1113, "clasificacion": { "codigo": "PT", "nombre": "PRODUCTO TERMINADO" } },
+    { "codigo": "PEBD-001", "nombre": "Polietileno baja densidad", "unidad_base": "KG", "lleva_lote": false, "activo": true, "id_erp": 201, "clasificacion": null }
+  ],
+  "next_cursor": "201"
+}

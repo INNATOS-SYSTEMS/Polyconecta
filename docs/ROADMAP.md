@@ -108,7 +108,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Fase | Preguntas abiertas ([preguntas-abiertas.md](diseno/preguntas-abiertas.md)) o decisiones por validar |
 | :--- | :--- |
 | F0 | ninguna |
-| F1 | Ninguna. T-06 (frescura) ya no condiciona el diseño: las existencias tendrán espejo en PolyConecta (D-152), que se construye en F2; el cotejo se hace en la tarea 1.4. P-28 resuelta en el plan de la 003 (listas híbridas, D-151). Falta editar el contrato `1.1` aprobado (C-T002). |
+| F1 | Ninguna. T-06 (frescura) ya no condiciona el diseño: las existencias tendrán espejo en PolyConecta (D-152), que se construye en F2; el cotejo se hace en la tarea 1.4. P-28 resuelta en el plan de la 003 (listas híbridas, D-151). Contrato `1.1` aprobado y editado en `docs/contratos/` el 8-oct. |
 | F2 a F5, F7 | Contrato `bridge-v1` `1.0` firmado el 6-oct (D-132). T-17 (costo de la Entrada) se resuelve antes de F3 |
 | F6 | D-114 (cancelar el pedido remisionado) por validar con la operación |
 | F8 | T-06 (la conciliación depende de F-05) |

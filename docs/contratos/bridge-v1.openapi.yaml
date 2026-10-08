@@ -1,11 +1,13 @@
 openapi: 3.1.0
 info:
   title: Contrato bridge-v1 (PolyConecta ↔ bridge de CONTPAQi)
-  version: 1.0.0
+  version: 1.1.0
   summary: API HTTP del bridge que cumplen por igual el bridge real y el simulado.
   description: |
     Se genera a partir de `docs/contratos/bridge-v1.md`, que manda si hay diferencias.
-    Estado: `1.0` aprobado por los dos líderes el 2026-10-06 (CT-22, D-132).
+    Estado: `1.0` aprobado por los dos líderes el 2026-10-06 (CT-22, D-132); `1.1` aprobado el
+    2026-10-08 (clasificación, moneda, domicilios, agentes, `id_erp` y `modified_since` obsoleto;
+    D-150, D-153).
   license:
     name: Privado
     identifier: LicenseRef-Privado
@@ -73,7 +75,7 @@ paths:
     get:
       tags: [Lecturas]
       operationId: listarProductos
-      summary: Productos con su unidad base y si llevan lote
+      summary: Productos con su unidad base, si llevan lote y su clasificación
       parameters:
         - $ref: '#/components/parameters/Search'
         - $ref: '#/components/parameters/ModifiedSince'
@@ -92,11 +94,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '501':
+          description: Se mandó `modified_since`, obsoleto desde 1.1 (D-150).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/v1/catalogs/clients:
     get:
       tags: [Lecturas]
       operationId: listarClientes
-      summary: Clientes
+      summary: Clientes con su moneda y sus domicilios
       parameters:
         - $ref: '#/components/parameters/Search'
         - $ref: '#/components/parameters/ModifiedSince'
@@ -109,6 +117,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginaClientes'
+        '400':
+          description: Parámetros inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '501':
+          description: Se mandó `modified_since`, obsoleto desde 1.1 (D-150).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/catalogs/agents:
+    get:
+      tags: [Lecturas]
+      operationId: listarAgentes
+      summary: Agentes de CONTPAQi (1.1, D-153)
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Página de agentes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginaAgentes'
         '400':
           description: Parámetros inválidos.
           content:
@@ -229,7 +264,10 @@ components:
       name: modified_since
       in: query
       required: false
-      description: Solo lo que cambió desde esta fecha y hora (ISO 8601).
+      deprecated: true
+      description: |
+        Obsoleto desde 1.1 en productos y clientes (D-150): `CTIMESTAMP` no es una fecha de
+        modificación, así que el bridge responde 501. Se conserva para las recepciones de compra (F3).
       schema:
         type: string
         format: date-time
@@ -367,6 +405,9 @@ components:
           type: string
         orden_compra_cliente:
           type: string
+        agente:
+          type: string
+          description: Código del agente de CONTPAQi (`CCODIGOAGENTE`). Opcional, desde 1.1 (D-153).
         moneda:
           type: string
         tipo_cambio:
@@ -551,6 +592,7 @@ components:
             - ALMACEN_NO_EXISTE
             - ALMACEN_YA_EXISTE
             - CLIENTE_NO_EXISTE
+            - AGENTE_NO_EXISTE
             - MONEDA_NO_SOPORTADA
             - UNIDAD_NO_ADMITIDA
             - VARIANTE_SIN_CONCEPTO
@@ -583,6 +625,18 @@ components:
           type: boolean
         activo:
           type: boolean
+        id_erp:
+          type: integer
+          description: '`CIDPRODUCTO`. Desde 1.1.'
+        clasificacion:
+          description: Valor de "TIPO DE PRODUCTOS" (A-05). Desde 1.1; valor inicial de la clasificación propia (D-86).
+          type: [object, 'null']
+          required: [codigo, nombre]
+          properties:
+            codigo:
+              type: string
+            nombre:
+              type: string
         modificado:
           type: string
           format: date-time
@@ -597,9 +651,72 @@ components:
           type: string
         rfc:
           type: string
+        id_erp:
+          type: integer
+          description: '`CIDCLIENTEPROVEEDOR`. Desde 1.1.'
+        activo:
+          type: boolean
+          description: Desde 1.1.
+        moneda:
+          type: [string, 'null']
+          description: Código ISO de `admClientes.CIDMONEDA`, la moneda del cliente (D-150). Desde 1.1.
+        domicilios:
+          type: array
+          description: Un domicilio fiscal y N de envío, de `admDomicilios` (D-149, D-150). Desde 1.1.
+          items:
+            $ref: '#/components/schemas/Domicilio'
         modificado:
           type: string
           format: date-time
+
+    Domicilio:
+      type: object
+      required: [id_erp, tipo]
+      properties:
+        id_erp:
+          type: integer
+          description: '`CIDDIRECCION`.'
+        tipo:
+          type: string
+          enum: [fiscal, envio]
+        calle:
+          type: string
+        numero_exterior:
+          type: string
+        numero_interior:
+          type: string
+        colonia:
+          type: string
+        codigo_postal:
+          type: string
+        ciudad:
+          type: string
+        municipio:
+          type: string
+        estado:
+          type: string
+        pais:
+          type: string
+        sucursal:
+          type: string
+
+    Agente:
+      type: object
+      required: [codigo, nombre, id_erp]
+      properties:
+        codigo:
+          type: string
+          description: '`CCODIGOAGENTE`.'
+        nombre:
+          type: string
+          description: '`CNOMBREAGENTE`.'
+        id_erp:
+          type: integer
+          description: '`CIDAGENTE`.'
+        tipo:
+          type: string
+          enum: [venta, venta_cobro, cobro]
+          description: '`CTIPOAGENTE` 1, 2 y 3.'
 
     Almacen:
       type: object
@@ -675,5 +792,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RecepcionCompra'
+        next_cursor:
+          type: [string, 'null']
+
+    PaginaAgentes:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Agente'
         next_cursor:
           type: [string, 'null']

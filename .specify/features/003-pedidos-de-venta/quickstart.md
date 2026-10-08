@@ -14,7 +14,7 @@ Cómo comprobar que F1 cumple su spec. Cada sección dice qué correr y qué deb
 ./run.sh --with-bridge
 ```
 
-Debe compilar, aplicar `F1_PedidosDeVenta`, pasar las pruebas de .NET y web, y levantar la web (`:9000`), la API (`:9020`) y el bridge simulado (`:9030`). Luego:
+Debe compilar, aplicar las migraciones `F1_*`, pasar las pruebas de .NET y web, y levantar la web (`:9000`), la API (`:9020`) y el bridge simulado (`:9030`). Luego:
 
 ```bash
 BRIDGE_URL=http://localhost:9030 BRIDGE_CALLBACK_SECRET=<secreto> dotnet test --project tests/PolyConecta.Contract.Tests
@@ -45,7 +45,7 @@ Esperado: la suite de contrato al 100 %, incluidas las lecturas de F1 (FR-002), 
 2. Confirmar sin precio en una línea: no confirma y dice qué falta. Corregir y confirmar.
 3. Como `comercial1`: Autorizar. El formulario dice "1 de 2 firmas" y que falta Cobranza.
 4. Como `ac1`: cambiar una cantidad y guardar. Aparece el aviso de D-147. Confirmar: la firma se borra y el chatter muestra el cambio y "Revocada por edición".
-5. Firmar otra vez como `comercial1`. Como `doble` (Comercial y Cobranza) intentar firmar: **Autorizar** deshabilitado con su razón si ya firmó, y la API responde `403` o `409` si se pide directo (SC-002, SC-003).
+5. Firmar otra vez como `comercial1`. Como `doble` (Comercial y Cobranza) intentar firmar: **Autorizar** deshabilitado con su razón si ya firmó, y la API responde `409 TRANSICION_INVALIDA` si se pide directo, porque es una regla del dominio (RF-4) y no un permiso (SC-002). Un usuario sin el permiso de firmar recibe `403` (SC-003).
 6. Como `cobranza-suplente`: Autorizar. El pedido queda Autorizado y la firma dice "suplente".
 7. Como `comercial1`: Revocar con motivo. Regresa a Confirmado.
 8. En el kanban, como `ac1`, arrastrar un pedido de Borrador a Confirmado; como `comercial1`, de Confirmado a Autorizado (diálogo de firma).

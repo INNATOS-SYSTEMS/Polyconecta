@@ -1,0 +1,21 @@
+{
+  "contract_version": "1.1",
+  "command_type": "ALTA_PEDIDO",
+  "variant": null,
+  "idempotency_key": "pedido:302:autorizar",
+  "correlation_id": "1d2e3f40-1111-4000-8000-000000000302",
+  "client_app_id": "polyconecta",
+  "callback_url": "https://api.polyconecta.local/api/v1/plataforma/bridge/callbacks",
+  "payload": {
+    "fecha": "2026-10-13",
+    "referencia_negocio": "PV-2026-0002",
+    "cliente": "EMM-001",
+    "orden_compra_cliente": "3894",
+    "agente": "AG-01",
+    "moneda": "USD",
+    "tipo_cambio": 18.5,
+    "lineas": [
+      { "producto": "PT1113 C567", "cantidad": 5500, "unidad": "PZA", "precio": 0.31 }
+    ]
+  }
+}

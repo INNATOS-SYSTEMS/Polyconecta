@@ -1,0 +1,8 @@
+{
+  "_nota": "Respuesta de GET /api/v1/catalogs/agents?limit=100 (lectura nueva de 1.1, D-153).",
+  "items": [
+    { "codigo": "AG-01", "nombre": "Celia Villarreal", "id_erp": 3, "tipo": "venta" },
+    { "codigo": "AG-02", "nombre": "Agente de cobranza", "id_erp": 4, "tipo": "cobro" }
+  ],
+  "next_cursor": null
+}

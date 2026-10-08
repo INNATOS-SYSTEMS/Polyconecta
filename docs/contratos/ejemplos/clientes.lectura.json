@@ -1,0 +1,15 @@
+{
+  "_nota": "Respuesta de GET /api/v1/catalogs/clients?limit=2 en la forma 1.1: un cliente con su domicilio fiscal y dos de envío, y uno sin domicilios. modified_since en esta ruta responde 501 (D-150).",
+  "items": [
+    {
+      "codigo": "EMM-001", "razon_social": "EMPRESA MEXICANA DE MANUFACTURA", "rfc": "EMM010101AAA", "id_erp": 57, "activo": true, "moneda": "USD",
+      "domicilios": [
+        { "id_erp": 901, "tipo": "fiscal", "calle": "Av. Industrial", "numero_exterior": "120", "numero_interior": "", "colonia": "Parque Industrial", "codigo_postal": "66600", "ciudad": "Apodaca", "municipio": "Apodaca", "estado": "Nuevo León", "pais": "México", "sucursal": "" },
+        { "id_erp": 902, "tipo": "envio", "calle": "Carretera Miguel Alemán", "numero_exterior": "Km 18", "numero_interior": "Nave 4", "colonia": "Centro", "codigo_postal": "66600", "ciudad": "Apodaca", "municipio": "Apodaca", "estado": "Nuevo León", "pais": "México", "sucursal": "Planta Norte" },
+        { "id_erp": 903, "tipo": "envio", "calle": "Blvd. Saltillo", "numero_exterior": "455", "numero_interior": "", "colonia": "Derramadero", "codigo_postal": "25300", "ciudad": "Saltillo", "municipio": "Saltillo", "estado": "Coahuila", "pais": "México", "sucursal": "CEDIS Saltillo" }
+      ]
+    },
+    { "codigo": "CLI-002", "razon_social": "COMERCIALIZADORA DEL NORTE", "rfc": "CNO020202BBB", "id_erp": 58, "activo": true, "moneda": "MXN", "domicilios": [] }
+  ],
+  "next_cursor": "58"
+}

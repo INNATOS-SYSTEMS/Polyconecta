@@ -35,7 +35,7 @@ Detalles y alternativas en [research.md](research.md).
 
 **Primary Dependencies**: las de F0 (EF Core 10.0.12, SignalR, Swashbuckle 10.2.3), más **`Microsoft.AspNetCore.Identity.EntityFrameworkCore` 10.0.12** (nuevo, R-01). En la web, las de la spec 011 (TanStack Table, Angular CDK, Spartan `brain`, Lucide) y `@microsoft/signalr` 10.0.11. Nada más.
 
-**Storage**: SQL Server 2022. Esquema nuevo `ven`; tablas nuevas en `plt` e `inv` ([data-model.md](data-model.md)). Migración `F1_PedidosDeVenta`.
+**Storage**: SQL Server 2022. Esquema nuevo `ven`; tablas nuevas en `plt` e `inv` ([data-model.md](data-model.md)). Migraciones `F1_*`, una por tarea que agrega entidades.
 
 **Testing**:
 - Dominio: cada regla del pedido, las firmas (RF-3, RF-4, D-34, D-38), la revocación y la edición con firmas (D-147).
@@ -146,7 +146,7 @@ PolyConecta.Application/
 PolyConecta.Infrastructure/
 ├── Plataforma/Identidad/                # CredencialUsuario, IdentityUserContext, CurrentUser desde la cookie
 ├── Plataforma/Listas/                   # traductor ConsultaLista → IQueryable
-├── Persistence/                         # configuraciones de plt, inv y ven; F1_PedidosDeVenta; sembradores
+├── Persistence/                         # configuraciones de plt, inv y ven; migraciones F1_*; sembradores
 ├── Persistence/AuditoriaInterceptor.cs  # + mensaje de chatter por transición
 └── Erp/                                 # BridgeLecturasHttp, SincronizadorCatalogos (BackgroundService)
 

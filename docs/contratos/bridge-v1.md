@@ -2,12 +2,12 @@
 
 Contrato entre PolyConecta (camino 2) y el bridge de CONTPAQi (camino 1). Es el **único** punto de contacto entre los dos caminos (CT-02). Lo cumplen por igual el bridge real y el simulado (CT-21, D-122), y lo prueba la suite de `tests/PolyConecta.Contract.Tests` (CT-23).
 
-**Estado:** ✅ **`1.0` aprobado** el 2026-10-06 por los dos líderes, en la sesión de firma (CT-22, D-132). Todo cambio posterior sigue la sección 8.
+**Estado:** ✅ **`1.1` aprobado** el 2026-10-08 por los dos líderes, en la ratificación de la spec 003 (CT-22). Sobre el `1.0` del 2026-10-06 (D-132) agrega, como cambio compatible, la clasificación de productos, la moneda y los domicilios de clientes, la lectura de agentes, el `id_erp` en productos y clientes y el agente de `ALTA_PEDIDO`, y declara obsoleto `modified_since` en productos y clientes (§6, §8). Todo cambio posterior sigue la sección 8.
 
 | Líder | Firma | Fecha |
 | :--- | :---: | :--- |
-| L1 · Alejandro Ponce | ✅ | 2026-10-06 |
-| L2 · Luis Alvarado Martinez | ✅ | 2026-10-06 |
+| L1 · Alejandro Ponce | ✅ | 2026-10-06 (`1.0`) · 2026-10-08 (`1.1`) |
+| L2 · Luis Alvarado Martinez | ✅ | 2026-10-06 (`1.0`) · 2026-10-08 (`1.1`) |
 
 **Cómo leer este contrato.** Cada regla cita la decisión que la respalda. Dos puntos se difirieron y viajan como campos opcionales: el costo de las entradas (T-17) y el precio de la remisión (P-26); cerrarlos es un cambio compatible (§8). Cada sección dice quién la redactó (**R**) y quién la revisó (**V**). La OpenAPI (`bridge-v1.openapi.yaml`) sale de este documento, que manda si difieren.
 
@@ -34,7 +34,7 @@ Contrato entre PolyConecta (camino 2) y el bridge de CONTPAQi (camino 1). Es el 
 
 | Campo | Tipo | Obligatorio | Regla | Estado |
 | :--- | :--- | :---: | :--- | :---: |
-| `contract_version` | string | sí | `"1.0"`. Una versión mayor distinta se rechaza | ✅ D-132 |
+| `contract_version` | string | sí | `"1.0"` o `"1.1"`. El bridge acepta cualquier versión menor de `1`; una versión mayor distinta se rechaza | ✅ D-132, `1.1` |
 | `command_type` | enum | sí | Uno de la sección 5 | ✅ D-132 |
 | `variant` | string | según el comando | Variante de negocio que elige el concepto. Por ejemplo, en `TRASPASO`: `RECOLECCION`, `DEVOLUCION`, `CUARENTENA`, `LIBERACION`, `TRASLADO_SALIDA`, `TRASLADO_RECEPCION` | ✅ D-132 |
 | `idempotency_key` | string | sí | `{tipo}:{id}:{transición}` (CT-19). Hoy es opcional | ✅ D-132 |
@@ -92,6 +92,7 @@ Contrato entre PolyConecta (camino 2) y el bridge de CONTPAQi (camino 1). Es el 
 | `PRODUCTO_NO_EXISTE` / `PRODUCTO_INACTIVO` | no | Código desconocido o inactivo | D-112, S-14 |
 | `ALMACEN_NO_EXISTE` | no | Código de almacén desconocido | — |
 | `CLIENTE_NO_EXISTE` | no | Código de cliente desconocido | — |
+| `AGENTE_NO_EXISTE` | no | `ALTA_PEDIDO` con un código de agente que no existe en `admAgentes`. Desde `1.1` | D-153 |
 | `UNIDAD_NO_ADMITIDA` | no | La unidad de la línea no es la unidad base del producto en CONTPAQi | D-123, D-127 |
 | `VARIANTE_SIN_CONCEPTO` | no | La configuración del bridge no tiene concepto para el comando y la variante | D-121 |
 | `LOTES_NO_CUADRAN` | no | `Σ cantidad de lotes ≠ cantidad de la línea` | CT-39 |
@@ -145,6 +146,7 @@ Cada comando se describe con la misma ficha. **Lado negocio** (R: L2): cuándo s
 | `referencia_negocio` | Folio del pedido en PolyConecta |
 | `cliente` | Código del cliente en CONTPAQi |
 | `orden_compra_cliente` | Opcional. Orden de compra del cliente |
+| `agente` | Opcional, desde `1.1`. Código del agente de CONTPAQi (`CCODIGOAGENTE`): el del usuario de AC que capturó el pedido, o el que eligió (D-153). Viaja en `tDocumento.aCodigoAgente` y queda en `admDocumentos.CIDAGENTE` |
 | `moneda` | Código ISO de la moneda (`MXN`, `USD`). `admMonedas` no guarda un código ISO (solo id, nombre y símbolo), así que el bridge lo traduce a `CIDMONEDA` con su configuración, igual que los conceptos. Una moneda sin traducción falla con `MONEDA_NO_SOPORTADA` |
 | `tipo_cambio` | Obligatorio si la moneda no es la base; `1` si lo es |
 | `lineas[]` | `producto`, `cantidad`, `unidad` (base, D-127) y `precio` por esa unidad. IVA, descuentos y totales los calcula CONTPAQi (D-74) |
@@ -153,7 +155,7 @@ Cada comando se describe con la misma ficha. **Lado negocio** (R: L2): cuándo s
 
 **Resultado.** `folio` e `id_erp` del pedido.
 
-**Errores propios.** `CLIENTE_NO_EXISTE`, `PRODUCTO_NO_EXISTE`, `PRODUCTO_INACTIVO`, `UNIDAD_NO_ADMITIDA`, `MONEDA_NO_SOPORTADA`.
+**Errores propios.** `CLIENTE_NO_EXISTE`, `PRODUCTO_NO_EXISTE`, `PRODUCTO_INACTIVO`, `UNIDAD_NO_ADMITIDA`, `MONEDA_NO_SOPORTADA` y, desde `1.1`, `AGENTE_NO_EXISTE`.
 
 ### 5.3 `ALTA_ALMACEN`
 
@@ -212,17 +214,35 @@ Cada comando se describe con la misma ficha. **Lado negocio** (R: L2): cuándo s
 
 ## 6. Lecturas · R: L1 · V: L2
 
-Ya existen en `CatalogsController`. Cambios ✅ (D-132): paginación con `limit` y `cursor`, filtro `modified_since` para sincronizar solo lo que cambió, y nombres en `snake_case` como el resto del contrato.
+Las sirve `LecturasController` por SQL de solo lectura (CT-30). Todas responden en `snake_case`, y las paginadas usan `limit` (1 a 500) y `cursor` (el `next_cursor` de la página anterior) (D-132).
 
-| Ruta | Hoy | Falta | Fase |
-| :--- | :--- | :--- | :--- |
-| `GET /api/v1/catalogs/products` | `search`, `limit` | Paginación, `modified_since`, **unidad base** del producto (D-127), si lleva lote. La unidad viaja como `CABREVIATURA` de `admUnidadesMedidaPeso` (vía `CIDUNIDADBASE`); lleva lote si `CCONTROLEXISTENCIA` tiene el bit de lotes (16); activo si `CSTATUSPRODUCTO = 1` | F1 |
-| `GET /api/v1/catalogs/clients` | `search`, `limit` | Paginación, `modified_since` | F1 |
-| `GET /api/v1/catalogs/warehouses` | sin filtros | — | F1 |
-| `GET /api/v1/inventory/stocks` | un producto, almacén opcional; capas por lote | Varios productos por consulta, con la unidad base del producto en CONTPAQi | F1 |
-| `GET /api/v1/inventory/purchases` | no existe | Recepciones de compra afectadas, con `modified_since` (D-102) | F3 |
-| `GET /api/v1/catalogs/concepts` | existe | Fuera de `1.0`: el concepto lo elige el bridge (D-121). Pasa a las rutas de operación (§7) | — |
-| `GET /api/v1/invoices` | existe | Fuera de `1.0`: ninguna fase lo usa. Pasa a las rutas de operación (§7) | — |
+| Ruta | Qué devuelve | Desde | Fase |
+| :--- | :--- | :---: | :--- |
+| `GET /api/v1/catalogs/products` | Productos: `codigo`, `nombre`, `unidad_base`, `lleva_lote`, `activo`; desde `1.1`, `id_erp` y `clasificacion` | `1.0` | F1 |
+| `GET /api/v1/catalogs/clients` | Clientes: `codigo`, `razon_social`, `rfc`; desde `1.1`, `id_erp`, `activo`, `moneda` y `domicilios[]` | `1.0` | F1 |
+| `GET /api/v1/catalogs/agents` | Agentes: `codigo`, `nombre`, `id_erp`, `tipo` | `1.1` | F1 |
+| `GET /api/v1/catalogs/warehouses` | Almacenes: `codigo`, `nombre`, `id_erp` (sin paginar) | `1.0` | F1 |
+| `GET /api/v1/inventory/stocks` | Existencias de varios productos (`productos` separados por coma), por almacén y por lote, en la unidad base | `1.0` | F1 |
+| `GET /api/v1/inventory/purchases` | Recepciones de compra afectadas, con `modified_since` (D-102) | `1.0` | F3 |
+
+**Origen de cada campo en CONTPAQi:**
+
+| Campo | Origen | Fuente |
+| :--- | :--- | :--- |
+| `unidad_base` | `CABREVIATURA` de `admUnidadesMedidaPeso`, vía `CIDUNIDADBASE` | D-127 |
+| `lleva_lote` | Bit de lotes (16) de `CCONTROLEXISTENCIA` | — |
+| `activo` (producto) | `CSTATUSPRODUCTO = 1` | — |
+| `clasificacion` | `{ codigo, nombre }` del valor de "TIPO DE PRODUCTOS" (`CIDVALORCLASIFICACION{n}` → `admClasificacionesValores`; el número lo da la configuración del bridge). Solo es el valor inicial de la clasificación propia | A-05, D-86 |
+| `moneda` | Código ISO de `admClientes.CIDMONEDA`, la moneda del cliente, traducido con `BridgeConfig__Monedas__{ISO}` como en `ALTA_PEDIDO` | D-146, D-150 |
+| `domicilios[]` | `admDomicilios` con `CTIPOCATALOGO = 1` y `CIDCATALOGO` del cliente: `id_erp` (`CIDDIRECCION`), `tipo` (`fiscal` si `CTIPODIRECCION = 0`, `envio` si es 1), `calle`, `numero_exterior`, `numero_interior`, `colonia`, `codigo_postal`, `ciudad`, `municipio`, `estado`, `pais` y `sucursal`. Un cliente tiene un domicilio fiscal y N de envío | D-149, D-150 |
+| Agentes | `admAgentes`: `CCODIGOAGENTE`, `CNOMBREAGENTE`, `CIDAGENTE`; `tipo` de `CTIPOAGENTE` (1 `venta`, 2 `venta_cobro`, 3 `cobro`) | D-153 |
+| Existencias | Por producto y almacén, `CENTRADASPERIODO12 − CSALIDASPERIODO12` de `admExistenciaCosto` del ejercicio vigente; por lote, suma de `admCapasProducto.CEXISTENCIA` por número de lote | D-83, D-87 |
+
+Los campos que trae `1.1` son **opcionales**: un consumidor `1.0` los ignora y PolyConecta funciona sin ellos.
+
+**`modified_since` obsoleto en productos y clientes** (`1.1`, D-150). `CTIMESTAMP` de `admProductos` y `admClientes` no es la fecha de última modificación, así que el bridge no puede cumplir el filtro: si se manda, responde `501`, en el real y en el simulador. PolyConecta lee el catálogo completo y compara. Se conserva en las recepciones de compra, que se definen en F3.
+
+**Fuera del contrato.** `GET /api/v1/catalogs/concepts` (el concepto lo elige el bridge, D-121) y `GET /api/v1/invoices` (ninguna fase lo usa) pasan a las rutas de operación (§7).
 
 ---
 
@@ -236,8 +256,15 @@ Las rutas de operación del bridge (`/dlq`, `/metrics`, `/logs`, `/health` y las
 
 Un cambio compatible (campo opcional nuevo, comando nuevo, código de error nuevo) sube la versión menor. Un cambio incompatible abre `v2`, que convive con `v1` hasta migrar. Todo cambio requiere a los dos líderes (CT-22) y se anota en la exploración de la spec de la fase en curso (CT-43).
 
+| Versión | Fecha | Cambios | Decisiones |
+| :--- | :--- | :--- | :--- |
+| `1.0` | 2026-10-06 | Primera versión: sobre, estados y callback, errores, cinco comandos y lecturas | D-131, D-132 |
+| `1.1` | 2026-10-08 | Compatible. Productos: `id_erp` y `clasificacion`. Clientes: `id_erp`, `activo`, `moneda` y `domicilios[]`. Lectura nueva `GET /catalogs/agents`. `ALTA_PEDIDO`: `agente` opcional y error `AGENTE_NO_EXISTE`. `modified_since` obsoleto en productos y clientes: el bridge real ya respondía `501` y ningún consumidor dependía de él, por eso los líderes lo declararon obsoleto en vez de abrir `v2` | D-150, D-153; spec 003 |
+
 ---
 
 ## 9. Aprobación
 
 Sesión de firma del 2026-10-06, con los dos líderes. Las 20 decisiones se tomaron en la página de cierre de F0 y quedaron así: 16 propuestas aceptadas, la referencia de reconciliación corregida (D-131), D-114 validada con la operación, y T-17 y el precio de la remisión diferidos como campos opcionales (P-26). Los ejemplos de [`ejemplos/`](ejemplos/) traen una carga válida y una inválida por comando, más los tres callbacks (C-T005). La OpenAPI se validó con `@redocly/cli@2.58.1` sin errores (C-T007).
+
+**`1.1`.** Aprobado el 2026-10-08 por los dos líderes en la [hoja de ratificación de la spec 003](https://claude.ai/artifact/GBKCh2pAF9r4CppZGT9Smx). Los ejemplos de lectura están en [`ejemplos/`](ejemplos/) (C-T003) y la OpenAPI `1.1.0` se validó con `@redocly/cli@2.58.1` sin errores (C-T002).
