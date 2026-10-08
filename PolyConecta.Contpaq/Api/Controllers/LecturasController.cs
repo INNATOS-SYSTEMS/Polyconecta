@@ -56,6 +56,11 @@ namespace Contpaq.Bridge.Api.Controllers
             {
                 return BadRequest(ErrorContrato.De(CodigosError.CargaInvalida, ex.Message.Split(" (Parameter")[0], new() { ["campo"] = "cursor" }));
             }
+            catch (EjercicioVigenteException ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    ErrorContrato.De(CodigosError.SdkError, ex.Message, new() { ["motivo"] = "SIN_EJERCICIO_VIGENTE" }));
+            }
             catch (LecturaNoDisponibleException ex)
             {
                 return StatusCode(StatusCodes.Status501NotImplemented, ErrorContrato.De(CodigosError.SdkError, ex.Message));

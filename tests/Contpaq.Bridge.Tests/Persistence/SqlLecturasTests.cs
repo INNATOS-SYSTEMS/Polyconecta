@@ -80,6 +80,30 @@ namespace Contpaq.Bridge.Tests.Persistence
         }
 
         [Fact]
+        public void El_ejercicio_de_F01_es_solo_el_que_contiene_hoy_sin_respaldo()
+        {
+            Assert.Contains("BETWEEN x.CFECINIPERIODO1 AND x.CFECHAFINAL", SqlLecturas.ExistenciasPorProducto);
+            Assert.DoesNotContain("ISNULL(", SqlLecturas.EjercicioVigente);
+            Assert.Equal(1, Regex.Matches(SqlLecturas.ExistenciasPorProducto, "admEjercicios").Count);
+        }
+
+        [Fact]
+        public async Task Sin_ejercicio_vigente_la_lectura_de_existencias_falla_con_SDK_ERROR_y_su_motivo()
+        {
+            var repo = new Moq.Mock<IReadRepository>();
+            repo.Setup(r => r.ExistenciasAsync(Moq.It.IsAny<IReadOnlyCollection<string>>(), Moq.It.IsAny<string?>()))
+                .Returns(Task.FromException<IReadOnlyList<Contpaq.Bridge.Core.Contract.ExistenciaContrato>>(new EjercicioVigenteException()));
+            var controlador = new Contpaq.Bridge.Api.Controllers.LecturasController(repo.Object);
+
+            var r = Assert.IsType<Microsoft.AspNetCore.Mvc.ObjectResult>(await controlador.Existencias("P1", null));
+
+            Assert.Equal(500, r.StatusCode);
+            var error = Assert.IsType<Contpaq.Bridge.Core.Contract.ErrorContrato>(r.Value);
+            Assert.Equal("SDK_ERROR", error.Code);
+            Assert.Equal("SIN_EJERCICIO_VIGENTE", error.Detail["motivo"]);
+        }
+
+        [Fact]
         public void La_clasificacion_se_une_por_el_numero_configurado()
         {
             Assert.DoesNotContain("admClasificacionesValores", SqlLecturas.Productos(null));

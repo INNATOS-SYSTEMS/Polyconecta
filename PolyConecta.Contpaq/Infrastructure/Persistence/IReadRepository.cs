@@ -37,3 +37,10 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
     /// <summary>La lectura todavía no existe en este modo. La API responde 501.</summary>
     public sealed class LecturaNoDisponibleException(string mensaje) : NotSupportedException(mensaje);
 }
+
+namespace Contpaq.Bridge.Infrastructure.Persistence
+{
+    /// <summary>Ningún ejercicio de admEjercicios contiene la fecha de hoy: F-01 no puede leer la existencia por producto (D-156).</summary>
+    public sealed class EjercicioVigenteException() : InvalidOperationException(
+        "Ningún ejercicio de CONTPAQi contiene la fecha de hoy; la existencia por producto no se puede leer.");
+}

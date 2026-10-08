@@ -82,10 +82,15 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
             GROUP BY p.CCODIGOPRODUCTO, a.CCODIGOALMACEN, u.CABREVIATURA, RTRIM(cp.CNUMEROLOTE)
             HAVING SUM(cp.CEXISTENCIA) <> 0;";
 
+        /// <summary>Ejercicio vigente: el que contiene la fecha de hoy (D-156). Sin respaldo; si no hay, <see cref="EjercicioVigenteException"/>.</summary>
+        public const string EjercicioVigente = @"SELECT TOP 1 x.CIDEJERCICIO FROM admEjercicios x WITH (NOLOCK)
+                     WHERE CAST(GETDATE() AS date) BETWEEN x.CFECINIPERIODO1 AND x.CFECHAFINAL
+                     ORDER BY x.CNUMEROEJERCICIO DESC";
+
         /// <summary>
         /// Existencia por producto y almacén (F-01, D-87) de los productos sin lote:
-        /// CENTRADASPERIODO12 − CSALIDASPERIODO12 de admExistenciaCosto del ejercicio vigente (el que
-        /// contiene hoy; si ninguno, el de mayor número). CTIPOEXISTENCIA 1 es la existencia en la unidad base.
+        /// CENTRADASPERIODO12 − CSALIDASPERIODO12 de admExistenciaCosto del ejercicio vigente (solo el que
+        /// contiene hoy, D-156; si ninguno, la lectura falla). CTIPOEXISTENCIA 1 es la existencia en la unidad base.
         /// </summary>
         public const string ExistenciasPorProducto = @"
             SELECT RTRIM(p.CCODIGOPRODUCTO) AS Producto, RTRIM(a.CCODIGOALMACEN) AS Almacen, RTRIM(ISNULL(u.CABREVIATURA, '')) AS Unidad,
@@ -97,11 +102,7 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
             WHERE p.CCODIGOPRODUCTO IN @Productos
               AND (p.CCONTROLEXISTENCIA & 16) = 0
               AND e.CTIPOEXISTENCIA = 1
-              AND e.CIDEJERCICIO = ISNULL(
-                    (SELECT TOP 1 x.CIDEJERCICIO FROM admEjercicios x WITH (NOLOCK)
-                     WHERE CAST(GETDATE() AS date) BETWEEN x.CFECINIPERIODO1 AND x.CFECHAFINAL
-                     ORDER BY x.CNUMEROEJERCICIO DESC),
-                    (SELECT TOP 1 y.CIDEJERCICIO FROM admEjercicios y WITH (NOLOCK) ORDER BY y.CNUMEROEJERCICIO DESC))
+              AND e.CIDEJERCICIO = (" + EjercicioVigente + @")
               AND (@Almacen IS NULL OR a.CCODIGOALMACEN = @Almacen)
             GROUP BY p.CCODIGOPRODUCTO, a.CCODIGOALMACEN, u.CABREVIATURA
             HAVING SUM(e.CENTRADASPERIODO12 - e.CSALIDASPERIODO12) <> 0;";

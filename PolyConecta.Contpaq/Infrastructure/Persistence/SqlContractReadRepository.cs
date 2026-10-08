@@ -140,6 +140,8 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
         public async Task<IReadOnlyList<ExistenciaContrato>> ExistenciasAsync(IReadOnlyCollection<string> productos, string? almacen)
         {
             var resultado = new List<ExistenciaContrato>();
+            if (!(await ConsultarAsync<long>(SqlLecturas.EjercicioVigente, null)).Any())
+                throw new EjercicioVigenteException();
             foreach (var grupo in EnLotes(productos.Distinct(StringComparer.Ordinal), ProductosPorConsulta))
             {
                 resultado.AddRange(await ConsultarAsync<ExistenciaContrato>(SqlLecturas.ExistenciasPorLote, new { Productos = grupo, Almacen = almacen }));
