@@ -1,4 +1,6 @@
-import { Component, computed, input, model, signal } from '@angular/core';
+import { Component, computed, input, model, output, signal } from '@angular/core';
+import { OdooIcon } from '../odoo-icon/odoo-icon';
+import { Favorito } from '../../core/lista/favoritos';
 import { SearchView, etiquetasCampos } from '../../core/search/search-view';
 
 /** Faceta que llega del contexto de navegación; se ve y se quita igual que un filtro. */
@@ -14,6 +16,7 @@ export interface Facet {
  */
 @Component({
   selector: 'pc-odoo-search-panel',
+  imports: [OdooIcon],
   templateUrl: './odoo-search-panel.html',
   styles: ':host { display: contents; }',
 })
@@ -26,6 +29,14 @@ export class OdooSearchPanel<T> {
   readonly agrupacionesActivas = model<string[]>([]);
   /** Equivale a `AgrupacionesActivasChanged.HasDelegate`: la lista enlaza las agrupaciones. */
   readonly permiteAgrupar = input(false);
+  /** Favoritos de la lista (spec 011). Con `conFavoritos`, el menú ofrece guardar, aplicar y borrar. */
+  readonly conFavoritos = input(false);
+  readonly favoritos = input<readonly Favorito[]>([]);
+  readonly guardarFavorito = output<{ nombre: string; porOmision: boolean }>();
+  readonly aplicarFavorito = output<Favorito>();
+  readonly borrarFavorito = output<string>();
+  protected readonly nombreFavorito = signal('');
+  protected readonly favoritoPorOmision = signal(false);
 
   protected readonly menuAbierto = signal(false);
 
@@ -60,6 +71,18 @@ export class OdooSearchPanel<T> {
 
   protected quitarGrupo(campo: string): void {
     this.filtrosActivos.update(lista => lista.filter(n => this.campoDe(n) !== campo));
+  }
+
+  protected guardar(): void {
+    this.guardarFavorito.emit({ nombre: this.nombreFavorito(), porOmision: this.favoritoPorOmision() });
+    this.nombreFavorito.set('');
+    this.favoritoPorOmision.set(false);
+  }
+
+  protected aplicarF(f: Favorito): void {
+    this.filtrosActivos.set([]);
+    this.aplicarFavorito.emit(f);
+    this.menuAbierto.set(false);
   }
 
   protected limpiarTodo(): void {

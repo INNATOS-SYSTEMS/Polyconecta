@@ -2,25 +2,26 @@ import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { PEDIDO_FOLIO } from '../../../core/seed/flujo';
-import { PedidoLibre } from '../../../core/state/libre/pedido-libre';
 import { OperationalFlowState } from '../../../core/state/operational-flow-state';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
+import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
+import { PedidosAcciones } from '../pedidos-acciones';
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
-import { OdooSmartButtons, SmartButtonModel } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
+import { OdooSmartButtons, SmartButtonModel, botonInteligente } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
 import { PocSalesOrderForm } from '../../../shared/poc-sales-order-form/poc-sales-order-form';
 
 /** Réplica de Pages/PedidoFormView.razor. */
 @Component({
   selector: 'pc-pedido-form',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, PocSalesOrderForm, OdooChatterDrawer],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, PocSalesOrderForm, OdooChatterDrawer, OdooIcon],
   templateUrl: './pedido-form.html',
   styles: ':host { display: contents; }',
 })
 export class PedidoForm {
   protected readonly flow = inject(OperationalFlowState);
   protected readonly router = inject(Router);
-  private readonly pedidoLibre = inject(PedidoLibre);
+  private readonly acciones = inject(PedidosAcciones);
   protected readonly error = signal<string | undefined>(undefined);
 
   /** Llega de la ruta /pedidos/:folio. */
@@ -45,18 +46,13 @@ export class PedidoForm {
       // FR-014: un pedido libre no tiene entrega ni OF hasta que se generen; nunca un origen falso.
       const ofs = this.flow.ordenesDePedido(this.pedido().folio).length;
       return [
-        { label: 'Entrega', countBadge: 0, iconClass: 'bi bi-truck', targetRoute: '', deshabilitado: true },
-        { label: 'Fabricación', countBadge: ofs, iconClass: 'bi bi-diagram-3', targetRoute: `/fabricacion?pedido=${this.pedido().folio}`, deshabilitado: ofs === 0 },
+        botonInteligente('entrega', 0, '', true),
+        botonInteligente('orden', ofs, `/fabricacion?pedido=${this.pedido().folio}`, ofs === 0),
       ];
     }
     return [
-      { label: 'Entrega', countBadge: 1, iconClass: 'bi bi-truck', targetRoute: `/entregas/${this.flow.entrega().folio}` },
-      {
-        label: 'Fabricación',
-        countBadge: this.flow.ordenesDePedido(this.folio()).length,
-        iconClass: 'bi bi-diagram-3',
-        targetRoute: `/fabricacion?pedido=${this.folio()}`,
-      },
+      botonInteligente('entrega', 1, `/entregas/${this.flow.entrega().folio}`),
+      botonInteligente('orden', this.flow.ordenesDePedido(this.folio()).length, `/fabricacion?pedido=${this.folio()}`),
     ];
   });
 
@@ -69,14 +65,14 @@ export class PedidoForm {
     return entradas;
   });
 
+  /** Las mismas acciones que el kanban (PedidosAcciones): una sola regla por transición. */
   protected confirmar(): void {
-    // El pedido libre recibe su Contpaq ID simulado al confirmar (D-53).
-    if (this.pedido().libre) this.error.set(this.pedidoLibre.confirmar(this.pedido().folio));
-    else this.flow.setOrderStage('Confirmado', this.pedido().folio);
+    this.error.set(this.acciones.confirmar(this.pedido().folio));
   }
 
   protected autorizar(): void {
-    this.flow.autorizar(this.pedido().folio);
+    // La firma pendiente no es un error en el formulario: el botón muestra "1/2".
+    this.acciones.autorizar(this.pedido().folio);
   }
 
   protected navegar(ruta: string): void {

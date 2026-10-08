@@ -1,4 +1,5 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Router } from '@angular/router';
 import { n1 } from '../../../core/format/numero';
 import { LotBalance } from '../../../core/models/inventario';
@@ -6,18 +7,20 @@ import { InventoryState } from '../../../core/state/inventory-state';
 import { DocumentoLogistica } from '../../../core/models/logistica';
 import { OperacionesLibres, PLANTAS, Planta } from '../../../core/state/libre/operaciones-libres';
 import { HojaNueva } from '../../../shared/hoja-nueva/hoja-nueva';
+import { OdooTabs, PcPestana } from '../../../shared/odoo-tabs/odoo-tabs';
 import { CONFIG, TipoLogistica } from './tipos';
 
 /**
  * "Nuevo" traslado, recepción o entrega (FR-012). Solo ofrece los lotes que permite su regla:
  * liberados por Calidad (traslado y entrega) o en tránsito (recepción, D-56). Cada lote muestra su
- * cantidad y la unidad base del producto (D-127).
+ * cantidad y la unidad base del producto (D-127). Estructura completa del documento (D-136, spec 011
+ * P5): los lotes se eligen en su pestaña y el chatter se activa al guardar.
  */
 @Component({
   selector: 'pc-logistica-nuevo',
-  imports: [HojaNueva],
+  imports: [HojaNueva, OdooTabs, PcPestana],
   template: `
-    <pc-hoja-nueva [lista]="cfg().tituloLista" [ruta]="cfg().ruta" [titulo]="cfg().tituloForm" [stages]="cfg().stages" [error]="error()" (guardar)="guardar()" (descartar)="router.navigateByUrl(cfg().ruta)">
+    <pc-hoja-nueva [lista]="cfg().tituloLista" [ruta]="cfg().ruta" [titulo]="cfg().tituloForm" [stages]="cfg().stages" [error]="error()" [conChatter]="true" (guardar)="guardar()" (descartar)="router.navigateByUrl(cfg().ruta)">
       <div class="row g-4 mb-3">
         <div class="col-md-6">
           <div class="o_form_label_row">
@@ -37,20 +40,19 @@ import { CONFIG, TipoLogistica } from './tipos';
           <div class="o_form_label_row"><span class="o_form_label">Regla</span><span class="o_form_value small">{{ regla() }}</span></div>
         </div>
       </div>
-      <ul class="nav nav-tabs mb-3" role="tablist">
-        <li class="nav-item"><button class="nav-link active">Lotes</button></li>
-      </ul>
+      <pc-odoo-tabs [pestanas]="pestanas">
+        <ng-template pcPestana="lotes">
       @if (lotes().length === 0) {
         <div class="text-muted small fst-italic">No hay lotes que cumplan la regla en {{ planta() }}.</div>
       } @else {
         <table class="table table-sm align-middle mb-0">
-          <thead class="text-muted small"><tr><th style="width:36px;"></th><th>Lote</th><th>Producto</th><th>Ubicación</th><th class="text-end">Cantidad</th><th style="width:70px;">Unidad</th></tr></thead>
+          <thead><tr><th style="width:36px;"></th><th>Lote</th><th>Producto</th><th>Ubicación</th><th class="text-end">Cantidad</th><th style="width:70px;">Unidad</th></tr></thead>
           <tbody>
             @for (l of lotes(); track l.lote + l.ubicacion) {
               <tr>
                 <td><input type="checkbox" class="form-check-input" [attr.aria-label]="l.lote" [checked]="elegidos().has(l.lote)" (change)="alternar(l.lote)" /></td>
                 <td><code>{{ l.lote }}</code></td>
-                <td class="small">{{ inv.getProducto(l.clave)?.nombre ?? l.clave }}</td>
+                <td class="small">{{ producto(l.clave) }}</td>
                 <td class="small">{{ l.ubicacion }}</td>
                 <td class="text-end">{{ n1(l.cantidad) }}</td>
                 <td class="small">{{ inv.getProducto(l.clave)?.unidad }}</td>
@@ -59,17 +61,21 @@ import { CONFIG, TipoLogistica } from './tipos';
           </tbody>
         </table>
       }
+        </ng-template>
+      </pc-odoo-tabs>
     </pc-hoja-nueva>
   `,
   styles: ':host { display: contents; }',
 })
 export class LogisticaNuevo {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
   private readonly libres = inject(OperacionesLibres);
   protected readonly inv = inject(InventoryState);
   protected readonly router = inject(Router);
   readonly tipo = input.required<TipoLogistica>();
   protected readonly cfg = computed(() => CONFIG[this.tipo()]);
   protected readonly n1 = n1;
+  protected readonly pestanas = [{ id: 'lotes', titulo: 'Lotes' }];
   protected readonly plantas = PLANTAS;
   protected readonly planta = signal<Planta>('PIM');
   protected readonly cliente = signal('');

@@ -2,12 +2,18 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs';
+import { OdooSystray } from './odoo-systray';
 import { MenuItem, moduleFor } from './modulos';
 
-/** Réplica de Components/Shell/OdooTopbar.razor. */
+/**
+ * Réplica de Components/Shell/OdooTopbar.razor, estructurada (contratos visuales §2.2): a la izquierda el
+ * hub, el nombre del módulo (o "PolyConecta" si no hay módulo) y su menú; a la derecha, mensajes y el
+ * usuario (`pc-odoo-systray`, diferido). Va en la carga inicial: sus menús son propios, sin CDK, y sus
+ * íconos van en línea.
+ */
 @Component({
   selector: 'pc-odoo-topbar',
-  imports: [RouterLink],
+  imports: [RouterLink, OdooSystray],
   templateUrl: './odoo-topbar.html',
   styles: ':host { display: contents; }',
 })

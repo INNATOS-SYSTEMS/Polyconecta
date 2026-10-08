@@ -51,7 +51,9 @@ flowchart LR
 | Casos de uso | Servicios de `PolyConecta.Application`, sin MediatR (D-72) | La lógica transversal (transacción, auditoría, validación) va en decoradores propios |
 | Frontend | **Angular 22** con TypeScript 6.0 (D-68) | Componentes standalone |
 | Build del frontend | **Node 24 LTS** (D-69) | — |
-| Estilos | Bootstrap 5.3.2 y Bootstrap Icons 1.11.3 | Iguales al prototipo mientras dure la paridad de la spec 001 |
+| Estilos | Bootstrap 5.3.2 y las clases `o_*` del prototipo | La paridad de píxeles con el prototipo se retiró (D-135); el acabado lo fijan los contratos visuales (spec 011) |
+| Componentes de interfaz | TanStack Table (`@tanstack/angular-table`), Angular CDK y Spartan (`@spartan-ng/brain`), todos MIT (D-135) | Sin librerías con licencia comercial o llave. El HTML y el estilo son nuestros, con las clases `o_*` |
+| Íconos | Lucide (paquete `lucide`, ISC, un módulo por ícono) (D-135) | Catálogo por intención en `pc-odoo-icon`; sustituyó a Bootstrap Icons en la spec 011. La barra superior, que va en la carga inicial, lleva sus tres SVG en línea para no cargar el catálogo |
 | Tiempo real | SignalR (`@microsoft/signalr`) | Chatter y avisos de sincronización. Los mensajes del chatter se guardan en la base (D-78) |
 | Pruebas .NET | **xUnit v3** + AwesomeAssertions (D-71, D-72) | Una sola versión en todos los proyectos de prueba |
 | Pruebas extremo a extremo | Playwright | — |
@@ -116,7 +118,7 @@ flowchart LR
 
 ## 6. Interfaz
 
-- **CT-24** La interfaz sigue los patrones de Odoo 19 (Principio IX) y el sistema de diseño de `PolyConecta.Web` ([05 §7.1](05-arquitectura-tecnica.md#71-sistema-de-diseño-ct-24)).
+- **CT-24** La interfaz sigue los patrones de Odoo 19 (Principio IX), el sistema de diseño de `PolyConecta.Web` ([05 §7.1](05-arquitectura-tecnica.md#71-sistema-de-diseño-ct-24)) y los [contratos visuales](07-contratos-visuales.md): una pantalla se arma con los patrones y componentes que ahí tienen contrato, y uno nuevo entra primero al documento y a la galería `/catalogo` (D-134).
 - **CT-25** Todo documento tiene sus dos modos: ligado y libre, con "Nuevo" (Principio X).
 - **CT-26** Las acciones que un rol no puede ejecutar se muestran deshabilitadas, con la razón visible.
 

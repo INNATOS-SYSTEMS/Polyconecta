@@ -1,0 +1,250 @@
+<div class="o_control_panel">
+  <div class="d-flex align-items-center gap-3">
+    <pc-odoo-breadcrumb [items]="[{ label: 'Catálogo de componentes' }]" />
+  </div>
+</div>
+
+<div class="o_catalogo">
+  <nav class="o_catalogo_indice" aria-label="Componentes">
+    <strong class="d-block mb-1">Patrones</strong>
+    <a href="/catalogo#lista">Lista</a>
+    <a href="/catalogo#kanban">Kanban</a>
+    <a href="/catalogo#formulario">Formulario de documento</a>
+    <a href="/catalogo#campos">Campos</a>
+    <a href="/catalogo#avisos">Avisos y bloqueos</a>
+    <a href="/catalogo#sincronizacion">Estado de sincronización</a>
+    <strong class="d-block mt-2 mb-1">Piezas</strong>
+    <a href="/catalogo#botones">Botones e íconos</a>
+    <a href="/catalogo#navegacion">Barra, migas y vistas</a>
+    <a href="/catalogo#paginas">Páginas vacías</a>
+  </nav>
+
+  <div class="o_catalogo_cuerpo">
+    <!-- ============================================================ Lista -->
+    <section class="o_catalogo_seccion" id="lista" data-catalogo="lista">
+      <h2>Lista · <code>pc-odoo-list</code> con <code>pc-odoo-search-panel</code></h2>
+      <p>57 pedidos de ejemplo. Ordena, filtra, agrupa, pagina, elige columnas, selecciona, exporta y guarda favoritos; todo lo resuelve el origen de datos.</p>
+      <div class="o_control_panel px-0">
+        <div class="d-flex align-items-center gap-3">
+          <pc-boton-nuevo [ruta]="'/catalogo'" />
+          <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos' }]" />
+        </div>
+        <pc-odoo-search-panel [view]="vista" [(texto)]="busqueda" [(filtrosActivos)]="nombrados" [(agrupacionesActivas)]="agrupaciones"
+                              [permiteAgrupar]="true" [conFavoritos]="true" [favoritos]="lista.favoritos()"
+                              (guardarFavorito)="lista.guardarFavorito($event.nombre, $event.porOmision)"
+                              (aplicarFavorito)="lista.aplicarFavorito($event)" (borrarFavorito)="lista.borrarFavorito($event)" />
+        <div class="d-flex align-items-center gap-2"><pc-odoo-view-switcher /></div>
+      </div>
+      <pc-odoo-list #lista lista="catalogo.pedidos" [tamanoInicial]="20" [origen]="origen" [columnas]="columnas" [idDe]="idPedido"
+                    [(busqueda)]="busqueda" [(nombrados)]="nombrados" [(agruparPor)]="agrupaciones"
+                    [acciones]="[{ nombre: 'Archivar', icono: 'archivar', ejecutar: avisarArchivar }]"
+                    (abrir)="ultimoEvento.set('Abrir ' + $event.folio)" />
+      <div class="small text-muted" data-catalogo="evento">{{ ultimoEvento() }}</div>
+
+      <h3 class="h6 mt-4">Sin registros</h3>
+      <pc-odoo-list lista="catalogo.vacia" [origen]="origenVacio" [columnas]="columnas" [idDe]="idPedido" data-catalogo="lista-vacia" />
+    </section>
+
+    <!-- ============================================================ Kanban -->
+    <section class="o_catalogo_seccion" id="kanban" data-catalogo="kanban">
+      <h2>Kanban · <code>pc-odoo-kanban</code></h2>
+      <p>Borrador → Confirmado confirma; Confirmado → Autorizado pide firma; cualquier otro movimiento regresa la tarjeta con el motivo. "Hecho" empieza plegada.</p>
+      <pc-odoo-kanban [origen]="origen" campoEtapa="estado" [etapas]="etapas" [transiciones]="transiciones" [tarjeta]="tarjeta"
+                      [idDe]="idPedido" [etapaDe]="etapaPedido" [nombrados]="nombrados()" [busqueda]="busqueda()"
+                      (movida)="ultimoEvento.set($event.fila.folio + ': ' + $event.desde + ' → ' + $event.hacia); lista.recargar()"
+                      (rechazada)="ultimoEvento.set($event.motivo)" (abrir)="ultimoEvento.set('Abrir ' + $event.folio)" />
+      <ng-template #tarjeta let-p>
+        <div class="o_kanban_card_cabecera">
+          <div class="fw-semibold text-dark small">{{ p.folio }}</div>
+          <span class="badge badge-brand">{{ p.estado }}</span>
+        </div>
+        <div class="text-muted small">{{ p.cliente }}</div>
+        <div class="o_kanban_card_dato" data-catalogo="entrega"><pc-odoo-icon nombre="calendario" />Entrega estimada: {{ fechaCampo(p.entrega) }}</div>
+      </ng-template>
+    </section>
+
+    <!-- ============================================================ Formulario -->
+    <section class="o_catalogo_seccion" id="formulario" data-catalogo="formulario">
+      <h2>Formulario de documento</h2>
+      <p>Panel (Nuevo, migas con el engranaje de acciones al final, botones inteligentes), barra de acciones con el estado de sincronización a la derecha, etapas, hoja con pestañas, captura de líneas y chatter. El botón inteligente "Pedido" está deshabilitado: así se ve un documento libre sin origen.</p>
+      <div class="o_control_panel px-0">
+        <div class="d-flex align-items-center gap-3">
+          <pc-boton-nuevo [ruta]="'/catalogo'" />
+          <pc-odoo-breadcrumb [items]="migas" />
+          <pc-odoo-action-menu [acciones]="accionesMenu" />
+        </div>
+        <div class="o_button_box"><pc-odoo-smart-buttons [buttons]="botonesInteligentes" /></div>
+        <div></div>
+      </div>
+      <div class="o_statusbar">
+        <div class="d-flex gap-2 align-items-center">
+          <button type="button" class="btn btn-primary">Confirmar</button>
+          <button type="button" class="btn btn-outline-secondary">Cancelar</button>
+        </div>
+        <!-- Solo en documentos que envían un comando a CONTPAQi (contratos visuales §1.8). -->
+        <pc-odoo-sync-status estado="Pendiente" />
+      </div>
+      <div class="d-flex gap-3 align-items-start">
+        <div class="o_form_sheet flex-grow-1">
+          <div class="o_sheet_body">
+          <pc-odoo-status-pipeline [stages]="etapasDocumento" currentStage="Borrador" />
+          <h1 class="h3 fw-bold mb-3">Pedido <span class="text-primary d-block">PV-2026-0001</span></h1>
+          <pc-odoo-tabs [pestanas]="pestanas">
+            <ng-template pcPestana="detalle">
+              <pc-odoo-line-capture [(draft)]="borrador" [catalogo]="catalogoProductos" [unidadFija]="true" (submitted)="agregarLinea($event)" />
+              <table class="table table-sm mt-2" data-catalogo="lineas">
+                <thead><tr><th>Clave</th><th>Producto</th><th class="text-end">Cantidad</th><th>Unidad</th><th></th></tr></thead>
+                <tbody>
+                  @for (l of lineas(); track $index) {
+                    <tr><td>{{ l.clave }}</td><td>{{ l.producto }}</td><td class="text-end">{{ l.cantidad }}</td><td>{{ l.unidad }}</td>
+                      <td class="text-end">
+                        <button type="button" class="btn o_btn_icon" aria-label="Editar línea"><pc-odoo-icon nombre="editar" contexto="icono" /></button>
+                        <button type="button" class="btn o_btn_icon" aria-label="Quitar línea" (click)="quitarLinea($index)"><pc-odoo-icon nombre="quitar-linea" contexto="icono" /></button>
+                      </td></tr>
+                  } @empty {
+                    <tr><td colspan="5" class="text-muted small">Sin líneas.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </ng-template>
+            <ng-template pcPestana="otra"><p class="text-muted small mb-0" data-catalogo="pestana-otra">Contenido de la segunda pestaña.</p></ng-template>
+          </pc-odoo-tabs>
+          </div>
+        </div>
+        <div style="width:340px">
+          <pc-odoo-chatter-drawer [(messages)]="mensajes" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ Campos -->
+    <section class="o_catalogo_seccion" id="campos" data-catalogo="campos">
+      <h2>Campos del maestro</h2>
+      <p>Selección de registro (<code>pc-odoo-many2one</code>), fecha (<code>pc-odoo-date</code>) y número (<code>pc-odoo-number</code>), editables y de solo lectura.</p>
+      <div class="o_catalogo_fila">
+        <div class="o_catalogo_campo">
+          <label>Producto</label>
+          <pc-odoo-many2one nombre="Producto" placeholder="Clave o producto" [origen]="origenProductos" [aTexto]="textoProducto" [idDe]="idProducto" [(ngModel)]="producto" />
+          <div class="small mt-1" data-catalogo="producto">{{ producto?.clave ?? '—' }}</div>
+        </div>
+        <div class="o_catalogo_campo">
+          <label>Producto (solo lectura)</label>
+          <pc-odoo-many2one nombre="Producto fijo" [origen]="origenProductos" [aTexto]="textoProducto" [idDe]="idProducto" [ngModel]="productoFijo" [soloLectura]="true" />
+        </div>
+        <div class="o_catalogo_campo">
+          <label>Fecha de entrega (octubre)</label>
+          <pc-odoo-date nombre="Fecha de entrega" [min]="fechaMin" [max]="fechaMax" [(ngModel)]="fecha" />
+          <div class="small mt-1" data-catalogo="fecha">{{ fecha?.toISOString()?.slice(0, 10) ?? '—' }}</div>
+        </div>
+        <div class="o_catalogo_campo">
+          <label>Fecha (solo lectura)</label>
+          <pc-odoo-date nombre="Fecha fija" [ngModel]="fechaMin" [soloLectura]="true" />
+        </div>
+        <div class="o_catalogo_campo">
+          <label>Cantidad</label>
+          <pc-odoo-number nombre="Cantidad" tipo="cantidad" [decimales]="1" unidad="PZA" [min]="0" [(ngModel)]="cantidad" />
+          <div class="small mt-1" data-catalogo="cantidad">{{ cantidad }}</div>
+        </div>
+        <div class="o_catalogo_campo">
+          <label>Precio unitario</label>
+          <pc-odoo-number nombre="Precio" tipo="moneda" moneda="MXN" [(ngModel)]="precio" />
+        </div>
+        <div class="o_catalogo_campo">
+          <label>Merma</label>
+          <pc-odoo-number nombre="Merma" tipo="porcentaje" [decimales]="1" [(ngModel)]="porcentaje" />
+        </div>
+        <div class="o_catalogo_campo">
+          <label>Líneas de otro documento</label>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm o_btn_link" data-catalogo="abrir-lotes" (click)="verLotes.set(true)"><pc-odoo-icon nombre="lotes" />Seleccionar líneas</button>
+            <button type="button" class="btn btn-sm o_btn_link" data-catalogo="abrir-cantidades" (click)="verCantidades.set(true)"><pc-odoo-icon nombre="lotes" />Seleccionar con cantidades</button>
+          </div>
+          <div class="small mt-1" data-catalogo="lotes">{{ lotesElegidos.join(', ') || '—' }}</div>
+          <pc-lot-picker-modal [show]="verLotes()" [availableLots]="lotes" [(selectedFolios)]="lotesElegidos" [requiredQty]="1500" unidad="PZA" (closed)="verLotes.set(false)" />
+          <pc-lot-quantity-picker-modal [show]="verCantidades()" [line]="lineaStock" [availableLots]="saldos" origen="SC/Stock" (closed)="verCantidades.set(false)" />
+        </div>
+        <div class="o_catalogo_campo">
+          <label>Cantidad (solo lectura)</label>
+          <pc-odoo-number nombre="Cantidad fija" tipo="cantidad" [decimales]="1" unidad="KG" [ngModel]="1250" [soloLectura]="true" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ Avisos -->
+    <section class="o_catalogo_seccion" id="avisos" data-catalogo="avisos">
+      <h2>Avisos y bloqueos · <code>pc-odoo-dialog</code> y <code>AvisosService</code></h2>
+      <p>Confirmaciones y hard-stop en diálogo (Esc y clic fuera cancelan); avisos flotantes arriba a la derecha.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-outline-secondary" data-catalogo="abrir-confirmacion" (click)="abrirConfirmacion()">Abrir confirmación</button>
+        <button type="button" class="btn btn-outline-secondary" data-catalogo="abrir-hard-stop" (click)="abrirHardStop()"><pc-odoo-icon nombre="hard-stop" />Hard-stop</button>
+        <button type="button" class="btn btn-outline-secondary" data-catalogo="aviso-exito" (click)="avisos.exito('Pedido confirmado.')">Aviso de éxito</button>
+        <button type="button" class="btn btn-outline-secondary" data-catalogo="aviso-aviso" (click)="avisos.aviso('Existencia insuficiente de PT1113 C567.')">Aviso</button>
+        <button type="button" class="btn btn-outline-secondary" data-catalogo="aviso-error" (click)="avisos.error('No se pudo enviar a CONTPAQi.')">Aviso de error</button>
+      </div>
+      <div class="small mt-2" data-catalogo="respuesta">{{ respuesta() }}</div>
+    </section>
+
+    <!-- ============================================================ Sincronización -->
+    <section class="o_catalogo_seccion" id="sincronizacion" data-catalogo="sincronizacion">
+      <h2>Estado de sincronización · <code>pc-odoo-sync-status</code> (CT-15)</h2>
+      <p>Solo en documentos que envían un comando a CONTPAQi, en el extremo derecho de la barra de acciones. Los cinco estados como ícono; al pulsarlo, el popover con el título y el detalle. "Reintentar" solo en error y solo para Sistemas (D-93).</p>
+      <div class="d-flex flex-wrap gap-3 align-items-start">
+        <pc-odoo-sync-status estado="NoAplica" />
+        <pc-odoo-sync-status estado="Pendiente" />
+        <pc-odoo-sync-status estado="Enviado" />
+        <pc-odoo-sync-status estado="Confirmado" folio="F-26200" idErp="3221" />
+        <pc-odoo-sync-status estado="Error" [error]="{ codigo: 'EXISTENCIA_INSUFICIENTE', mensaje: 'No hay existencia de PT1113 C567 en SC-PT.' }" [puedeReintentar]="true" (reintentar)="avisos.aviso('Reintento encolado.')" />
+      </div>
+    </section>
+
+    <!-- ============================================================ Botones -->
+    <section class="o_catalogo_seccion" id="botones" data-catalogo="botones">
+      <h2>Botones e íconos · variante A, "Índigo afinado" (E3)</h2>
+      <p>Hover y presionado se ven al usarlos; aquí se fijan con clases para comparar. Íconos Lucide con <code>pc-odoo-icon</code>.</p>
+      <div class="o_catalogo_estados">
+        <span></span>
+        <span class="o_catalogo_estado">Reposo</span><span class="o_catalogo_estado">Foco</span><span class="o_catalogo_estado">Deshabilitado</span>
+        <span class="o_catalogo_estado">Cargando</span>
+        <strong>Primario</strong>
+        <div><button type="button" class="btn btn-primary">Confirmar</button></div>
+        <div><button type="button" class="btn btn-primary" style="box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--focus-ring)">Confirmar</button></div>
+        <div><button type="button" class="btn btn-primary" disabled>Confirmar</button></div>
+        <div><button type="button" class="btn btn-primary o_btn_loading" aria-busy="true"><pc-odoo-icon nombre="cargando" />Confirmando…</button></div>
+        <strong>Secundario</strong>
+        <div><button type="button" class="btn btn-outline-secondary">Cancelar</button></div>
+        <div><button type="button" class="btn btn-outline-secondary" style="box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--focus-ring)">Cancelar</button></div>
+        <div><button type="button" class="btn btn-outline-secondary" disabled>Cancelar</button></div>
+        <div><button type="button" class="btn btn-outline-secondary o_btn_loading" aria-busy="true"><pc-odoo-icon nombre="cargando" />Imprimiendo…</button></div>
+        <strong>Ícono</strong>
+        <div><button type="button" class="btn o_btn_icon" aria-label="Editar"><pc-odoo-icon nombre="editar" contexto="icono" /></button></div>
+        <div><button type="button" class="btn o_btn_icon" aria-label="Editar" style="box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--focus-ring)"><pc-odoo-icon nombre="editar" contexto="icono" /></button></div>
+        <div><button type="button" class="btn o_btn_icon" aria-label="Editar" disabled><pc-odoo-icon nombre="editar" contexto="icono" /></button></div>
+        <div><button type="button" class="btn o_btn_icon o_btn_loading" aria-label="Guardando"><pc-odoo-icon nombre="cargando" contexto="icono" /></button></div>
+      </div>
+      <h3 class="h6 mt-3">Catálogo de íconos</h3>
+      <div class="d-flex flex-wrap gap-3 small" data-catalogo="iconos">
+        @for (n of nombresIconos; track n) {
+          <span class="d-inline-flex align-items-center gap-1" style="width:150px"><pc-odoo-icon [nombre]="n" contexto="icono" />{{ n }}</span>
+        }
+      </div>
+    </section>
+
+    <!-- ============================================================ Navegación -->
+    <section class="o_catalogo_seccion" id="navegacion" data-catalogo="navegacion">
+      <h2>Barra superior, migas, vistas y paginador</h2>
+      <p>La barra superior es la de esta página. Las migas resumen con "…" a partir del tercer nivel.</p>
+      <div class="d-flex flex-column gap-3">
+        <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos', url: '/catalogo' }, { label: 'PV-2026-0001', url: '/catalogo' }, { label: 'OF BOL-2026-0001' }]" />
+        <div class="d-flex gap-3 align-items-center"><pc-odoo-view-switcher /> <pc-odoo-view-switcher [kanbanEnabled]="false" /></div>
+        <div class="d-flex gap-3 align-items-center"><pc-odoo-pager [count]="7" /><span class="small text-muted">sin paginar (como el prototipo)</span></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ Páginas -->
+    <section class="o_catalogo_seccion" id="paginas" data-catalogo="paginas">
+      <h2>Páginas vacías</h2>
+      <div class="border rounded mb-3"><pc-pagina-pendiente titulo="Módulo en construcción" /></div>
+      <div class="border rounded"><pc-pagina-no-encontrada /></div>
+    </section>
+  </div>
+</div>

@@ -4,6 +4,17 @@
 :root {
     --brand-primary: #2E3889;
     --brand-primary-hover: #232C6B;
+    /* Botones, variante A "Índigo afinado" (spec 011, E3). */
+    --brand-primary-active: #1B2254;
+    --btn-secondary-bg: #FFFFFF;
+    --btn-secondary-border: #C5CAD6;
+    --btn-secondary-color: #374151;
+    --btn-secondary-hover-bg: #F3F4F6;
+    --btn-secondary-hover-border: #AEB4C2;
+    --btn-secondary-active-bg: #E5E7EB;
+    --btn-icon-hover-bg: #EEF0FA;
+    --focus-ring: #6F78C2;
+    --btn-disabled-opacity: 0.45;
     --brand-secondary: #017E84;
     --brand-light: #EEF0FA;
     --app-bg: #F3F4F6;
@@ -42,11 +53,35 @@ body {
     --bs-btn-border-color: var(--brand-primary);
     --bs-btn-hover-bg: var(--brand-primary-hover);
     --bs-btn-hover-border-color: var(--brand-primary-hover);
-    --bs-btn-active-bg: var(--brand-primary-hover);
-    --bs-btn-active-border-color: var(--brand-primary-hover);
+    --bs-btn-active-bg: var(--brand-primary-active);
+    --bs-btn-active-border-color: var(--brand-primary-active);
     --bs-btn-disabled-bg: var(--brand-primary);
     --bs-btn-disabled-border-color: var(--brand-primary);
+    --bs-btn-disabled-opacity: var(--btn-disabled-opacity);
     --bs-btn-focus-shadow-rgb: 46, 56, 137;
+}
+
+/* Secundario de la variante A: blanco, borde neutro y texto oscuro. */
+.btn-outline-secondary {
+    --bs-btn-color: var(--btn-secondary-color);
+    --bs-btn-bg: var(--btn-secondary-bg);
+    --bs-btn-border-color: var(--btn-secondary-border);
+    --bs-btn-hover-color: #1F2937;
+    --bs-btn-hover-bg: var(--btn-secondary-hover-bg);
+    --bs-btn-hover-border-color: var(--btn-secondary-hover-border);
+    --bs-btn-active-color: #1F2937;
+    --bs-btn-active-bg: var(--btn-secondary-active-bg);
+    --bs-btn-active-border-color: var(--btn-secondary-hover-border);
+    --bs-btn-disabled-color: var(--btn-secondary-color);
+    --bs-btn-disabled-bg: var(--btn-secondary-bg);
+    --bs-btn-disabled-border-color: var(--btn-secondary-border);
+    --bs-btn-disabled-opacity: var(--btn-disabled-opacity);
+}
+
+/* Foco visible solo con teclado, igual en todos los botones: anillo de 2 px separado por 2 px de blanco. */
+.btn:focus-visible {
+    box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--focus-ring);
+    outline: none;
 }
 
 .btn-outline-primary {
@@ -157,13 +192,6 @@ body {
     font-weight: 600;
 }
 
-.o_main_navbar .o_company_name {
-    font-weight: 500;
-    font-size: 0.85rem;
-    color: white;
-    opacity: 0.85;
-}
-
 /* --- Control panel / breadcrumbs ---
    El bloque de la izquierda (boton "Nuevo" + breadcrumb) manda: toma automaticamente
    el ancho que sus textos necesiten, sin comprimirse ni partirlos en dos lineas.
@@ -252,8 +280,11 @@ body {
     background: #F3F4F6;
     border-radius: 8px;
     padding: 0.75rem;
-    min-width: 240px;
-    flex-shrink: 0;
+    /* Ancho fijo de etapa (contratos visuales §1.2): todas las columnas miden lo mismo. */
+    width: 338px;
+    min-width: 338px;
+    max-width: 338px;
+    flex: 0 0 338px;
 }
 
 .o_kanban_column_title {
@@ -277,42 +308,6 @@ body {
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
-}
-
-.o_statusbar_status {
-    display: flex;
-    align-items: center;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    overflow: hidden;
-    background: white;
-    height: 34px;
-}
-
-.o_status_btn {
-    padding: 0 0.85rem;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    font-size: 0.775rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    border-right: 1px solid var(--border-color);
-    white-space: nowrap;
-    background: white;
-}
-
-.o_status_btn:last-child { border-right: none; }
-
-.o_status_btn.active {
-    background-color: var(--brand-primary);
-    color: white;
-    font-weight: 700;
-}
-
-.o_status_btn.done {
-    color: var(--brand-primary);
-    background-color: #F3F4F6;
 }
 
 /* --- Statusbar tipo "arrow pipeline" (Borrador -> Confirmado -> ... -> Hecho) --- */
@@ -446,15 +441,18 @@ body {
 .o_control_panel > .o_search_bar {
     justify-self: center;
 }
+.o_search_bar:focus-within { border-color: var(--brand-primary); }
+/* La tercera columna del panel (cambio de vista) va a la extrema derecha, lejos de la búsqueda. */
+.o_control_panel > :nth-child(3) { justify-self: end; }
 
 .o_search_bar {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    background: #F3F4F6;
-    border: 1px solid var(--border-color);
-    border-radius: 999px;
-    padding: 0.3rem 0.9rem;
+    background: white;
+    border: 1px solid var(--btn-secondary-border);
+    border-radius: 6px;
+    padding: 0.3rem 0.75rem;
     min-width: 280px;
     color: var(--text-muted);
 }
@@ -525,33 +523,7 @@ body {
     padding: 1.5rem;
 }
 
-/* --- Chatter --- */
-.o_chatter {
-    background: #FAFAFA;
-    border-left: 1px solid var(--border-color);
-}
-
-.o_chatter_msg {
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 0.65rem 0.85rem;
-    font-size: 0.8rem;
-}
-
-/* --- Badges y tarjetas de marca --- */
-.btn-brand-primary {
-    background-color: var(--brand-primary);
-    color: white;
-    font-weight: 600;
-    border-color: var(--brand-primary);
-}
-.btn-brand-primary:hover {
-    background-color: var(--brand-primary-hover);
-    border-color: var(--brand-primary-hover);
-    color: white;
-}
-
+/* --- Insignias de marca --- */
 .badge-brand {
     background-color: var(--brand-light);
     color: var(--brand-primary);
@@ -597,49 +569,6 @@ body {
     transform: translateY(-1px);
 }
 
-/* --- Hub de módulos (app launcher) --- */
-.o_app_hub {
-    padding: 3rem 2rem;
-    display: flex;
-    justify-content: center;
-}
-.o_app_grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, 130px);
-    gap: 2rem;
-    max-width: 820px;
-}
-.o_app_tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 8px;
-}
-.o_app_tile:hover {
-    background: rgba(0,0,0,0.03);
-}
-.o_app_icon {
-    width: 88px;
-    height: 88px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 2.2rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-}
-.o_app_label {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--text-dark, #2b2b33);
-    text-align: center;
-}
 
 /* En pantallas angostas no hay ancho para un pipeline flotante: vuelve al flujo
    normal del cuerpo, encima del titulo del documento. */
@@ -775,3 +704,149 @@ body {
     font-weight: 600;
     font-size: 0.85rem;
 }
+
+/* =====================================================================================
+   Componentes de la spec 011 (contratos visuales). Usan las variables de la variante A (E3);
+   Spartan brain no trae estilos, así que todo lo visible de sus primitivas se define aquí.
+   ===================================================================================== */
+
+/* --- Botón de ícono y estado cargando --- */
+.btn.o_btn_icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #4B5563;
+}
+.btn.o_btn_icon:hover { background: var(--btn-icon-hover-bg); color: var(--brand-primary); }
+.btn.o_btn_icon:active { background: #E4E7F6; color: var(--brand-primary-hover); }
+.btn.o_btn_icon:disabled { opacity: var(--btn-disabled-opacity); }
+.btn.o_btn_loading { pointer-events: none; }
+.o_icon_spin { animation: o_girar 0.9s linear infinite; }
+@keyframes o_girar { to { transform: rotate(360deg); } }
+.btn pc-odoo-icon + span, .btn pc-odoo-icon { margin-right: 0.35rem; }
+.btn.o_btn_icon pc-odoo-icon { margin-right: 0; }
+
+/* --- Lista (pc-odoo-list) --- */
+.o_list_sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.o_list_sortable:hover { color: var(--brand-primary); }
+.o_list_sort_icon { color: var(--brand-primary); margin-left: 0.25rem; }
+.o_group_row { cursor: pointer; }
+.o_group_row .o_group_name { display: inline-flex; align-items: center; gap: 0.35rem; }
+.o_list_footer td { font-weight: 600; background: #F8F9FA; }
+.o_list_vacio { padding: 2.5rem 1rem; text-align: center; color: var(--text-muted); }
+.o_list_selection_bar { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+.o_list_columnas_menu { min-width: 220px; }
+.o_list_columnas_menu .o_search_menu_item { justify-content: space-between; }
+
+/* --- Menús y paneles flotantes (CDK overlay y BrnPopover) --- */
+.o_dropdown_panel {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(31, 41, 55, 0.12);
+    padding: 0.35rem 0;
+    min-width: 180px;
+    font-size: 0.85rem;
+}
+.o_dropdown_panel [role="menuitem"]:focus-visible,
+.o_dropdown_panel [role="option"][data-highlighted] { background: var(--brand-light); outline: none; }
+
+/* --- Selección de registro (pc-odoo-many2one, BrnCombobox) --- */
+.o_many2one { position: relative; }
+.o_many2one_lista { max-height: 280px; overflow-y: auto; }
+.o_many2one_opcion { padding: 0.35rem 0.75rem; cursor: pointer; }
+.o_many2one_opcion[data-highlighted], .o_many2one_opcion:hover { background: var(--brand-light); }
+.o_many2one_opcion[data-hidden] { display: none !important; }
+.o_many2one_mas { padding: 0.35rem 0.75rem; color: var(--brand-primary); cursor: pointer; border-top: 1px solid var(--border-color); }
+.o_many2one_vacio { padding: 0.35rem 0.75rem; color: var(--text-muted); }
+[brnComboboxContent]:not([data-empty]) .o_many2one_vacio,
+[brnComboboxContent][data-empty="false"] .o_many2one_vacio { display: none; }
+
+/* --- Calendario (pc-odoo-date, BrnCalendar) --- */
+
+/* --- Kanban con arrastre (pc-odoo-kanban, CDK DragDrop) --- */
+.o_kanban_column.o_kanban_plegada { min-width: 48px; max-width: 48px; width: 48px; flex-basis: 48px; cursor: pointer; writing-mode: vertical-rl; }
+.o_kanban_column .cdk-drop-list { min-height: 80px; }
+.o_kanban_column .cdk-drag-placeholder { opacity: 0.35; }
+.cdk-drag-preview { box-shadow: 0 8px 22px rgba(31, 41, 55, 0.2); border-radius: 6px; }
+.cdk-drag-animating, .o_kanban_column .cdk-drop-list-dragging .kanban-card:not(.cdk-drag-placeholder) { transition: transform 200ms ease; }
+.o_kanban_motivo { font-size: 0.78rem; color: #B42318; margin-bottom: 0.5rem; }
+
+/* --- Diálogos y avisos flotantes (pc-odoo-dialog, AvisosService) --- */
+.o_dialog_backdrop { background: rgba(17, 24, 39, 0.45); }
+.o_dialog { background: white; border-radius: 8px; box-shadow: 0 18px 50px rgba(17, 24, 39, 0.3); min-width: 380px; max-width: 720px; }
+.o_dialog_header { padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border-color); font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+.o_dialog_body { padding: 1.1rem 1.25rem; }
+.o_dialog_footer { padding: 0.75rem 1.25rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem; }
+.o_avisos { position: fixed; top: 58px; right: 1rem; z-index: 1100; display: flex; flex-direction: column; gap: 0.5rem; }
+.o_aviso {
+    display: flex; align-items: flex-start; gap: 0.5rem; min-width: 280px; max-width: 420px; padding: 0.65rem 0.85rem;
+    background: white; border: 1px solid var(--border-color); border-left-width: 4px; border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(31, 41, 55, 0.12); font-size: 0.85rem;
+}
+.o_aviso_exito { border-left-color: #16794C; }
+.o_aviso_aviso { border-left-color: #B54708; }
+.o_aviso_error { border-left-color: #B42318; }
+
+/* --- Pestañas (pc-odoo-tabs, BrnTabs): misma apariencia que las .nav-tabs del prototipo --- */
+.o_tabs [role="tab"] { cursor: pointer; }
+
+
+/* --- Formulario: sin línea entre el panel (migas y botones inteligentes) y la barra de acciones (contratos visuales §1.3) --- */
+.o_control_panel:has(.o_button_box) { border-bottom-color: transparent; }
+
+/* --- Campos capturables (contratos visuales §1.6): línea inferior y fondo transparente; al enfocar, la línea toma el color primario --- */
+.o_field {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-bottom: 1px solid var(--border-color);
+    background: transparent;
+    min-height: 31px;
+}
+.o_field:focus-within { border-bottom-color: var(--brand-primary); }
+.o_field input, .o_field button.o_field_valor {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    padding: 0.25rem 2px;
+    font-size: 0.875rem;
+    color: var(--text-main);
+    text-align: inherit;
+    outline: none;
+    box-shadow: none;
+}
+.o_field .o_field_extra { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
+.o_field.o_field_solo_lectura { border-bottom-color: transparent; }
+.o_field.o_field_invalido { border-bottom-color: #B42318; }
+
+
+/* --- Revisión de la galería (2026-10-07) --- */
+/* Tablas: encabezado en peso medio y gris, contenido en peso normal y a 0.85rem. */
+.table { font-size: 0.85rem; }
+.table > thead th { font-weight: 500; font-size: 0.8rem; }
+.table > tbody td { font-weight: 400; }
+.table > tbody td.fw-semibold, .table > tbody td .fw-semibold { font-weight: 500 !important; }
+.o_list_footer td { font-weight: 500; }
+/* Botón de enlace: sin borde ni fondo, color primario (abrir selectores sobre líneas de otro documento). */
+.btn.o_btn_link { white-space: nowrap; border: 0; background: transparent; color: var(--brand-primary); padding-left: 0.25rem; padding-right: 0.25rem; }
+.btn.o_btn_link:hover { color: var(--brand-primary-hover); text-decoration: underline; }
+/* Tarjeta de kanban: el estado arriba a la derecha, separado del borde por el mismo relleno de la tarjeta. */
+.o_kanban_card_cabecera { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+.o_kanban_card_cabecera .badge { flex-shrink: 0; }
+.o_kanban_card_dato { display: flex; align-items: center; gap: 0.35rem; margin-top: 0.5rem; font-size: 0.78rem; color: var(--text-muted); }
+/* Diálogo que el componente pinta él mismo (selectores de lotes), con el fondo y el marco de pc-odoo-dialog. */
+.o_dialog_overlay { position: fixed; inset: 0; z-index: 1050; display: flex; align-items: center; justify-content: center; }
+.o_dialog_overlay .o_dialog { max-width: none; }
+/* Ícono al inicio de un aviso en la hoja (error, advertencia, backorder). */
+.alert pc-odoo-icon { margin-right: 0.4rem; }
+
+/* --- Barra superior estructurada (contratos visuales §2.2) --- */
+.o_main_navbar .o_brand_name { font-weight: 600; letter-spacing: 0.01em; }
+.o_main_navbar .o_systray_hueco { width: 210px; height: 34px; }

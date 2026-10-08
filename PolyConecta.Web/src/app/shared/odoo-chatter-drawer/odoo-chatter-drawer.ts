@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, input, model, signal } from '@angular/core';
+import { OdooIcon } from '../odoo-icon/odoo-icon';
 import { ChatterService } from '../../core/chatter/chatter.service';
 import { horaCorta } from '../../core/format/numero';
 
@@ -16,6 +17,7 @@ export interface ChatterEntry {
  */
 @Component({
   selector: 'pc-odoo-chatter-drawer',
+  imports: [OdooIcon],
   templateUrl: './odoo-chatter-drawer.html',
   styles: ':host { display: contents; }',
 })
@@ -25,6 +27,8 @@ export class OdooChatterDrawer {
   readonly messages = model<ChatterEntry[]>([]);
   /** Folio del documento. Sin él, el panel es solo local (como el prototipo). */
   readonly documentId = input<string | undefined>(undefined);
+  /** Documento que todavía no se guarda ("Nuevo", D-136): el chatter se ve, pero se activa al guardar. */
+  readonly inactivo = input(false);
 
   protected readonly newMsgText = signal('');
   protected readonly avisoSinConexion = signal(false);

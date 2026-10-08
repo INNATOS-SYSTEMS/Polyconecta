@@ -3,36 +3,35 @@
         <pc-boton-nuevo [ruta]="cfg().ruta" />
         <pc-odoo-breadcrumb [items]="[{ label: cfg().tituloLista }]" />
     </div>
-    <pc-odoo-search-panel [view]="cfg().vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" />
+    <pc-odoo-search-panel [view]="cfg().vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" [(agrupacionesActivas)]="agrupaciones"
+                          [permiteAgrupar]="viewState.viewMode() !== 'Kanban'" [conFavoritos]="viewState.viewMode() !== 'Kanban'"
+                          [favoritos]="lista()?.favoritos() ?? []" (guardarFavorito)="lista()?.guardarFavorito($event.nombre, $event.porOmision)"
+                          (aplicarFavorito)="lista()?.aplicarFavorito($event)" (borrarFavorito)="lista()?.borrarFavorito($event)" />
     <div class="d-flex align-items-center gap-2">
-        <div class="btn-group btn-group-sm o_view_switcher">
-            <button class="btn-view active" disabled><i class="bi bi-list-ul"></i></button>
-        </div>
+        <pc-odoo-view-switcher />
     </div>
 </div>
 
 <div class="p-4">
-    <table class="table table-hover align-middle bg-white shadow-sm">
-        <thead class="table-light">
-            <tr>
-                <th style="width:36px;"><input type="checkbox" class="form-check-input" (change)="toggleAll($event)" /></th>
-                <th>Folio</th><th>Operación</th>@if (cfg().mostrarOrigenEnLista) {<th>Origen</th>}<th>Destino</th><th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (f of filas(); track f.folio) {
-                <tr style="cursor:pointer;" [class.table-active]="seleccionadas().has(f.folio)" (click)="router.navigateByUrl(cfg().ruta + '/' + f.folio)">
-                    <td (click)="$event.stopPropagation()"><input type="checkbox" class="form-check-input" [checked]="seleccionadas().has(f.folio)" (change)="toggle(f.folio)" /></td>
-                    <td class="fw-semibold text-primary">{{ f.folio }}</td>
-                    <td>{{ f.operacion }}</td>
-                    @if (cfg().mostrarOrigenEnLista) {
-                    <td>{{ f.origen }}</td>
-                    }
-                    <td>{{ f.destino }}</td>
-                    <td><span class="badge badge-brand">{{ f.estado }}</span></td>
-                </tr>
+    @if (viewState.viewMode() === 'Kanban') {
+        <pc-odoo-kanban #kanban [origen]="origen()" campoEtapa="estado" [etapas]="etapas()" [transiciones]="transiciones()" [tarjeta]="tarjeta"
+                        [idDe]="idDoc" [etapaDe]="etapaDoc" [nombrados]="filtros()" [busqueda]="searchText()" (abrir)="abrir($event)" />
+        <ng-template #tarjeta let-f>
+            <div class="o_kanban_card_cabecera">
+                <div class="fw-semibold text-dark small">{{ f.folio }}</div>
+                <span class="badge badge-brand">{{ f.estado }}</span>
+            </div>
+            <div class="text-muted small">{{ f.operacion }}</div>
+            <div class="o_kanban_card_dato"><pc-odoo-icon nombre="traslado" />@if (cfg().mostrarOrigenEnLista) {{{ f.origen }} → }{{ cfg().prefijoDestino }}{{ f.destino }}</div>
+            @if (tipo() === 'entrega') {
+                <div class="o_kanban_card_dato"><pc-odoo-icon nombre="calendario" />Entrega estimada: {{ fechaCampo(f.doc.fechaProgramada) }}</div>
+            } @else {
+                <div class="o_kanban_card_dato"><pc-odoo-icon nombre="calendario" />Fecha límite: {{ fechaCampo(f.doc.fechaLimite) }}</div>
             }
-        </tbody>
-    </table>
-    <pc-odoo-pager [count]="filas().length" />
+        </ng-template>
+        <pc-odoo-pager [count]="kanban.total()" />
+    } @else {
+        <pc-odoo-list [lista]="'logistica.' + tipo()" [origen]="origen()" [columnas]="columnas()" [idDe]="idDoc" mensajeVacio=""
+                      [(busqueda)]="searchText" [(nombrados)]="filtros" [(agruparPor)]="agrupaciones" (abrir)="abrir($event)" />
+    }
 </div>

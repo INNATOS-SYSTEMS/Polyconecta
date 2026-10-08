@@ -2,7 +2,8 @@ import { Paso, guion } from './runner';
 
 const GUARDAR: Paso = { pulsar: '.o_statusbar button', texto: 'Guardar' };
 const VALIDAR: Paso = { pulsar: '.o_statusbar button', texto: 'Validar' };
-const MODAL = 'div.position-fixed';
+/** El modal de lotes: en el prototipo, un div fijo; en la réplica, el marco de pc-odoo-dialog (spec 011). */
+const MODAL = ':is(div.position-fixed, .o_dialog_overlay)';
 const CAPTURA = 'main .o_line_capture';
 const lote = (nombre: string): Paso => ({ pulsar: `main input[aria-label="${nombre}"]` });
 
@@ -20,11 +21,11 @@ guion({
     { capturar: `${CAPTURA} input[placeholder=Cantidad]`, valor: '100' },
     { pulsar: `${CAPTURA} button`, texto: 'Agregar' },
     GUARDAR,
-    { control: 'recolección sin OF', en: 'main', esperado: /PIM\/OUT\/\d+ Orden de Fabricación 0 .*Recolección de materia prima.*PIM\/Stock\/MP.*PIM\/WIP.*GA502022 LINEAL BUTENO 100\.0/ },
-    { pulsar: 'main td button.btn-link' },
+    { control: 'recolección sin OF', en: 'main', esperado: /PIM\/OUT\/\d+ Órdenes de fabricación 0 .*Recolección de materia prima.*PIM\/Stock\/MP.*PIM\/WIP.*GA502022 - LINEAL BUTENO 100\.0/ },
+    { pulsar: 'main td :is(button.btn-link, button.o_btn_link)' },
     { capturar: `${MODAL} input[placeholder^=Escanear]`, valor: 'GA-2608' },
     { capturar: `${MODAL} input[placeholder=Cantidad]`, valor: '100' },
-    { pulsar: `${MODAL} .input-group button` },
+    { pulsar: `${MODAL} :is(.input-group button, [data-lote-agregar])` },
     { pulsar: `${MODAL} button`, texto: 'Cerrar' },
     VALIDAR,
     { control: 'validada', en: 'main', esperado: /Contpaq ID TR-\d+/ },
@@ -38,11 +39,11 @@ guion({
     { pulsar: `${CAPTURA} button`, texto: 'Agregar' },
     GUARDAR,
     { control: 'devolución', en: 'main', esperado: /PIM\/IN\/\d+ .*Devolución de recolección.*PIM\/WIP.*PIM\/Stock\/MP/ },
-    { pulsar: 'main td button.btn-link' },
+    { pulsar: 'main td :is(button.btn-link, button.o_btn_link)' },
     { control: 'ofrece el saldo de WIP', en: MODAL, esperado: /GA-2608 100\.0 KGS/ },
     { pulsar: `${MODAL} button`, texto: 'Tomar' },
     { capturar: `${MODAL} input[placeholder=Cantidad]`, valor: '40' },
-    { pulsar: `${MODAL} .input-group button` },
+    { pulsar: `${MODAL} :is(.input-group button, [data-lote-agregar])` },
     { pulsar: `${MODAL} button`, texto: 'Cerrar' },
     VALIDAR,
     { navegar: '/inventario' },
@@ -61,12 +62,12 @@ guion({
     { control: 'nada en tránsito', en: 'main', esperado: /No hay lotes que cumplan la regla en SC/ },
     { navegar: '/traslados' },
     { pulsar: 'pc-boton-nuevo button' },
-    { control: 'solo lotes liberados', en: 'main', esperado: /^(?!.*R003-IV310-26\.S)(?!.*R006-IV310-26)(?=.*R004-IV310-26 ROLLO TUB 20\.5 370 \(Maestro\) PIM\/Stock\/PT 100\.0 KGS)/ },
+    { control: 'solo lotes liberados', en: 'main', esperado: /^(?!.*R003-IV310-26\.S)(?!.*R006-IV310-26)(?=.*R004-IV310-26 PT3413 C455 - ROLLO TUB 20\.5 370 \(Maestro\) PIM\/Stock\/PT 100\.0 KGS)/ },
     lote('R004-IV310-26'),
     lote('R005-IV310-26'),
     GUARDAR,
     { control: 'traslado creado', en: 'main', esperado: /PIM\/OUT\/\d+ .*Traspaso PIM a SC.*PIM\/Stock.*SC\/Stock\/MP.*PT3413 C455 .* 200\.0 0\.0 KGS 2 lote\(s\)/ },
-    { control: 'sin origen', en: '.o_button_box', esperado: /Orden de Fabricación 0 Recepción 0/ },
+    { control: 'sin origen', en: '.o_button_box', esperado: /Recepciones 0 Órdenes de fabricación 0/ },
     VALIDAR, VALIDAR, VALIDAR, VALIDAR,
     { control: 'traslado hecho', en: 'main', esperado: /Contpaq ID TR-\d+.*200\.0 200\.0 KGS/ },
     { navegar: '/recepcion' },
@@ -76,6 +77,8 @@ guion({
     lote('R004-IV310-26'),
     GUARDAR,
     VALIDAR, VALIDAR, VALIDAR,
+    // "Validar recepción" (P6 de la spec 011): lotes que entran y la regla de D-56.
+    { pulsar: '[data-dialogo="confirmar"]', soloAngular: true },
     { control: 'recepción hecha', en: 'main', esperado: /SC\/IN\/\d+.*TRANS\/SC.*SC\/Stock\/MP.*Contpaq ID TR-\d+/ },
     { navegar: '/inventario' },
     { capturar: '.o_search_bar input', valor: 'R00' },
@@ -96,10 +99,11 @@ guion({
     { control: 'exige cliente', en: 'main', esperado: /Capture el cliente\./ },
     { capturar: 'main input[name=cliente]', valor: 'CLIENTE MOSTRADOR' },
     GUARDAR,
-    { control: 'entrega creada', en: 'main', esperado: /SC\/OUT\/\d+ Pedido de Venta 0 .*Cliente: CLIENTE MOSTRADOR.*PT1113 C567 .* 2,000\.0 0\.0 MIL 1 lote\(s\)/ },
-    { pulsar: 'main td button.btn-link' },
+    { control: 'entrega creada', en: 'main', esperado: /SC\/OUT\/\d+ Pedidos 0 .*Cliente: CLIENTE MOSTRADOR.*PT1113 C567 .* 2,000\.0 0\.0 MIL 1 lote\(s\)/ },
+    { pulsar: 'main td :is(button.btn-link, button.o_btn_link)' },
     { elegirLote: `${MODAL} input[placeholder^=Escanear]`, lote: 'R003-IV310-26.S' },
-    { control: 'no acepta lotes no liberados', en: MODAL, esperado: /Lote R003-IV310-26\.S no encontrado o no aprobado\./ },
+    // Desde P7 de la spec 011 el selector explica el hard-stop de Calidad en vez de "no encontrado".
+    { control: 'no acepta lotes no liberados', en: MODAL, esperado: /Hard-stop de Calidad: el lote R003-IV310-26\.S está rechazado/ },
     { pulsar: `${MODAL} button`, texto: 'Cerrar' },
     VALIDAR, VALIDAR, VALIDAR,
     { control: 'entrega hecha', en: 'main', esperado: /Contpaq ID REM-\d+.*2,000\.0 2,000\.0 MIL/ },

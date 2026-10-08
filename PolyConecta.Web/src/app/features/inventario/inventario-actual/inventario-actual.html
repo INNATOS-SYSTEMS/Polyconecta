@@ -4,45 +4,11 @@
     </div>
     <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" [(agrupacionesActivas)]="agrupaciones" [permiteAgrupar]="true" />
     <div class="d-flex align-items-center gap-2">
-        <div class="btn-group btn-group-sm o_view_switcher">
-            <button class="btn-view active" disabled><i class="bi bi-list-ul"></i></button>
-        </div>
+        <pc-odoo-view-switcher [kanbanEnabled]="false" />
     </div>
 </div>
 
 <div class="p-4">
-    <table class="table table-hover align-middle bg-white shadow-sm">
-        <thead class="table-light">
-            <tr>
-                <th>Ubicación</th>
-                <th>Producto</th>
-                <th>Lote</th>
-                <th class="text-end">Cantidad</th>
-                <th>Unidad</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (fila of renglones(); track $index) {
-                @if (fila.grupo; as g) {
-                    <tr class="o_group_row" style="cursor:pointer;" (click)="alternarGrupo(g.ruta)">
-                        <td colspan="3" [style.padding-left.px]="12 + g.nivel * 20">
-                            <i class="bi me-1" [class.bi-caret-down-fill]="abiertos().has(g.ruta)" [class.bi-caret-right-fill]="!abiertos().has(g.ruta)"></i>
-                            {{ g.etiqueta }} <span class="text-muted">({{ g.cantidad }})</span>
-                        </td>
-                        <td class="text-end">{{ g.unidad !== undefined ? n1(g.total) : '' }}</td>
-                        <td class="text-muted">{{ g.unidad }}</td>
-                    </tr>
-                } @else if (fila.quant; as q) {
-                    <tr>
-                        <td>{{ q.ubicacion }}</td>
-                        <td><span class="fw-semibold">[{{ q.producto.clave }}]</span> {{ q.producto.nombre }}</td>
-                        <td class="font-monospace small">{{ q.lote }}</td>
-                        <td class="text-end">{{ n1(q.cantidad) }}</td>
-                        <td class="text-muted">{{ q.producto.unidad }}</td>
-                    </tr>
-                }
-            }
-        </tbody>
-    </table>
-    <pc-odoo-pager [count]="filtradas().length" />
+    <pc-odoo-list lista="inventario.actual" [origen]="origen" [columnas]="columnas" [idDe]="idFila" mensajeVacio="" [filasPulsables]="false"
+                  [(busqueda)]="searchText" [(nombrados)]="filtros" [(agruparPor)]="agrupaciones" />
 </div>

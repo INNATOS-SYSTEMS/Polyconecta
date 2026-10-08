@@ -1,19 +1,23 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { n1 } from '../../../core/format/numero';
-import { CalidadLibre } from '../../../core/state/libre/calidad-libre';
+import { CalidadLibre, LoteControlado } from '../../../core/state/libre/calidad-libre';
 import { OperationalFlowState } from '../../../core/state/operational-flow-state';
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
+import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
+import { OdooTabs } from '../../../shared/odoo-tabs/odoo-tabs';
+import { CalidadAcciones } from '../calidad-acciones';
 
 /**
  * Control de calidad libre (FR-012): el mismo formulario que el control de una OF, sobre los lotes
  * elegidos al crearlo. No tiene smart buttons de origen (FR-014): cada lote enlaza a su OF.
+ * Fallar un lote pide confirmación (aclaración P4), igual que en el control ligado.
  */
 @Component({
   selector: 'pc-calidad-libre-form',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooChatterDrawer, RouterLink],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooChatterDrawer, OdooTabs, OdooIcon, RouterLink],
   template: `
     @if (control(); as control) {
       <div class="o_control_panel">
@@ -25,8 +29,8 @@ import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-dr
       <div class="p-4">
         <div class="o_statusbar">
           <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-outline-success btn-sm px-3" (click)="aprobarSiguiente()" [disabled]="pendientes() === 0"><i class="bi bi-check-circle me-1"></i> Aprueba</button>
-            <button class="btn btn-outline-danger btn-sm px-3" (click)="fallarSiguiente()" [disabled]="pendientes() === 0"><i class="bi bi-x-circle me-1"></i> Falla</button>
+            <button class="btn btn-outline-success btn-sm px-3" (click)="aprobarSiguiente()" [disabled]="pendientes() === 0"><pc-odoo-icon nombre="confirmar" /> Aprueba</button>
+            <button class="btn btn-outline-danger btn-sm px-3" (click)="fallarSiguiente()" [disabled]="pendientes() === 0"><pc-odoo-icon nombre="cancelar" /> Falla</button>
           </div>
           <span class="badge badge-brand px-3 py-2">{{ estado() }}</span>
         </div>
@@ -45,11 +49,9 @@ import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-dr
                   <div class="o_form_label_row"><span class="o_form_label">Estado</span><span class="o_form_value">{{ estado() }}</span></div>
                 </div>
               </div>
-              <ul class="nav nav-tabs mb-3" role="tablist">
-                <li class="nav-item"><button class="nav-link active">Controles</button></li>
-              </ul>
+              <pc-odoo-tabs [pestanas]="pestanas" activa="controles" />
               <table class="table table-sm align-middle mb-0">
-                <thead class="text-muted small"><tr><th>#</th><th>Orden de Fabricación</th><th>Lote</th><th class="text-end">Real</th><th>Aprueba</th></tr></thead>
+                <thead><tr><th>#</th><th>Orden de Fabricación</th><th>Lote</th><th class="text-end">Real</th><th>Aprueba</th></tr></thead>
                 <tbody>
                   @for (l of control.lotes; track $index; let i = $index) {
                     <tr>
@@ -60,7 +62,7 @@ import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-dr
                       <td>
                         @if (l.lote.estado === 'En revisión') {
                           <button class="btn btn-sm btn-outline-success me-1" (click)="qc.aprobar(l)">Aprueba</button>
-                          <button class="btn btn-sm btn-outline-danger" (click)="qc.rechazar(l)">Falla</button>
+                          <button class="btn btn-sm btn-outline-danger" (click)="fallar(l)">Falla</button>
                         } @else {
                           <span class="badge" [class.bg-success]="l.lote.estado === 'Aprobado'" [class.bg-danger]="l.lote.estado !== 'Aprobado'">{{ l.lote.estado }}</span>
                         }
@@ -84,7 +86,9 @@ export class CalidadLibreForm {
   protected readonly qc = inject(CalidadLibre);
   private readonly flow = inject(OperationalFlowState);
   readonly folio = input('');
+  private readonly acciones = inject(CalidadAcciones);
   protected readonly n1 = n1;
+  protected readonly pestanas = [{ id: 'controles', titulo: 'Controles' }];
   protected readonly chatter: ChatterEntry[] = [{ author: 'Sistema', timestamp: 'hoy', text: 'Control de calidad creado con Nuevo, sin orden de origen.' }];
 
   /** Devuelve el mismo objeto mutado: sin equal:false no avisaría a sus dependientes. */
@@ -106,6 +110,10 @@ export class CalidadLibreForm {
 
   protected fallarSiguiente(): void {
     const l = this.control()?.lotes.find(x => x.lote.estado === 'En revisión');
-    if (l) this.qc.rechazar(l);
+    if (l) void this.fallar(l);
+  }
+
+  protected async fallar(l: LoteControlado): Promise<void> {
+    if (await this.acciones.confirmarFalla(l.lote)) this.qc.rechazar(l);
   }
 }

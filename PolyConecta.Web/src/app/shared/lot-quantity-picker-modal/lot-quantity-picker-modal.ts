@@ -1,14 +1,19 @@
 import { Component, input, output, signal } from '@angular/core';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { n1 } from '../../core/format/numero';
+import { OdooDialog } from '../odoo-dialog/odoo-dialog';
+import { OdooIcon } from '../odoo-icon/odoo-icon';
 import { LotBalance } from '../../core/models/inventario';
 import { LotAllocation, StockOperationLine, declarado, pendiente } from '../../core/models/operaciones';
 
 /**
  * Réplica de Components/Forms/LotQuantityPickerModal.razor: hermano de LotPickerModal para
  * operaciones donde el lote se fracciona (la materia prima sale por cantidad, no por lote completo).
+ * Va en el marco de `pc-odoo-dialog` (spec 011, P3): atrapa el foco y cierra con Esc o clic fuera.
  */
 @Component({
   selector: 'pc-lot-quantity-picker-modal',
+  imports: [OdooDialog, OdooIcon, CdkTrapFocus],
   templateUrl: './lot-quantity-picker-modal.html',
   styles: ':host { display: contents; }',
 })

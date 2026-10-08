@@ -26,12 +26,15 @@
   </div>
 
   <div class="p-2 border-top bg-light">
+    @if (inactivo()) {
+      <div class="small text-muted mb-1" data-chatter-inactivo>Las notas se habilitan al guardar.</div>
+    }
     <div class="input-group input-group-sm">
-      <input type="text" class="form-control" placeholder="Escribir nota..." [value]="newMsgText()" (change)="newMsgText.set($any($event.target).value)" (keydown.enter)="newMsgText.set($any($event.target).value); send()" />
-      <button class="btn text-white fw-semibold" style="background-color: var(--brand-primary);" (click)="send()">Enviar</button>
+      <input type="text" class="form-control" placeholder="Escribir nota..." [disabled]="inactivo()" [value]="newMsgText()" (change)="newMsgText.set($any($event.target).value)" (keydown.enter)="newMsgText.set($any($event.target).value); send()" />
+      <button class="btn text-white fw-semibold" style="background-color: var(--brand-primary);" [disabled]="inactivo()" (click)="send()">Enviar</button>
     </div>
     @if (avisoSinConexion()) {
-      <div class="small text-muted mt-1"><i class="bi bi-wifi-off me-1"></i>Sin conexión en vivo</div>
+      <div class="small text-muted mt-1"><pc-odoo-icon nombre="sin-conexion" class="me-1" />Sin conexión en vivo</div>
     }
   </div>
 </div>

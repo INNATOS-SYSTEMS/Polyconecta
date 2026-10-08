@@ -1,73 +1,56 @@
-import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
+import { InventoryState } from '../../../core/state/inventory-state';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Router } from '@angular/router';
-import { n1 } from '../../../core/format/numero';
-import { SalesOrder } from '../../../core/models/ventas';
-import { aplicar } from '../../../core/search/search-view';
-import { PEDIDOS, SalesOrderRow } from '../../../core/search/views';
-import { OperationalFlowState } from '../../../core/state/operational-flow-state';
+import { PEDIDOS } from '../../../core/search/views';
 import { UiViewState } from '../../../core/state/ui-view-state';
+import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
+import { fechaCampo } from '../../../core/format/numero';
+import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
+import { OdooKanban } from '../../../shared/odoo-kanban/odoo-kanban';
+import { ColumnaLista } from '../../../shared/odoo-list/columnas';
+import { OdooList } from '../../../shared/odoo-list/odoo-list';
 import { OdooPager } from '../../../shared/odoo-pager/odoo-pager';
 import { OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-panel';
 import { OdooViewSwitcher } from '../../../shared/odoo-view-switcher/odoo-view-switcher';
+import { ETAPAS_PEDIDO, FilaPedido, PedidosAcciones } from '../pedidos-acciones';
 
-interface Fila {
-  pedido: SalesOrder;
-  row: SalesOrderRow;
-  cantidad: string;
-}
-
-/** Réplica de Pages/PedidosList.razor, sobre la colección de pedidos (R-02). */
+/** Réplica de Pages/PedidosList.razor sobre los componentes de la spec 011: lista y kanban desde un origen de datos. */
 @Component({
   selector: 'pc-pedidos-list',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooList, OdooKanban, OdooIcon, OdooPager],
   templateUrl: './pedidos-list.html',
   styles: ':host { display: contents; }',
 })
 export class PedidosList {
-  private readonly flow = inject(OperationalFlowState);
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
+  private readonly inv = inject(InventoryState);
   private readonly router = inject(Router);
+  private readonly acciones = inject(PedidosAcciones);
   protected readonly viewState = inject(UiViewState);
   protected readonly vista = PEDIDOS;
-  protected readonly stages = ['Borrador', 'Confirmado', 'Autorizado', 'En progreso', 'Hecho'];
+  protected readonly lista = viewChild(OdooList<FilaPedido>);
+
+  protected readonly origen = this.acciones.origen();
+  protected readonly transiciones = this.acciones.transiciones();
+  protected readonly fechaCampo = fechaCampo;
+  protected readonly etapas = ETAPAS_PEDIDO.map(e => ({ valor: e, titulo: e }));
+  protected readonly idPedido = (f: FilaPedido) => f.id;
+  protected readonly etapaPedido = (f: FilaPedido) => f.estado;
+  protected readonly columnas: ColumnaLista<FilaPedido>[] = [
+    { campo: 'folio', titulo: 'Folio', clase: 'fw-semibold text-primary' },
+    { campo: 'cliente', titulo: 'Cliente' },
+    { campo: 'producto', titulo: 'SKU Producto Terminado', texto: f => etiquetaProducto(this.inv.catalogo, f.producto) },
+    { campo: 'cantidad', titulo: 'Cantidad', clase: 'text-end', ordenable: false },
+    { campo: 'estado', titulo: 'Estado', tipo: 'estado' },
+  ];
 
   protected readonly searchText = signal('');
   protected readonly filtros = signal<string[]>([]);
-  protected readonly seleccionados = signal(new Set<string>());
+  protected readonly agrupaciones = signal<string[]>([]);
 
-  protected readonly filas = computed<Fila[]>(() => {
-    this.flow.cambios();
-    const todas = this.flow.pedidos.map(p => {
-      const linea = p.lineas[0];
-      return {
-        pedido: p,
-        row: { folio: p.folio, cliente: p.cliente, producto: linea?.clave ?? '', estado: p.stage },
-        cantidad: linea ? `${n1(linea.cantidad)} ${linea.unidad}` : '',
-      };
-    });
-    const visibles = new Set(aplicar(this.vista, todas.map(f => f.row), this.searchText(), this.filtros()));
-    return todas.filter(f => visibles.has(f.row));
-  });
-
-  protected enColumna(stage: string): Fila[] {
-    return this.filas().filter(f => f.pedido.stage === stage);
-  }
-
-  protected toggleAll(event: Event): void {
-    const marcado = (event.target as HTMLInputElement).checked;
-    this.seleccionados.set(new Set(marcado ? this.filas().map(f => f.pedido.folio) : []));
-  }
-
-  protected toggle(folio: string): void {
-    this.seleccionados.update(s => {
-      const n = new Set(s);
-      if (!n.delete(folio)) n.add(folio);
-      return n;
-    });
-  }
-
-  protected abrir(folio: string): void {
-    void this.router.navigateByUrl(`/pedidos/${folio}`);
+  protected abrir(f: FilaPedido): void {
+    void this.router.navigateByUrl(`/pedidos/${f.folio}`);
   }
 }

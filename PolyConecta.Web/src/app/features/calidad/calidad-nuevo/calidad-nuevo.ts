@@ -4,19 +4,27 @@ import { n1 } from '../../../core/format/numero';
 import { CalidadLibre, LoteControlado } from '../../../core/state/libre/calidad-libre';
 import { OperationalFlowState } from '../../../core/state/operational-flow-state';
 import { HojaNueva } from '../../../shared/hoja-nueva/hoja-nueva';
+import { OdooTabs, PcPestana } from '../../../shared/odoo-tabs/odoo-tabs';
+import { ETAPAS_CALIDAD } from '../calidad-acciones';
 
-/** "Nuevo" control de calidad (FR-012): solo sobre lotes que ya existen y están en revisión. */
+/**
+ * "Nuevo" control de calidad (FR-012) con la estructura completa del documento (D-136, spec 011 P4):
+ * solo sobre lotes que ya existen y están en revisión, elegidos en la pestaña Controles; el chatter se
+ * activa al guardar. Aprobar o fallar se hace después, en el formulario.
+ */
 @Component({
   selector: 'pc-calidad-nuevo',
-  imports: [HojaNueva],
+  imports: [HojaNueva, OdooTabs, PcPestana],
   template: `
-    <pc-hoja-nueva lista="Control de Calidad" ruta="/calidad" titulo="Control de calidad" [stages]="stages" [error]="error()" (guardar)="guardar()" (descartar)="router.navigateByUrl('/calidad')">
+    <pc-hoja-nueva lista="Control de Calidad" ruta="/calidad" titulo="Control de calidad" [stages]="stages" [error]="error()" [conChatter]="true" (guardar)="guardar()" (descartar)="router.navigateByUrl('/calidad')">
+      <pc-odoo-tabs [pestanas]="pestanas">
+        <ng-template pcPestana="controles">
       <h6 class="text-uppercase text-muted small fw-bold mb-2">Lotes en revisión</h6>
       @if (elegibles().length === 0) {
         <div class="text-muted small fst-italic">No hay lotes en revisión. Un control libre solo se crea sobre lotes existentes.</div>
       } @else {
         <table class="table table-sm align-middle mb-0">
-          <thead class="text-muted small"><tr><th style="width:36px;"></th><th>Lote</th><th>Orden de fabricación</th><th class="text-end">Cantidad</th><th>Unidad</th></tr></thead>
+          <thead><tr><th style="width:36px;"></th><th>Lote</th><th>Orden de fabricación</th><th class="text-end">Cantidad</th><th>Unidad</th></tr></thead>
           <tbody>
             @for (e of elegibles(); track clave(e)) {
               <tr>
@@ -30,6 +38,8 @@ import { HojaNueva } from '../../../shared/hoja-nueva/hoja-nueva';
           </tbody>
         </table>
       }
+        </ng-template>
+      </pc-odoo-tabs>
     </pc-hoja-nueva>
   `,
   styles: ':host { display: contents; }',
@@ -39,7 +49,8 @@ export class CalidadNuevo {
   private readonly flow = inject(OperationalFlowState);
   protected readonly router = inject(Router);
   protected readonly n1 = n1;
-  protected readonly stages = ['Planeado', 'Parcial', 'Aprobado'];
+  protected readonly stages = ETAPAS_CALIDAD;
+  protected readonly pestanas = [{ id: 'controles', titulo: 'Controles' }];
   protected readonly elegibles = signal(this.qc.elegibles());
   protected readonly elegidos = signal(new Set<string>());
   protected readonly error = signal<string | undefined>(undefined);

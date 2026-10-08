@@ -1,44 +1,66 @@
-import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
+import { InventoryState } from '../../../core/state/inventory-state';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Router } from '@angular/router';
-import { n1, ordenCultural } from '../../../core/format/numero';
-import { ManufacturingOrder } from '../../../core/models/produccion';
-import { aplicar } from '../../../core/search/search-view';
-import { FABRICACION } from '../../../core/search/views';
-import { OperationalFlowState } from '../../../core/state/operational-flow-state';
+import { fechaCampo, n1 } from '../../../core/format/numero';
+import { FiltroLista } from '../../../core/lista/origen';
 import { UiViewState } from '../../../core/state/ui-view-state';
+import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { Crumb, OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
+import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
+import { OdooKanban } from '../../../shared/odoo-kanban/odoo-kanban';
+import { ColumnaLista } from '../../../shared/odoo-list/columnas';
+import { OdooList } from '../../../shared/odoo-list/odoo-list';
 import { OdooPager } from '../../../shared/odoo-pager/odoo-pager';
 import { Facet, OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-panel';
 import { OdooViewSwitcher } from '../../../shared/odoo-view-switcher/odoo-view-switcher';
+import { ETAPAS_OF, FabricacionAcciones, FilaOf } from '../fabricacion-acciones';
 
-interface Nodo {
-  of: ManufacturingOrder;
-  nivel: number;
-  hijos: Nodo[];
-}
-
-/** Réplica de Pages/FabricacionList.razor: la lista anidada por jerarquía de OF. */
+/**
+ * Réplica de Pages/FabricacionList.razor sobre los componentes de la spec 011 (P2): la lista conserva la
+ * cadena de OF (cada hija debajo de su origen) y el kanban confirma y cierra al arrastrar.
+ */
 @Component({
   selector: 'pc-fabricacion-list',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager, OdooList, OdooKanban, OdooIcon],
   templateUrl: './fabricacion-list.html',
   styles: ':host { display: contents; }',
 })
 export class FabricacionList {
-  private readonly flow = inject(OperationalFlowState);
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
+  private readonly inv = inject(InventoryState);
   private readonly router = inject(Router);
+  private readonly acciones = inject(FabricacionAcciones);
   protected readonly viewState = inject(UiViewState);
-  protected readonly vista = FABRICACION;
-  protected readonly stages = ['Borrador', 'Planeado', 'En progreso', 'Hecho'];
   protected readonly n1 = n1;
+  protected readonly lista = viewChild(OdooList<FilaOf>);
+  private readonly celdaFolio = viewChild.required<TemplateRef<{ $implicit: FilaOf }>>('celdaFolio');
 
   /** Filtro por pedido: el smart button del Pedido enlaza aquí con su folio (?pedido=). */
   readonly pedido = input<string | undefined>(undefined);
 
+  protected readonly origen = this.acciones.origen(() => this.pedido());
+  /** FABRICACION más la agrupación "Orden maestra", que muestra la cadena de cada OF (D-142). */
+  protected readonly vista = this.origen.vista;
+  protected readonly transiciones = this.acciones.transiciones();
+  protected readonly fechaCampo = fechaCampo;
+  protected readonly etapas = ETAPAS_OF.map(e => ({ valor: e, titulo: e }));
+  protected readonly idOf = (f: FilaOf) => f.id;
+  protected readonly etapaOf = (f: FilaOf) => f.estado;
+
   protected readonly searchText = signal('');
   protected readonly filtros = signal<string[]>([]);
-  protected readonly selected = signal(new Set<string>());
+  protected readonly agrupaciones = signal<string[]>([]);
+  /** El pedido del contexto llega como filtro de la consulta, para que la lista y el kanban se recarguen. */
+  protected readonly filtroPedido = computed<FiltroLista[]>(() => (this.pedido() ? [{ campo: 'pedido', operador: 'igual', valor: this.pedido() }] : []));
+
+  protected readonly columnas = computed<ColumnaLista<FilaOf>[]>(() => [
+    { campo: 'folio', titulo: 'Folio', clase: 'fw-semibold text-primary', celda: this.celdaFolio() },
+    { campo: 'producto', titulo: 'Producto', texto: f => etiquetaProducto(this.inv.catalogo, f.producto) },
+    { campo: 'proceso', titulo: 'Proceso' },
+    { campo: 'cantidad', titulo: 'Cantidad', texto: f => `${n1(f.cantidad)} ${f.unidad}`, valor: f => f.cantidad, clase: 'text-end' },
+    { campo: 'estado', titulo: 'Estado', tipo: 'estado' },
+  ]);
 
   protected readonly breadcrumb = computed<Crumb[]>(() => {
     const p = this.pedido();
@@ -53,50 +75,9 @@ export class FabricacionList {
     return !p ? [] : [{ campo: 'Pedido', valor: p, onRemove: () => void this.router.navigateByUrl('/fabricacion') }];
   });
 
-  protected readonly filteredOrders = computed(() => {
-    this.flow.cambios();
-    const p = this.pedido();
-    return aplicar(this.vista, this.flow.manufacturingOrders.filter(o => !p || o.pedidoFolio === p), this.searchText(), this.filtros());
-  });
-
-  /** Recorrido en profundidad del árbol por originFolio: cada fila conoce su nivel. */
-  protected readonly arbolPlano = computed<Nodo[]>(() => {
-    const visibles = this.filteredOrders();
-    const folios = new Set(visibles.map(o => o.folio));
-    const porFolio = (a: ManufacturingOrder, b: ManufacturingOrder) => ordenCultural(a.folio, b.folio);
-    const hijos = (folio: string, nivel: number): Nodo[] =>
-      visibles.filter(o => o.originFolio === folio).sort(porFolio).map(o => ({ of: o, nivel, hijos: hijos(o.folio, nivel + 1) }));
-    // Raíz: sin origen, o cuyo origen quedó fuera del filtro actual.
-    const raices = visibles
-      .filter(o => o.originFolio === undefined || !folios.has(o.originFolio))
-      .sort(porFolio)
-      .map(o => ({ of: o, nivel: 0, hijos: hijos(o.folio, 1) }));
-    const plano: Nodo[] = [];
-    const recorrer = (nodos: Nodo[]) => nodos.forEach(n => (plano.push(n), recorrer(n.hijos)));
-    recorrer(raices);
-    return plano;
-  });
-
-  protected enColumna(stage: string): ManufacturingOrder[] {
-    return this.filteredOrders().filter(o => o.state === stage);
-  }
-
   /** Abre la OF arrastrando el contexto: al volver, el breadcrumb regresa a esta lista filtrada. */
-  protected abrir(folio: string): void {
+  protected abrir(f: FilaOf): void {
     const p = this.pedido();
-    void this.router.navigateByUrl(!p ? `/fabricacion/${folio}` : `/fabricacion/${folio}?pedido=${p}`);
-  }
-
-  protected toggleOne(folio: string): void {
-    this.selected.update(s => {
-      const n = new Set(s);
-      if (!n.delete(folio)) n.add(folio);
-      return n;
-    });
-  }
-
-  protected toggleAll(event: Event): void {
-    const check = (event.target as HTMLInputElement).checked;
-    this.selected.set(new Set(check ? this.filteredOrders().map(o => o.folio) : []));
+    void this.router.navigateByUrl(!p ? `/fabricacion/${f.folio}` : `/fabricacion/${f.folio}?pedido=${p}`);
   }
 }

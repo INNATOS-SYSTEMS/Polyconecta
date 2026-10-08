@@ -6,7 +6,7 @@ describe('OdooSmartButtons', () => {
   it('emite la ruta del botón pulsado', () => {
     const fixture = TestBed.createComponent(OdooSmartButtons);
     fixture.componentRef.setInput('buttons', [
-      { label: 'Fabricación', countBadge: 3, iconClass: 'bi bi-gear', targetRoute: '/fabricacion' },
+      { label: 'Fabricación', countBadge: 3, iconClass: 'configuracion', targetRoute: '/fabricacion' },
     ]);
     let ruta = '';
     fixture.componentInstance.smartNavigate.subscribe(r => (ruta = r));

@@ -14,14 +14,12 @@
             <div class="d-flex align-items-center gap-2">
                 @if (op.state !== 'Hecho') {
                     <button class="btn btn-outline-secondary btn-sm px-3" (click)="ops.comprobarDisponibilidad(op)">
-                        <i class="bi bi-search me-1"></i> Comprobar disponibilidad
+                        <pc-odoo-icon nombre="buscar" /> Comprobar disponibilidad
                     </button>
-                    <button class="btn btn-primary btn-sm fw-bold px-3" (click)="validar()">
-                        <i class="bi bi-check2-circle me-1"></i> Validar
-                    </button>
+                    <button class="btn btn-primary btn-sm fw-bold px-3" (click)="validar()">Validar</button>
                     <button class="btn btn-outline-secondary btn-sm px-3" (click)="cancelar()">Cancelar</button>
                 }
-                <button class="btn btn-outline-secondary btn-sm px-3"><i class="bi bi-printer me-1"></i> Imprimir</button>
+                <button class="btn btn-outline-secondary btn-sm px-3"><pc-odoo-icon nombre="imprimir" /> Imprimir</button>
             </div>
         </div>
 
@@ -45,34 +43,31 @@
                     </div>
 
                     @if (op.error) {
-                        <div class="alert alert-danger py-2 px-3 small mb-3"><i class="bi bi-x-octagon me-1"></i>{{ op.error }}</div>
+                        <div class="alert alert-danger py-2 px-3 small mb-3"><pc-odoo-icon nombre="hard-stop" />{{ op.error }}</div>
                     }
                     @if (op.warning) {
-                        <div class="alert alert-warning py-2 px-3 small mb-3"><i class="bi bi-exclamation-triangle me-1"></i>{{ op.warning }}</div>
+                        <div class="alert alert-warning py-2 px-3 small mb-3"><pc-odoo-icon nombre="advertencia" />{{ op.warning }}</div>
                     }
                     @if (op.backorderDe !== undefined) {
                         <div class="alert alert-light border py-2 px-3 small mb-3">
-                            <i class="bi bi-arrow-return-right me-1"></i>
+                            <pc-odoo-icon nombre="devolucion" />
                             Remanente de <a [routerLink]="'/recolecciones/' + op.backorderDe" class="fw-semibold">{{ op.backorderDe }}</a>.
                         </div>
                     }
 
-                    <ul class="nav nav-tabs mb-3" role="tablist">
-                        <li class="nav-item"><button class="nav-link active">Operaciones</button></li>
-                    </ul>
+                    <pc-odoo-tabs [pestanas]="pestanas" activa="operaciones" />
                     <table class="table table-sm align-middle mb-0">
-                        <thead class="text-muted small"><tr><th>Clave</th><th>Producto</th><th class="text-end">Demanda</th><th class="text-end">Cant. Entregada</th><th style="width:70px;">Unidad</th><th>Lotes</th></tr></thead>
+                        <thead><tr><th>Producto</th><th class="text-end">Demanda</th><th class="text-end">Cant. Entregada</th><th style="width:70px;">Unidad</th><th>Lotes</th></tr></thead>
                         <tbody>
                             @for (l of op.lineas; track $index) {
                                 <tr>
-                                    <td class="small">{{ l.clave }}</td>
-                                    <td>{{ l.producto }}</td>
+                                    <td>{{ producto(l.clave, l.producto) }}</td>
                                     <td class="text-end">{{ n1(l.solicitado) }}</td>
                                     <td class="text-end">{{ n1(l.entregado) }}</td>
                                     <td class="small">{{ l.unidad }}</td>
                                     <td>
                                         @if (op.state !== 'Hecho') {
-                                            <button class="btn btn-link btn-sm p-0 text-decoration-none" (click)="lotModalLine.set(l)">
+                                            <button class="btn btn-sm o_btn_link p-0" (click)="lotModalLine.set(l)">
                                                 {{ etiquetaLotes(l) }}
                                             </button>
                                         } @else {

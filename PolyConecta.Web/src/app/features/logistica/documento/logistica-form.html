@@ -13,15 +13,13 @@
         <div class="d-flex align-items-center gap-2">
             @if (doc().state !== 'Hecho') {
                 <button class="btn btn-outline-secondary btn-sm px-3" (click)="cfg().comprobar(flow)">
-                    <i class="bi bi-search me-1"></i> Comprobar disponibilidad
+                    <pc-odoo-icon nombre="buscar" /> Comprobar disponibilidad
                 </button>
-                <button class="btn btn-primary btn-sm fw-bold px-3" (click)="cfg().validar(flow, doc().folio)">
-                    <i class="bi bi-check2-circle me-1"></i> Validar
-                </button>
+                <button class="btn btn-primary btn-sm fw-bold px-3" (click)="validar()">Validar</button>
                 <button class="btn btn-outline-secondary btn-sm px-3" (click)="navegar(cfg().ruta)">Cancelar</button>
             }
             @if (cfg().imprimir) {
-            <button class="btn btn-outline-secondary btn-sm px-3"><i class="bi bi-printer me-1"></i> Imprimir</button>
+            <button class="btn btn-outline-secondary btn-sm px-3"><pc-odoo-icon nombre="imprimir" /> Imprimir</button>
             }
         </div>
     </div>
@@ -46,27 +44,24 @@
                 </div>
 
                 @if (doc().error) {
-                    <div class="alert alert-danger py-2 px-3 small mb-3"><i class="bi bi-x-octagon me-1"></i>{{ doc().error }}</div>
+                    <div class="alert alert-danger py-2 px-3 small mb-3"><pc-odoo-icon nombre="hard-stop" />{{ doc().error }}</div>
                 }
                 @if (doc().warning) {
-                    <div class="alert alert-warning py-2 px-3 small mb-3"><i class="bi bi-exclamation-triangle me-1"></i>{{ doc().warning }}</div>
+                    <div class="alert alert-warning py-2 px-3 small mb-3"><pc-odoo-icon nombre="advertencia" />{{ doc().warning }}</div>
                 }
 
-                <ul class="nav nav-tabs mb-3" role="tablist">
-                    <li class="nav-item"><button class="nav-link active">Operaciones</button></li>
-                </ul>
+                <pc-odoo-tabs [pestanas]="pestanas" activa="operaciones" />
                 <table class="table table-sm align-middle mb-0">
-                    <thead class="text-muted small"><tr><th>Clave</th><th>Producto</th><th class="text-end">Demanda</th><th class="text-end">{{ cfg().columnaCantidad }}</th><th style="width:70px;">Unidad</th><th>Lotes</th></tr></thead>
+                    <thead><tr><th>Producto</th><th class="text-end">Demanda</th><th class="text-end">{{ cfg().columnaCantidad }}</th><th style="width:70px;">Unidad</th><th>Lotes</th></tr></thead>
                     <tbody>
                         @for (l of doc().lineas; track $index) {
                             <tr>
-                                <td class="small">{{ l.clave }}</td>
-                                <td>{{ l.producto }}</td>
+                                <td>{{ producto(l.clave, l.producto) }}</td>
                                 <td class="text-end">{{ n1(l.demanda) }}</td>
                                 <td class="text-end">{{ n1(l.entregado) }}</td>
                                 <td class="small">{{ l.unidad }}</td>
                                 <td>
-                                    <button class="btn btn-link btn-sm p-0 text-decoration-none" (click)="lotModalLine.set(l)">
+                                    <button class="btn btn-sm o_btn_link p-0" (click)="lotModalLine.set(l)">
                                         {{ l.lotesSeleccionados.length > 0 ? l.lotesSeleccionados.length + ' lote(s)' : 'Seleccionar' }}
                                     </button>
                                 </td>
@@ -86,4 +81,5 @@
                      (selectedFoliosChange)="seleccionados($event)"
                      [requiredQty]="lotModalLine()?.demanda ?? 0"
                      [unidad]="lotModalLine()?.unidad ?? ''"
+                     [noLiberados]="noLiberados()"
                      (closed)="lotModalLine.set(null)" />

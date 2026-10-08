@@ -2,7 +2,7 @@
 
 La construcción avanza **fase a fase** según el [plan de trabajo](plan/Tarea%20(project.task)%20-%20replaneacion(2).xlsx) (D-116), por **dos caminos en paralelo**, cada uno con su líder y sus agentes. Las reglas de cómo se construye están en la [constitución técnica](diseno/06-constitucion-tecnica.md). Aquí están las fases, las specs, qué entrega cada camino y el tablero de avance.
 
-**Actualizado:** 7 de octubre de 2026 (cierre de F0 y de la réplica en Angular).
+**Actualizado:** 8 de octubre de 2026 (cierre de la spec de contratos visuales).
 
 ---
 
@@ -37,6 +37,8 @@ Cada fase de F0 a F8 es **una spec** de Spec Kit en `.specify/features/NNN-<fase
 | F9 · Ajustes y cierre | sin spec | 30 nov – 23 dic | R9 | Instalación, manual, ajustes de R8 y entrega |
 
 La spec `001-angular-presentation` (réplica del prototipo) **sigue en paralelo** al plan, sin horas asignadas en él (D-118).
+
+La spec `011-contratos-visuales` fue una **fase abierta**, fuera del plan (D-134): el tablero de flujo de pantallas y los contratos visuales de cada componente. Se cerró el 8-oct, antes del diseño de las pantallas de F1: las 28 pantallas usan los componentes nuevos y una pantalla de F1 se arma con [los contratos visuales](diseno/07-contratos-visuales.md).
 
 **Áreas del dominio.** Los 6 módulos de D-64 (Plataforma, Catálogos e Inventario, Ventas, Producción, Calidad y Logística) siguen siendo las áreas del modelo y sus esquemas (`inv`, `ven`, `prd`, `cal`, `log`). Ya no marcan el orden de construcción. La conversión en Santa Cruz (impresión y bolseo) es parte de Producción (D-64).
 
@@ -85,6 +87,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Fase | Diseño cerrado | Spec | Cerrado en PolyConecta | Comandos entregados (camino 1) | Cerrado integrado | Revisión |
 | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
 | Réplica Angular (paralelo) | ✅ | `001-angular-presentation` · integrada en `docs/diseno/` y borrada | ✅ 7-oct · `db071b6` | n/a | n/a | — |
+| Contratos visuales (fase abierta) | ✅ | `011-contratos-visuales` · líder L2; P1 a P8 en un solo PR; integrada en `docs/diseno/` y borrada | ✅ 8-oct · `351b62c` | n/a | n/a | — |
 | F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · integrada en `docs/diseno/` y borrada | ✅ 6-oct · `d5eaf35` | ✅ 6-oct: contrato `1.0`, bridge simulado y bridge x86 en el VPS (evidencia `56da557`) | n/a: F0 no entrega comandos que escriban en CONTPAQi | — |
 | F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R1 |
 | F2 · Planeación de producción | ✅ | `004-planeacion-produccion` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R2 |
@@ -105,7 +108,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Fase | Preguntas abiertas ([preguntas-abiertas.md](diseno/preguntas-abiertas.md)) o decisiones por validar |
 | :--- | :--- |
 | F0 | ninguna |
-| F1 | T-06 (lectura de existencias, tarea 1.4): se puede especificar con la lectura directa de D-87 como supuesto. |
+| F1 | T-06 (lectura de existencias, tarea 1.4): se puede especificar con la lectura directa de D-87 como supuesto. P-28 (contrato HTTP de la consulta de listas): se fija con la primera lista que lea de la API. |
 | F2 a F5, F7 | Contrato `bridge-v1` `1.0` firmado el 6-oct (D-132). T-17 (costo de la Entrada) se resuelve antes de F3 |
 | F6 | D-114 (cancelar el pedido remisionado) por validar con la operación |
 | F8 | T-06 (la conciliación depende de F-05) |

@@ -1,11 +1,14 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
+import { etiquetaProducto } from '../../core/format/producto-etiqueta';
 import { n1, n2 } from '../../core/format/numero';
 import { SalesOrderLine, subtotal } from '../../core/models/ventas';
 import { PEDIDO_FOLIO } from '../../core/seed/flujo';
 import { InventoryState } from '../../core/state/inventory-state';
 import { PedidoLibre } from '../../core/state/libre/pedido-libre';
 import { OperationalFlowState } from '../../core/state/operational-flow-state';
+import { OdooIcon } from '../odoo-icon/odoo-icon';
 import { LineDraft, OdooLineCapture, emptyDraft } from '../odoo-line-capture/odoo-line-capture';
+import { OdooTabs, PcPestana } from '../odoo-tabs/odoo-tabs';
 
 /**
  * Réplica de Components/Poc/PocSalesOrderForm.razor: cabecera, líneas y procesos del pedido. Se
@@ -13,11 +16,13 @@ import { LineDraft, OdooLineCapture, emptyDraft } from '../odoo-line-capture/odo
  */
 @Component({
   selector: 'pc-poc-sales-order-form',
-  imports: [OdooLineCapture],
+  imports: [OdooLineCapture, OdooTabs, PcPestana, OdooIcon],
   templateUrl: './poc-sales-order-form.html',
   styles: ':host { display: contents; }',
 })
 export class PocSalesOrderForm {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
+  protected readonly pestanas = [{ id: 'detalle', titulo: 'Detalle' }];
   protected readonly flow = inject(OperationalFlowState);
   protected readonly inv = inject(InventoryState);
   private readonly pedidoLibre = inject(PedidoLibre);

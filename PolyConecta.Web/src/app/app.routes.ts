@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { CALIDAD_ROUTES } from './features/calidad/calidad.routes';
+import { CATALOGO_ROUTES } from './features/catalogo/catalogo.routes';
 import { INVENTARIO_ROUTES } from './features/inventario/inventario.routes';
 import { LOGISTICA_ROUTES } from './features/logistica/logistica.routes';
 import { PLATAFORMA_ROUTES } from './features/plataforma/plataforma.routes';
@@ -15,5 +16,6 @@ export const routes: Routes = [
   ...PRODUCCION_ROUTES,
   ...CALIDAD_ROUTES,
   ...LOGISTICA_ROUTES,
+  ...CATALOGO_ROUTES,
   { path: '**', component: PaginaNoEncontrada },
 ];

@@ -1,5 +1,8 @@
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Component, computed, inject, input, signal } from '@angular/core';
+import { Dialog } from '@angular/cdk/dialog';
+import { firstValueFrom } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 import { fechaCorta, n1 } from '../../../core/format/numero';
 import { LotBalance } from '../../../core/models/inventario';
@@ -7,27 +10,38 @@ import { StockOperationLine, declarado } from '../../../core/models/operaciones'
 import { InventoryState } from '../../../core/state/inventory-state';
 import { OperationalFlowState } from '../../../core/state/operational-flow-state';
 import { StockOperationState } from '../../../core/state/stock-operation-state';
+import { abrirDialogo } from '../../../shared/odoo-dialog/odoo-dialog';
+import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
+import { OdooTabs } from '../../../shared/odoo-tabs/odoo-tabs';
+import { ETAPAS_RECOLECCION, RecoleccionAcciones, ValidarRecoleccion } from '../recoleccion-acciones';
 import { LotQuantityPickerModal } from '../../../shared/lot-quantity-picker-modal/lot-quantity-picker-modal';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
-import { OdooSmartButtons, SmartButtonModel } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
+import { OdooSmartButtons, SmartButtonModel, botonInteligente } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
 
-/** Réplica de Pages/RecoleccionFormView.razor (/recolecciones/{*Folio}). */
+/**
+ * Réplica de Pages/RecoleccionFormView.razor (/recolecciones/{*Folio}) sobre los componentes de la spec 011 (P3).
+ * Validar usa la misma acción que el kanban: si es parcial, primero el diálogo de cantidades (aclaración P3).
+ */
 @Component({
   selector: 'pc-recoleccion-form',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooChatterDrawer, LotQuantityPickerModal, RouterLink],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooChatterDrawer, OdooTabs, OdooIcon, LotQuantityPickerModal, RouterLink],
   templateUrl: './recoleccion-form.html',
   styles: ':host { display: contents; }',
 })
 export class RecoleccionForm {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
   protected readonly ops = inject(StockOperationState);
   private readonly inv = inject(InventoryState);
   private readonly router = inject(Router);
+  private readonly acciones = inject(RecoleccionAcciones);
+  private readonly dialog = inject(Dialog);
 
   readonly folio = input<string | undefined>(undefined);
 
-  protected readonly stages = ['Borrador', 'En espera', 'Listo', 'Hecho'];
+  protected readonly stages = ETAPAS_RECOLECCION;
+  protected readonly pestanas = [{ id: 'operaciones', titulo: 'Operaciones' }];
   protected readonly n1 = n1;
   protected readonly fechaCorta = fechaCorta;
   protected readonly declarado = declarado;
@@ -65,12 +79,12 @@ export class RecoleccionForm {
     const sinOf = op !== undefined && op.ofFolio === '';
     const lista: SmartButtonModel[] = [
       sinOf
-        ? { label: 'Orden de Fabricación', countBadge: 0, iconClass: 'bi bi-gear-wide-connected', targetRoute: '', deshabilitado: true }
-        : { label: 'Orden de Fabricación', countBadge: 1, iconClass: 'bi bi-gear-wide-connected', targetRoute: `/fabricacion/${op?.ofFolio ?? ''}` },
+        ? botonInteligente('orden', 0, '', true)
+        : botonInteligente('orden', 1, `/fabricacion/${op?.ofFolio ?? ''}`),
     ];
     const hermanas = op && !sinOf ? this.ops.deOf(op.ofFolio).filter(o => o.folio !== op.folio) : [];
     if (hermanas.length > 0)
-      lista.push({ label: 'Recolecciones', countBadge: hermanas.length, iconClass: 'bi bi-box-arrow-right', targetRoute: '/recolecciones' });
+      lista.push(botonInteligente('recoleccion', hermanas.length, '/recolecciones'));
     return lista;
   });
 
@@ -82,11 +96,15 @@ export class RecoleccionForm {
     void this.router.navigateByUrl(ruta);
   }
 
-  protected validar(): void {
+  protected async validar(): Promise<void> {
     const op = this.op();
     if (!op) return;
     this.lotModalLine.set(null);
-    const { backorder } = this.ops.validar(op);
+    if (this.acciones.esParcial(op) && op.lineas.some(l => declarado(l) > 0)) {
+      const ref = abrirDialogo<boolean>(this.dialog, ValidarRecoleccion, { fila: { folio: op.folio } });
+      if (!(await firstValueFrom(ref.closed))) return;
+    }
+    const { backorder } = this.acciones.validar(op.folio);
     if (backorder) this.navegar(`/recolecciones/${backorder.folio}`);
   }
 

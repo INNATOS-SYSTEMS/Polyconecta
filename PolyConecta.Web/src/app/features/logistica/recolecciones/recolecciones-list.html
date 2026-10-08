@@ -3,38 +3,37 @@
         <pc-boton-nuevo [ruta]="'/recolecciones'" />
         <pc-odoo-breadcrumb [items]="[{ label: 'Recolecciones' }]" />
     </div>
-    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" />
+    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" [(agrupacionesActivas)]="agrupaciones"
+                          [permiteAgrupar]="viewState.viewMode() !== 'Kanban'" [conFavoritos]="viewState.viewMode() !== 'Kanban'"
+                          [favoritos]="lista()?.favoritos() ?? []" (guardarFavorito)="lista()?.guardarFavorito($event.nombre, $event.porOmision)"
+                          (aplicarFavorito)="lista()?.aplicarFavorito($event)" (borrarFavorito)="lista()?.borrarFavorito($event)" />
     <div class="d-flex align-items-center gap-2">
-        <div class="btn-group btn-group-sm o_view_switcher">
-            <button class="btn-view active" disabled><i class="bi bi-list-ul"></i></button>
-        </div>
+        <pc-odoo-view-switcher />
     </div>
 </div>
 
 <div class="p-4">
-    <table class="table table-hover align-middle bg-white shadow-sm">
-        <thead class="table-light">
-            <tr>
-                <th style="width:36px;"><input type="checkbox" class="form-check-input" (change)="toggleAll($event)" /></th>
-                <th>Folio</th><th>Operación</th><th>Origen</th><th>Destino</th><th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (op of filtradas(); track op.folio) {
-                <tr style="cursor:pointer;" [class.table-active]="seleccionadas().has(op.folio)" (click)="router.navigateByUrl('/recolecciones/' + op.folio)">
-                    <td (click)="$event.stopPropagation()">
-                        <input type="checkbox" class="form-check-input" [checked]="seleccionadas().has(op.folio)" (change)="toggle(op.folio)" />
-                    </td>
-                    <td class="fw-semibold text-primary">
-                        {{ op.folio }}@if (op.backorderDe !== undefined) {<span class="badge bg-secondary-subtle text-secondary-emphasis ms-1" style="font-size:.65rem;">backorder</span>}
-                    </td>
-                    <td>{{ op.operacion }}</td>
-                    <td>{{ op.origen }}</td>
-                    <td>{{ op.destino }}</td>
-                    <td><span class="badge badge-brand">{{ op.state }}</span></td>
-                </tr>
+    @if (viewState.viewMode() === 'Kanban') {
+        <pc-odoo-kanban #kanban [origen]="origen" campoEtapa="estado" [etapas]="etapas" [transiciones]="transiciones" [tarjeta]="tarjeta"
+                        [idDe]="idRecoleccion" [etapaDe]="etapaRecoleccion" [nombrados]="filtros()" [busqueda]="searchText()" (abrir)="abrir($event)" />
+        <ng-template #tarjeta let-f>
+            <div class="o_kanban_card_cabecera">
+                <div class="fw-semibold text-dark small">{{ f.folio }}</div>
+                <span class="badge badge-brand">{{ f.estado }}</span>
+            </div>
+            <div class="text-muted small">{{ f.operacion }}@if (f.backorder) { · backorder}</div>
+            <div class="o_kanban_card_dato"><pc-odoo-icon nombre="traslado" />{{ f.origen }} → {{ f.destino }}</div>
+            @if (f.orden) {
+                <div class="o_kanban_card_dato"><pc-odoo-icon nombre="fabricacion" />{{ f.orden }}</div>
             }
-        </tbody>
-    </table>
-    <pc-odoo-pager [count]="filtradas().length" />
+            <div class="o_kanban_card_dato"><pc-odoo-icon nombre="calendario" />Fecha límite: {{ fechaCampo(f.fechaLimite) }}</div>
+        </ng-template>
+        <pc-odoo-pager [count]="kanban.total()" />
+    } @else {
+        <pc-odoo-list lista="logistica.recolecciones" [origen]="origen" [columnas]="columnas()" [idDe]="idRecoleccion" mensajeVacio=""
+                      [(busqueda)]="searchText" [(nombrados)]="filtros" [(agruparPor)]="agrupaciones" (abrir)="abrir($event)" />
+    }
 </div>
+
+<!-- El remanente de una validación parcial lleva la insignia "backorder". En una línea: Razor recorta los espacios. -->
+<ng-template #celdaFolio let-f>{{ f.folio }}@if (f.backorder) {<span class="badge bg-secondary-subtle text-secondary-emphasis ms-1" style="font-size:.65rem;">backorder</span>}</ng-template>

@@ -31,6 +31,8 @@ export class SalesOrder {
   agente = '';
   contpaqId = '';
   cantidadPedido = 0;
+  /** Fecha estimada de entrega (`promise_date`). */
+  fechaPromesa: Date | null = null;
   lineas: SalesOrderLine[] = [];
   procesos: ProcessCheck[] = [];
   /** Firmas recogidas: rol → quién firmó. */

@@ -1,4 +1,5 @@
 import { Component, computed, effect, input, signal } from '@angular/core';
+import { OdooIcon } from '../odoo-icon/odoo-icon';
 import { RouterLink } from '@angular/router';
 
 export interface Crumb {
@@ -12,20 +13,20 @@ export interface Crumb {
  */
 @Component({
   selector: 'pc-odoo-breadcrumb',
-  imports: [RouterLink],
+  imports: [OdooIcon, RouterLink],
   template: `
     <nav class="d-flex align-items-center gap-2 o_breadcrumb">
       @if (hayOcultos() && !expandido()) {
         <button type="button" class="parent-item o_breadcrumb_more" [title]="tituloOcultos()" (click)="expandido.set(true)">…</button>
-        <i class="bi bi-chevron-right text-muted small"></i>
+        <pc-odoo-icon nombre="siguiente" class="text-muted" />
       }
       @for (item of visibles(); track $index; let isLast = $last) {
         @if (!isLast && item.url) {
           <a [routerLink]="item.url" class="parent-item">{{ item.label }}</a>
-          <i class="bi bi-chevron-right text-muted small"></i>
+          <pc-odoo-icon nombre="siguiente" class="text-muted" />
         } @else if (!isLast) {
           <span class="parent-item text-muted">{{ item.label }}</span>
-          <i class="bi bi-chevron-right text-muted small"></i>
+          <pc-odoo-icon nombre="siguiente" class="text-muted" />
         } @else {
           <span class="current-item">{{ item.label }}</span>
         }

@@ -7,7 +7,7 @@ Réplica en Angular del prototipo Blazor `PolyConecta.Presentation` (spec 001). 
 - Node 24.16.0 (`.nvmrc`; `nvm use` en esta carpeta).
 - Dependencias: `npm ci`.
 - Para las pruebas de navegador: `npx playwright install chromium`, el SDK de .NET de `global.json` y el runtime de ASP.NET Core 8, que usa el prototipo.
-- Conexión a Google Fonts y jsDelivr: las dos aplicaciones cargan de ahí Inter, Bootstrap y Bootstrap Icons.
+- Conexión a Google Fonts y jsDelivr: las dos aplicaciones cargan de ahí Inter y Bootstrap (el prototipo también Bootstrap Icons; la réplica usa Lucide, empaquetado).
 
 ## Puertos
 
@@ -27,19 +27,20 @@ Desde la raíz, `./run.sh` levanta la Web y la API, y `./run.sh --solo-web` solo
 | `npm start` | Servidor de desarrollo en `:9000` |
 | `npm run build` | Compila |
 | `npm test` | Pruebas unitarias (Vitest): estado portado, reglas del modo libre y componentes |
-| `npm run parity` | Paridad visual: captura las 19 rutas en las dos aplicaciones y compara píxeles. Informe en `parity-report/index.html`. `-- --routes=/pedidos,/fabricacion` limita la corrida |
-| `npm run scenarios` | Guiones de escenario: los mismos pasos en Blazor y en Angular, con el texto y la captura de cada punto de control comparados. Los guiones `soloAngular` prueban el modo libre |
-| `npm run audit` | Auditor de primer nivel: en cada ruta pulsa cada botón o enlace en las dos aplicaciones y compara URL y texto. Informe en `auditoria-report/` |
+| `npm run verificar-build` | Después de `build`: falla si el CSS trae reglas de Tailwind o si la carga inicial pasa de 89 kB comprimidos |
+| `npm run scenarios` | Guiones de escenario: los mismos pasos en Blazor y en Angular, con el texto de cada punto de control comparado. Los guiones `soloAngular` prueban el modo libre |
+| `npm run audit` | Auditor de primer nivel: en cada ruta pulsa cada botón o enlace en las dos aplicaciones y compara URL y texto, y prueba la navegación (enlace directo, folio inexistente, atrás y adelante). Informe en `auditoria-report/`. `PARITY_ROUTES=/pedidos,/fabricacion` limita las rutas |
 | `npm run chatter` | Chatter en vivo: dos pestañas con la API corriendo (el mensaje llega en menos de 1 s) y sin conexión |
+| `npm run tablero` | Tablero de flujo (spec 011): captura cada pantalla de `e2e/tablero/pantallas.ts` completa, a 1600 px, en `tablero-report/`. Solo levanta Angular |
 
-`parity`, `scenarios` y `audit` levantan el prototipo y Angular si no están corriendo; `chatter` también levanta la API.
+`scenarios` y `audit` levantan el prototipo y Angular si no están corriendo; `chatter` también levanta la API.
 
-## Reglas de paridad
+## Reglas de comparación con el prototipo
 
-1. La referencia es el prototipo corriendo, no su código: si algo se ve o se comporta distinto, la réplica se corrige.
+1. La referencia de comportamiento es el prototipo corriendo, no su código: si un texto, una URL o un flujo difieren, la aplicación se corrige.
 2. Chromium a 1600×900, sin animaciones, con las fuentes del CDN cargadas.
-3. Umbral: 1 % de píxeles distintos por ruta y por punto de control. El umbral no se sube; una diferencia legítima se documenta en la sección "Exploración y cambios" de la spec.
-4. "Nuevo" es la única diferencia permitida (D-59): se enmascara en las capturas y el auditor no lo pulsa.
+3. Desde la spec 011 no se comparan píxeles (D-135). Las diferencias legítimas están en `docs/diseno/05-arquitectura-tecnica.md` §7.5.
+4. "Nuevo" no existe en el prototipo (D-59): el auditor no lo pulsa y los guiones que lo usan son `soloAngular`.
 5. Razor recorta los espacios alrededor de los bloques `@if`; en las plantillas de Angular esos bloques van en línea (`{{ folio }}@if (…) {<span>…</span>}`) para que el texto quede igual.
 6. Un `computed` que devuelve el mismo objeto mutado lleva `{ equal: () => false }`; si no, no avisa a quien depende de él.
 
@@ -48,4 +49,4 @@ Desde la raíz, `./run.sh` levanta la Web y la API, y `./run.sh --solo-web` solo
 - `src/app/core/`: modelos, semilla y servicios de estado portados del prototipo (`state/`), y el modo libre (`state/libre/`).
 - `src/app/shared/`: los componentes del prototipo (`odoo-*`, selectores de lotes, `poc-sales-order-form`), más `boton-nuevo` y `hoja-nueva`.
 - `src/app/features/`: las páginas, por módulo.
-- `e2e/`: `parity/`, `scenarios/`, `auditoria/` y `chatter/`.
+- `e2e/`: `scenarios/`, `auditoria/`, `chatter/`, `tablero/`, `catalogo/` y `soporte/` (apertura de las dos aplicaciones y rutas).

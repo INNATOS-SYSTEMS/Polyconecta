@@ -1,11 +1,14 @@
 <div class="o_control_panel">
     <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-outline-secondary btn-sm" disabled title="Fuera de alcance de esta demo"><i class="bi bi-file-earmark-excel me-1"></i> Importar</button>
+        <button class="btn btn-outline-secondary btn-sm" disabled title="Fuera de alcance de esta demo"><pc-odoo-icon nombre="excel" /> Importar</button>
         <pc-odoo-breadcrumb [items]="[{ label: 'Captura de Incidencias' }]" />
     </div>
-    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" />
+    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" [(agrupacionesActivas)]="agrupaciones"
+                          [permiteAgrupar]="viewState.viewMode() !== 'Kanban'" [conFavoritos]="viewState.viewMode() !== 'Kanban'"
+                          [favoritos]="lista()?.favoritos() ?? []" (guardarFavorito)="lista()?.guardarFavorito($event.nombre, $event.porOmision)"
+                          (aplicarFavorito)="lista()?.aplicarFavorito($event)" (borrarFavorito)="lista()?.borrarFavorito($event)" />
     <div class="d-flex align-items-center gap-2">
-        <pc-odoo-view-switcher [kanbanEnabled]="false" />
+        <pc-odoo-view-switcher />
     </div>
 </div>
 
@@ -16,24 +19,20 @@
         <div class="col-md-3"><label class="form-label small text-muted">Comentarios</label><input class="form-control form-control-sm o_inline_input" [value]="comentarios()" (change)="comentarios.set(valor($event))" /></div>
         <div class="col-md-1"><label class="form-label small text-muted">Inicio</label><input class="form-control form-control-sm o_inline_input" [value]="horaInicio()" (change)="horaInicio.set(valor($event))" placeholder="19:00" /></div>
         <div class="col-md-1"><label class="form-label small text-muted">Fin</label><input class="form-control form-control-sm o_inline_input" [value]="horaFin()" (change)="horaFin.set(valor($event))" placeholder="07:00" /></div>
-        <div class="col-md-3"><button class="btn btn-sm btn-outline-primary w-100" (click)="agregar()"><i class="bi bi-plus-lg"></i> Agregar Incidencia</button></div>
+        <div class="col-md-3"><button class="btn btn-sm btn-outline-primary w-100" (click)="agregar()">Agregar Incidencia</button></div>
     </div>
 
-    <table class="table table-sm align-middle bg-white shadow-sm">
-        <thead class="table-light">
-            <tr><th>Fecha</th><th>Centro de trabajo</th><th>Tipo de incidencia</th><th>Comentarios</th><th>Hora Inicio</th><th>Hora Fin</th></tr>
-        </thead>
-        <tbody>
-            @for (inc of filteredIncidencias(); track $index) {
-                <tr>
-                    <td class="small">{{ fechaGuion(inc.fecha) }}</td>
-                    <td class="small">{{ inc.centroTrabajo }}</td>
-                    <td class="small">{{ inc.tipo }}</td>
-                    <td class="small">{{ inc.comentarios }}</td>
-                    <td class="small">{{ inc.horaInicio }}</td>
-                    <td class="small">{{ inc.horaFin }}</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    @if (viewState.viewMode() === 'Kanban') {
+        <pc-odoo-kanban [origen]="origen" campoEtapa="centroTrabajo" [etapas]="centros()" [tarjeta]="tarjeta" [idDe]="idIncidencia"
+                        [etapaDe]="centroDe" [nombrados]="filtros()" [busqueda]="searchText()" />
+        <ng-template #tarjeta let-f>
+            <div class="fw-bold text-dark small">{{ f.tipo }}</div>
+            <div class="text-muted small">{{ fechaGuion(f.fecha) }} · {{ f.horaInicio }}–{{ f.horaFin }}</div>
+            <div class="text-muted small">{{ f.comentarios }}</div>
+        </ng-template>
+    } @else {
+        <pc-odoo-list lista="produccion.incidencias" [origen]="origen" [columnas]="columnas" [idDe]="idIncidencia" mensajeVacio=""
+                      [conPaginador]="false" [filasPulsables]="false" [tamanoInicial]="200"
+                      [(busqueda)]="searchText" [(nombrados)]="filtros" [(agruparPor)]="agrupaciones" />
+    }
 </div>

@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
  */
 @Component({
   selector: 'pc-boton-nuevo',
-  template: `<button class="btn btn-primary btn-sm fw-bold px-3" (click)="abrir()"><i class="bi bi-plus-lg me-1"></i> Nuevo</button>`,
+  template: `<button class="btn btn-primary btn-sm fw-bold px-3" (click)="abrir()">Nuevo</button>`,
   styles: ':host { display: contents; }',
 })
 export class BotonNuevo {

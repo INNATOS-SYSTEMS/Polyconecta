@@ -1,4 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { InventoryState } from '../../../core/state/inventory-state';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
+import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { Router } from '@angular/router';
 import { n0 } from '../../../core/format/numero';
 import { aplicar } from '../../../core/search/search-view';
@@ -12,11 +15,13 @@ import { OdooViewSwitcher } from '../../../shared/odoo-view-switcher/odoo-view-s
 /** Réplica de Pages/CapturaMasivaPage.razor: kg por rollo de las OF de Extrusión. */
 @Component({
   selector: 'pc-captura-masiva',
-  imports: [OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager],
+  imports: [OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager, OdooIcon],
   templateUrl: './captura-masiva.html',
   styles: ':host { display: contents; }',
 })
 export class CapturaMasiva {
+  private readonly invProductos = inject(InventoryState);
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.invProductos.catalogo, claveONombre, nombre);
   private readonly flow = inject(OperationalFlowState);
   protected readonly router = inject(Router);
   protected readonly vista = FABRICACION;

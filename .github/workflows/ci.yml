@@ -89,4 +89,5 @@ jobs:
           cache-dependency-path: PolyConecta.Web/package-lock.json
       - run: npm ci
       - run: npm run build
+      - run: npm run verificar-build
       - run: npm test

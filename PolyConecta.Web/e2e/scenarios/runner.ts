@@ -1,16 +1,21 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { Page, expect, test } from '@playwright/test';
-import pixelmatch from 'pixelmatch';
-import { PNG } from 'pngjs';
 import { ANGULAR, BLAZOR, abrir } from '../soporte/apps';
+import { catalogoSemilla } from '../../src/app/core/seed/inventario';
 
 /**
  * Guiones de escenario (spec 001, FR-018): la misma lista de pasos se ejecuta contra Blazor y contra
  * Angular, y se comparan los textos visibles de cada punto de control. Un guion `soloAngular` (modo
- * libre, que Blazor no tiene) solo verifica sus puntos de control contra lo esperado.
+ * libre, que Blazor no tiene) solo verifica sus puntos de control contra lo esperado. Desde la spec 011 ya
+ * no se comparan píxeles (D-135): los componentes nuevos cambian el acabado, no los textos ni el flujo.
  */
-export type Paso =
+/**
+ * Un paso marcado `soloAngular` solo corre en Angular: es el clic de un diálogo que la réplica agregó
+ * por decisión de la spec 011 (confirmar al fallar un lote, validar parcial, recibir), sin cambiar el
+ * flujo ni los textos que se comparan.
+ */
+export type Paso = PasoBase & { soloAngular?: true };
+
+type PasoBase =
   | { ir: string }
   /** Cambia de ruta sin recargar, para conservar el estado (Blazor lo pierde al abrir otro circuito). */
   | { navegar: string }
@@ -34,24 +39,76 @@ export interface Guion {
 
 const normalizar = (texto: string): string => texto.replace(/\s+/g, ' ').trim();
 
-/** Mismo umbral que la paridad de rutas (regla 8): cada punto de control también se compara en píxeles. */
-const UMBRAL = 0.01;
-const DIRECTORIO = join(__dirname, '..', '..', 'scenario-report');
+/**
+ * Diferencias de texto decididas después de la réplica (D-141), que el corredor lleva a una forma común
+ * antes de comparar las dos aplicaciones. Los `esperado` de cada paso se revisan contra el texto real.
+ * - Producto: el prototipo muestra la clave y el nombre en columnas separadas, o solo uno de los dos; la
+ *   réplica muestra "Clave - Nombre". Las dos formas quedan como «Clave».
+ * - Botones inteligentes: nombre por tipo en singular o plural y orden por grupo. Cada botón queda como
+ *   «tipo conteo», ordenados (ver `textoComparable`).
+ */
+const PRODUCTOS = catalogoSemilla().sort((a, b) => b.clave.length - a.clave.length || b.nombre.length - a.nombre.length);
+const escapar = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+export function canonico(texto: string): string {
+  let t = texto.replace(/\bClave Producto\b/g, 'Producto').replace(/\bLote Clave\b/g, 'Lote Producto');
+  for (const p of PRODUCTOS) {
+    const c = escapar(p.clave), n = escapar(p.nombre);
+    t = t.replace(new RegExp(`(?:\\[${c}\\]|${c})(?: - | )${n}`, 'g'), `«${p.clave}»`);
+  }
+  for (const p of PRODUCTOS) {
+    t = t.replace(new RegExp(`(?<=^|\\s)${escapar(p.clave)}(?=\\s|$)`, 'g'), `«${p.clave}»`);
+    t = t.replace(new RegExp(`(?<=^|\\s)${escapar(p.nombre)}(?=\\s|$)`, 'g'), `«${p.clave}»`);
+  }
+  // Una línea con la clave de un producto y la descripción de otro queda «A» - «B» en la réplica.
+  return t.replace(/» - «/g, '» «');
+}
+
+const TIPOS_DE_BOTON: Record<string, string> = {
+  'Pedido': 'pedido', 'Pedidos': 'pedido', 'Pedido de Venta': 'pedido', 'Entrega': 'entrega', 'Entregas': 'entrega',
+  'Fabricación': 'orden', 'Orden de Fabricación': 'orden', 'Orden de fabricación': 'orden', 'Órdenes de fabricación': 'orden',
+  'Recolección': 'recoleccion', 'Recolecciones': 'recoleccion', 'Traslado': 'traslado', 'Traslados': 'traslado',
+  'Recepción': 'recepcion', 'Recepciones': 'recepcion', 'Calidad': 'control', 'Control de calidad': 'control', 'Controles de calidad': 'control',
+};
+
+/**
+ * Texto de un punto de control: el real y el comparable, con los botones inteligentes como «tipo conteo»
+ * en orden alfabético. Cambia el DOM solo durante la lectura y lo deja como estaba.
+ */
+async function textoComparable(page: Page, selector: string): Promise<{ real: string; comparable: string }> {
+  const el = page.locator(selector).first();
+  const real = normalizar(await el.innerText());
+  const conBotones = await el.evaluate((raiz, tipos) => {
+    const cajas = new Set(Array.from(raiz.querySelectorAll('.o_smart_button')).map(b => b.parentElement!));
+    const deshacer: (() => void)[] = [];
+    for (const caja of cajas) {
+      const botones = Array.from(caja.children).filter(b => b.classList.contains('o_smart_button')) as HTMLElement[];
+      const marcas = botones.map(b => {
+        const etiqueta = (b.querySelector('.stat-label, .o_stat_text')?.textContent ?? '').trim();
+        const conteo = (b.querySelector('.stat-count, .o_stat_value')?.textContent ?? '').trim();
+        return `«${tipos[etiqueta] ?? etiqueta} ${conteo}»`;
+      });
+      const marca = document.createElement('span');
+      marca.textContent = marcas.sort().join(' ');
+      botones.forEach(b => (b.style.display = 'none'));
+      caja.appendChild(marca);
+      deshacer.push(() => { marca.remove(); botones.forEach(b => (b.style.display = '')); });
+    }
+    const texto = (raiz as HTMLElement).innerText;
+    deshacer.forEach(d => d());
+    return texto;
+  }, TIPOS_DE_BOTON);
+  return { real, comparable: canonico(normalizar(conBotones)) };
+}
+
 
 interface Corrida {
   controles: Record<string, string>;
-  capturas: Record<string, Buffer>;
-}
-
-async function capturar(page: Page): Promise<Buffer> {
-  // "Nuevo" es la única diferencia permitida (D-59): se enmascara en los dos lados.
-  return page.screenshot({ mask: [page.getByRole('button', { name: 'Nuevo' })], maskColor: '#ff00ff' });
 }
 
 async function ejecutar(page: Page, base: string, pasos: Paso[]): Promise<Corrida> {
   const controles: Record<string, string> = {};
-  const capturas: Record<string, Buffer> = {};
   for (const paso of pasos) {
+    if (paso.soloAngular && base !== ANGULAR) continue;
     if ('ir' in paso) {
       await abrir(page, base, paso.ir);
     } else if ('navegar' in paso) {
@@ -95,40 +152,20 @@ async function ejecutar(page: Page, base: string, pasos: Paso[]): Promise<Corrid
       const valor = await campo.inputValue();
       const editable = await campo.isEditable();
       controles[paso.control] = `${valor} (${editable ? 'editable' : 'no editable'})`;
-      capturas[paso.control] = await capturar(page);
       if (paso.esperado !== undefined) expect(valor, paso.control).toMatch(paso.esperado);
       if (paso.editable !== undefined) expect(editable, `${paso.control}: editable`).toBe(paso.editable);
     } else if ('habilitado' in paso) {
       const boton = paso.texto ? page.locator(paso.habilitado, { hasText: paso.texto }).first() : page.locator(paso.habilitado).first();
       const habilitado = await boton.isEnabled();
       controles[paso.control] = habilitado ? 'habilitado' : 'deshabilitado';
-      capturas[paso.control] = await capturar(page);
       if (paso.esperado !== undefined) expect(habilitado, paso.control).toBe(paso.esperado);
     } else {
-      const texto = normalizar(await page.locator(paso.en).first().innerText());
-      controles[paso.control] = texto;
-      capturas[paso.control] = await capturar(page);
-      if (paso.esperado !== undefined) expect(texto, paso.control).toMatch(paso.esperado);
+      const { real, comparable } = await textoComparable(page, paso.en);
+      controles[paso.control] = comparable;
+      if (paso.esperado !== undefined) expect(real, paso.control).toMatch(paso.esperado);
     }
   }
-  return { controles, capturas };
-}
-
-/** Proporción de píxeles distintos; si pasa del umbral, deja las tres imágenes en scenario-report/. */
-function compararCapturas(nombre: string, control: string, b: Buffer, a: Buffer): number {
-  const blazor = PNG.sync.read(b);
-  const angular = PNG.sync.read(a);
-  const { width, height } = blazor;
-  const diferencia = new PNG({ width, height });
-  const proporcion = pixelmatch(blazor.data, angular.data, diferencia.data, width, height, { threshold: 0.1 }) / (width * height);
-  if (proporcion > UMBRAL) {
-    const base = join(DIRECTORIO, `${nombre} - ${control}`.replace(/[^\p{L}\p{N} _-]/gu, '_'));
-    mkdirSync(DIRECTORIO, { recursive: true });
-    writeFileSync(`${base}.blazor.png`, b);
-    writeFileSync(`${base}.angular.png`, a);
-    writeFileSync(`${base}.diff.png`, PNG.sync.write(diferencia));
-  }
-  return proporcion;
+  return { controles };
 }
 
 /** Registra el guion como prueba de Playwright. */
@@ -140,10 +177,6 @@ export function guion(g: Guion): void {
     if (!blazor) return;
     for (const control of Object.keys(blazor.controles)) {
       expect(angular.controles[control], `punto de control "${control}"`).toBe(blazor.controles[control]);
-    }
-    for (const control of Object.keys(blazor.capturas)) {
-      const proporcion = compararCapturas(g.nombre, control, blazor.capturas[control], angular.capturas[control]);
-      expect.soft(proporcion, `"${control}": ${(proporcion * 100).toFixed(2)} % de píxeles distintos`).toBeLessThanOrEqual(UMBRAL);
     }
   });
 }
