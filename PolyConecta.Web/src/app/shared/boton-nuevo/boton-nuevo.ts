@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
 })
 export class BotonNuevo {
   private readonly router = inject(Router);
-  /** Ruta de la lista del documento, como `/pedidos`. */
+  /** Ruta de la lista del documento, como `/ventas/pedidos`. */
   readonly ruta = input.required<string>();
 
   protected abrir(): void {

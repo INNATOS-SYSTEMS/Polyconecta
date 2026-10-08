@@ -25,8 +25,8 @@ const AL_GUARDAR = 'Se habilita al guardar la orden.';
   selector: 'pc-fabricacion-nueva',
   imports: [HojaNueva, OdooTabs, PcPestana, OdooLineCapture, OdooIcon, NgTemplateOutlet],
   template: `
-    <pc-hoja-nueva lista="Órdenes de Fabricación" ruta="/fabricacion" titulo="Orden de fabricación" [stages]="stages" [error]="error()" [conChatter]="true"
-                   (guardar)="guardar()" (descartar)="router.navigateByUrl('/fabricacion')">
+    <pc-hoja-nueva lista="Órdenes de Fabricación" ruta="/produccion/fabricacion" titulo="Orden de fabricación" [stages]="stages" [error]="error()" [conChatter]="true"
+                   (guardar)="guardar()" (descartar)="router.navigateByUrl('/produccion/fabricacion')">
       <div class="row g-4 mb-2">
         <div class="col-md-6">
           <div class="o_form_label_row">
@@ -135,6 +135,6 @@ export class FabricacionNueva {
   protected guardar(): void {
     const { of, error } = this.ofs.crearConLineas(this.proceso(), this.clave(), this.cantidad(), this.componentes(), this.subproductos());
     this.error.set(error);
-    if (of) void this.router.navigateByUrl(`/fabricacion/${of.folio}`);
+    if (of) void this.router.navigateByUrl(`/produccion/fabricacion/${of.folio}`);
   }
 }

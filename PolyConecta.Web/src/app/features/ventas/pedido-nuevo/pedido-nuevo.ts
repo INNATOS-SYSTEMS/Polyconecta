@@ -20,8 +20,8 @@ import { ETAPAS_PEDIDO } from '../pedidos-acciones';
   selector: 'pc-pedido-nuevo',
   imports: [HojaNueva, OdooTabs, PcPestana, OdooLineCapture, OdooIcon],
   template: `
-    <pc-hoja-nueva lista="Pedidos" ruta="/pedidos" titulo="Pedido" [stages]="stages" [error]="error()" [conChatter]="true"
-                   (guardar)="guardar()" (descartar)="router.navigateByUrl('/pedidos')">
+    <pc-hoja-nueva lista="Pedidos" ruta="/ventas/pedidos" titulo="Pedido" [stages]="stages" [error]="error()" [conChatter]="true"
+                   (guardar)="guardar()" (descartar)="router.navigateByUrl('/ventas/pedidos')">
       <div class="row g-4 mb-2">
         <div class="col-md-6">
           <div class="o_form_label_row"><span class="o_form_label">Cliente</span><input class="form-control form-control-sm o_inline_input" name="cliente" [value]="cliente()" (input)="cliente.set($any($event.target).value)" /></div>
@@ -100,6 +100,6 @@ export class PedidoNuevo {
     const { pedido, error } = this.libre.crearConLineas(this.cliente(), this.ordenCompra(),
       this.lineas().map(l => ({ clave: l.clave, cantidad: l.cantidad, precioUnitario: l.precioUnitario, moneda: l.moneda ?? 'MXN' })));
     this.error.set(error);
-    if (pedido) void this.router.navigateByUrl(`/pedidos/${pedido.folio}`);
+    if (pedido) void this.router.navigateByUrl(`/ventas/pedidos/${pedido.folio}`);
   }
 }

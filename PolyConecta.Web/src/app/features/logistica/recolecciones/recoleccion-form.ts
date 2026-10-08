@@ -21,7 +21,7 @@ import { OdooSmartButtons, SmartButtonModel, botonInteligente } from '../../../s
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
 
 /**
- * Réplica de Pages/RecoleccionFormView.razor (/recolecciones/{*Folio}) sobre los componentes de la spec 011 (P3).
+ * Réplica de Pages/RecoleccionFormView.razor (/logistica/recolecciones/{*Folio}) sobre los componentes de la spec 011 (P3).
  * Validar usa la misma acción que el kanban: si es parcial, primero el diálogo de cantidades (aclaración P3).
  */
 @Component({
@@ -80,11 +80,11 @@ export class RecoleccionForm {
     const lista: SmartButtonModel[] = [
       sinOf
         ? botonInteligente('orden', 0, '', true)
-        : botonInteligente('orden', 1, `/fabricacion/${op?.ofFolio ?? ''}`),
+        : botonInteligente('orden', 1, `/produccion/fabricacion/${op?.ofFolio ?? ''}`),
     ];
     const hermanas = op && !sinOf ? this.ops.deOf(op.ofFolio).filter(o => o.folio !== op.folio) : [];
     if (hermanas.length > 0)
-      lista.push(botonInteligente('recoleccion', hermanas.length, '/recolecciones'));
+      lista.push(botonInteligente('recoleccion', hermanas.length, '/logistica/recolecciones'));
     return lista;
   });
 
@@ -105,14 +105,14 @@ export class RecoleccionForm {
       if (!(await firstValueFrom(ref.closed))) return;
     }
     const { backorder } = this.acciones.validar(op.folio);
-    if (backorder) this.navegar(`/recolecciones/${backorder.folio}`);
+    if (backorder) this.navegar(`/logistica/recolecciones/${backorder.folio}`);
   }
 
   protected cancelar(): void {
     const op = this.op();
     if (!op) return;
     this.ops.cancelar(op);
-    this.navegar('/recolecciones');
+    this.navegar('/logistica/recolecciones');
   }
 
   protected agregar(a: { lote: string; cantidad: number }): void {

@@ -51,6 +51,6 @@ export class RecoleccionesList {
   protected readonly agrupaciones = signal<string[]>([]);
 
   protected abrir(f: FilaRecoleccion): void {
-    void this.router.navigateByUrl(`/recolecciones/${f.folio}`);
+    void this.router.navigateByUrl(`/logistica/recolecciones/${f.folio}`);
   }
 }

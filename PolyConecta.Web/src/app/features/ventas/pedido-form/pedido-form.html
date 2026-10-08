@@ -1,7 +1,7 @@
 <div class="o_control_panel">
     <div class="d-flex align-items-center gap-3">
-        <pc-boton-nuevo [ruta]="'/pedidos'" />
-        <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos', url: '/pedidos' }, { label: folio() }]" />
+        <pc-boton-nuevo [ruta]="'/ventas/pedidos'" />
+        <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos', url: '/ventas/pedidos' }, { label: folio() }]" />
     </div>
     <div class="o_button_box">
         <pc-odoo-smart-buttons [buttons]="smartButtons()" (smartNavigate)="navegar($event)" />
@@ -27,7 +27,7 @@
                 }
             }
             @if (pedido().stage !== 'Hecho') {
-                <button class="btn btn-outline-secondary btn-sm px-3" (click)="navegar('/pedidos')">Cancelar</button>
+                <button class="btn btn-outline-secondary btn-sm px-3" (click)="navegar('/ventas/pedidos')">Cancelar</button>
             }
         </div>
     </div>

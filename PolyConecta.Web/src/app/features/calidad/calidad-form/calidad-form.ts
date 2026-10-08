@@ -52,7 +52,7 @@ export class CalidadForm {
   });
 
   protected readonly smartButtons = computed<SmartButtonModel[]>(() => [
-    botonInteligente('orden', 1, `/fabricacion/${this.folioOf()}`),
+    botonInteligente('orden', 1, `/produccion/fabricacion/${this.folioOf()}`),
   ]);
 
   protected navegar(ruta: string): void {

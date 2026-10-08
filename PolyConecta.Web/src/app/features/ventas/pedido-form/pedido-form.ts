@@ -47,12 +47,12 @@ export class PedidoForm {
       const ofs = this.flow.ordenesDePedido(this.pedido().folio).length;
       return [
         botonInteligente('entrega', 0, '', true),
-        botonInteligente('orden', ofs, `/fabricacion?pedido=${this.pedido().folio}`, ofs === 0),
+        botonInteligente('orden', ofs, `/produccion/fabricacion?pedido=${this.pedido().folio}`, ofs === 0),
       ];
     }
     return [
-      botonInteligente('entrega', 1, `/entregas/${this.flow.entrega().folio}`),
-      botonInteligente('orden', this.flow.ordenesDePedido(this.folio()).length, `/fabricacion?pedido=${this.folio()}`),
+      botonInteligente('entrega', 1, `/logistica/entregas/${this.flow.entrega().folio}`),
+      botonInteligente('orden', this.flow.ordenesDePedido(this.folio()).length, `/produccion/fabricacion?pedido=${this.folio()}`),
     ];
   });
 

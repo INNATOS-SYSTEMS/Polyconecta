@@ -1,5 +1,6 @@
 import { Page, expect, test } from '@playwright/test';
 import { ANGULAR, BLAZOR, abrir } from '../soporte/apps';
+import { rutaAngular } from '../soporte/rutas';
 import { catalogoSemilla } from '../../src/app/core/seed/inventario';
 
 /**
@@ -112,7 +113,8 @@ async function ejecutar(page: Page, base: string, pasos: Paso[]): Promise<Corrid
     if ('ir' in paso) {
       await abrir(page, base, paso.ir);
     } else if ('navegar' in paso) {
-      const ruta = paso.navegar;
+      // La réplica lleva el prefijo de su módulo (D-155).
+      const ruta = base === ANGULAR ? rutaAngular(paso.navegar) : paso.navegar;
       await page.evaluate(r => {
         const w = window as unknown as { Blazor?: { navigateTo(u: string): void }; __sinRecarga?: boolean };
         w.__sinRecarga = true;

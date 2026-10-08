@@ -22,7 +22,7 @@
             </thead>
             <tbody>
                 @for (of of filteredOrders(); track of.folio) {
-                    <tr style="cursor:pointer;" [class.table-active]="selected().has(of.folio)" (click)="router.navigateByUrl('/fabricacion/' + of.folio)">
+                    <tr style="cursor:pointer;" [class.table-active]="selected().has(of.folio)" (click)="router.navigateByUrl('/produccion/fabricacion/' + of.folio)">
                         <td (click)="$event.stopPropagation()"><input type="checkbox" class="form-check-input" [checked]="selected().has(of.folio)" (change)="toggleOne(of.folio)" /></td>
                         <td class="fw-semibold text-primary small">{{ of.folio }}</td>
                         <td class="small">{{ producto(of.producto) }}</td>

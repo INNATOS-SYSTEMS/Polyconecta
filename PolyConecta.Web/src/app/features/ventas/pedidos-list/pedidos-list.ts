@@ -51,6 +51,6 @@ export class PedidosList {
   protected readonly agrupaciones = signal<string[]>([]);
 
   protected abrir(f: FilaPedido): void {
-    void this.router.navigateByUrl(`/pedidos/${f.folio}`);
+    void this.router.navigateByUrl(`/ventas/pedidos/${f.folio}`);
   }
 }

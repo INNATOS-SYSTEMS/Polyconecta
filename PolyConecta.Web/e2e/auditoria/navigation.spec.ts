@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { abrir, ANGULAR, BLAZOR } from '../soporte/apps';
+import { abrir, ANGULAR, BLAZOR, rutaComparable } from '../soporte/apps';
 
 /**
  * Navegación igual en las dos aplicaciones (L2-T036): enlace directo, folio inexistente y
@@ -8,8 +8,8 @@ import { abrir, ANGULAR, BLAZOR } from '../soporte/apps';
 
 /** Ruta relativa y título del documento, lo que debe coincidir entre las dos aplicaciones. */
 async function donde(page: Page): Promise<{ ruta: string; titulo: string }> {
-  const url = new URL(page.url());
-  return { ruta: url.pathname, titulo: await page.title() };
+  // En Angular, sin el prefijo de módulo (D-155), para comparar con el prototipo.
+  return { ruta: rutaComparable(page), titulo: await page.title() };
 }
 
 /** Texto visible del área de contenido, sin la barra superior. */

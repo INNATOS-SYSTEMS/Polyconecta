@@ -35,7 +35,7 @@ export interface ConfigLogistica {
 
 export const CONFIG: Record<TipoLogistica, ConfigLogistica> = {
   traslado: {
-    ruta: '/traslados',
+    ruta: '/logistica/traslados',
     tituloLista: 'Traslados',
     tituloForm: 'Orden de traslado',
     vista: TRASLADOS,
@@ -52,12 +52,12 @@ export const CONFIG: Record<TipoLogistica, ConfigLogistica> = {
     comprobar: f => f.comprobarDisponibilidadTraslado(),
     lotes: f => f.getLotesDisponiblesTraslado(),
     smartButtons: f => [
-      botonInteligente('orden', 1, '/fabricacion/IMP-2026-0001'),
-      botonInteligente('recepcion', 1, `/recepcion/${f.recepcion().folio}`),
+      botonInteligente('orden', 1, '/produccion/fabricacion/IMP-2026-0001'),
+      botonInteligente('recepcion', 1, `/logistica/recepcion/${f.recepcion().folio}`),
     ],
   },
   recepcion: {
-    ruta: '/recepcion',
+    ruta: '/logistica/recepcion',
     tituloLista: 'Recepción',
     tituloForm: 'Recepción',
     vista: RECEPCIONES,
@@ -74,12 +74,12 @@ export const CONFIG: Record<TipoLogistica, ConfigLogistica> = {
     comprobar: f => f.comprobarDisponibilidadRecepcion(),
     lotes: f => f.getLotesDisponiblesTraslado(),
     smartButtons: f => [
-      botonInteligente('traslado', 1, `/traslados/${f.traslado().folio}`),
-      botonInteligente('orden', 1, '/fabricacion/IMP-2026-0001'),
+      botonInteligente('traslado', 1, `/logistica/traslados/${f.traslado().folio}`),
+      botonInteligente('orden', 1, '/produccion/fabricacion/IMP-2026-0001'),
     ],
   },
   entrega: {
-    ruta: '/entregas',
+    ruta: '/logistica/entregas',
     tituloLista: 'Entregas',
     tituloForm: 'Orden de entrega',
     vista: ENTREGAS,
@@ -95,6 +95,6 @@ export const CONFIG: Record<TipoLogistica, ConfigLogistica> = {
     validar: (f, folio) => f.validarEntrega(folio),
     comprobar: f => f.comprobarDisponibilidadEntrega(),
     lotes: f => f.getLotesDisponiblesEntrega(),
-    smartButtons: () => [botonInteligente('pedido', 1, `/pedidos/${PEDIDO_FOLIO}`)],
+    smartButtons: () => [botonInteligente('pedido', 1, `/ventas/pedidos/${PEDIDO_FOLIO}`)],
   },
 };

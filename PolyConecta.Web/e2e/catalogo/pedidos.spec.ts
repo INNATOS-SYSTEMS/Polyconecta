@@ -17,7 +17,7 @@ const columna = (page: Page, etapa: string) => page.locator(`[data-etapa="${etap
 const tarjeta = (page: Page, etapa: string) => columna(page, etapa).locator('[data-tarjeta="IV310-26"]');
 
 test('kanban de pedidos: confirmar y autorizar con las dos firmas arrastrando', async ({ page }) => {
-  await abrir(page, ANGULAR, '/pedidos');
+  await abrir(page, ANGULAR, '/ventas/pedidos');
   await page.locator('.o_view_switcher button').nth(1).click();
   await expect(tarjeta(page, 'Borrador')).toHaveCount(1);
   await arrastrar(page, tarjeta(page, 'Borrador'), columna(page, 'Hecho'));
@@ -43,7 +43,7 @@ test('kanban de pedidos: confirmar y autorizar con las dos firmas arrastrando', 
 });
 
 test('lista de pedidos: agrupa por estado y abre el pedido', async ({ page }) => {
-  await abrir(page, ANGULAR, '/pedidos');
+  await abrir(page, ANGULAR, '/ventas/pedidos');
   await page.locator('button[title="Filtros del modelo"]').click();
   await page.locator('.o_search_menu_item', { hasText: 'Estado' }).last().click();
   await page.locator('button[title="Filtros del modelo"]').click(); // el menú del prototipo se cierra con su botón

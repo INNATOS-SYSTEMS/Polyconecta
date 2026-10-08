@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 
-/** `/ventas/inventario` es un alias de la misma pantalla, como en InventarioActualList.razor. */
+/** Módulo Inventario, bajo `/inventario` (D-155). Ventas tiene un alias de Inventario Actual en `/ventas/inventario`. */
 export const INVENTARIO_ROUTES: Routes = [
-  { path: 'inventario', loadComponent: () => import('./inventario-actual/inventario-actual').then(m => m.InventarioActual) },
-  { path: 'ventas/inventario', loadComponent: () => import('./inventario-actual/inventario-actual').then(m => m.InventarioActual) },
+  { path: '', pathMatch: 'full', loadComponent: () => import('./inventario-actual/inventario-actual').then(m => m.InventarioActual) },
 ];

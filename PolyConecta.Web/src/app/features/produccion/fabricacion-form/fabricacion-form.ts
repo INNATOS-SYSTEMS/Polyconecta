@@ -71,11 +71,11 @@ export class FabricacionForm {
   protected readonly breadcrumb = computed<Crumb[]>(() => {
     const p = this.pedido();
     return !p
-      ? [{ label: 'Órdenes de Fabricación', url: '/fabricacion' }, { label: this.folioOf() }]
+      ? [{ label: 'Órdenes de Fabricación', url: '/produccion/fabricacion' }, { label: this.folioOf() }]
       : [
-          { label: 'Pedidos', url: '/pedidos' },
-          { label: p, url: `/pedidos/${p}` },
-          { label: 'Órdenes de Fabricación', url: `/fabricacion?pedido=${p}` },
+          { label: 'Pedidos', url: '/ventas/pedidos' },
+          { label: p, url: `/ventas/pedidos/${p}` },
+          { label: 'Órdenes de Fabricación', url: `/produccion/fabricacion?pedido=${p}` },
           { label: this.folioOf() },
         ];
   });
@@ -116,13 +116,13 @@ export class FabricacionForm {
     // FR-014: una OF libre no tiene pedido; el botón queda vacío y deshabilitado, nunca con un origen falso.
     const list: SmartButtonModel[] = this.of()?.libre
       ? [botonInteligente('pedido', 0, '', true)]
-      : [botonInteligente('pedido', 1, `/pedidos/${this.of()?.pedidoFolio}`)];
+      : [botonInteligente('pedido', 1, `/ventas/pedidos/${this.of()?.pedidoFolio}`)];
     // El traslado interplanta cuelga de la orden que tiene secundarias (la que genera el envío).
     if (this.flow.getSecondaries(folio).length > 0)
-      list.push(botonInteligente('traslado', 1, `/traslados/${this.flow.traslado().folio}`));
+      list.push(botonInteligente('traslado', 1, `/logistica/traslados/${this.flow.traslado().folio}`));
     const recolecciones = this.ops.deOf(folio);
     if (recolecciones.length > 0)
-      list.push(botonInteligente('recoleccion', recolecciones.length, `/recolecciones/${recolecciones[0].folio}`));
+      list.push(botonInteligente('recoleccion', recolecciones.length, `/logistica/recolecciones/${recolecciones[0].folio}`));
     list.push(botonInteligente('control', 1, `/calidad/${folio}`));
     return list;
   });
@@ -158,7 +158,7 @@ export class FabricacionForm {
 
   protected volverALista(): void {
     const p = this.pedido();
-    void this.router.navigateByUrl(!p ? '/fabricacion' : `/fabricacion?pedido=${p}`);
+    void this.router.navigateByUrl(!p ? '/produccion/fabricacion' : `/produccion/fabricacion?pedido=${p}`);
   }
 
   protected navegar(ruta: string): void {

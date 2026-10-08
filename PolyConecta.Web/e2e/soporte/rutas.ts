@@ -26,3 +26,34 @@ export function rutasSeleccionadas(): readonly string[] {
   const filtro = process.env['PARITY_ROUTES'];
   return filtro ? filtro.split(',').map(r => r.trim()).filter(r => r !== '') : RUTAS;
 }
+
+/**
+ * Rutas con prefijo de módulo (D-155): la réplica vive bajo su módulo y el prototipo no. Los guiones y el
+ * auditor siguen escritos con las rutas del prototipo; al abrir Angular se traducen, y la URL de Angular se
+ * vuelve a la forma del prototipo para comparar.
+ */
+const PREFIJOS: readonly (readonly [string, string])[] = [
+  ['/pedidos', '/ventas/pedidos'],
+  ['/fabricacion', '/produccion/fabricacion'],
+  ['/captura-masiva', '/produccion/captura-masiva'],
+  ['/incidencias', '/produccion/incidencias'],
+  ['/recolecciones', '/logistica/recolecciones'],
+  ['/traslados', '/logistica/traslados'],
+  ['/recepcion', '/logistica/recepcion'],
+  ['/entregas', '/logistica/entregas'],
+];
+
+const empieza = (ruta: string, prefijo: string) =>
+  ruta.startsWith(prefijo) && (ruta.length === prefijo.length || '/?#'.includes(ruta[prefijo.length]));
+
+/** Ruta del prototipo → ruta de la réplica. Una ruta ya traducida no cambia. */
+export function rutaAngular(ruta: string): string {
+  const par = PREFIJOS.find(([viejo]) => empieza(ruta, viejo));
+  return par ? par[1] + ruta.slice(par[0].length) : ruta;
+}
+
+/** Ruta de la réplica → ruta del prototipo, para comparar URLs entre las dos aplicaciones. */
+export function rutaPrototipo(ruta: string): string {
+  const par = PREFIJOS.find(([, nuevo]) => empieza(ruta, nuevo));
+  return par ? par[0] + ruta.slice(par[1].length) : ruta;
+}

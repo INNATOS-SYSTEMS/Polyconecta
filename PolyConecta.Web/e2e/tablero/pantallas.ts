@@ -32,9 +32,9 @@ export const FLUJOS: readonly Flujo[] = [
     nombre: 'Pedidos de venta',
     descripcion: 'Captura, confirmación y autorización con dos firmas.',
     pantallas: [
-      { ruta: '/pedidos', titulo: 'Pedidos', tipo: 'Lista', siguiente: 'Abrir un pedido' },
-      { ruta: '/pedidos/IV310-26', titulo: 'Pedido IV310-26', tipo: 'Formulario', siguiente: 'Autorizar → genera OF' },
-      { ruta: '/pedidos/nuevo', titulo: 'Pedido nuevo', tipo: 'Nuevo' },
+      { ruta: '/ventas/pedidos', titulo: 'Pedidos', tipo: 'Lista', siguiente: 'Abrir un pedido' },
+      { ruta: '/ventas/pedidos/IV310-26', titulo: 'Pedido IV310-26', tipo: 'Formulario', siguiente: 'Autorizar → genera OF' },
+      { ruta: '/ventas/pedidos/nuevo', titulo: 'Pedido nuevo', tipo: 'Nuevo' },
     ],
   },
   {
@@ -42,13 +42,13 @@ export const FLUJOS: readonly Flujo[] = [
     nombre: 'Fabricación',
     descripcion: 'Cadena de órdenes: extrusión, impresión y bolseo; captura e incidencias.',
     pantallas: [
-      { ruta: '/fabricacion', titulo: 'Órdenes de fabricación', tipo: 'Lista', siguiente: 'Abrir una OF' },
-      { ruta: '/fabricacion/BOL-2026-0001', titulo: 'OF de bolseo (raíz)', tipo: 'Formulario', siguiente: 'OF hija: impresión' },
-      { ruta: '/fabricacion/IMP-2026-0001', titulo: 'OF de impresión', tipo: 'Formulario', siguiente: 'OF hija: extrusión' },
-      { ruta: '/fabricacion/EXT-2026-0001', titulo: 'OF de extrusión', tipo: 'Formulario', siguiente: 'Capturar producción' },
-      { ruta: '/captura-masiva', titulo: 'Captura masiva', tipo: 'Captura', siguiente: 'Reportar incidencia' },
-      { ruta: '/incidencias', titulo: 'Incidencias', tipo: 'Lista' },
-      { ruta: '/fabricacion/nuevo', titulo: 'OF nueva', tipo: 'Nuevo' },
+      { ruta: '/produccion/fabricacion', titulo: 'Órdenes de fabricación', tipo: 'Lista', siguiente: 'Abrir una OF' },
+      { ruta: '/produccion/fabricacion/BOL-2026-0001', titulo: 'OF de bolseo (raíz)', tipo: 'Formulario', siguiente: 'OF hija: impresión' },
+      { ruta: '/produccion/fabricacion/IMP-2026-0001', titulo: 'OF de impresión', tipo: 'Formulario', siguiente: 'OF hija: extrusión' },
+      { ruta: '/produccion/fabricacion/EXT-2026-0001', titulo: 'OF de extrusión', tipo: 'Formulario', siguiente: 'Capturar producción' },
+      { ruta: '/produccion/captura-masiva', titulo: 'Captura masiva', tipo: 'Captura', siguiente: 'Reportar incidencia' },
+      { ruta: '/produccion/incidencias', titulo: 'Incidencias', tipo: 'Lista' },
+      { ruta: '/produccion/fabricacion/nuevo', titulo: 'OF nueva', tipo: 'Nuevo' },
     ],
   },
   {
@@ -56,9 +56,9 @@ export const FLUJOS: readonly Flujo[] = [
     nombre: 'Recolección de componentes',
     descripcion: 'Surtido de MP y componentes de almacén a WIP para la OF.',
     pantallas: [
-      { ruta: '/recolecciones', titulo: 'Recolecciones', tipo: 'Lista', siguiente: 'Abrir una recolección' },
-      { ruta: '/recolecciones/SC/OUT/48214', titulo: 'Recolección SC/OUT/48214', tipo: 'Formulario' },
-      { ruta: '/recolecciones/nuevo', titulo: 'Recolección nueva', tipo: 'Nuevo' },
+      { ruta: '/logistica/recolecciones', titulo: 'Recolecciones', tipo: 'Lista', siguiente: 'Abrir una recolección' },
+      { ruta: '/logistica/recolecciones/SC/OUT/48214', titulo: 'Recolección SC/OUT/48214', tipo: 'Formulario' },
+      { ruta: '/logistica/recolecciones/nuevo', titulo: 'Recolección nueva', tipo: 'Nuevo' },
     ],
   },
   {
@@ -76,9 +76,9 @@ export const FLUJOS: readonly Flujo[] = [
     nombre: 'Traslados entre plantas',
     descripcion: 'Salida de lotes liberados hacia tránsito.',
     pantallas: [
-      { ruta: '/traslados', titulo: 'Traslados', tipo: 'Lista', siguiente: 'Abrir un traslado' },
-      { ruta: '/traslados/PIM/OUT/48213', titulo: 'Traslado PIM/OUT/48213', tipo: 'Formulario', siguiente: 'Llega a la planta destino' },
-      { ruta: '/traslados/nuevo', titulo: 'Traslado nuevo', tipo: 'Nuevo' },
+      { ruta: '/logistica/traslados', titulo: 'Traslados', tipo: 'Lista', siguiente: 'Abrir un traslado' },
+      { ruta: '/logistica/traslados/PIM/OUT/48213', titulo: 'Traslado PIM/OUT/48213', tipo: 'Formulario', siguiente: 'Llega a la planta destino' },
+      { ruta: '/logistica/traslados/nuevo', titulo: 'Traslado nuevo', tipo: 'Nuevo' },
     ],
   },
   {
@@ -86,9 +86,9 @@ export const FLUJOS: readonly Flujo[] = [
     nombre: 'Recepción',
     descripcion: 'Entrada en la planta destino de los lotes en tránsito.',
     pantallas: [
-      { ruta: '/recepcion', titulo: 'Recepciones', tipo: 'Lista', siguiente: 'Abrir una recepción' },
-      { ruta: '/recepcion/SC/IN/50974', titulo: 'Recepción SC/IN/50974', tipo: 'Formulario' },
-      { ruta: '/recepcion/nuevo', titulo: 'Recepción nueva', tipo: 'Nuevo' },
+      { ruta: '/logistica/recepcion', titulo: 'Recepciones', tipo: 'Lista', siguiente: 'Abrir una recepción' },
+      { ruta: '/logistica/recepcion/SC/IN/50974', titulo: 'Recepción SC/IN/50974', tipo: 'Formulario' },
+      { ruta: '/logistica/recepcion/nuevo', titulo: 'Recepción nueva', tipo: 'Nuevo' },
     ],
   },
   {
@@ -96,9 +96,9 @@ export const FLUJOS: readonly Flujo[] = [
     nombre: 'Entregas al cliente',
     descripcion: 'Salida de producto terminado liberado hacia el cliente.',
     pantallas: [
-      { ruta: '/entregas', titulo: 'Entregas', tipo: 'Lista', siguiente: 'Abrir una entrega' },
-      { ruta: '/entregas/SC/OUT/31688', titulo: 'Entrega SC/OUT/31688', tipo: 'Formulario' },
-      { ruta: '/entregas/nuevo', titulo: 'Entrega nueva', tipo: 'Nuevo' },
+      { ruta: '/logistica/entregas', titulo: 'Entregas', tipo: 'Lista', siguiente: 'Abrir una entrega' },
+      { ruta: '/logistica/entregas/SC/OUT/31688', titulo: 'Entrega SC/OUT/31688', tipo: 'Formulario' },
+      { ruta: '/logistica/entregas/nuevo', titulo: 'Entrega nueva', tipo: 'Nuevo' },
     ],
   },
 ];

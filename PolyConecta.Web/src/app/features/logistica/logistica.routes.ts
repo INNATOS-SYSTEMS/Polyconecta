@@ -1,8 +1,9 @@
 import { Routes } from '@angular/router';
 import { folioMatcher } from '../../shared/routing/folio-matcher';
 
-/** Los folios de estas operaciones llevan "/" (SC/OUT/31688): se resuelven con folioMatcher. */
+/** Módulo Logística, bajo `/logistica` (D-155). Los folios de estas operaciones llevan "/" (SC/OUT/31688): se resuelven con folioMatcher. */
 export const LOGISTICA_ROUTES: Routes = [
+  { path: '', pathMatch: 'full', redirectTo: 'entregas' },
   { path: 'recolecciones', loadComponent: () => import('./recolecciones/recolecciones-list').then(m => m.RecoleccionesList) },
   { path: 'recolecciones/nuevo', loadComponent: () => import('./recoleccion-nueva/recoleccion-nueva').then(m => m.RecoleccionNueva) },
   { matcher: folioMatcher('recolecciones'), loadComponent: () => import('./recolecciones/recoleccion-form').then(m => m.RecoleccionForm) },

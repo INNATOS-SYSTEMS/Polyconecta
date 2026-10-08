@@ -9,15 +9,15 @@ describe('OdooTopbar', () => {
   beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter(routes)] }));
 
   it('resuelve el módulo por prefijo, como el prototipo', () => {
-    expect(moduleFor('/pedidos/IV310-26').name).toBe('Ventas');
+    expect(moduleFor('/ventas/pedidos/IV310-26').name).toBe('Ventas');
     expect(moduleFor('/ventas/inventario').name).toBe('Ventas');
-    expect(moduleFor('/traslados/PIM/OUT/48213').name).toBe('Inventario');
-    expect(moduleFor('/captura-masiva').name).toBe('Fabricación');
+    expect(moduleFor('/logistica/traslados/PIM/OUT/48213').name).toBe('Inventario');
+    expect(moduleFor('/produccion/captura-masiva').name).toBe('Fabricación');
     expect(moduleFor('/').name).toBe('');
   });
 
   it('muestra el menú del módulo de la ruta actual', async () => {
-    await TestBed.inject(Router).navigateByUrl('/fabricacion');
+    await TestBed.inject(Router).navigateByUrl('/produccion/fabricacion');
     const fixture = TestBed.createComponent(OdooTopbar);
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
