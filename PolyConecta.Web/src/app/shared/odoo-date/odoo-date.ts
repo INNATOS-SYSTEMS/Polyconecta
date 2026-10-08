@@ -1,4 +1,4 @@
-import { Component, computed, forwardRef, input, signal, viewChild } from '@angular/core';
+import { Component, computed, forwardRef, input, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BrnCalendar, BrnCalendarImports, provideBrnCalendarI18n } from '@spartan-ng/brain/calendar';
 import { provideNativeDateAdapter } from '@spartan-ng/brain/date-time';
@@ -60,6 +60,23 @@ const FORMATO = new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium' });
         </div>
       </div>
     </div>
+  `,
+  // Estilos del calendario aquí y no en app.css: el campo carga con su pantalla, no en la carga inicial.
+  // Sin encapsulación: los días los pinta la directiva del calendario.
+  encapsulation: ViewEncapsulation.None,
+  styles: `
+    .o_calendar { padding: 0.5rem; width: 260px; }
+    .o_calendar_header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem; font-weight: 600; text-transform: capitalize; }
+    .o_calendar table { width: 100%; border-collapse: collapse; }
+    .o_calendar th { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-align: center; padding: 0.2rem 0; }
+    .o_calendar_dia {
+        width: 32px; height: 32px; border: 0; border-radius: 6px; background: transparent; font-size: 0.82rem; color: var(--text-main);
+    }
+    .o_calendar_dia:hover { background: var(--brand-light); }
+    .o_calendar_dia[data-today="true"] { font-weight: 700; color: var(--brand-primary); }
+    .o_calendar_dia[data-selected="true"] { background: var(--brand-primary); color: white; }
+    .o_calendar_dia[data-outside="true"] { opacity: 0.4; }
+    .o_calendar_dia[data-disabled="true"] { opacity: 0.3; pointer-events: none; }
   `,
 })
 export class OdooDate implements ControlValueAccessor {

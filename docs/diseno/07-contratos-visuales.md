@@ -171,7 +171,7 @@ Todo producto se muestra como **"Clave - Nombre"**: en campos, tablas, tarjetas,
 
 | Pieza | Componente | Reglas |
 | :--- | :--- | :--- |
-| Barra superior | `pc-odoo-topbar` en `pc-main-layout` | Menú del módulo de la ruta actual |
+| Barra superior | `pc-odoo-topbar` en `pc-main-layout`, con `pc-odoo-systray` a la derecha | Izquierda: el hub, el nombre del módulo o "PolyConecta" si no hay módulo, y el menú del módulo. Derecha: mensajes, el nombre del usuario y su avatar. **Solo el avatar es interactivo; el nombre es texto.** El avatar es un cuadro de 28 px con la inicial; hover y abierto lo marcan con un anillo, sin cambiar su tamaño, y abre Preferencias y Cerrar sesión, alineado a la derecha. Clic fuera o Esc cierran el menú. Hasta F1 no hay inicio de sesión: las dos opciones se ven deshabilitadas |
 | Migas | `pc-odoo-breadcrumb` | Nivel actual y uno atrás; lo anterior se resume en "…" |
 | Cambio de vista | `pc-odoo-view-switcher` | Lista y kanban; sin kanban, solo lista |
 | Paginador | `pc-odoo-pager` | Con `inicio` y `fin` pagina y cambia el tamaño; sin ellos, "1-N / N" como el prototipo |

@@ -25,7 +25,52 @@ interface AppTile {
     </div>
 </div>
 `,
-  styles: ':host { display: contents; }',
+  // Estilos del hub aquí y no en app.css: el Inicio carga aparte y no pesa en la carga inicial.
+  styles: `
+    :host { display: contents; }
+    .o_app_hub {
+        padding: 3rem 2rem;
+        display: flex;
+        justify-content: center;
+    }
+    .o_app_grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 130px);
+        gap: 2rem;
+        max-width: 820px;
+    }
+    .o_app_tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 8px;
+    }
+    .o_app_tile:hover {
+        background: rgba(0,0,0,0.03);
+    }
+    .o_app_icon {
+        width: 88px;
+        height: 88px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .o_app_label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text-dark, #2b2b33);
+        text-align: center;
+    }
+  `,
 })
 export class Dashboard {
   protected readonly router = inject(Router);
