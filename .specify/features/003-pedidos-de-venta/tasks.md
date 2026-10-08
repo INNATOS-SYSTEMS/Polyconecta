@@ -4,19 +4,38 @@
 
 **Branch**: `003-pedidos-de-venta` | **Spec**: [spec.md](spec.md) | **Plan**: [plan.md](plan.md)
 
-**Status**: Esqueleto. Se llena con `/speckit-tasks` después del plan.
+**Status**: Tareas generadas el 2026-10-08. La spec y la propuesta de contrato `1.1` siguen por ratificar; si la ratificación cambia algo, se ajustan aquí.
+
+**Tests**: la spec los pide (SC-002 a SC-007; regla de autonomía 6; CT-28). Cada tarea dice cómo se verifica. Ninguna prueba se debilita para que pase.
 
 ## Format: `[ID] [P?] [US] Descripción`
 
 - **[P]**: se puede hacer en paralelo (archivos distintos, sin dependencias).
-- **[US]**: historia de usuario de la spec (US1, US2…).
+- **[US]**: historia de usuario de la spec: US1 pedido, US2 usuarios y grupos, US3 catálogos, US4 listas y chatter, US5 bridge.
 - Cada tarea nombra las rutas exactas que toca y cómo se verifica.
 
 ---
 
 ## Común · los dos líderes
 
-Sin tareas del plan en esta fase.
+### Ratificación y contrato `1.1` (antes del 12 oct)
+
+Responsables: Alejandro Ponce y Luis Alvarado Martinez.
+
+- [ ] C-T001 Ratificar la spec con los dos líderes: alcance (D-145), D-146 a D-150 y los supuestos. Anotar la fecha en el encabezado de [spec.md](spec.md) y marcar la casilla pendiente de [checklists/requirements.md](checklists/requirements.md).
+- [ ] C-T002 [US3] Aprobar la propuesta de contrato `1.1` (research R-11): `clasificacion` en `GET /catalogs/products`; `moneda` y `domicilios[]` en `GET /catalogs/clients`; `modified_since` obsoleto en productos y clientes (D-150). Al aprobarla, editar `docs/contratos/bridge-v1.md` (§6, §8 y la tabla de versiones) y `docs/contratos/bridge-v1.openapi.yaml`, y validar con `npx @redocly/cli@2.58.1 lint docs/contratos/bridge-v1.openapi.yaml`. Si no se aprueba, registrar en "Exploración y cambios" y seguir sin los campos (FR-003).
+- [ ] C-T003 [P] [US3] Agregar `docs/contratos/ejemplos/productos.lectura.json` y `clientes.lectura.json` con la forma `1.1`: un cliente con un domicilio fiscal y dos de envío, y uno sin domicilios.
+
+### Suite de contrato de lecturas (FR-002)
+
+Responsables: L1 redacta, L2 revisa.
+
+- [ ] C-T004 [US5] Crear `tests/PolyConecta.Contract.Tests/Lecturas/` con una clase por lectura (`ProductosTests`, `ClientesTests`, `AlmacenesTests`, `ExistenciasTests`). Cada una prueba: paginación con `limit` y `cursor` hasta agotar, `snake_case`, `limit` fuera de rango → `400`, y los campos de la ficha del contrato. Productos: unidad base, lleva lote, activo y `clasificacion` opcional. Clientes: `moneda` y `domicilios[]` opcionales; si vienen, exactamente un `fiscal`. Existencias: varios productos por consulta y lotes. `modified_since` en productos y clientes → `501` contra el real; contra el simulador, según lo que decida C-T002. Verificar con `BRIDGE_URL=http://localhost:9030 dotnet test --project tests/PolyConecta.Contract.Tests`.
+
+### Simulador (común, lo implementa L1)
+
+- [ ] C-T005 [US3] Ampliar `PolyConecta.Contpaq/Simulated/seed.json` (research R-05): 5 clientes con moneda (`MXN` y `USD`), un domicilio fiscal y de cero a tres de envío; 20 productos (MP, rollos y PT, con unidades KG, PZA y MIL, con y sin lote, dos inactivos) con su clasificación; los almacenes de PIM y SC. Agregar en `SimulatedReadRepository` los campos `1.1`.
+- [ ] C-T006 [US3] Agregar `PUT /admin/simulated/catalog/{products|clients}/{codigo}` y `DELETE` igual (fuera del contrato, §7) en `PolyConecta.Contpaq/Api/Controllers/` para cambiar, agregar o quitar un registro del catálogo simulado en caliente. Solo en modo `Simulated`; en `Real` responde `404`. Prueba en `tests/Contpaq.Bridge.Tests/Simulated/`.
 
 ---
 
@@ -24,38 +43,116 @@ Sin tareas del plan en esta fase.
 
 ### 1.1 · Sesión permanente con CONTPAQi: doble inicio de sesión y tiempos límite (12 – 13 oct, 12 h)
 
-- [ ] L1-T___ _Desglose por hacer con `/speckit-tasks`._
+- [ ] L1-T001 [US5] En `PolyConecta.Contpaq/Infrastructure/Sdk/ContpaqiSdkGateway.cs`, separar el ciclo de vida (research R-07): `IniciarSdk()` una vez al arrancar el proceso (directorio del registro, `fInicioSesionSDK` → `fSetNombrePAQ` → `fInicioSesionSDKCONTPAQi`, D-108) y `AbrirEmpresa()` / `CerrarEmpresa()` por lote. `IdleSessionTimeoutSeconds` solo cierra la empresa. `fTerminaSDK` solo al apagar. Extraer las llamadas nativas detrás de `ISdkNativo` para poder probarlas.
+- [ ] L1-T002 [US5] Pruebas en `tests/Contpaq.Bridge.Tests/Sdk/SesionPermanenteTests.cs` con un `ISdkNativo` falso: el orden exacto de las tres llamadas de inicio, que veinte lotes seguidos no repiten el inicio de sesión, que la empresa se cierra por inactividad sin cerrar el SDK, y que al apagar se llama `fTerminaSDK` una sola vez.
+- [ ] L1-T003 [US5] Vigilante de tiempo límite por llamada nativa (`BridgeConfig__Sdk__TimeoutSegundos`, 60): al vencer, la transacción en curso responde `SDK_TIMEOUT` (reintentable, CT-38), se registra con su `correlation_id` y el proceso sale con un código distinto de 0 para que la tarea de D-115 lo levante. Prueba con una llamada falsa que no regresa.
+- [ ] L1-T004 [US5] Reinicio diario (`BridgeConfig__ReinicioDiario`, `HH:mm` en hora local, 03:00 por omisión): deja de tomar transacciones, termina la actual, cierra empresa y SDK y sale con 0. Prueba con un `TimeProvider` falso.
+- [ ] L1-T005 [US5] En el VPS (D-130, sin escribir en CONTPAQi): publicar con `scripts/vps/`, arrancar y verificar en el registro un solo inicio del SDK. Correr la sonda de lectura cada minuto durante una hora (SC-006), forzar el timeout con `TimeoutSegundos=1` y el reinicio diario a dos minutos (quickstart §6). Evidencia en `tools/sdk-lab/evidence/F1/1.1.md`.
 
 ### 1.4 · Lectura de catálogos y existencias de CONTPAQi (13 – 15 oct, 16 h)
 
-- [ ] L1-T___ _Desglose por hacer con `/speckit-tasks`._
+- [ ] L1-T006 [US3] En `PolyConecta.Contpaq/Infrastructure/Persistence/SqlContractReadRepository.cs`: lectura completa paginada de productos y clientes por id (`cursor` = último id); `modified_since` sigue respondiendo `501` (D-150). Productos con la clasificación configurada (`BridgeConfig__Clasificacion__Productos`, el número de `CIDVALORCLASIFICACION{n}` de "TIPO DE PRODUCTOS", A-05). Clientes con `CIDMONEDA` traducida a ISO con `BridgeConfig__Monedas__{ISO}` y sus domicilios de `admDomicilios` (`CTIPOCATALOGO = 1`; `CTIPODIRECCION` 0 fiscal, 1 envío), en una sola consulta por página. Los campos `1.1` salen detrás de `BridgeConfig__Contrato__Expone11` hasta C-T002.
+- [ ] L1-T007 [P] [US5] Existencias de varios productos por consulta (`IN` parametrizado en lotes de 100), por producto y almacén (F-01) y por lote (F-02, D-83, D-87), con la unidad base. Prueba en `tests/Contpaq.Bridge.Tests/` sobre el repositorio simulado y revisión del SQL contra `docs/contpaq/Referencia_BD_CONTPAQi.md`.
+- [ ] L1-T008 [US5] En el VPS: suite de contrato de lecturas (C-T004) contra el bridge real, y medir la duración de la lectura completa de productos y de clientes (research R-05). Evidencia en `tools/sdk-lab/evidence/F1/1.4.md`.
+- [ ] L1-T009 [US5] Cotejo de T-06 (FR-008): ejecutar F-05 (cambiar una existencia en la UI de CONTPAQi y medir cuándo la refleja `GET /inventory/stocks`) y comparar F-01 y F-02 con la UI para tres productos con lote y dos sin lote. Registrar el resultado en `docs/contpaq/MATRIZ_PRUEBAS_SDK_WIP_LOTES.md` (bitácora de ejecución) y la conclusión en `docs/diseno/decisiones.md` o `preguntas-abiertas.md` (T-06).
 
 ---
 
 ## L2 · Camino 2 · Luis Alvarado Martinez
 
+### Base de F1 (bloquea todo lo de L2)
+
+- [ ] L2-T001 Anotar en "Exploración y cambios" el paquete `Microsoft.AspNetCore.Identity.EntityFrameworkCore` 10.0.12 (ya está en la tabla) y agregarlo a `Directory.Packages.props` y a `PolyConecta.Infrastructure.csproj`. Verificar con `dotnet restore Polyconecta.slnx`.
+- [ ] L2-T002 Crear en `PolyConecta.Domain/Plataforma/Seguridad/` `Plant`, `User`, `Group`, `GroupAssignment`, `Permission` y `Permisos.cs` (catálogo en código: clave, módulo, objeto, tipo de objeto, acción y etiqueta, data-model §1). Reglas: un usuario activo tiene al menos una asignación; un grupo con miembros activos no se archiva; `Group.CopiarDe`. Pruebas en `tests/PolyConecta.Domain.Tests/Plataforma/SeguridadTests.cs`.
+- [ ] L2-T003 Crear en `PolyConecta.Infrastructure/Persistence/Configurations/Plataforma/` las configuraciones de seguridad, y en `Infrastructure/Plataforma/Identidad/` `CredencialUsuario : IdentityUser<long>` con `IdentityUserContext` sobre `PolyDbContext` (tablas `plt.user_credential*`, R-01). Sembradores en `Infrastructure/Persistence/Sembradores/`: plantas, sincronización del catálogo de permisos con `plt.permission`, los diez grupos con su matriz (data-model §1, solo si la tabla está vacía) y el Administrador inicial desde `Seguridad__AdministradorInicial__Contrasena`.
+- [ ] L2-T004 Ampliar `ICurrentUser` (`Application/Common/Puertos.cs`) con `UserId`, `NombreVisible`, `GrupoEjercido` y `EsSuplente`, e implementarlo en `Infrastructure/Plataforma/Identidad/CurrentUserDesdeCookie.cs`. Fuera de una petición sigue siendo "sistema". El `AuditoriaInterceptor` guarda el grupo ejercido en `StateTransitionLog`.
+- [ ] L2-T005 Crear `IRequierePermiso`, `PermisoDenegadoException` y `AuthorizationDecorator` en `Application/Common/`, registrado **antes** del de validación (R-02). Resuelve el grupo ejercido (titular antes que suplente, solo asignaciones de la planta del documento si la tiene). `ProblemDetailsMiddleware` traduce a `403` con `code` y `razon` (contracts/api-f1.md). Pruebas en `tests/PolyConecta.Application.Tests/Seguridad/AutorizacionTests.cs`: con y sin permiso, por planta, suplente y grupo ejercido.
+- [ ] L2-T006 Crear `IReglaDeFila<T>` en `Application/Plataforma/Seguridad/` y aplicarla en el traductor de listas (L2-T028) y en los repositorios. Probar con un documento de prueba con planta en `tests/PolyConecta.Application.Tests/Seguridad/ReglasDeFilaTests.cs`: un usuario de PIM no ve los de SC aunque quite los filtros (US4, escenario 6).
+- [ ] L2-T007 Generar la migración `F1_PedidosDeVenta` (data-model §5) con lo de seguridad, chatter, favoritos, sincronización, `inv` y `ven`. Se genera una vez que existen las entidades de L2-T002, L2-T013, L2-T019 y L2-T026; si alguna llega después, va en una migración `F1_*` aparte. Verificar con `dotnet ef database update` sobre un SQL Server vacío con `polyconecta_migraciones` y que la API arranca con `polyconecta_app`.
+
 ### 1.2 · Usuarios, roles y permisos por planta (12 – 14 oct, 9 h)
 
-- [ ] L2-T___ _Desglose por hacer con `/speckit-tasks`._
+- [ ] L2-T008 [US2] Autenticación en `PolyConecta.Api/Program.cs`: `AddIdentityCore` con `AddSignInManager`, cookie (`HttpOnly`, `SameSite=Lax`, deslizante de 10 h), `401` en vez de redirigir, bloqueo tras 5 intentos durante 15 min, `X-Requested-With` obligatorio en métodos que escriben y `[Authorize]` por omisión (salvo el inicio de sesión y el callback del bridge). `SesionController` en `Controllers/Plataforma/` (contracts/api-f1.md, Sesión). Pruebas en `tests/PolyConecta.IntegrationTests/Plataforma/SesionTests.cs`: entrar, credenciales malas, bloqueo, usuario archivado, ruta sin sesión → `401`.
+- [ ] L2-T009 [US2] Casos de uso y API de usuarios y grupos en `Application/Plataforma/Seguridad/` y `Controllers/Plataforma/{Usuarios,Grupos,Permisos}Controller.cs` (contracts/api-f1.md): crear, editar, archivar y restaurar usuarios, restablecer contraseña; crear (con `copiarDe`), editar con la lista completa de permisos, archivar y restaurar grupos; árbol de permisos. Pruebas de integración en `tests/PolyConecta.IntegrationTests/Plataforma/UsuariosYGruposTests.cs`, incluido quitar un permiso a un grupo y que sus miembros pierdan la acción sin tocar código (US2, escenario 6).
+- [ ] L2-T010 [P] [US2] Web, sesión: `proxy.conf.json` (`/api` y `/hubs` → `:9020`) en `angular.json`; `core/sesion/` con `SesionState` desde `GET /plataforma/sesion` (sustituye al usuario fijo de `core/state/sesion-state.ts`), guardia de rutas que lleva a `/login?volver=`, e interceptor HTTP que agrega `X-Requested-With` y `X-Correlation-ID` y manda a `/login` ante un `401`. "Preferencias" y "Cerrar sesión" de la barra superior se habilitan (D-143). Pruebas Vitest de la guardia y del interceptor.
+- [ ] L2-T011 [US2] Contratos visuales nuevos (CT-24, R-10), **antes** de usarlos: `shared/odoo-dual-list/` (dos paneles en árbol módulo › objeto › acción, mover una acción o un nodo completo, búsqueda en cada panel, teclado) y el formulario de inicio de sesión. Agregar su sección a `docs/diseno/07-contratos-visuales.md`, su ejemplo a la galería `/catalogo` y sus pruebas (`*.spec.ts` y `e2e/catalogo/`). Verificar con `npm test` y `npx playwright test e2e/catalogo`.
+- [ ] L2-T012 [US2] Pantallas en `features/plataforma/`: `login`, `usuarios` (lista con `OrigenHttp`, formulario con asignaciones grupo × planta × suplente) y `grupos` (lista, formulario con `pc-odoo-dual-list` y "Copiar de"), con rutas bajo Configuración y el permiso como condición del menú. Prueba Playwright `e2e/f1/usuarios-y-grupos.spec.ts` (quickstart §2).
 
 ### 1.3 · Sincronizar productos, clientes y almacenes de CONTPAQi (12 – 14 oct, 9 h)
 
-- [ ] L2-T___ _Desglose por hacer con `/speckit-tasks`._
+- [ ] L2-T013 [US3] Crear en `PolyConecta.Domain/Inventario/` `Product`, `PackagingUnit`, `ProductClassification`, `RollSpecification`, `PtSpecification` y `ErpWarehouse`; en `Domain/Ventas/` `Customer` y `CustomerAddress` (data-model §3 y §4). `Product.GuardarFichaTecnica(rollo, pt)` exige los dos bloques y liga el PT a su rollo; `Product.Clasificar`; métodos de sincronización (`ActualizarDesdeErp` que devuelve si cambió algo, `ArchivarPorErp`, `RestaurarPorErp`). Marcar `Domain/Entities/Product` como `[Obsolete]` (research R-08). Pruebas en `tests/PolyConecta.Domain.Tests/Inventario/` y `Ventas/ClienteTests.cs`.
+- [ ] L2-T014 [US3] Crear el puerto `IBridgeLecturas` en `Application/Plataforma/Erp/` y `Infrastructure/Erp/BridgeLecturasHttp.cs` (páginas con cursor, `correlation_id`, campos `1.1` opcionales). Prueba contra el simulador en `tests/PolyConecta.IntegrationTests/Erp/BridgeLecturasTests.cs` (se omite sin `BRIDGE_URL`, como `CicloCompleto`).
+- [ ] L2-T015 [US3] Crear `SincronizarCatalogo` y `SincronizarTodo` en `Application/Plataforma/Sincronizacion/` (research R-05, D-150): lectura completa, upsert por id de CONTPAQi solo si algo cambió, archivar inactivos y ausentes **al terminar** la lectura completa, restaurar los reactivados, la clasificación solo si está vacía, los domicilios reemplazados por cliente, y `CatalogSyncState` (entidad en `Domain/Plataforma/Sincronizacion/`, data-model §2) con leídos, cambiados, archivados, duración y error. `sp_getapplock` por catálogo → `409 SINCRONIZACION_EN_CURSO`. Pruebas en `tests/PolyConecta.Application.Tests/Sincronizacion/` con un `IBridgeLecturas` falso: primera corrida, sin cambios (0 cambiados, SC-004), inactivo, ausente, fallo a la mitad (nada archivado), clasificación editada que no se pisa.
+- [ ] L2-T016 [US3] `Infrastructure/Erp/SincronizadorCatalogos.cs` (`BackgroundService`, `Erp:Sincronizacion:IntervaloMinutos`, 15) y `SincronizacionController` en `Controllers/Plataforma/` (estado, todo y por catálogo). Prueba de integración con el simulador y C-T006: inactivar un producto en el simulador, sincronizar y verificar el archivado.
+- [ ] L2-T017 [US3] API de catálogos en `Controllers/Catalogos/` (contracts/api-f1.md): producto con ficha, clasificar, guardar ficha técnica, clasificaciones, cliente con domicilios, búsquedas para el pedido y almacenes. Casos de uso `ClasificarProducto` y `GuardarFichaTecnica` en `Application/Inventario/` con su permiso. Pruebas de integración en `tests/PolyConecta.IntegrationTests/Catalogos/`.
+- [ ] L2-T018 [US3] Pantallas en `features/catalogos/` y `features/plataforma/sincronizacion/`: lista y formulario de productos (pestaña "Ficha técnica" con los bloques Rollo y PT; clasificación editable con su permiso; lo de CONTPAQi en solo lectura), lista y formulario de clientes (domicilio fiscal y de envío, solo lectura), y la pantalla de sincronización con "Sincronizar ahora" por catálogo y "Sincronizar todo". Prueba Playwright `e2e/f1/sincronizacion.spec.ts` (quickstart §3).
 
 ### 1.5 · Pedido de venta: captura, confirmación y autorización con dos firmas (13 – 16 oct, 13 h)
 
-- [ ] L2-T___ _Desglose por hacer con `/speckit-tasks`._
+- [ ] L2-T019 [US1] Crear en `PolyConecta.Domain/Ventas/` `SalesOrder`, `SalesOrderLine`, `AuthorizationSignature` y `SalesOrderState` con las operaciones de data-model §4: `Crear`, `Editar(cambios, revocarAutorizacion)` (D-147), `Confirmar`, `Firmar` (RF-3, RF-4, D-34, D-38), `Revocar` (D-33), `Cancelar`, y `AccionesDisponibles(usuario)` con la razón de cada una (CT-26). La unidad de la línea es la base del producto (D-127). Moneda y tipo de cambio en el maestro (D-146). Domicilio solo de envío del cliente y su copia al confirmar (D-149, D-150).
+- [ ] L2-T020 [US1] Pruebas de dominio en `tests/PolyConecta.Domain.Tests/Ventas/PedidoTests.cs`, una por regla con su id (`[D-147]`, `[RF-4]`…): confirmar sin líneas, sin precio, sin tipo de cambio; primera y segunda firma; mismo rol dos veces; misma persona con los dos roles; suplente; revocar como firmante, como no firmante y como Administrador; editar con firmas sin y con confirmación; cancelar desde cada estado; editar un cancelado; cada operación deja su `TransicionRegistrada`, también la firma y la revocación.
+- [ ] L2-T021 [US1] Configuración de `ven` en `Infrastructure/Persistence/Configurations/Ventas/` con los índices únicos de la firma (`(pedido, rol)` y `(pedido, usuario)`, data-model §4) y la secuencia `PEDIDO_VENTA` (`PV-{yyyy}-`, relleno 4, reinicio anual) en el sembrador.
+- [ ] L2-T022 [US1] Casos de uso en `Application/Ventas/`: `CrearPedido`, `EditarPedido`, `ConfirmarPedido`, `AutorizarPedido` (con `rol` opcional cuando el usuario puede firmar por los dos), `RevocarAutorizacion` y `CancelarPedido`, cada uno con su permiso (`IRequierePermiso`) y su validador; `ObtenerPedido` con `acciones`. `DOCUMENTO_MODIFICADO` ante `rowVersion` vieja y `EDICION_REVOCA_AUTORIZACION` ante firmas sin confirmación (R-09).
+- [ ] L2-T023 [US1] `PolyConecta.Api/Controllers/Ventas/PedidosController.cs` (contracts/api-f1.md, Pedidos). Pruebas en `tests/PolyConecta.IntegrationTests/Ventas/PedidosTests.cs`: el recorrido completo de US1 con usuarios de cada grupo; la matriz del pedido (cada acción con y sin permiso → `403` con razón, SC-003); dos firmas simultáneas del mismo rol (una entra, la otra `409`); `doble` no aporta las dos firmas (SC-002); bitácora y chatter con usuario y grupo (SC-007).
+- [ ] L2-T024 [US1] Web de Pedidos sobre la API (R-10, FR-027): `features/ventas/pedidos-acciones.ts` usa `OrigenHttp` (L2-T029) y los endpoints de transición; el kanban conserva sus transiciones (D-138) llamando a las mismas acciones; `firma-pedido.ts` pide el rol solo si el usuario puede firmar por los dos. Los botones se habilitan con `acciones` del detalle, con su razón. Quitar de `core/state/libre/pedido-libre.ts` lo que ya hace la API.
+- [ ] L2-T025 [US1] "Nuevo" y formulario del pedido (`pedido-nuevo/`, `pedido-form/`): selector de cliente (`/catalogos/clientes/buscar`) que propone moneda y domicilio de envío (el único, o elegir si hay varios); moneda editable y tipo de cambio (1 y bloqueado en la moneda base); captura `[Producto] [Cantidad] [Unidad] [Precio unitario] [Agregar]` con la unidad base fija; diálogo de D-147 al guardar con firmas; errores de `400` en sus campos. El botón inteligente "Pedido" de la OF en memoria queda deshabilitado con "Se conecta en F2". Prueba Playwright `e2e/f1/pedido.spec.ts` (quickstart §4, pasos 1 a 9) y retirar de los guiones de escenario los pasos de Pedidos.
 
 ### 1.6 · Búsqueda, filtros y conversación por documento en listas y formularios (15 – 19 oct, 12 h)
 
-- [ ] L2-T___ _Desglose por hacer con `/speckit-tasks`._
+- [ ] L2-T026 [US4] Crear `ChatterMessage` y `SavedSearch` en `Domain/Plataforma/` (data-model §2) con sus configuraciones en `plt`.
+- [ ] L2-T027 [US4] Crear en `Application/Common/Listas/` `ConsultaLista`, `ResultadoLista<T>`, `VistaDeBusqueda<T>` (columnas, campos, filtros con nombre y su campo, agrupaciones, orden por omisión) e `IConsultaDeLista<T>`, y declarar las vistas de pedidos, productos, clientes, usuarios y grupos (contracts/api-listas.md).
+- [ ] L2-T028 [US4] Implementar el traductor `ConsultaLista → IQueryable` en `Infrastructure/Plataforma/Listas/` en el orden de contracts/api-listas.md (reglas de fila primero) y `ListasController` (`/vista` y `/consulta`, con `400` ante campos desconocidos). Pruebas en `tests/PolyConecta.IntegrationTests/Listas/ConsultaListaTests.cs`: O y Y de filtros, búsqueda, orden, agrupación en dos niveles con conteo y subtotales, página de grupos (D-140), total por unidad común, `ids`, y la **cuenta de consultas** (una por filas o grupos, más una de total). Con 500 pedidos, cada consulta en menos de 1 s (SC-005).
+- [ ] L2-T029 [P] [US4] Web: `core/lista/origen-http.ts` (`OrigenHttp<T>`, FR-029) y `core/lista/favoritos-http.ts` (`AlmacenDeFavoritos` sobre `/plataforma/favoritos`); el panel de búsqueda toma la vista de `GET …/vista` en las listas HTTP. Pruebas Vitest con `HttpTestingController`.
+- [ ] L2-T030 [US4] Favoritos en la API: casos de uso y `FavoritosController` (contracts/api-listas.md, Favoritos). Prueba de integración: un usuario no ve los de otro; uno por omisión por lista.
+- [ ] L2-T031 [US4] Chatter guardado (research R-04): el `AuditoriaInterceptor` agrega el mensaje `Cambio` por cada transición en el mismo `SaveChanges`; `PublicarMensaje` en `Application/Plataforma/Chatter/`; `IChatterNotificador` que transmite al confirmar la transacción; `ChatterHub` con `[Authorize]`, grupos por documento y autor tomado de la sesión; `GET /plataforma/chatter/{tipo}/{id}`. Pruebas de integración: el mensaje se guarda con autor y grupo, una transición escribe su `Cambio` sin que el caso de uso lo haga, una transacción revertida no deja ni mensaje ni transmisión.
+- [ ] L2-T032 [US4] Web del chatter (`core/chatter/chatter.service.ts` y `shared/odoo-chatter-drawer/`): en documentos persistidos (pedido) carga el historial por la API, se une al grupo del documento, envía mensaje o nota interna y pinta los `Cambio`. Las pantallas en memoria siguen como hoy. Prueba Playwright `e2e/f1/chatter.spec.ts` con dos navegadores (quickstart §5, paso 3).
 
 ### 1.7 · Preparar la revisión R1 (19 oct, 4 h)
 
-- [ ] L2-T___ _Desglose por hacer con `/speckit-tasks`._
+- [ ] L2-T033 [US1] Sembrador de desarrollo `Infrastructure/Persistence/Sembradores/DatosR1.cs` (solo con `ASPNETCORE_ENVIRONMENT=Development` o la bandera `Seguridad__SembrarDatosR1`) con los usuarios de la [tabla de R1](quickstart.md#tabla-de-usuarios-de-r1), y `scripts/dev/sembrar-pedidos.sh` que crea N pedidos por la API como `ac1`, en estados variados.
+- [ ] L2-T034 [US1] Guion de la revisión R1 en `docs/revisiones/R1.md`: el recorrido de US1 a US4 con los usuarios de ejemplo, qué debe confirmar la operación en cada paso y dónde anotar sus pedidos de ajuste (FR-032).
+- [ ] L2-T035 Actualizar `docs/diseno/05-arquitectura-tecnica.md` §3 a §7 (API con autenticación, listas HTTP, chatter guardado, sincronización y qué pantallas leen de la API) y `PolyConecta.Web/README.md` (pruebas `e2e/f1`, proxy de desarrollo).
+
+---
+
+## Cierre de la fase (los dos líderes)
+
+- [ ] C-T007 Correr [quickstart.md](quickstart.md) completo y anotar el resultado de cada sección en "Exploración y cambios".
+- [ ] C-T008 Cerrar la spec:
+  - integrar en `docs/diseno/` lo que cambió: P-28 (contracts/api-listas.md) y su borrado de `preguntas-abiertas.md`; 01 §3 y 04 §3 con grupos y permisos (D-148); 02 §1 con la edición con firmas (D-147), la moneda (D-146) y el domicilio (D-149); CT-14 y 02 §0 con el pedido sin modo sincronizado (D-145); 04 §5 y 05 con el estado del código;
+  - actualizar el tablero de `docs/ROADMAP.md` con la fecha y el commit (CT-35);
+  - borrar la carpeta de la spec en la rama, abrir el PR de `003-pedidos-de-venta` a `main` con la CI en verde (CT-27, CT-44); el merge lo hace el usuario en GitHub.
+- [ ] C-T009 Revisión R1 con la operación, con el guion de L2-T034. Sus ajustes se registran en "Exploración y cambios" de esta spec, o en la de la fase que tocan si llegan después del cierre.
 
 ---
 
 ## Dependencias y orden
 
-_Por redactar: qué tareas de L1 necesita L2 y al revés, y su orden._
+| Tarea | Depende de | Bloquea |
+| :--- | :--- | :--- |
+| C-T001, C-T002 (ratificación y `1.1`) | — | Los campos `1.1` en el real (L1-T006); no bloquean a L2, que trabaja con el simulador |
+| C-T004 (suite de lecturas) | C-T002 para los campos `1.1` | L1-T008 |
+| C-T005, C-T006 (simulador) | — | L2-T014 a L2-T016 |
+| 1.1 (L1-T001 a L1-T005) | VPS | Cierre integrado; los comandos de F2 |
+| 1.4 (L1-T006 a L1-T009) | C-T002 para exponer `1.1` | Cierre integrado |
+| Base de F1 (L2-T001 a L2-T007) | — | Todo lo demás de L2 |
+| 1.2 (L2-T008 a L2-T012) | Base de F1; L2-T011 antes de L2-T012 | Las pantallas de los demás (sesión) |
+| 1.3 (L2-T013 a L2-T018) | Base de F1, C-T005 | 1.5 (cliente y producto) |
+| 1.5 (L2-T019 a L2-T025) | 1.3 (L2-T013); L2-T029 para la lista | 1.7 |
+| 1.6 (L2-T026 a L2-T032) | Base de F1; L2-T027 y L2-T028 antes que las listas de 1.2, 1.3 y 1.5 | 1.7 |
+| 1.7 (L2-T033 a L2-T035) | 1.2 a 1.6 | Cierre |
+
+### En paralelo
+
+- **12 de octubre:** C-T001 y C-T002 por la mañana; L1 empieza 1.1 y C-T005; L2 la base de F1 (L2-T001 a L2-T007).
+- **13 – 14 de octubre:** L2-T008 a L2-T010 (sesión) junto con L2-T013 a L2-T015 (catálogos) y L2-T027 a L2-T028 (listas en el servidor), que tocan carpetas distintas. L2-T011 (contratos visuales) en paralelo, porque no depende de la API.
+- **15 – 16 de octubre:** el pedido (L2-T019 a L2-T025) con las listas ya listas; L1 en 1.4 y el cotejo.
+- **17 – 19 de octubre:** chatter y favoritos (L2-T030 a L2-T032), R1 y cierre.
+
+## Estrategia
+
+1. **Lo primero es la base de F1**: sin identidad, permisos y migración no hay nada que probar. L2-T005 (decorador) es la pieza que más reusan las demás.
+2. **La consulta de listas va temprano** (L2-T027, L2-T028): las cinco listas de la fase la usan, y resuelve P-28 antes de que alguien improvise otra.
+3. **El primer resultado visible es US2** (entrar y ver usuarios y grupos); el segundo, US3 (catálogos sincronizados contra el simulador); luego el pedido.
+4. **L1 avanza en el VPS en paralelo** y no bloquea a L2: todo lo de L2 corre contra el simulador. Los dos caminos se encuentran en la suite de lecturas (C-T004).
+5. **Si no cabe en las horas**, se mueve lo que dice el Complexity Tracking del plan: primero la copia de grupos (US2, escenario 7), luego la ficha técnica a F2.
