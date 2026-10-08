@@ -12,7 +12,7 @@
 
 **Input**: Tareas 1.1 a 1.7 del [plan de trabajo](../../../docs/plan/Tarea%20(project.task)%20-%20replaneacion(2).xlsx) y la fila F1 de [ROADMAP.md §3](../../../docs/ROADMAP.md).
 
-**Decisiones que la rigen** (`docs/diseno/decisiones.md`): D-15, D-32 a D-38 (roles, firmas y suplentes), D-52, D-53, D-74, D-78, D-86, D-87, D-88, D-91, D-93, D-108, D-113, D-123, D-124, D-127, D-116 a D-120 (fases y specs), D-134 a D-144 (contratos visuales), D-145 (alcance de F1) y D-146 (moneda del pedido, propuesta).
+**Decisiones que la rigen** (`docs/diseno/decisiones.md`): D-15, D-32 a D-38 (roles, firmas y suplentes), D-52, D-53, D-74, D-78, D-86, D-87, D-88, D-91, D-93, D-108, D-113, D-123, D-124, D-127, D-116 a D-120 (fases y specs), D-134 a D-144 (contratos visuales), D-145 (alcance de F1), D-146 (moneda del pedido, propuesta), D-147 (editar con firmas) y D-148 (grupos y permisos).
 
 ---
 
@@ -82,7 +82,7 @@ Atención a Clientes crea un pedido con "Nuevo", elige el cliente, captura sus l
 3. **Given** un pedido en Borrador completo, **When** AC lo confirma, **Then** pasa a Confirmado y la transición queda en `StateTransitionLog` y en el chatter con usuario, rol y fecha.
 4. **Given** un pedido Confirmado, **When** un usuario con el rol Comercial pulsa "Autorizar", **Then** se registra su firma, el pedido sigue en Confirmado y el formulario muestra "1 de 2 firmas" y cuál falta.
 5. **Given** un pedido con la firma de Comercial, **When** un usuario distinto con el rol Cobranza pulsa "Autorizar", **Then** el pedido pasa a Autorizado.
-6. **Given** un usuario con los roles Comercial y Cobranza que ya firmó un pedido, **When** intenta dar la segunda firma, **Then** "Autorizar" aparece deshabilitado con la razón "Ya firmaste este pedido; la otra firma la da otra persona" (RF-4, D-34).
+6. **Given** un usuario con los grupos Comercial y Cobranza que ya firmó un pedido, **When** intenta dar la segunda firma, **Then** "Autorizar" aparece deshabilitado con la razón "Ya firmaste este pedido; la otra firma la da otra persona" (RF-4, D-34).
 7. **Given** el suplente designado de Cobranza, **When** firma, **Then** la firma vale como la de Cobranza y queda atribuida a él, con el rol ejercido (D-38).
 8. **Given** un pedido con una o dos firmas, **When** uno de sus firmantes o el Administrador pulsa "Revocar autorización" con un motivo, **Then** las firmas se borran, el pedido regresa a Confirmado y el motivo queda en el chatter (D-33).
 9. **Given** un pedido Confirmado o Autorizado, **When** AC o el Administrador lo cancela con un motivo, **Then** pasa a Cancelado y ya no se edita.
@@ -90,22 +90,23 @@ Atención a Clientes crea un pedido con "Nuevo", elige el cliente, captura sus l
 
 ---
 
-### User Story 2 - Usuarios, roles y permisos por planta, con suplentes (Priority: P1) · L2 (1.2)
+### User Story 2 - Usuarios, grupos y permisos por planta, con suplentes (Priority: P1) · L2 (1.2)
 
-Cada persona entra con su usuario y contraseña de PolyConecta. El Administrador da de alta usuarios y les asigna roles por planta, como titular o suplente. Lo que un rol no puede hacer se ve deshabilitado, con su razón.
+Cada persona entra con su usuario y contraseña de PolyConecta. Los **grupos** son un catálogo: cada uno trae un conjunto de permisos ya armado que el Administrador puede modificar, y un área con varios niveles (por ejemplo, Producción) tiene un grupo por nivel. El Administrador da de alta usuarios y les asigna sus grupos por planta, como titular o suplente. Lo que un usuario no puede hacer se ve deshabilitado, con su razón (D-148).
 
 **Why this priority**: sin identidad no hay firmas de personas distintas ni atribución, y la regla central del pedido (RF-4) no se puede cumplir.
 
-**Independent Test**: el Administrador crea un usuario, le asigna Comercial en PIM como suplente, y ese usuario entra, ve el pedido y puede firmar como Comercial; otro usuario sin rol de firma ve "Autorizar" deshabilitado con su razón, y la API rechaza su firma aunque la mande directo.
+**Independent Test**: el Administrador crea un usuario, le asigna el grupo Comercial en PIM como suplente, y ese usuario entra, ve el pedido y puede firmar como Comercial; otro usuario sin grupo de firma ve "Autorizar" deshabilitado con su razón, y la API rechaza su firma aunque la mande directo. Al quitarle al grupo Comercial el permiso de firmar, ningún miembro puede firmar, sin tocar código.
 
 **Acceptance Scenarios**:
 
 1. **Given** un usuario activo, **When** entra con su usuario y contraseña, **Then** la barra superior muestra su nombre y su inicial, y "Cerrar sesión" termina la sesión (D-143).
 2. **Given** un usuario sin sesión, **When** abre cualquier ruta, **Then** se le pide iniciar sesión y, al entrar, vuelve a la ruta que pidió.
-3. **Given** el Administrador, **When** crea un usuario y le asigna uno o varios roles, cada uno con su planta y la marca de suplente, **Then** el usuario entra con esos roles.
-4. **Given** un rol sin permiso para una acción, **When** el usuario abre el documento, **Then** la acción aparece deshabilitada con su razón (CT-26); **When** la pide directo a la API, **Then** la API la rechaza con `403` y la misma razón.
+3. **Given** el Administrador, **When** crea un usuario y le asigna uno o varios grupos, cada uno con su planta y la marca de suplente, **Then** el usuario entra con los permisos de esos grupos. Un usuario activo tiene al menos un grupo.
+4. **Given** un usuario cuyos grupos no tienen el permiso de una acción, **When** el usuario abre el documento, **Then** la acción aparece deshabilitada con su razón (CT-26); **When** la pide directo a la API, **Then** la API la rechaza con `403` y la misma razón.
 5. **Given** un usuario archivado, **When** intenta entrar, **Then** no puede; sus firmas y transiciones anteriores siguen atribuidas a él.
-6. **Given** la matriz de permisos, **When** el Administrador cambia lo que puede un rol, **Then** el cambio aplica sin tocar código de negocio (01 §3).
+6. **Given** un grupo, **When** el Administrador abre sus permisos, **Then** los ve en dos paneles: a la izquierda los disponibles y a la derecha los asignados; los pasa de un lado al otro para asignar o quitar, y al guardar el cambio aplica a todos sus miembros sin tocar código de negocio (01 §3).
+7. **Given** el catálogo de grupos, **When** el Administrador crea un grupo nuevo (por ejemplo, un nivel más de Producción), **Then** puede partir de un grupo existente para copiar sus permisos y ajustarlos.
 
 ---
 
@@ -125,7 +126,7 @@ Productos, clientes y almacenes llegan de CONTPAQi por el bridge y se mantienen 
 4. **Given** el bridge caído, **When** toca sincronizar, **Then** la sincronización queda en error con su motivo, se reintenta en la siguiente vuelta y no borra ni archiva nada de lo ya sincronizado.
 5. **Given** un producto nuevo, **When** se sincroniza, **Then** su clasificación propia toma como valor inicial la de CONTPAQi, si el contrato la trae (FR-003); **When** el Administrador la cambia en PolyConecta, **Then** una sincronización posterior no la sobrescribe (CT-14, D-86).
 6. **Given** un producto terminado, **When** AC abre su ficha técnica, **Then** captura los bloques Rollo y PT (04 §3), siempre los dos, y el bloque PT queda ligado a su bloque Rollo.
-7. **Given** Sistemas o el Administrador, **When** pulsa "Sincronizar ahora", **Then** la sincronización corre de inmediato y muestra cuándo terminó y cuántos registros trajo.
+7. **Given** Sistemas o el Administrador, **When** pulsa "Sincronizar ahora" en un catálogo (productos, clientes o almacenes) o en general (los tres), **Then** la sincronización corre de inmediato y muestra, por catálogo, cuándo terminó y cuántos registros trajo.
 8. **Given** un almacén de CONTPAQi, **When** se sincroniza, **Then** queda disponible para ligarlo a una ubicación de PolyConecta (`erp_warehouse_id`); la sincronización no crea ubicaciones (D-43, CT-14).
 
 ---
@@ -145,7 +146,7 @@ Las listas que leen de la API buscan, filtran, agrupan, ordenan y paginan en el 
 3. **Given** un usuario, **When** guarda un favorito y lo marca por omisión, **Then** se aplica al abrir la lista con su sesión, en cualquier navegador, y otro usuario no lo ve.
 4. **Given** un documento, **When** el usuario escribe un mensaje o una nota interna, **Then** se guarda con autor y fecha, aparece en vivo a quien tenga el documento abierto y sigue ahí al recargar (D-78).
 5. **Given** una transición de estado, **When** se ejecuta, **Then** el chatter registra solo "Borrador → Confirmado" con usuario y rol, sin que nadie lo escriba.
-6. **Given** una regla de fila que restringe lo que ve un rol, **When** el usuario quita todos los filtros, **Then** sigue sin ver lo que la regla le oculta (02 §7).
+6. **Given** una regla de fila que restringe lo que ve un grupo, **When** el usuario quita todos los filtros, **Then** sigue sin ver lo que la regla le oculta (02 §7).
 
 ---
 
@@ -174,7 +175,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 - Un usuario pierde el rol entre que abre el pedido y pulsa "Autorizar": la API rechaza la firma con `403`; la pantalla no decide.
 - Un producto se archiva por la sincronización mientras un pedido en Borrador lo tiene: el pedido lo conserva y se puede confirmar; una línea nueva ya no lo ofrece.
 - El usuario que firmó se archiva antes de la segunda firma: su firma sigue valiendo y atribuida a él.
-- Un pedido se edita en otra pestaña después de la primera firma: no puede, la primera firma lo bloquea.
+- Un pedido se edita en otra pestaña después de la primera firma: al guardar, la API detecta que tiene firmas y pide la confirmación de D-147; sin ella no guarda.
 - La sincronización corre dos veces a la vez (dos instancias de la API): solo una procesa (bloqueo de aplicación, como el despachador).
 - El bridge reinicia en su ventana diaria mientras corre una sincronización: la lectura falla, se reintenta en la siguiente vuelta y `modified_since` no avanza.
 - Una moneda distinta de la base sin tipo de cambio: el pedido no se confirma.
@@ -205,14 +206,14 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 *Identidad y permisos (1.2)*
 
 - **FR-009**: PolyConecta MUST autenticar con usuarios propios (ASP.NET Identity, D-32). Toda ruta de la API, salvo el inicio de sesión y el callback del bridge, MUST exigir sesión.
-- **FR-010**: MUST existir `User`, `Role`, `RoleAssignment` (usuario × rol × planta, con marca de suplente), `Permission` (rol × tipo de documento × acción) y `RecordRule` (04 §3), con los diez roles del catálogo de 01 §3 y la matriz de la capa 1 como datos iniciales.
+- **FR-010**: MUST existir `User`, `Group` (catálogo de grupos), `GroupAssignment` (usuario × grupo × planta, con marca de suplente), `Permission` (tipo de documento × acción, catálogo cerrado que define el código) y su asignación a grupos, y `RecordRule` (04 §3, D-148). Los datos iniciales son los diez roles de 01 §3 como grupos, con la matriz de la capa 1 como sus permisos. Un usuario activo MUST tener al menos un grupo.
 - **FR-011**: Cada caso de uso MUST verificar el permiso de la acción y las reglas de fila en `Application`, no en la interfaz ni en el controlador (CT-11). La API MUST devolver, por documento, las acciones disponibles y la razón de las que no lo están, para mostrarlas deshabilitadas (CT-26).
-- **FR-012**: `ICurrentUser` MUST dar el usuario de la sesión y el rol con el que actúa; la auditoría, `StateTransitionLog` y el chatter MUST guardar los dos (CT-32).
-- **FR-013**: El Administrador MUST poder crear, editar y archivar usuarios, asignarles roles por planta como titular o suplente y restablecer su contraseña, desde pantallas armadas con los contratos visuales.
+- **FR-012**: `ICurrentUser` MUST dar el usuario de la sesión y el grupo con el que actúa (el "rol ejercido" de CT-32); la auditoría, `StateTransitionLog` y el chatter MUST guardar los dos (CT-32).
+- **FR-013**: El Administrador MUST poder crear, editar y archivar usuarios, asignarles grupos por planta como titular o suplente y restablecer su contraseña; y crear, copiar, editar y archivar grupos y asignarles permisos con **dos paneles con selección de izquierda a derecha** (disponibles y asignados) para asignar o quitar (D-148). Todo con pantallas armadas con los contratos visuales; los dos paneles son un componente nuevo y entran primero a 07 y a la galería `/catalogo` (CT-24).
 
 *Catálogos (1.3)*
 
-- **FR-014**: Una sincronización periódica (cada 15 minutos por omisión, configurable) y bajo demanda ("Sincronizar ahora", Sistemas y Administrador) MUST traer productos, clientes y almacenes por el bridge con `modified_since`, guardar su `erp_*` (CT-13) y su marca de última sincronización por catálogo, y correr una sola instancia a la vez.
+- **FR-014**: Una sincronización periódica (cada 15 minutos por omisión, configurable) y bajo demanda ("Sincronizar ahora" por catálogo y en general, Sistemas y Administrador) MUST traer productos, clientes y almacenes por el bridge con `modified_since`, guardar su `erp_*` (CT-13) y su marca de última sincronización por catálogo, y correr una sola instancia por catálogo a la vez.
 - **FR-015**: Lo sincronizado MUST ser de solo lectura en PolyConecta, salvo lo que es de PolyConecta (CT-14). Un producto o cliente inactivo en CONTPAQi MUST archivarse, no borrarse.
 - **FR-016**: `Product` MUST guardar su unidad base de CONTPAQi (`erp_uom`) y si lleva lote; `PackagingUnit` MUST reflejar la unidad base (`is_erp_base_unit`), sin conversión (D-124, D-127).
 - **FR-017**: `ProductClassification` MUST ser un catálogo de PolyConecta, editable por el Administrador; la sincronización solo llena la clasificación de un producto que aún no tiene (D-86, FR-003).
@@ -224,8 +225,8 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 - **FR-020**: El maestro MUST llevar cliente (sincronizado y activo), orden de compra del cliente, agente, fecha del pedido, fecha estimada de entrega (`promise_date`, D-140), moneda y tipo de cambio (D-146). Cada línea MUST llevar producto activo, cantidad en la unidad base del producto (no editable, D-127), precio unitario (D-74), meta de producción y tolerancia opcionales (02 §1).
 - **FR-021**: El folio MUST salir de `IReferenceSequenceService`, con un tipo de documento propio del pedido de venta.
 - **FR-022**: "Confirmar" (AC, Administrador) MUST exigir cliente, al menos una línea y, en cada línea, cantidad mayor que cero y precio; y tipo de cambio si la moneda no es la base.
-- **FR-023**: "Autorizar" MUST ser un solo botón para Comercial y Cobranza que registra la firma del rol con el que actúa el usuario (titular o suplente). Un rol no firma dos veces, un rol no autorizador no firma, y **ninguna persona aporta las dos firmas del mismo pedido** (RF-3, RF-4, D-34). La segunda firma pasa el pedido a Autorizado.
-- **FR-024**: El maestro y las líneas MUST editarse en Borrador y en Confirmado mientras no haya firmas; la primera firma los bloquea.
+- **FR-023**: "Autorizar" MUST ser un solo botón para Comercial y Cobranza que registra la firma del grupo (Comercial o Cobranza) con el que actúa el usuario (titular o suplente). Un grupo no firma dos veces, un grupo sin el permiso de firmar no firma, y **ninguna persona aporta las dos firmas del mismo pedido** (RF-3, RF-4, D-34). La segunda firma pasa el pedido a Autorizado.
+- **FR-024**: El maestro y las líneas MUST editarse en Borrador y en Confirmado (AC y Administrador). Si el pedido ya tiene firmas, la interfaz MUST avisar antes de guardar que el cambio revoca la autorización, y al confirmarlo la API MUST guardar el cambio y revocar en la misma transacción: borra las firmas, regresa el pedido a Confirmado y deja en el chatter el cambio y la revocación automática, con usuario y rol (D-147). Sin la confirmación, la API MUST rechazar el guardado. Desde F2, si la revocación no procede (D-33), la edición tampoco.
 - **FR-025**: "Revocar autorización" (firmantes del pedido y Administrador) MUST exigir motivo, borrar las firmas y regresar el pedido a Confirmado (D-33). En F1 no hay documentos generados; F2 agrega la verificación de que ninguno haya avanzado.
 - **FR-026**: "Cancelar" (AC y Administrador) MUST exigir motivo y proceder desde Borrador, Confirmado o Autorizado. Un pedido Cancelado no se edita.
 - **FR-027**: La lista, el kanban, el formulario y "Nuevo" de Pedidos que ya existen en `PolyConecta.Web` MUST leer y escribir por la API, sin cambiar su estructura (07); las transiciones del kanban MUST llamar a las mismas acciones que los botones (D-138).
@@ -243,7 +244,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 
 ### Key Entities
 
-- **`User`, `Role`, `RoleAssignment`, `Permission`, `RecordRule`**: identidad y permisos (04 §3, 01 §3). La asignación lleva planta y marca de suplente.
+- **`User`, `Group`, `GroupAssignment`, `Permission`, `RecordRule`**: identidad y permisos (04 §3, 01 §3, D-148). Los grupos son un catálogo con permisos configurables; la asignación lleva planta y marca de suplente.
 - **`Customer`**: cliente sincronizado de CONTPAQi, de solo lectura.
 - **`Product`**, **`PackagingUnit`**: producto sincronizado con su unidad base y si lleva lote.
 - **`ProductClassification`**: clasificación de PolyConecta (D-86).
@@ -261,7 +262,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 ### Measurable Outcomes
 
 - **SC-001**: Un pedido libre se captura, se confirma y se autoriza con dos firmas de personas distintas en menos de 5 minutos, sin salir de PolyConecta.
-- **SC-002**: Ninguna combinación de usuarios y roles permite que una persona aporte las dos firmas de un pedido; las pruebas de dominio y de API lo cubren, incluido el usuario con los dos roles y el suplente.
+- **SC-002**: Ninguna combinación de usuarios y grupos permite que una persona aporte las dos firmas de un pedido; las pruebas de dominio y de API lo cubren, incluido el usuario con los dos roles y el suplente.
 - **SC-003**: Toda acción no permitida aparece deshabilitada con su razón y la API la rechaza también si se pide directo; una prueba recorre la matriz de la capa 1 del pedido.
 - **SC-004**: La primera sincronización contra el simulador trae el 100 % del catálogo semilla, y una sincronización sin cambios no modifica ningún registro.
 - **SC-005**: Con 500 pedidos, la lista responde un filtro, una agrupación o un cambio de página en menos de 1 segundo, y ninguna operación de lista se resuelve en el navegador (una prueba cuenta las consultas).
@@ -296,9 +297,9 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 
 - **Solo pedido libre.** El pedido capturado en CONTPAQi no entra por sincronización (D-145); todo pedido nace en PolyConecta y en F2 se da de alta en CONTPAQi (D-113).
 - **Moneda por pedido.** Moneda y tipo de cambio van en el maestro y el precio en la línea, como `ALTA_PEDIDO` en el contrato `1.0` (D-146, propuesta). Las monedas admitidas son las que el bridge sabe traducir (MXN y USD por omisión).
-- **La primera firma bloquea la edición.** Una firma autoriza un contenido fijo; para cambiarlo se revoca. Generaliza el bloqueo de líneas al autorizar que ya tiene la réplica.
+- **Editar con firmas revoca.** Un pedido con firmas se puede editar en Borrador o Confirmado, pero guardar el cambio revoca la autorización en automático, con aviso previo y registro en el chatter (D-147).
 - **El pedido no tiene planta.** Las reglas de fila por planta (RF-1, RF-2) se construyen como mecanismo y se prueban, pero su primera entidad con planta es la OF (F2). En F1 aplican RF-3 y RF-4 al pedido.
-- **Los permisos se cambian como datos.** La matriz vive en la base con sus datos iniciales; cambiarla no toca código de negocio. Una pantalla para editarla no está en F1.
+- **Los permisos son configurables por grupo.** El catálogo de permisos (tipo de documento × acción) lo define el código; qué permisos tiene cada grupo es dato y lo edita el Administrador (D-148).
 - **Contraseñas.** Las da y las restablece el Administrador; no hay autorregistro ni recuperación por correo en F1.
 - **Sincronización.** Cada 15 minutos por omisión. La existencia no se sincroniza: se lee al momento por el bridge (D-87) cuando una pantalla la necesita; en F1 ninguna pantalla del pedido la usa todavía.
 - **Las demás pantallas siguen en memoria.** Solo Pedidos y las pantallas nuevas de F1 leen de la API; las otras se conectan en su fase.
@@ -314,3 +315,6 @@ Las secciones anteriores son el **objetivo primario** de la fase, fijado al rati
 | 2026-10-08 | Común | Alcance del "Diseño sin tarea en el plan": el pedido sincronizado queda fuera de alcance; la revocación, la clasificación propia, la ficha técnica y el cotejo de T-06 entran en F1 | Decisión del usuario al completar la spec | US1, US3, US5; FR-008, FR-017, FR-018, FR-025 | D-145 |
 | 2026-10-08 | Común | Moneda y tipo de cambio por pedido, no por línea, alineado con `ALTA_PEDIDO` del contrato `1.0` | D-74 y 04 §3 dicen "por línea"; el contrato firmado lleva una moneda por documento | FR-020, FR-022 | D-146 (propuesta) |
 | 2026-10-08 | Común | Propuesta de contrato `1.1`: `clasificacion` opcional en la lectura de productos | La clasificación de CONTPAQi es el valor inicial de D-86, pero el contrato no la lee | FR-003, FR-017 | Pendiente de los dos líderes |
+| 2026-10-08 | L2 | Editar un pedido con firmas revoca la autorización en automático, con aviso antes de guardar y registro en el chatter; sustituye "la primera firma bloquea la edición" | Revisión de supuestos con el usuario | US1, FR-024, casos límite | D-147 |
+| 2026-10-08 | L2 | Grupos como catálogo con permisos configurables, un grupo por nivel, y asignación de permisos con dos paneles de izquierda a derecha; el componente de dos paneles entra a 07 y a la galería | Revisión de supuestos con el usuario | US2, FR-010, FR-013 | D-148 |
+| 2026-10-08 | L2 | "Sincronizar ahora" por catálogo y en general | Revisión de supuestos con el usuario | US3, FR-014 | — |
