@@ -52,6 +52,10 @@ namespace Contpaq.Bridge.Api.Controllers
             {
                 return Ok(await lectura());
             }
+            catch (ArgumentException ex) when (ex.ParamName == "cursor")
+            {
+                return BadRequest(ErrorContrato.De(CodigosError.CargaInvalida, ex.Message.Split(" (Parameter")[0], new() { ["campo"] = "cursor" }));
+            }
             catch (LecturaNoDisponibleException ex)
             {
                 return StatusCode(StatusCodes.Status501NotImplemented, ErrorContrato.De(CodigosError.SdkError, ex.Message));

@@ -70,7 +70,10 @@ if (opciones.Mode == BridgeMode.Real)
         throw new InvalidOperationException(
             "Falta BridgeConfig:SqlConnectionString. Definela en la variable de entorno BridgeConfig__SqlConnectionString.");
     builder.Services.AddSingleton<ISqlReadRepository>(new SqlReadRepository(sqlConn));
-    builder.Services.AddSingleton<IReadRepository>(new SqlContractReadRepository(sqlConn));
+    // Número (1 a 6) de CIDVALORCLASIFICACION{n} que es "TIPO DE PRODUCTOS" (A-05); sin valor, la clasificación va null.
+    int? clasificacionProductos = int.TryParse(config["BridgeConfig:Clasificacion:Productos"], out var clasif) ? clasif : null;
+    builder.Services.AddSingleton<IReadRepository>(sp =>
+        new SqlContractReadRepository(sqlConn, sp.GetRequiredService<ConfiguracionConceptos>(), clasificacionProductos));
     builder.Services.AddSingleton<ISdkGateway, ContpaqiSdkGateway>();
 }
 else

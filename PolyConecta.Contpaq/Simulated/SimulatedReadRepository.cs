@@ -74,7 +74,9 @@ namespace Contpaq.Bridge.Simulated
         /// <summary>El cursor es el id de la última fila de la página anterior.</summary>
         private static Pagina<T> Paginar<T>(IEnumerable<T> items, Func<T, long> id, int limit, string? cursor)
         {
-            long? desde = long.TryParse(cursor, NumberStyles.None, CultureInfo.InvariantCulture, out var c) ? c : null;
+            long? desde = cursor is null ? null
+                : long.TryParse(cursor, NumberStyles.None, CultureInfo.InvariantCulture, out var c) ? c
+                : throw new ArgumentException("cursor: Debe ser el next_cursor de la página anterior.", nameof(cursor));
             var ordenados = items.OrderBy(id)
                 .Where(i => desde is null || id(i) > desde)
                 .Take(limit + 1)
