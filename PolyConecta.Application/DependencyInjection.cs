@@ -15,6 +15,10 @@ public static class DependencyInjection
         services.AddUseCase<ResultadoBridge, EfectoCallback, ConfirmarSincronizacion>();
         services.AddUseCase<ReintentarSincronizacionRequest, Unit, ReintentarSincronizacion>();
         AddSeguridad(services);
+        services.AddScoped<Plataforma.Sincronizacion.Sincronizador>();
+        services.AddUseCase<Plataforma.Sincronizacion.SincronizarCatalogo, Plataforma.Sincronizacion.EstadoCatalogo, Plataforma.Sincronizacion.SincronizarCatalogoCaso>();
+        services.AddUseCase<Plataforma.Sincronizacion.SincronizarTodo, IReadOnlyList<Plataforma.Sincronizacion.EstadoCatalogo>, Plataforma.Sincronizacion.SincronizarTodoCaso>();
+        services.AddUseCase<Plataforma.Sincronizacion.EstadoDeSincronizacion, IReadOnlyList<Plataforma.Sincronizacion.EstadoCatalogo>, Plataforma.Sincronizacion.EstadoDeSincronizacionCaso>();
         return services;
     }
 
