@@ -17,7 +17,7 @@ Estás en el VPS de Windows donde corre CONTPAQi Comercial, para desarrollar, de
 
 Compila en Debug y en x86 (`-p:Bridge32=true`), porque `MGW_SDK.dll` es de 32 bits. Escucha en `http://localhost:9030` (D-128). Los logs salen en la consola. Para depurar paso a paso, el usuario asocia Visual Studio al proceso `Contpaq.Bridge.exe`.
 
-Si el bridge publicado está corriendo (la tarea `PolyConecta-Bridge` lo levanta al iniciar sesión), detenlo antes: los dos usan el puerto 9030 (D-128). Publicar, el arranque automático y la medición del reinicio están en [`scripts/vps/README.md`](../scripts/vps/README.md).
+Si el bridge publicado está corriendo (la tarea `PolyConecta-Bridge` corre el supervisor `Start-BridgeSupervisado.ps1`, que lo levanta al iniciar sesión y lo relanza si sale solo), detén primero la tarea y el bridge (`Stop-ScheduledTask PolyConecta-Bridge; Stop-Process -Name Contpaq.Bridge`): los dos usan el puerto 9030 (D-128). Publicar, el arranque automático y la medición del reinicio están en [`scripts/vps/README.md`](../scripts/vps/README.md).
 
 ## Reglas duras
 
