@@ -123,7 +123,7 @@ Salen de los estados que ya existen en `core/models` y `core/state`. La tabla de
 | Incidencias | Por centro de trabajo | Ninguna: no tienen estado | P2 |
 | Recolecciones | Borrador, En espera, Listo, Hecho | Listo → Hecho (Validar, con diálogo de cantidades si es parcial, el mismo que abre el botón del formulario). Borrador → En espera lo avanza el sistema al confirmar la OF, y En espera → Listo, al declarar lotes | P3 |
 | Calidad | Planeado, Parcial, Aprobado (por control, como la lista) | Ninguna: el estado sale de los lotes (aclaración P4). Se aprueba o falla lote por lote en el formulario; fallar pide confirmación | P4 |
-| Traslados | Borrador, En espera de operación, En espera, Listo, Hecho | Listo → Hecho (Validar) | P5 |
+| Traslados | Borrador, En espera de operación, En espera, Listo, Hecho | Listo → Hecho (Validar: cierra la salida de inventario; sin lotes, la tarjeta regresa con el motivo). En el formulario, "Validar" avanza una etapa por clic, como el prototipo; las etapas previas no se arrastran | P5 |
 | Recepción | Borrador, En espera, Listo, Hecho | Listo → Hecho (Validar) | P6 |
 | Entregas | Borrador, En espera, Listo, Hecho | Listo → Hecho (Validar) | P7 |
 

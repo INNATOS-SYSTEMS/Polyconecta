@@ -137,7 +137,7 @@
 
 Las tres comparten `features/logistica/documento/`. La primera parte adapta el componente común y las otras dos lo configuran.
 
-- [ ] L2-T048 [US6] Migrar `features/logistica/documento/` (`logistica-list`, el formulario y `logistica-nuevo`) a los componentes nuevos, con la estructura completa en "Nuevo" (D-136), y escribir las transiciones de Traslados en `src/app/features/logistica/traslados-kanban.ts`.
+- [x] L2-T048 [US6] Migrar `features/logistica/documento/` (`logistica-list`, el formulario y `logistica-nuevo`) a los componentes nuevos, con la estructura completa en "Nuevo" (D-136), y escribir las transiciones de Traslados en `src/app/features/logistica/traslados-kanban.ts`.
 - [ ] L2-T049 [US6] Quickstart §2 para Traslados y el PR de P5.
 - [ ] L2-T050 [US7] Escribir las transiciones de Recepción en `src/app/features/logistica/recepcion-kanban.ts`, con la regla de D-56 (solo lotes en `TRANS/*`) visible en el diálogo de validar.
 - [ ] L2-T051 [US7] Quickstart §2 para Recepción y el PR de P6.

@@ -9,18 +9,25 @@ import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb'
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
 import { OdooSmartButtons } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
+import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
+import { OdooTabs } from '../../../shared/odoo-tabs/odoo-tabs';
+import { LogisticaAcciones } from './logistica-acciones';
 import { CONFIG, TipoLogistica } from './tipos';
 
-/** Réplica de Pages/TrasladoFormView, RecepcionFormView y EntregaFormView (.razor). */
+/**
+ * Réplica de Pages/TrasladoFormView, RecepcionFormView y EntregaFormView (.razor) sobre los componentes
+ * de la spec 011 (P5). Validar usa la misma acción que el kanban.
+ */
 @Component({
   selector: 'pc-logistica-form',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooChatterDrawer, LotPickerModal],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooChatterDrawer, OdooTabs, OdooIcon, LotPickerModal],
   templateUrl: './logistica-form.html',
   styles: ':host { display: contents; }',
 })
 export class LogisticaForm {
   protected readonly flow = inject(OperationalFlowState);
   private readonly router = inject(Router);
+  protected readonly acciones = inject(LogisticaAcciones);
 
   readonly tipo = input.required<TipoLogistica>();
   /** Folio con "/" (SC/OUT/31688), resuelto por folioMatcher. */
@@ -28,6 +35,7 @@ export class LogisticaForm {
 
   protected readonly cfg = computed(() => CONFIG[this.tipo()]);
   protected readonly n1 = n1;
+  protected readonly pestanas = [{ id: 'operaciones', titulo: 'Operaciones' }];
   protected readonly fechaCorta = fechaCorta;
   protected readonly lotModalLine = signal<ShipmentLine | null>(null);
 

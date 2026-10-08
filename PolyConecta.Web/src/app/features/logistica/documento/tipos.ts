@@ -52,8 +52,8 @@ export const CONFIG: Record<TipoLogistica, ConfigLogistica> = {
     comprobar: f => f.comprobarDisponibilidadTraslado(),
     lotes: f => f.getLotesDisponiblesTraslado(),
     smartButtons: f => [
-      { label: 'Orden de Fabricación', countBadge: 1, iconClass: 'bi bi-gear-wide-connected', targetRoute: '/fabricacion/IMP-2026-0001' },
-      { label: 'Recepción', countBadge: 1, iconClass: 'bi bi-box-arrow-in-down', targetRoute: `/recepcion/${f.recepcion().folio}` },
+      { label: 'Orden de Fabricación', countBadge: 1, iconClass: 'fabricacion', targetRoute: '/fabricacion/IMP-2026-0001' },
+      { label: 'Recepción', countBadge: 1, iconClass: 'recepcion', targetRoute: `/recepcion/${f.recepcion().folio}` },
     ],
   },
   recepcion: {
@@ -74,8 +74,8 @@ export const CONFIG: Record<TipoLogistica, ConfigLogistica> = {
     comprobar: f => f.comprobarDisponibilidadRecepcion(),
     lotes: f => f.getLotesDisponiblesTraslado(),
     smartButtons: f => [
-      { label: 'Traslado', countBadge: 1, iconClass: 'bi bi-truck', targetRoute: `/traslados/${f.traslado().folio}` },
-      { label: 'Orden de Fabricación', countBadge: 1, iconClass: 'bi bi-gear-wide-connected', targetRoute: '/fabricacion/IMP-2026-0001' },
+      { label: 'Traslado', countBadge: 1, iconClass: 'traslado', targetRoute: `/traslados/${f.traslado().folio}` },
+      { label: 'Orden de Fabricación', countBadge: 1, iconClass: 'fabricacion', targetRoute: '/fabricacion/IMP-2026-0001' },
     ],
   },
   entrega: {
@@ -95,6 +95,6 @@ export const CONFIG: Record<TipoLogistica, ConfigLogistica> = {
     validar: (f, folio) => f.validarEntrega(folio),
     comprobar: f => f.comprobarDisponibilidadEntrega(),
     lotes: f => f.getLotesDisponiblesEntrega(),
-    smartButtons: () => [{ label: 'Pedido de Venta', countBadge: 1, iconClass: 'bi bi-cart-check', targetRoute: `/pedidos/${PEDIDO_FOLIO}` }],
+    smartButtons: () => [{ label: 'Pedido de Venta', countBadge: 1, iconClass: 'pedido', targetRoute: `/pedidos/${PEDIDO_FOLIO}` }],
   },
 };
