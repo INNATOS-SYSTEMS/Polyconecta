@@ -15,11 +15,27 @@ public static class DependencyInjection
         services.AddUseCase<ResultadoBridge, EfectoCallback, ConfirmarSincronizacion>();
         services.AddUseCase<ReintentarSincronizacionRequest, Unit, ReintentarSincronizacion>();
         AddSeguridad(services);
+        AddCatalogos(services);
         services.AddScoped<Plataforma.Sincronizacion.Sincronizador>();
         services.AddUseCase<Plataforma.Sincronizacion.SincronizarCatalogo, Plataforma.Sincronizacion.EstadoCatalogo, Plataforma.Sincronizacion.SincronizarCatalogoCaso>();
         services.AddUseCase<Plataforma.Sincronizacion.SincronizarTodo, IReadOnlyList<Plataforma.Sincronizacion.EstadoCatalogo>, Plataforma.Sincronizacion.SincronizarTodoCaso>();
         services.AddUseCase<Plataforma.Sincronizacion.EstadoDeSincronizacion, IReadOnlyList<Plataforma.Sincronizacion.EstadoCatalogo>, Plataforma.Sincronizacion.EstadoDeSincronizacionCaso>();
         return services;
+    }
+
+    private static void AddCatalogos(IServiceCollection services)
+    {
+        services.AddScoped<Inventario.DetalleDeProducto>();
+        services.AddUseCase<Inventario.ObtenerProducto, Inventario.ProductoDetalle, Inventario.ObtenerProductoCaso>();
+        services.AddUseCase<Inventario.BuscarProductos, IReadOnlyList<Inventario.ProductoBusqueda>, Inventario.BuscarProductosCaso>();
+        services.AddUseCase<Inventario.ClasificarProducto, Inventario.ProductoDetalle, Inventario.ClasificarProductoCaso>();
+        services.AddUseCase<Inventario.GuardarFichaTecnica, Inventario.ProductoDetalle, Inventario.GuardarFichaTecnicaCaso>();
+        services.AddUseCase<Inventario.ListarClasificaciones, IReadOnlyList<Inventario.ClasificacionDto>, Inventario.ListarClasificacionesCaso>();
+        services.AddUseCase<Inventario.GuardarClasificacion, Inventario.ClasificacionDto, Inventario.GuardarClasificacionCaso>();
+        services.AddUseCase<Inventario.ListarAlmacenes, IReadOnlyList<Inventario.AlmacenDto>, Inventario.ListarAlmacenesCaso>();
+        services.AddUseCase<Ventas.ObtenerCliente, Ventas.ClienteDetalle, Ventas.ObtenerClienteCaso>();
+        services.AddUseCase<Ventas.BuscarClientes, IReadOnlyList<Ventas.ClienteBusqueda>, Ventas.BuscarClientesCaso>();
+        services.AddUseCase<Ventas.ListarAgentes, IReadOnlyList<Ventas.AgenteDto>, Ventas.ListarAgentesCaso>();
     }
 
     private static void AddSeguridad(IServiceCollection services)

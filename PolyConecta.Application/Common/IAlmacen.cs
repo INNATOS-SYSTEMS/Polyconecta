@@ -15,6 +15,10 @@ public interface IAlmacen<T> where T : AuditableEntity
     Task<IReadOnlyList<T>> ListarAsync(
         Expression<Func<T, bool>>? filtro = null, bool incluirArchivados = false, CancellationToken cancellationToken = default);
 
+    /// <summary>Los primeros <paramref name="cantidad"/> que cumplen el filtro, en orden (selectores de búsqueda).</summary>
+    Task<IReadOnlyList<T>> PrimerosAsync(
+        Expression<Func<T, bool>> filtro, Expression<Func<T, string>> orden, int cantidad, CancellationToken cancellationToken = default);
+
     Task<bool> ExisteAsync(Expression<Func<T, bool>> filtro, bool incluirArchivados = false, CancellationToken cancellationToken = default);
 
     Task<int> ContarAsync(Expression<Func<T, bool>> filtro, bool incluirArchivados = false, CancellationToken cancellationToken = default);

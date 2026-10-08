@@ -11,6 +11,20 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    })
+    // Un cuerpo que no se puede leer responde como cualquier 400 de la API: code VALIDACION y errores[].
+    .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = contexto =>
+    {
+        var errores = contexto.ModelState
+            .Where(e => e.Value?.Errors.Count > 0)
+            .SelectMany(e => e.Value!.Errors.Select(x => new { campo = e.Key.TrimStart('$', '.'), mensaje = string.IsNullOrEmpty(x.ErrorMessage) ? "Valor inválido." : x.ErrorMessage }))
+            .ToList();
+        var cuerpo = new Dictionary<string, object?>
+        {
+            ["status"] = 400, ["title"] = "VALIDACION", ["code"] = "VALIDACION",
+            ["razon"] = "La petición no es válida.", ["errores"] = errores,
+        };
+        return new Microsoft.AspNetCore.Mvc.ObjectResult(cuerpo) { StatusCode = 400, ContentTypes = { "application/problem+json" } };
     });
 
 builder.Services.AddEndpointsApiExplorer();

@@ -34,6 +34,10 @@ public sealed class AlmacenEf<T>(PolyDbContext db, ReglasDeFila<T> reglas, IEnum
         return await q.ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<T>> PrimerosAsync(
+        Expression<Func<T, bool>> filtro, Expression<Func<T, string>> orden, int cantidad, CancellationToken cancellationToken = default) =>
+        await (await ConsultaAsync(false, cancellationToken)).Where(filtro).OrderBy(orden).Take(cantidad).ToListAsync(cancellationToken);
+
     public async Task<bool> ExisteAsync(Expression<Func<T, bool>> filtro, bool incluirArchivados = false, CancellationToken cancellationToken = default) =>
         await (await ConsultaAsync(incluirArchivados, cancellationToken)).AnyAsync(filtro, cancellationToken);
 
