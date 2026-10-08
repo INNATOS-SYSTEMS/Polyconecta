@@ -44,14 +44,17 @@ Decisiones técnicas de la fase 1. El estado del código es el de la rama `003-p
 
 ## R-03 · Consulta de listas por HTTP (resuelve P-28)
 
-**Decisión**:
+**Decisión** (ratificada con la observación de D-151):
+- **Híbrida con umbral (D-151)**: `POST /api/v1/{modulo}/{lista}/conjunto` entrega el conjunto completo de la lista, con las reglas de fila aplicadas y los filtros con nombre de cada fila (`_filtros`), si tiene hasta 5,000 filas. Entonces `OrigenHttp<T>` resuelve búsqueda, filtros, agrupación, orden y página en el navegador, con la misma lógica que `OrigenEnMemoria` (que ya existe y tiene pruebas), sin nuevas consultas. Si no cabe, usa el modo servidor de abajo. Un cambio propio o volver a la lista recarga el conjunto.
 - **Una ruta por lista**: `POST /api/v1/{modulo}/{lista}/consulta`, con el cuerpo igual a `ConsultaLista` (07 §4.1) en camelCase, y respuesta `ResultadoLista<T>`. Es `POST` porque la consulta lleva filtros anidados y la ruta de grupos, que en la URL quedan ilegibles y largos. No escribe nada. El detalle está en [contracts/api-listas.md](contracts/api-listas.md).
 - **La vista de búsqueda se declara en el servidor** para las listas HTTP: `VistaDeBusqueda<T>` en `Application/Common/Listas/`, con campos buscables (`Expression<Func<T,string?>>`), filtros con nombre y su campo (`Expression<Func<T,bool>>`), agrupaciones (`Expression<Func<T,object>>` con etiqueta), columnas ordenables y sumables. `GET /api/v1/{modulo}/{lista}/vista` devuelve su descripción sin expresiones (nombres, campos y etiquetas). El panel de búsqueda de la web la pinta igual que hoy, y para las listas HTTP la vista TS de `core/search/views.ts` deja de ser la fuente.
 - **Todo se traduce a `IQueryable`** con EF Core: reglas de fila → filtros con nombre (O dentro del campo, Y entre campos) → filtros por columna → búsqueda → orden → página. La agrupación usa `GroupBy` sobre la expresión del nivel pedido, con `Count` y `Sum` de las columnas sumables. Agrupada, la página es de grupos (D-140). Una prueba de integración verifica que cada consulta es **una** ida a SQL Server para filas o grupos, más una para el total.
-- **`OrigenHttp<T>`** en `PolyConecta.Web/src/app/core/lista/origen-http.ts` implementa `OrigenDeLista<T>` con `HttpClient`. La pantalla no cambia: solo cambia el origen que le pasa su servicio de acciones (FR-029).
+- **`OrigenHttp<T>`** en `PolyConecta.Web/src/app/core/lista/origen-http.ts` implementa `OrigenDeLista<T>` con `HttpClient`: en modo conjunto delega en `OrigenEnMemoria` sobre las filas recibidas, con los filtros con nombre leídos de `_filtros`; en modo servidor manda la consulta. La pantalla no cambia: solo cambia el origen que le pasa su servicio de acciones (FR-029).
 - **Exportar**: la exportación a `.xlsx` sigue en la web, con las filas que devuelve la consulta (con `ids` o con el filtro completo, en páginas de 200).
 
 **Alternativas**:
+- Solo servidor (D-135 original): cada filtro, agrupación u orden es una consulta. Se descartó en la ratificación por pedir una consulta por interacción en listas que caben de sobra en memoria.
+- Solo navegador: deja sin salida a las listas que crezcan a decenas de miles de filas.
 - OData: agrega una dependencia y un formato que no es el del contrato visual, y su agrupación con subtotales por niveles no cubre la paginación de grupos.
 - GraphQL: excesivo para listas con una sola forma de consulta.
 - `GET` con parámetros: los filtros `en` y `entre` y la ruta del grupo no caben bien en la URL.
@@ -77,7 +80,7 @@ Decisiones técnicas de la fase 1. El estado del código es el de la rama `003-p
 
 **Decisión**:
 - **Puerto** `IBridgeLecturas` en `Application/Plataforma/Erp/` (productos, clientes, almacenes y existencias, con cursor), implementado en `Infrastructure/Erp/BridgeLecturasHttp.cs` sobre el mismo `HttpClient` del bridge. Propaga el `correlation_id` (CT-31).
-- **Caso de uso** `SincronizarCatalogo(catalogo)` por catálogo, y `SincronizarTodo`, que los corre en orden (almacenes, clientes y productos). Cada uno **lee el catálogo completo** por páginas de 500 (D-150: `CTIMESTAMP` no sirve para `modified_since`), hace upsert por id de CONTPAQi y guarda `erp_*` (CT-13). Solo escribe un registro si algún campo difiere. Un registro inactivo, o que ya no viene en la lectura completa, se archiva (FR-015); uno que vuelve a estar activo se restaura. Nunca borra. Si una corrida falla a la mitad, no archiva nada: el archivado por ausencia solo corre al terminar la lectura completa.
+- **Caso de uso** `SincronizarCatalogo(catalogo)` por catálogo, y `SincronizarTodo`, que los corre en orden (almacenes, agentes, clientes y productos). Cada uno **lee el catálogo completo** por páginas de 500 (D-150: `CTIMESTAMP` no sirve para `modified_since`), hace upsert por id de CONTPAQi y guarda `erp_*` (CT-13). Solo escribe un registro si algún campo difiere. Un registro inactivo, o que ya no viene en la lectura completa, se archiva (FR-015); uno que vuelve a estar activo se restaura. Nunca borra. Si una corrida falla a la mitad, no archiva nada: el archivado por ausencia solo corre al terminar la lectura completa.
 - **Estado por catálogo** en `plt.catalog_sync_state`: `catalogo`, `ultima_corrida`, `ultima_exitosa`, `ultimo_resultado` (`Exito` o `Error`), `registros_leidos`, `registros_cambiados`, `registros_archivados`, `duracion_ms` y `ultimo_error`. El upsert es idempotente: sin cambios en CONTPAQi, cero modificados (SC-004). Se mide la duración de la lectura completa en el VPS; si pasa de un minuto, se sube el intervalo.
 - **Periódica** con un `BackgroundService` (`SincronizadorCatalogos`), cada `Erp:Sincronizacion:IntervaloMinutos` (15), y **bajo demanda** con `POST /api/v1/plataforma/sincronizacion/{catalogo}` y `POST /api/v1/plataforma/sincronizacion` (todos), que exigen el permiso `plataforma.sincronizacion.ejecutar` (Sistemas y Administrador).
 - **Una instancia por catálogo**: `sp_getapplock` con el nombre `sync:<catalogo>`, igual que el despachador. Si está tomado, la petición manual responde `409` con "Ya hay una sincronización de productos en curso".
@@ -149,16 +152,18 @@ Decisiones técnicas de la fase 1. El estado del código es el de la rama `003-p
 
 ---
 
-## R-11 · Contrato `1.1` (propuesta, FR-003)
+## R-11 · Contrato `1.1` (FR-003)
 
-**Decisión**: proponer a los dos líderes un cambio compatible (§8 del contrato):
+**Decisión**, aprobada por los dos líderes el 8-oct: cambio compatible (§8 del contrato):
 
 | Lectura | Campo nuevo, opcional | Origen en CONTPAQi |
 | :--- | :--- | :--- |
 | `GET /catalogs/products` | `clasificacion`: `{ codigo, nombre }` del valor de "TIPO DE PRODUCTOS" | `admProductos.CIDVALORCLASIFICACION{n}` → `admClasificacionesValores` (A-05). El número de la clasificación lo da la configuración |
 | `GET /catalogs/clients` | `moneda`: código ISO | `admClientes.CIDMONEDA` (R-06, D-150), traducido con `BridgeConfig__Monedas__{ISO}` |
+| `GET /catalogs/agents` (lectura nueva) | `codigo`, `nombre`, `tipo` (`venta`, `venta_cobro`, `cobro`), `id_erp`, paginada como las demás (D-153) | `admAgentes` (`CCODIGOAGENTE`, `CNOMBREAGENTE`, `CTIPOAGENTE`, `CIDAGENTE`) |
+| `ALTA_PEDIDO` (F2) | `agente` opcional: código del agente (D-153) | `tDocumento.aCodigoAgente` → `admDocumentos.CIDAGENTE` |
 | `GET /catalogs/clients` | `domicilios[]`: `id_erp`, `tipo` (`fiscal` o `envio`), `calle`, `numero_exterior`, `numero_interior`, `colonia`, `codigo_postal`, `ciudad`, `municipio`, `estado`, `pais`, `sucursal` | `admDomicilios` (R-06) |
 
 Además, **`modified_since` se declara obsoleto** en productos y clientes: `CTIMESTAMP` no es una fecha de modificación (D-150), así que el bridge real no lo puede cumplir. Sigue respondiendo `501` si alguien lo manda, y PolyConecta no lo usa.
 
-Los tres son opcionales: PolyConecta funciona sin ellos (FR-003). La suite de contrato agrega sus pruebas y los ejemplos van a `docs/contratos/ejemplos/`. Hasta la aprobación, L1 no los expone en el modo real y el simulador sí, marcados como `1.1` en el `_nota` de su semilla.
+Los campos nuevos son opcionales: PolyConecta funciona sin ellos (FR-003). La suite de contrato agrega sus pruebas y los ejemplos van a `docs/contratos/ejemplos/`. Hasta la aprobación, L1 no los expone en el modo real y el simulador sí, marcados como `1.1` en el `_nota` de su semilla.

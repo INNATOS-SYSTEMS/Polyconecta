@@ -64,6 +64,8 @@ Toda petición que escribe lleva `X-Requested-With: PolyConecta` (R-01) y propag
 | `GET /api/v1/catalogos/clientes/buscar?texto=` | Para el selector del pedido: activos, hasta 20, con moneda y domicilios | `ventas.pedido.crear` |
 | `GET /api/v1/catalogos/productos/buscar?texto=` | Para la captura de líneas: activos, hasta 20, con unidad base | `ventas.pedido.crear` |
 | `GET /api/v1/catalogos/almacenes` | Almacenes de CONTPAQi sincronizados | `catalogos.almacen.leer` |
+| `GET /api/v1/ventas/agentes` | Agentes de CONTPAQi sincronizados, para el selector del pedido y el usuario (D-153) | `ventas.agente.leer` |
+| `PUT /api/v1/plataforma/usuarios/{id}/agente` | `{ agenteId }`: liga el usuario a su agente de CONTPAQi | `plataforma.usuarios.ligar_agente` |
 
 ## Sincronización
 
@@ -71,7 +73,7 @@ Toda petición que escribe lleva `X-Requested-With: PolyConecta` (R-01) y propag
 | :--- | :--- | :--- |
 | `GET /api/v1/plataforma/sincronizacion` | Estado por catálogo: última corrida, resultado, leídos, cambiados y error | `plataforma.sincronizacion.leer` |
 | `POST /api/v1/plataforma/sincronizacion` | Corre los tres catálogos y responde el estado | `plataforma.sincronizacion.ejecutar` |
-| `POST /api/v1/plataforma/sincronizacion/{catalogo}` | `productos`, `clientes` o `almacenes` | ídem |
+| `POST /api/v1/plataforma/sincronizacion/{catalogo}` | `productos`, `clientes`, `agentes` o `almacenes` | ídem |
 
 ## Pedidos de venta
 
@@ -93,7 +95,7 @@ Cuerpo de crear y editar:
   "revocarAutorizacion": false,
   "clienteId": 3,
   "ordenCompraCliente": "OC-4471",
-  "agente": "Celia Villarreal",
+  "agenteId": 4,
   "fechaPedido": "2026-10-13",
   "fechaPromesa": "2026-10-30",
   "domicilioEntregaId": 11,

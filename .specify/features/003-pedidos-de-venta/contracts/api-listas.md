@@ -7,7 +7,8 @@ La forma de la consulta y del resultado es la de [07 §4.1](../../../../docs/dis
 | Método y ruta | Qué hace |
 | :--- | :--- |
 | `GET /api/v1/{modulo}/{lista}/vista` | Descripción de la vista de búsqueda de la lista |
-| `POST /api/v1/{modulo}/{lista}/consulta` | Ejecuta una `ConsultaLista` y devuelve un `ResultadoLista` |
+| `POST /api/v1/{modulo}/{lista}/conjunto` | Devuelve el conjunto completo de la lista si cabe en el umbral (D-151) |
+| `POST /api/v1/{modulo}/{lista}/consulta` | Ejecuta una `ConsultaLista` en el servidor y devuelve un `ResultadoLista`; solo se usa cuando el conjunto no cabe |
 
 Listas de F1:
 
@@ -19,7 +20,7 @@ Listas de F1:
 | `plataforma/usuarios` | `plataforma.usuarios` | `plataforma.usuarios.leer` |
 | `plataforma/grupos` | `plataforma.grupos` | `plataforma.grupos.leer` |
 
-Las dos rutas exigen sesión (`401` sin ella) y el permiso de lectura de la lista (`403` sin él).
+Las tres rutas exigen sesión (`401` sin ella) y el permiso de lectura de la lista (`403` sin él).
 
 ## `GET …/vista`
 
@@ -45,6 +46,42 @@ Las dos rutas exigen sesión (`401` sin ella) y el permiso de lectura de la list
 ```
 
 El panel de búsqueda pinta la vista con esta descripción. Los filtros con nombre se evalúan en el servidor por su nombre; los del mismo `campo` se unen con O y los de campos distintos se cruzan con Y.
+
+## Modo híbrido (D-151)
+
+`OrigenHttp<T>` pide primero el conjunto. Si cabe, resuelve todo en el navegador sin nuevas consultas; si no, cambia al modo servidor. La pantalla no nota la diferencia.
+
+```mermaid
+flowchart LR
+    A["Abrir la lista"] --> B["POST …/conjunto"]
+    B -- "completo: true" --> C["Filtrar, agrupar, ordenar y paginar\nen el navegador, sin consultas"]
+    B -- "completo: false" --> D["Cada cambio:\nPOST …/consulta"]
+    C -- "guardar o transicionar,\nvolver a la lista" --> B
+```
+
+## `POST …/conjunto`
+
+**Cuerpo**: `{}`. El umbral lo fija el servidor (`Listas:Umbral`, 5,000).
+
+**Respuesta `200`**, si cabe:
+
+```json
+{
+  "completo": true,
+  "total": 412,
+  "generado": "2026-10-13T10:15:02-06:00",
+  "filas": [
+    { "id": 15, "folio": "PV-2026-0015", "cliente": "EMM-001 - EMPRESA MEXICANA DE MANUFACTURA", "estado": "Confirmado", "_filtros": ["Confirmado", "Por autorizar", "Mis pedidos"] }
+  ]
+}
+```
+
+Si no cabe: `{ "completo": false, "total": 6120 }`, sin filas.
+
+- Las reglas de fila ya están aplicadas: el conjunto solo trae lo que el usuario puede ver.
+- `_filtros` lista los filtros con nombre de la vista que cumple la fila, evaluados en el servidor (algunos dependen del usuario). El navegador los combina con la misma regla: O dentro del mismo campo, Y entre campos.
+- La búsqueda es `contiene` sin distinguir mayúsculas ni acentos, sobre los `campos` de la vista. Las agrupaciones y el orden usan los campos de la fila; los subtotales suman las columnas `sumables`.
+- Una prueba de la web verifica que, después del conjunto, filtrar, agrupar, ordenar y paginar no hacen ninguna petición.
 
 ## `POST …/consulta`
 
@@ -92,7 +129,9 @@ El panel de búsqueda pinta la vista con esta descripción. Los filtros con nomb
 - `totales` suma las columnas `sumables` sobre todo el filtro. Si la vista declara una columna de unidad, un grupo con unidades mezcladas no trae total de esa columna (D-140).
 - Cada fila trae `id` (para abrir el formulario) y los campos de las columnas.
 
-## Orden de evaluación en el servidor
+## Orden de evaluación (servidor y navegador)
+
+El mismo orden aplica en los dos modos, para que den el mismo resultado:
 
 1. Reglas de fila del usuario (R-02). Ningún filtro las amplía (02 §7).
 2. Filtros con nombre: O dentro del mismo campo, Y entre campos.

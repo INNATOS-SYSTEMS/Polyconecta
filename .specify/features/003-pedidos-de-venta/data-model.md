@@ -13,6 +13,7 @@ Entidades nuevas de F1, con sus campos, reglas y transiciones. Todas heredan la 
 | `user_name` | `nvarchar(64)` | Único, sin espacios. Es con lo que se entra |
 | `display_name` | `nvarchar(120)` | Lo que muestran la barra superior, el chatter y las firmas |
 | `email` | `nvarchar(120)`, opcional | Solo informativo en F1 |
+| `erp_agent_id` | FK a `ven.erp_agent`, opcional | El agente de CONTPAQi del usuario; lo liga el Administrador (D-153) |
 
 - Archivar (`is_active = false`) impide entrar y no borra nada: sus firmas, transiciones y mensajes siguen atribuidos a él (US2, escenario 5).
 - Un usuario activo tiene **al menos una** `GroupAssignment` activa (FR-010). `ArchivarAsignacion` rechaza quitar la última.
@@ -62,9 +63,11 @@ No es tabla en F1: cada regla es una clase `IReglaDeFila<T>` registrada por tipo
 
 | Módulo › Objeto | Acciones | Grupos con el permiso al sembrar |
 | :--- | :--- | :--- |
-| Ventas › Pedido | `leer`, `crear`, `editar`, `confirmar`, `cancelar` | AC (todo); Administrador (todo); Planner y Tráfico (`leer`) |
+| Ventas › Pedido | `leer`, `crear`, `editar`, `confirmar`, `cancelar` | AC (todo); Administrador (`leer`, `confirmar`, `cancelar`); Planner, Tráfico, Comercial y Cobranza (`leer`) |
 | Ventas › Pedido | `firmar_comercial`, `revocar` | Comercial; Administrador (`revocar`) |
 | Ventas › Pedido | `firmar_cobranza`, `revocar` | Cobranza |
+| Ventas › Agente de CONTPAQi | `leer` | Todos |
+| Plataforma › Usuarios | `ligar_agente` | Administrador |
 | Catálogos › Producto | `leer`, `clasificar` | Todos (`leer`); Administrador (`clasificar`) |
 | Catálogos › Ficha técnica | `leer`, `editar` | Todos (`leer`); AC y Administrador (`editar`) |
 | Catálogos › Cliente | `leer` | Todos |
@@ -98,7 +101,7 @@ La forma de `Favorito` de 07 §4.2: `user_id`, `list_key` (`ventas.pedidos`), `n
 
 ### `CatalogSyncState` · `plt.catalog_sync_state`
 
-Una fila por catálogo (`productos`, `clientes`, `almacenes`): `last_run_at`, `last_success_at`, `last_result` (`Exito` o `Error`), `records_read`, `records_changed`, `records_archived`, `duration_ms` y `last_error` (R-05, D-150). Solo la escribe la sincronización.
+Una fila por catálogo (`productos`, `clientes`, `agentes`, `almacenes`): `last_run_at`, `last_success_at`, `last_result` (`Exito` o `Error`), `records_read`, `records_changed`, `records_archived`, `duration_ms` y `last_error` (R-05, D-150). Solo la escribe la sincronización.
 
 ---
 
@@ -155,6 +158,10 @@ Una fila por catálogo (`productos`, `clientes`, `almacenes`): `last_run_at`, `l
 
 ## 4. Ventas (`ven`)
 
+### `ErpAgent` · `ven.erp_agent` (D-153)
+
+`erp_agent_id` (`CIDAGENTE`, único), `erp_code` (`CCODIGOAGENTE`), `name` (`CNOMBREAGENTE`) y `kind` (`Venta`, `VentaCobro`, `Cobro`, de `CTIPOAGENTE`). Se sincroniza y no se edita. Uno que ya no viene se archiva; los usuarios y pedidos que lo tienen lo conservan.
+
 ### `Customer` · `ven.customer`
 
 | Campo | Tipo | Regla |
@@ -181,7 +188,7 @@ Hereda `DocumentoConEstado<SalesOrderState>`.
 | `origin` | `Manual` | `Sync` existe en el modelo, pero no se construye (D-145) |
 | `customer_id` | FK | Activo al confirmar |
 | `customer_po` | `nvarchar(60)`, opcional | Orden de compra del cliente |
-| `agent` | `nvarchar(60)`, opcional | Texto libre en F1: el catálogo de agentes de CONTPAQi no está en el contrato |
+| `agent_id` | FK a `ven.erp_agent`, opcional | Propone el del usuario que captura; AC lo cambia por otro del catálogo (D-153) |
 | `order_date` | `date` | Fecha de negocio (D-123); por omisión, hoy |
 | `promise_date` | `date`, opcional | Fecha estimada de entrega (D-140) |
 | `delivery_address_id` | FK a `CustomerAddress` de tipo envío, opcional | Propone el único si hay uno; con varios, AC elige (D-149, D-150) |

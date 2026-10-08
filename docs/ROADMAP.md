@@ -2,7 +2,7 @@
 
 La construcción avanza **fase a fase** según el [plan de trabajo](plan/Tarea%20(project.task)%20-%20replaneacion(2).xlsx) (D-116), por **dos caminos en paralelo**, cada uno con su líder y sus agentes. Las reglas de cómo se construye están en la [constitución técnica](diseno/06-constitucion-tecnica.md). Aquí están las fases, las specs, qué entrega cada camino y el tablero de avance.
 
-**Actualizado:** 8 de octubre de 2026 (spec de F1 completa, por ratificar).
+**Actualizado:** 8 de octubre de 2026 (spec de F1 ratificada).
 
 ---
 
@@ -89,7 +89,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Réplica Angular (paralelo) | ✅ | `001-angular-presentation` · integrada en `docs/diseno/` y borrada | ✅ 7-oct · `db071b6` | n/a | n/a | — |
 | Contratos visuales (fase abierta) | ✅ | `011-contratos-visuales` · líder L2; P1 a P8 en un solo PR; integrada en `docs/diseno/` y borrada | ✅ 8-oct · `351b62c` | n/a | n/a | — |
 | F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · integrada en `docs/diseno/` y borrada | ✅ 6-oct · `d5eaf35` | ✅ 6-oct: contrato `1.0`, bridge simulado y bridge x86 en el VPS (evidencia `56da557`) | n/a: F0 no entrega comandos que escriban en CONTPAQi | — |
-| F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · spec completa el 8-oct, por ratificar con los dos líderes | ⬜ | ⬜ | ⬜ | ⬜ R1 |
+| F1 · Pedidos de venta | ✅ | `003-pedidos-de-venta` · spec, plan y tareas ratificados el 8-oct | ⬜ | ⬜ | ⬜ | ⬜ R1 |
 | F2 · Planeación de producción | ✅ | `004-planeacion-produccion` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R2 |
 | F3 · Almacén | ✅ | `005-almacen` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R3 |
 | F4 · Captura de producción | ✅ | `006-captura-produccion` · esqueleto | ⬜ | n/a | ⬜ | ⬜ R4 |
@@ -108,7 +108,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Fase | Preguntas abiertas ([preguntas-abiertas.md](diseno/preguntas-abiertas.md)) o decisiones por validar |
 | :--- | :--- |
 | F0 | ninguna |
-| F1 | T-06 (lectura de existencias, tarea 1.4): se puede especificar con la lectura directa de D-87 como supuesto. P-28 (contrato HTTP de la consulta de listas): se fija en el plan de la 003 con la lista de Pedidos. El contrato `1.1` (clasificación en productos; moneda y domicilios en clientes; `modified_since` obsoleto, D-150) lo aprueban los dos líderes con la spec. |
+| F1 | Ninguna. T-06 (frescura) ya no condiciona el diseño: las existencias tendrán espejo en PolyConecta (D-152), que se construye en F2; el cotejo se hace en la tarea 1.4. P-28 resuelta en el plan de la 003 (listas híbridas, D-151). Falta editar el contrato `1.1` aprobado (C-T002). |
 | F2 a F5, F7 | Contrato `bridge-v1` `1.0` firmado el 6-oct (D-132). T-17 (costo de la Entrada) se resuelve antes de F3 |
 | F6 | D-114 (cancelar el pedido remisionado) por validar con la operación |
 | F8 | T-06 (la conciliación depende de F-05) |

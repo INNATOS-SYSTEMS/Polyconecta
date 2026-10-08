@@ -4,7 +4,7 @@
 
 **Branch**: `003-pedidos-de-venta` | **Date**: 2026-10-08 | **Spec**: [spec.md](spec.md)
 
-**Status**: Plan completo. **La spec sigue por ratificar** con los dos líderes, incluida la propuesta de contrato `1.1`. Este plan se ajusta si la ratificación cambia algo.
+**Status**: Plan completo, ajustado con la ratificación del 8-oct (D-151 a D-153).
 
 ---
 
@@ -22,7 +22,7 @@ F1 entrega el primer documento de negocio sobre la API: el **pedido libre con do
 
 **Enfoque técnico:**
 - Identity solo para credenciales, con cookie y mismo origen. Grupos y permisos son del dominio, y un decorador de autorización corre antes de cada caso de uso (R-01, R-02).
-- Una ruta de consulta por lista que traduce `ConsultaLista` a `IQueryable`, con la vista de búsqueda declarada en el servidor. Resuelve P-28 (R-03).
+- Listas híbridas: hasta 5,000 filas, una sola consulta y todo lo demás en el navegador; arriba del umbral, cada consulta se resuelve en el servidor con la vista de búsqueda declarada allá. Resuelve P-28 (R-03, D-151).
 - El interceptor de auditoría de F0 también escribe el chatter de cada transición (R-04).
 - La sincronización es un caso de uso por catálogo, periódico y bajo demanda, que lee completo y escribe solo lo que cambió, con bloqueo de aplicación (R-05, D-150).
 - Las pantallas de Pedidos ya existen: solo cambian su origen de datos y sus acciones a la API (R-10).
@@ -56,7 +56,7 @@ Detalles y alternativas en [research.md](research.md).
 - Las pantallas existentes no cambian su estructura (07).
 - Límite de la carga inicial de la web: 89 kB (D-143).
 
-**Scale/Scope**: 7 tareas del plan (1.1 a 1.7), 5 historias, 32 requisitos, 4 lecturas del contrato, unas 20 entidades nuevas y 5 listas HTTP.
+**Scale/Scope**: 7 tareas del plan (1.1 a 1.7), 5 historias, 32 requisitos, 5 lecturas del contrato, unas 21 entidades nuevas y 5 listas HTTP.
 
 ### Constitution Check
 
@@ -90,7 +90,7 @@ El contrato vive en [docs/contratos/bridge-v1.md](../../../docs/contratos/bridge
 
 | Punto | Propuesta | Fuente |
 | :--- | :--- | :--- |
-| `1.1`, compatible | `clasificacion` en productos; `moneda` y `domicilios[]` en clientes, los tres opcionales | FR-003, research R-11 |
+| `1.1`, compatible, aprobado el 8-oct | `clasificacion` en productos; `moneda` y `domicilios[]` en clientes; `GET /catalogs/agents` y `agente` opcional en `ALTA_PEDIDO`; `modified_since` obsoleto | FR-003, research R-11, D-150, D-153 |
 | `SDK_TIMEOUT` | Ya existe; 1.1 lo usa al vencer el tiempo límite de una llamada | CT-40, R-07 |
 | Rutas de operación del simulador | `PUT /admin/simulated/catalog/…` para cambiar el catálogo semilla en caliente (fuera del contrato, §7) | R-05 |
 
