@@ -48,6 +48,9 @@ public class PolyDbContext : IdentityUserContext<CredencialUsuario, long>
     public DbSet<Domain.Ventas.ErpAgent> AgentesErp => Set<Domain.Ventas.ErpAgent>();
     public DbSet<Domain.Ventas.Customer> Clientes => Set<Domain.Ventas.Customer>();
 
+    // Pedido de venta (F1)
+    public DbSet<Domain.Ventas.SalesOrder> Pedidos => Set<Domain.Ventas.SalesOrder>();
+
     // Additional Entities
     public DbSet<PolyLocation> Locations => Set<PolyLocation>();
     public DbSet<LotGenealogy> LotGenealogies => Set<LotGenealogy>();
@@ -82,9 +85,14 @@ public class PolyDbContext : IdentityUserContext<CredencialUsuario, long>
             if (typeof(ArchivableEntity).IsAssignableFrom(entity.ClrType) && entity.BaseType is null)
                 entity.SetQueryFilter(SoloActivos(entity.ClrType));
 
-            // Lo referenciado se archiva, no se borra (04 §1): ninguna llave borra en cascada.
+            // Lo referenciado se archiva, no se borra (04 §1): ninguna llave borra en cascada, salvo la que
+            // une un detalle con su documento (líneas, firmas), que el propio documento quita.
             foreach (var fk in entity.GetForeignKeys().Where(fk => !fk.IsOwnership))
-                fk.DeleteBehavior = DeleteBehavior.Restrict;
+                fk.DeleteBehavior = typeof(IParteDeDocumento).IsAssignableFrom(fk.DeclaringEntityType.ClrType)
+                                    && fk.PrincipalEntityType.ClrType != typeof(Domain.Plataforma.Seguridad.User)
+                                    && fk.DependentToPrincipal is null && fk.PrincipalToDependent is not null
+                    ? DeleteBehavior.Cascade
+                    : DeleteBehavior.Restrict;
         }
     }
 
