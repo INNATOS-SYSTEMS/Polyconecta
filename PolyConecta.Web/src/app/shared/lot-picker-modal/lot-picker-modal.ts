@@ -21,6 +21,8 @@ export class LotPickerModal {
   readonly selectedFolios = model<string[]>([]);
   readonly requiredQty = input(0);
   readonly unidad = input('');
+  /** Lotes que existen pero Calidad no ha liberado: al capturarlos se explica el hard-stop en vez de "no encontrado". */
+  readonly noLiberados = input<readonly ProductionLot[]>([]);
   readonly closed = output<void>();
 
   protected readonly scanValue = signal('');
@@ -44,7 +46,10 @@ export class LotPickerModal {
     if (this.selectedFolios().some(f => f.toLowerCase() === lower)) {
       this.errorMsg.set(`El lote ${code} ya fue capturado.`);
     } else if (!this.availableLots().some(l => l.lote.toLowerCase() === lower)) {
-      this.errorMsg.set(`Lote ${code} no encontrado o no aprobado.`);
+      const bloqueado = this.noLiberados().find(l => l.lote.toLowerCase() === lower);
+      this.errorMsg.set(bloqueado
+        ? `Hard-stop de Calidad: el lote ${bloqueado.lote} está ${bloqueado.estado.toLowerCase()}; no se puede mover hasta que Calidad lo libere.`
+        : `Lote ${code} no encontrado o no aprobado.`);
     } else {
       this.selectedFolios.update(f => [...f, code]);
     }

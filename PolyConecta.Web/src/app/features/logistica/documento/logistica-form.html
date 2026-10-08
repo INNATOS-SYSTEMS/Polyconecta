@@ -15,7 +15,7 @@
                 <button class="btn btn-outline-secondary btn-sm px-3" (click)="cfg().comprobar(flow)">
                     <pc-odoo-icon nombre="buscar" /> Comprobar disponibilidad
                 </button>
-                <button class="btn btn-primary btn-sm fw-bold px-3" (click)="acciones.validar(tipo(), doc().folio)">Validar</button>
+                <button class="btn btn-primary btn-sm fw-bold px-3" (click)="validar()">Validar</button>
                 <button class="btn btn-outline-secondary btn-sm px-3" (click)="navegar(cfg().ruta)">Cancelar</button>
             }
             @if (cfg().imprimir) {
@@ -82,4 +82,5 @@
                      (selectedFoliosChange)="seleccionados($event)"
                      [requiredQty]="lotModalLine()?.demanda ?? 0"
                      [unidad]="lotModalLine()?.unidad ?? ''"
+                     [noLiberados]="noLiberados()"
                      (closed)="lotModalLine.set(null)" />

@@ -986,3 +986,5 @@ body {
 /* Diálogo que el componente pinta él mismo (selectores de lotes), con el fondo y el marco de pc-odoo-dialog. */
 .o_dialog_overlay { position: fixed; inset: 0; z-index: 1050; display: flex; align-items: center; justify-content: center; }
 .o_dialog_overlay .o_dialog { max-width: none; }
+/* Ícono al inicio de un aviso en la hoja (error, advertencia, backorder). */
+.alert pc-odoo-icon { margin-right: 0.4rem; }

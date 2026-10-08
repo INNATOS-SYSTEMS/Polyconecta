@@ -12,7 +12,7 @@ import { OdooBreadcrumb } from '../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { ChatterEntry, OdooChatterDrawer } from '../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
 import { OdooDate } from '../../shared/odoo-date/odoo-date';
 import { AvisosService } from '../../shared/odoo-dialog/avisos';
-import { abrirDialogo, OdooConfirmacion, OdooDialog } from '../../shared/odoo-dialog/odoo-dialog';
+import { abrirDialogo, OdooConfirmacion, OdooDialog, OdooHardStop } from '../../shared/odoo-dialog/odoo-dialog';
 import { ICONOS, OdooIcon } from '../../shared/odoo-icon/odoo-icon';
 import { LotPickerModal } from '../../shared/lot-picker-modal/lot-picker-modal';
 import { LotQuantityPickerModal } from '../../shared/lot-quantity-picker-modal/lot-quantity-picker-modal';
@@ -195,7 +195,7 @@ export class Catalogo {
   }
 
   async abrirHardStop(): Promise<void> {
-    const ref = abrirDialogo<boolean>(this.dialog, OdooConfirmacion, { titulo: 'Lote en cuarentena', mensaje: 'El lote R001-BOL-2026-0007 no está liberado por Calidad: no se puede mover (hard-stop).', confirmar: 'Entendido' });
+    const ref = abrirDialogo<void>(this.dialog, OdooHardStop, { titulo: 'Lote en cuarentena', mensaje: 'El lote R001-BOL-2026-0007 no está liberado por Calidad: no se puede mover (hard-stop).' });
     await firstValueFrom(ref.closed);
   }
 }

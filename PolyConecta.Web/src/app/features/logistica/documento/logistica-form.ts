@@ -1,5 +1,8 @@
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { Component, computed, inject, input, signal } from '@angular/core';
+import { Dialog } from '@angular/cdk/dialog';
+import { firstValueFrom } from 'rxjs';
+import { abrirDialogo, OdooHardStop } from '../../../shared/odoo-dialog/odoo-dialog';
 import { Router } from '@angular/router';
 import { fechaCorta, n1 } from '../../../core/format/numero';
 import { ShipmentLine } from '../../../core/models/logistica';
@@ -11,12 +14,13 @@ import { OdooSmartButtons } from '../../../shared/odoo-smart-buttons/odoo-smart-
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooTabs } from '../../../shared/odoo-tabs/odoo-tabs';
-import { LogisticaAcciones } from './logistica-acciones';
+import { LogisticaAcciones, ValidarRecepcion } from './logistica-acciones';
 import { CONFIG, TipoLogistica } from './tipos';
 
 /**
  * Réplica de Pages/TrasladoFormView, RecepcionFormView y EntregaFormView (.razor) sobre los componentes
- * de la spec 011 (P5). Validar usa la misma acción que el kanban.
+ * de la spec 011 (P5 a P7). Validar usa la misma acción que el kanban: en Listo, la recepción confirma
+ * lo que entra (D-56) y la entrega se bloquea si hay lotes no liberados por Calidad (hard-stop).
  */
 @Component({
   selector: 'pc-logistica-form',
@@ -28,6 +32,7 @@ export class LogisticaForm {
   protected readonly flow = inject(OperationalFlowState);
   private readonly router = inject(Router);
   protected readonly acciones = inject(LogisticaAcciones);
+  private readonly dialog = inject(Dialog);
 
   readonly tipo = input.required<TipoLogistica>();
   /** Folio con "/" (SC/OUT/31688), resuelto por folioMatcher. */
@@ -60,6 +65,29 @@ export class LogisticaForm {
     const doc = this.doc();
     return doc.libre ? this.flow.lotesDeDocumentoLibre(doc) : this.cfg().lotes(this.flow);
   });
+
+  /** Lotes de producción que Calidad no ha liberado: el selector explica el hard-stop si se capturan. */
+  protected readonly noLiberados = computed(() => {
+    this.flow.cambios();
+    return this.flow.manufacturingOrders.flatMap(o => o.produccion).filter(l => l.estado !== 'Aprobado');
+  });
+
+  protected async validar(): Promise<void> {
+    const doc = this.doc();
+    const tipo = this.tipo();
+    const bloqueados = doc.state === 'Listo' ? this.acciones.noLiberados(tipo, doc) : [];
+    if (bloqueados.length > 0) {
+      this.acciones.validar(tipo, doc.folio);
+      const ref = abrirDialogo<void>(this.dialog, OdooHardStop, { titulo: 'Lote sin liberar', mensaje: this.acciones.motivoHardStop(bloqueados) });
+      await firstValueFrom(ref.closed);
+      return;
+    }
+    if (tipo === 'recepcion' && this.acciones.pideConfirmarRecepcion(doc)) {
+      const ref = abrirDialogo<boolean>(this.dialog, ValidarRecepcion, { fila: { doc } });
+      if (!(await firstValueFrom(ref.closed))) return;
+    }
+    this.acciones.validar(tipo, doc.folio);
+  }
 
   protected navegar(ruta: string): void {
     void this.router.navigateByUrl(ruta);

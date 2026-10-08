@@ -119,7 +119,7 @@ En solo lectura el campo es texto sin línea. Todos funcionan con formularios de
 | Caso | Pieza | Regla |
 | :--- | :--- | :--- |
 | Confirmación | `pc-odoo-dialog` (o `OdooConfirmacion`) | Título, mensaje, primario y "Cancelar". Esc y clic fuera cancelan; el foco queda dentro |
-| Hard-stop (Calidad, existencia) | `pc-odoo-dialog` | Explica por qué no procede y qué hacer; no ofrece continuar |
+| Hard-stop (Calidad, existencia) | `OdooHardStop` (sobre `pc-odoo-dialog`) | Explica por qué no procede y qué hacer; un solo botón, "Entendido": no ofrece continuar |
 | Acción irreversible (fallar un lote) | `OdooConfirmacion` | Dice la consecuencia y nombra el botón con la acción ("Fallar lote"), no "Aceptar" |
 | Resultado de una acción | `AvisosService` | Éxito y aviso se cierran solos a los 4 s; el error se queda hasta cerrarlo |
 | Error en la hoja | Alerta en la hoja | Junto al campo o arriba de la hoja, en rojo |
@@ -175,7 +175,7 @@ En solo lectura el campo es texto sin línea. Todos funcionan con formularios de
 - **`lot-picker-modal`:** elige lotes completos.
 - **`lot-quantity-picker-modal`:** elige lote y cantidad; "Tomar" propone lo que falta o lo que tiene el lote, lo que sea menor.
 - Van en el marco de `pc-odoo-dialog`: atrapan el foco y cierran con Esc, con clic fuera o con "Cerrar". El folio del lote y la cantidad son campos de línea (`o_field`); cada lote capturado se quita con un botón de ícono.
-- Solo ofrecen lotes que pueden moverse: liberados por Calidad (hard-stop).
+- Solo ofrecen lotes que pueden moverse: liberados por Calidad (hard-stop). Si se captura un lote que existe pero Calidad no ha liberado, lo dicen con el motivo ("Hard-stop de Calidad: el lote … está en revisión"), no como "no encontrado".
 
 ### 2.4 Páginas vacías
 

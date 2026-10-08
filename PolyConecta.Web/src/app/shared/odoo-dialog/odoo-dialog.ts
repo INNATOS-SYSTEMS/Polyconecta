@@ -56,3 +56,21 @@ export class OdooConfirmacion {
   protected readonly datos = inject<{ titulo: string; mensaje: string; confirmar?: string }>(DIALOG_DATA);
 }
 
+
+/**
+ * Hard-stop (contratos visuales §1.7): explica por qué no procede y qué hacer, sin ofrecer continuar.
+ * Un solo botón, "Entendido".
+ */
+@Component({
+  selector: 'pc-odoo-hard-stop',
+  imports: [OdooDialog, OdooIcon],
+  template: `
+    <pc-odoo-dialog [titulo]="datos.titulo" [textoPrimario]="null" textoSecundario="Entendido" (cancelar)="ref.close()">
+      <p class="mb-0 d-flex gap-2 align-items-start" data-hard-stop><pc-odoo-icon nombre="hard-stop" class="text-danger" />{{ datos.mensaje }}</p>
+    </pc-odoo-dialog>
+  `,
+})
+export class OdooHardStop {
+  protected readonly ref = inject<DialogRef<void>>(DialogRef);
+  protected readonly datos = inject<{ titulo: string; mensaje: string }>(DIALOG_DATA);
+}
