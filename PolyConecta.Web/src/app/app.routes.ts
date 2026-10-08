@@ -6,6 +6,7 @@ import { PaginaNoEncontrada } from './shared/pagina-no-encontrada/pagina-no-enco
  * (D-155). El Inicio y la galería no son módulos y se quedan en `/` y `/catalogo`.
  */
 export const routes: Routes = [
+  { path: 'login', loadComponent: () => import('./features/plataforma/login/login').then(m => m.Login) },
   { path: '', pathMatch: 'full', loadComponent: () => import('./features/plataforma/dashboard/dashboard').then(m => m.Dashboard) },
   { path: 'catalogo', loadChildren: () => import('./features/catalogo/catalogo.routes').then(m => m.CATALOGO_ROUTES) },
   { path: 'ventas', loadChildren: () => import('./features/ventas/ventas.routes').then(m => m.VENTAS_ROUTES) },

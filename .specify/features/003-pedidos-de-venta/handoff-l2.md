@@ -81,6 +81,7 @@ Si dos documentos se contradicen: manda `docs/diseno/` y, dentro de él, la deci
 | L2-T007 | Migración `F1_Seguridad` y siembra al arrancar la API | `66d1573` |
 | L2-T008 | Autenticación con cookie y `SesionController` | `a841b9b` |
 | L2-T009 | Casos de uso y API de usuarios y grupos; ligar el usuario a su agente de CONTPAQi | `5038f90`, `dc2c635` |
+| L2-T010 | Sesión en la web: proxy de desarrollo, guardia, interceptor, diálogo de reanudación y Preferencias/Cerrar sesión | *este commit* |
 | L2-T013 | Catálogos de `inv` y `ven`, migración `F1_Catalogos` | `8c5939e` |
 | L2-T014 | Puerto `IBridgeLecturas` y `BridgeLecturasHttp` | `835a9b2` |
 | L2-T015 | Sincronización de catálogos, migración `F1_Sincronizacion` | `29a535a` |
@@ -99,7 +100,6 @@ Si dos documentos se contradicen: manda `docs/diseno/` y, dentro de él, la deci
 
 | Tarea | Qué es | Notas |
 | :--- | :--- | :--- |
-| L2-T010 | Sesión en la web: proxy de desarrollo, guardia, interceptor y diálogo de inicio de sesión que no pierde la captura | El `HttpClient` y la guardia van en las rutas perezosas, no en la raíz (peso, ver §7) |
 | L2-T011 | Contratos visuales nuevos: dos paneles en árbol (`pc-odoo-dual-list`) e inicio de sesión | Primero 07 y la galería, después las pantallas |
 | L2-T012 | Pantallas de inicio de sesión, usuarios y grupos | Bajo `/plataforma/...` (D-155) |
 | L2-T018 | Pantallas de productos (con ficha técnica), clientes y sincronización | `/inventario/productos`, `/ventas/clientes`, `/plataforma/sincronizacion` |

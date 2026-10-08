@@ -23,9 +23,9 @@ import { SesionState } from '../../core/state/sesion-state';
               [attr.aria-label]="'Usuario: ' + sesion.usuario().nombre" (click)="abierto.set(!abierto())" data-usuario></button>
       @if (abierto()) {
         <div class="o_header_dropdown_menu o_user_dropdown" role="menu">
-          <button type="button" role="menuitem" [disabled]="!sesion.conSesion()" title="Disponible con el inicio de sesión (F1)" data-usuario-opcion="preferencias">Preferencias</button>
+          <button type="button" role="menuitem" [disabled]="!sesion.conSesion()" [title]="sesion.conSesion() ? 'Preferencias del usuario' : 'Disponible con el inicio de sesión (F1)'" data-usuario-opcion="preferencias">Preferencias</button>
           <div class="o_user_dropdown_sep"></div>
-          <button type="button" role="menuitem" [disabled]="!sesion.conSesion()" title="Disponible con el inicio de sesión (F1)" data-usuario-opcion="salir">Cerrar sesión</button>
+          <button type="button" role="menuitem" [disabled]="!sesion.conSesion()" [title]="sesion.conSesion() ? 'Cerrar la sesión actual' : 'Disponible con el inicio de sesión (F1)'" (click)="cerrarSesion()" data-usuario-opcion="salir">Cerrar sesión</button>
         </div>
       }
     </div>
@@ -59,6 +59,13 @@ export class OdooSystray {
   @HostListener('document:click', ['$event'])
   protected clicFuera(e: MouseEvent): void {
     if (this.abierto() && !this.host.nativeElement.contains(e.target as Node)) this.abierto.set(false);
+  }
+
+  protected cerrarSesion(): void {
+    if (this.sesion.conSesion()) {
+      this.abierto.set(false);
+      this.sesion.cerrarSesion().subscribe();
+    }
   }
 
   @HostListener('document:keydown.escape')
