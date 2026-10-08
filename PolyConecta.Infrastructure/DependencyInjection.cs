@@ -44,6 +44,7 @@ public static class DependencyInjection
             })
             .AddEntityFrameworkStores<PolyDbContext>();
         services.AddScoped<IDataSeeder, SembradorSeguridad>();
+        services.AddScoped<PolyConecta.Application.Plataforma.Seguridad.ICredenciales, Credenciales>();
 
         // Bridge (D-122, CT-03): el despachador solo arranca si hay Erp__BridgeUrl.
         services.Configure<ErpOptions>(configuration.GetSection(ErpOptions.Seccion));

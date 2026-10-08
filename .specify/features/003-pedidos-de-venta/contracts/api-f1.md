@@ -50,7 +50,7 @@ Toda petición que escribe lleva `X-Requested-With: PolyConecta` (R-01) y propag
 | `PUT /api/v1/plataforma/grupos/{id}` | Cambia nombre, descripción y **la lista completa de claves de permiso** asignadas; `rowVersion` | ídem |
 | `POST /api/v1/plataforma/grupos/{id}/archivar` · `/restaurar` | Archivar exige que no tenga miembros activos | ídem |
 
-`asignaciones[]`: `{ grupo, planta, suplente }`. Los dos paneles mandan la lista final de permisos del grupo, no altas y bajas sueltas.
+`asignaciones[]`: `{ grupoId, plantaId, suplente }` (ids de `plt.group` y `plt.plant`); el detalle agrega el nombre del grupo y la clave de la planta. Los dos paneles mandan la lista final de permisos del grupo, no altas y bajas sueltas.
 
 ## Catálogos
 

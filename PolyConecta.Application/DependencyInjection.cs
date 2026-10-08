@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using PolyConecta.Application.Common;
 using PolyConecta.Application.Plataforma.Erp;
+using PolyConecta.Application.Plataforma.Seguridad;
 
 namespace PolyConecta.Application;
 
@@ -13,7 +14,26 @@ public static class DependencyInjection
     {
         services.AddUseCase<ResultadoBridge, EfectoCallback, ConfirmarSincronizacion>();
         services.AddUseCase<ReintentarSincronizacionRequest, Unit, ReintentarSincronizacion>();
+        AddSeguridad(services);
         return services;
+    }
+
+    private static void AddSeguridad(IServiceCollection services)
+    {
+        services.AddScoped<CatalogoDeSeguridad>();
+        services.AddScoped<DetalleDeGrupo>();
+        services.AddScoped<IValidator<CrearUsuario>, ValidarCrearUsuario>();
+        services.AddScoped<IValidator<EditarUsuario>, ValidarEditarUsuario>();
+        services.AddUseCase<ObtenerUsuario, UsuarioDetalle, ObtenerUsuarioCaso>();
+        services.AddUseCase<CrearUsuario, UsuarioDetalle, CrearUsuarioCaso>();
+        services.AddUseCase<EditarUsuario, UsuarioDetalle, EditarUsuarioCaso>();
+        services.AddUseCase<ArchivarUsuario, UsuarioDetalle, ArchivarUsuarioCaso>();
+        services.AddUseCase<RestablecerContrasena, Unit, RestablecerContrasenaCaso>();
+        services.AddUseCase<ObtenerGrupo, GrupoDetalle, ObtenerGrupoCaso>();
+        services.AddUseCase<ArbolDePermisos, IReadOnlyList<ModuloDePermiso>, ArbolDePermisosCaso>();
+        services.AddUseCase<CrearGrupo, GrupoDetalle, CrearGrupoCaso>();
+        services.AddUseCase<EditarGrupo, GrupoDetalle, EditarGrupoCaso>();
+        services.AddUseCase<ArchivarGrupo, GrupoDetalle, ArchivarGrupoCaso>();
     }
 
     /// <summary>
