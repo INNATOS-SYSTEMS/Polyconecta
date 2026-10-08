@@ -65,8 +65,12 @@ public static class DependencyInjection
             http.BaseAddress = new Uri(string.IsNullOrWhiteSpace(url) ? "http://localhost:9030" : url);
             http.Timeout = TimeSpan.FromSeconds(60);
         });
+        services.Configure<OpcionesSincronizacion>(configuration.GetSection(OpcionesSincronizacion.Seccion));
         if (!string.IsNullOrWhiteSpace(configuration[$"{ErpOptions.Seccion}:BridgeUrl"]))
+        {
             services.AddHostedService<BridgeDispatcher>();
+            services.AddHostedService<SincronizadorCatalogos>();
+        }
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<CorrelationContext>();
         services.AddScoped<ICorrelationContext>(sp => sp.GetRequiredService<CorrelationContext>());

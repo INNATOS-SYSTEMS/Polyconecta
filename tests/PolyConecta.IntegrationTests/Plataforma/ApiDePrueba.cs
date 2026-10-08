@@ -65,6 +65,8 @@ public sealed class ApiDePrueba(Entorno entorno, IDictionary<string, string?>? a
         builder.UseSetting("ConnectionStrings:PolyConecta", entorno.Conexion);
         builder.UseSetting("Erp:CallbackSecret", Secreto);
         builder.UseSetting("Seguridad:AdministradorInicial:Contrasena", ContrasenaAdmin);
+        // La sincronización periódica no corre en las pruebas: cada prueba la pide cuando la necesita.
+        builder.UseSetting("Erp:Sincronizacion:Habilitada", "false");
         foreach (var (clave, valor) in ajustes ?? new Dictionary<string, string?>())
             builder.UseSetting(clave, valor);
 
