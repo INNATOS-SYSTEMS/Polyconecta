@@ -41,6 +41,13 @@ public class PolyDbContext : IdentityUserContext<CredencialUsuario, long>
     public DbSet<Group> Groups => Set<Group>();
     public DbSet<Permission> Permissions => Set<Permission>();
 
+    // Catálogos sincronizados de CONTPAQi (F1, R-08)
+    public DbSet<Domain.Inventario.Product> Productos => Set<Domain.Inventario.Product>();
+    public DbSet<Domain.Inventario.ProductClassification> Clasificaciones => Set<Domain.Inventario.ProductClassification>();
+    public DbSet<Domain.Inventario.ErpWarehouse> AlmacenesErp => Set<Domain.Inventario.ErpWarehouse>();
+    public DbSet<Domain.Ventas.ErpAgent> AgentesErp => Set<Domain.Ventas.ErpAgent>();
+    public DbSet<Domain.Ventas.Customer> Clientes => Set<Domain.Ventas.Customer>();
+
     // Additional Entities
     public DbSet<PolyLocation> Locations => Set<PolyLocation>();
     public DbSet<LotGenealogy> LotGenealogies => Set<LotGenealogy>();
