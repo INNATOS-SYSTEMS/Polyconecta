@@ -32,6 +32,19 @@ namespace Contpaq.Bridge.Tests.Contract
         }
 
         [Fact]
+        public void El_agente_es_opcional_pero_no_puede_venir_vacio()
+        {
+            var r = Entorno.Comando("alta-pedido.valido.json");
+            LectorComandos.Leer(r).Error.Should().BeNull("agente es opcional");
+
+            var conAgente = Entorno.Comando("alta-pedido.valido.con-agente.json");
+            ((CargaAltaPedido)LectorComandos.Leer(conAgente).Comando!.Carga).Agente.Should().Be("AG-01");
+
+            conAgente.Payload = JsonDocument.Parse(conAgente.Payload.GetRawText().Replace("\"AG-01\"", "\" \"")).RootElement;
+            LectorComandos.Leer(conAgente).Error!.Detail["campo"].Should().Be("agente");
+        }
+
+        [Fact]
         public void Una_version_mayor_distinta_se_rechaza()
         {
             var r = Entorno.Comando("traspaso.valido.json");
