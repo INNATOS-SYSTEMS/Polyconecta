@@ -1,50 +1,43 @@
 @if (show()) {
-  <div class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.35); z-index: 1050;" (click)="closed.emit()">
-    <div class="bg-white rounded shadow-lg p-4" style="width: 480px;" (click)="$event.stopPropagation()">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold mb-0">Selección de Lotes</h5>
-        <button class="btn btn-sm btn-light" (click)="closed.emit()"><i class="bi bi-x-lg"></i></button>
-      </div>
+  <div class="o_dialog_overlay o_dialog_backdrop" (click)="closed.emit()" (keydown.escape)="closed.emit()">
+    <div cdkTrapFocus [cdkTrapFocusAutoCapture]="true" style="width: 480px;" (click)="$event.stopPropagation()">
+      <pc-odoo-dialog titulo="Selección de lotes" [textoPrimario]="null" textoSecundario="Cerrar" (cancelar)="closed.emit()">
+        <div class="d-flex justify-content-between align-items-center mb-3 small">
+          <span class="text-muted">Requerido: <span class="fw-semibold text-dark">{{ n1(requiredQty()) }} {{ unidad() }}</span></span>
+          <span class="text-muted">Seleccionado: <span class="fw-semibold" [class.text-success]="selectedWeight() >= requiredQty()" [class.text-dark]="selectedWeight() < requiredQty()">{{ n1(selectedWeight()) }} {{ unidad() }}</span></span>
+          @if (selectedWeight() >= requiredQty() && requiredQty() > 0) {
+            <span class="badge bg-success">Completo</span>
+          } @else if (selectedFolios().length > 0) {
+            <span class="badge bg-warning text-dark">Parcial</span>
+          }
+        </div>
 
-      <div class="d-flex justify-content-between align-items-center mb-3 small">
-        <span class="text-muted">Requerido: <span class="fw-semibold text-dark">{{ n1(requiredQty()) }} {{ unidad() }}</span></span>
-        <span class="text-muted">Seleccionado: <span class="fw-semibold" [class.text-success]="selectedWeight() >= requiredQty()" [class.text-dark]="selectedWeight() < requiredQty()">{{ n1(selectedWeight()) }} {{ unidad() }}</span></span>
-        @if (selectedWeight() >= requiredQty() && requiredQty() > 0) {
-          <span class="badge bg-success">Completo</span>
-        } @else if (selectedFolios().length > 0) {
-          <span class="badge bg-warning text-dark">Parcial</span>
+        <div class="o_field mb-2">
+          <pc-odoo-icon nombre="escanear" class="o_field_extra" />
+          <input placeholder="Escanear o capturar folio de lote..." [value]="scanValue()" (input)="scanValue.set($any($event.target).value)" (keydown.enter)="onEnter()" />
+        </div>
+        @if (errorMsg()) {
+          <div class="text-danger small mb-2"><pc-odoo-icon nombre="aviso" />{{ errorMsg() }}</div>
         }
-      </div>
 
-      <div class="input-group input-group-sm mb-2">
-        <span class="input-group-text bg-light"><i class="bi bi-upc-scan"></i></span>
-        <input class="form-control" placeholder="Escanear o capturar folio de lote..." [value]="scanValue()" (input)="scanValue.set($any($event.target).value)" (keydown.enter)="onEnter()" autofocus />
-      </div>
-      @if (errorMsg()) {
-        <div class="text-danger small mb-2"><i class="bi bi-exclamation-circle me-1"></i>{{ errorMsg() }}</div>
-      }
-
-      <div class="border rounded" style="max-height: 260px; overflow-y: auto;">
-        @if (selectedFolios().length === 0) {
-          <div class="text-muted small fst-italic p-3 text-center">Sin lotes capturados todavía.</div>
-        } @else {
-          <table class="table table-sm align-middle mb-0">
-            <tbody>
-              @for (folio of selectedFolios(); track folio) {
-                <tr>
-                  <td><code>{{ folio }}</code></td>
-                  <td class="text-end small">{{ lotDe(folio) ? n1(lotDe(folio)!.real) + ' ' + lotDe(folio)!.unidad : '' }}</td>
-                  <td style="width:30px;"><button class="btn btn-sm btn-link text-danger p-0" (click)="remove(folio)"><i class="bi bi-x-circle-fill"></i></button></td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        }
-      </div>
-
-      <div class="d-flex justify-content-end mt-3">
-        <button class="btn btn-primary btn-sm px-3" (click)="closed.emit()">Cerrar</button>
-      </div>
+        <div class="border rounded" style="max-height: 260px; overflow-y: auto;">
+          @if (selectedFolios().length === 0) {
+            <div class="text-muted small fst-italic p-3 text-center">Sin lotes capturados todavía.</div>
+          } @else {
+            <table class="table table-sm align-middle mb-0">
+              <tbody>
+                @for (folio of selectedFolios(); track folio) {
+                  <tr>
+                    <td><code>{{ folio }}</code></td>
+                    <td class="text-end small">{{ lotDe(folio) ? n1(lotDe(folio)!.real) + ' ' + lotDe(folio)!.unidad : '' }}</td>
+                    <td style="width:40px;"><button type="button" class="btn o_btn_icon" aria-label="Quitar lote" (click)="remove(folio)"><pc-odoo-icon nombre="quitar-linea" contexto="icono" /></button></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </pc-odoo-dialog>
     </div>
   </div>
 }

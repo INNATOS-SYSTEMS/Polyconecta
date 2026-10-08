@@ -119,8 +119,8 @@
 
 ## Phase 6: US4 · Recolección (P3)
 
-- [ ] L2-T042 [US4] Confirmar las transiciones de la recolección contra `StockOperationState` (`validar`, `cancelar`, el backorder) y escribirlas en `src/app/features/logistica/recoleccion-kanban.ts`. El diálogo de "Validar" con cantidades parciales usa `pc-odoo-dialog`.
-- [ ] L2-T043 [US4] Migrar `features/logistica/recolecciones/` (lista, kanban nuevo y formulario) y rehacer `recoleccion-nueva/` con la estructura completa (D-136). La selección de lotes usa `lot-picker-modal` y `lot-quantity-picker-modal` sobre `pc-odoo-dialog` y `pc-odoo-list`.
+- [x] L2-T042 [US4] Confirmar las transiciones de la recolección contra `StockOperationState` (`validar`, `cancelar`, el backorder) y escribirlas en `src/app/features/logistica/recoleccion-kanban.ts`. El diálogo de "Validar" con cantidades parciales usa `pc-odoo-dialog`.
+- [x] L2-T043 [US4] Migrar `features/logistica/recolecciones/` (lista, kanban nuevo y formulario) y rehacer `recoleccion-nueva/` con la estructura completa (D-136). La selección de lotes usa `lot-picker-modal` y `lot-quantity-picker-modal` sobre `pc-odoo-dialog` y `pc-odoo-list`.
 - [ ] L2-T044 [US4] Quickstart §2 para Recolección, incluidos los guiones de recolección parcial con backorder y de lote inexistente, y el PR de P3.
 
 ---

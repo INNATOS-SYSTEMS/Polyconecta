@@ -1,50 +1,56 @@
-import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { aplicar } from '../../../core/search/search-view';
+import { fechaCampo } from '../../../core/format/numero';
 import { OPERACIONES } from '../../../core/search/views';
-import { OperationalFlowState } from '../../../core/state/operational-flow-state';
-import { StockOperationState } from '../../../core/state/stock-operation-state';
+import { UiViewState } from '../../../core/state/ui-view-state';
+import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
+import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
+import { OdooKanban } from '../../../shared/odoo-kanban/odoo-kanban';
+import { ColumnaLista } from '../../../shared/odoo-list/columnas';
+import { OdooList } from '../../../shared/odoo-list/odoo-list';
 import { OdooPager } from '../../../shared/odoo-pager/odoo-pager';
 import { OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-panel';
+import { OdooViewSwitcher } from '../../../shared/odoo-view-switcher/odoo-view-switcher';
+import { ETAPAS_RECOLECCION, FilaRecoleccion, RecoleccionAcciones } from '../recoleccion-acciones';
 
-/** Réplica de Pages/RecoleccionesList.razor. */
+/**
+ * Réplica de Pages/RecoleccionesList.razor sobre los componentes de la spec 011 (P3): lista y kanban
+ * desde un origen de datos; el kanban valida al arrastrar a Hecho.
+ */
 @Component({
   selector: 'pc-recolecciones-list',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooPager],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooList, OdooKanban, OdooIcon, OdooPager],
   templateUrl: './recolecciones-list.html',
   styles: ':host { display: contents; }',
 })
 export class RecoleccionesList {
-  private readonly ops = inject(StockOperationState);
-  protected readonly router = inject(Router);
+  private readonly router = inject(Router);
+  private readonly acciones = inject(RecoleccionAcciones);
+  protected readonly viewState = inject(UiViewState);
   protected readonly vista = OPERACIONES;
+  protected readonly lista = viewChild(OdooList<FilaRecoleccion>);
+  private readonly celdaFolio = viewChild.required<TemplateRef<{ $implicit: FilaRecoleccion }>>('celdaFolio');
+
+  protected readonly origen = this.acciones.origen();
+  protected readonly transiciones = this.acciones.transiciones();
+  protected readonly fechaCampo = fechaCampo;
+  protected readonly etapas = ETAPAS_RECOLECCION.map(e => ({ valor: e, titulo: e }));
+  protected readonly idRecoleccion = (f: FilaRecoleccion) => f.id;
+  protected readonly etapaRecoleccion = (f: FilaRecoleccion) => f.estado;
+  protected readonly columnas = computed<ColumnaLista<FilaRecoleccion>[]>(() => [
+    { campo: 'folio', titulo: 'Folio', clase: 'fw-semibold text-primary', celda: this.celdaFolio() },
+    { campo: 'operacion', titulo: 'Operación' },
+    { campo: 'origen', titulo: 'Origen' },
+    { campo: 'destino', titulo: 'Destino' },
+    { campo: 'estado', titulo: 'Estado', tipo: 'estado' },
+  ]);
 
   protected readonly searchText = signal('');
   protected readonly filtros = signal<string[]>([]);
-  protected readonly seleccionadas = signal(new Set<string>());
+  protected readonly agrupaciones = signal<string[]>([]);
 
-  constructor() {
-    // Las recolecciones nacen con las Órdenes de Fabricación: inyectar el flujo garantiza que existan.
-    inject(OperationalFlowState);
-  }
-
-  protected readonly filtradas = computed(() => {
-    this.ops.cambios();
-    return aplicar(this.vista, this.ops.operaciones, this.searchText(), this.filtros());
-  });
-
-  protected toggle(folio: string): void {
-    this.seleccionadas.update(s => {
-      const n = new Set(s);
-      if (!n.delete(folio)) n.add(folio);
-      return n;
-    });
-  }
-
-  protected toggleAll(event: Event): void {
-    const check = (event.target as HTMLInputElement).checked;
-    this.seleccionadas.set(new Set(check ? this.filtradas().map(o => o.folio) : []));
+  protected abrir(f: FilaRecoleccion): void {
+    void this.router.navigateByUrl(`/recolecciones/${f.folio}`);
   }
 }

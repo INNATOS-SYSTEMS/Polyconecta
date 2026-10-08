@@ -135,7 +135,7 @@ export class OdooKanban<T> {
     const tr = this.transiciones().find(t => t.desde === desde && t.hacia === hacia);
     if (!tr) return motivoSinTransicion(desde, hacia);
     let datos: unknown;
-    if (tr.dialogo) {
+    if (tr.dialogo && (tr.pideDialogo?.(fila) ?? true)) {
       const ref = abrirDialogo<unknown>(this.dialog, tr.dialogo, { fila, transicion: tr.nombre });
       datos = await firstValueFrom(ref.closed);
       if (datos === undefined || datos === false) return `${tr.nombre}: cancelado`;

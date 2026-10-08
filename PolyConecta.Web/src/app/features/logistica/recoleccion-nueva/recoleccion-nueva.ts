@@ -5,19 +5,24 @@ import { InventoryState } from '../../../core/state/inventory-state';
 import { LineaLibre, crearLineaLibre } from '../../../core/state/libre/linea-libre';
 import { OperacionesLibres, PLANTAS, Planta } from '../../../core/state/libre/operaciones-libres';
 import { HojaNueva } from '../../../shared/hoja-nueva/hoja-nueva';
+import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
+import { OdooTabs, PcPestana } from '../../../shared/odoo-tabs/odoo-tabs';
+import { ETAPAS_RECOLECCION } from '../recoleccion-acciones';
 import { LineDraft, OdooLineCapture, emptyDraft } from '../../../shared/odoo-line-capture/odoo-line-capture';
 
 type Tipo = 'recoleccion' | 'devolucion';
 
 /**
- * "Nueva" recolección o devolución (FR-012): planta y líneas con cantidad y la unidad del producto.
+ * "Nueva" recolección o devolución (FR-012) con la estructura completa del documento (D-136, spec 011
+ * P3): planta y líneas con cantidad y la unidad del producto, que se guardan con el maestro; el chatter
+ * se activa al guardar. Los lotes los declara Almacén después, en el formulario.
  * Sin OF: la recolección deja el saldo en WIP sin asignar (D-55) y la devolución regresa ese saldo.
  */
 @Component({
   selector: 'pc-recoleccion-nueva',
-  imports: [HojaNueva, OdooLineCapture],
+  imports: [HojaNueva, OdooLineCapture, OdooTabs, PcPestana, OdooIcon],
   template: `
-    <pc-hoja-nueva lista="Recolecciones" ruta="/recolecciones" [titulo]="tipo() === 'recoleccion' ? 'Recolección' : 'Devolución de recolección'" [stages]="stages" [error]="error()" (guardar)="guardar()" (descartar)="router.navigateByUrl('/recolecciones')">
+    <pc-hoja-nueva lista="Recolecciones" ruta="/recolecciones" [titulo]="tipo() === 'recoleccion' ? 'Recolección' : 'Devolución de recolección'" [stages]="stages" [error]="error()" [conChatter]="true" (guardar)="guardar()" (descartar)="router.navigateByUrl('/recolecciones')">
       <div class="row g-4 mb-3">
         <div class="col-md-6">
           <div class="o_form_label_row">
@@ -40,12 +45,11 @@ type Tipo = 'recoleccion' | 'devolucion';
           <div class="o_form_label_row"><span class="o_form_label">Orden</span><span class="o_form_value text-muted">— (saldo sin asignar)</span></div>
         </div>
       </div>
-      <ul class="nav nav-tabs mb-3" role="tablist">
-        <li class="nav-item"><button class="nav-link active">Operaciones</button></li>
-      </ul>
+      <pc-odoo-tabs [pestanas]="pestanas">
+        <ng-template pcPestana="operaciones">
       <pc-odoo-line-capture [(draft)]="draft" [catalogo]="inv.catalogo" [unidadFija]="true" (submitted)="agregar($event)" />
       <table class="table table-sm align-middle mb-0">
-        <thead class="text-muted small"><tr><th>Clave</th><th>Producto</th><th class="text-end">Cantidad</th><th style="width:70px;">Unidad</th><th class="text-center" style="width:60px;"></th></tr></thead>
+        <thead><tr><th>Clave</th><th>Producto</th><th class="text-end">Cantidad</th><th style="width:70px;">Unidad</th><th class="text-center" style="width:60px;"></th></tr></thead>
         <tbody>
           @if (lineas().length === 0) {
             <tr><td colspan="5" class="text-muted small fst-italic">Sin líneas todavía.</td></tr>
@@ -56,11 +60,13 @@ type Tipo = 'recoleccion' | 'devolucion';
               <td>{{ l.producto }}</td>
               <td class="text-end">{{ n1(l.cantidad) }}</td>
               <td class="small">{{ l.unidad }}</td>
-              <td class="text-center"><button class="btn btn-sm btn-link text-danger p-0" title="Eliminar" (click)="quitar($index)"><i class="bi bi-x-circle-fill"></i></button></td>
+              <td class="text-center"><button type="button" class="btn o_btn_icon" aria-label="Quitar línea" title="Quitar línea" (click)="quitar($index)"><pc-odoo-icon nombre="quitar-linea" contexto="icono" /></button></td>
             </tr>
           }
         </tbody>
       </table>
+        </ng-template>
+      </pc-odoo-tabs>
     </pc-hoja-nueva>
   `,
   styles: ':host { display: contents; }',
@@ -70,7 +76,8 @@ export class RecoleccionNueva {
   protected readonly inv = inject(InventoryState);
   protected readonly router = inject(Router);
   protected readonly n1 = n1;
-  protected readonly stages = ['Borrador', 'En espera', 'Listo', 'Hecho'];
+  protected readonly stages = ETAPAS_RECOLECCION;
+  protected readonly pestanas = [{ id: 'operaciones', titulo: 'Operaciones' }];
   protected readonly plantas = PLANTAS;
   protected readonly tipo = signal<Tipo>('recoleccion');
   protected readonly planta = signal<Planta>('PIM');

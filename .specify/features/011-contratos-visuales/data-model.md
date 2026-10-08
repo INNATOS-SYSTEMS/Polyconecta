@@ -107,6 +107,7 @@ interface AlmacenDeFavoritos {
 | `desde`, `hacia` | `string` | Estados |
 | `nombre` | `string` | Nombre de la transición, el mismo del botón del formulario |
 | `dialogo` | componente o `null` | Si la transición pide datos, el diálogo que los captura |
+| `pideDialogo` | `(fila) => boolean`, opcional | Si se declara, el diálogo solo se abre cuando devuelve `true`. Recolección: validar pide el diálogo de cantidades solo si es parcial (P3) |
 | `ejecutar` | `(folio, datos?) => string \| undefined` | Llama al **mismo** método del servicio de estado que el botón. Devuelve el motivo si no procede |
 
 Un movimiento sin transición declarada regresa la tarjeta con el motivo "No se puede pasar de X a Y".
@@ -120,7 +121,7 @@ Salen de los estados que ya existen en `core/models` y `core/state`. La tabla de
 | Pedidos | Borrador, Confirmado, Autorizado, En progreso, Hecho | Borrador → Confirmado (Confirmar); Confirmado → Autorizado (Autorizar, con diálogo de firma) | P1 |
 | Fabricación | Borrador, Planeado, En progreso, Hecho | Borrador → Planeado (Confirmar: requiere componentes y libera la recolección); En progreso → Hecho (Cerrar producción: hard-stop de Calidad y saldo de WIP en cero). Planeado → En progreso la avanza el sistema al planear | P2 |
 | Incidencias | Por centro de trabajo | Ninguna: no tienen estado | P2 |
-| Recolecciones | Borrador, En espera, Listo, Hecho | Listo → Hecho (Validar, con diálogo de cantidades si es parcial) | P3 |
+| Recolecciones | Borrador, En espera, Listo, Hecho | Listo → Hecho (Validar, con diálogo de cantidades si es parcial, el mismo que abre el botón del formulario). Borrador → En espera lo avanza el sistema al confirmar la OF, y En espera → Listo, al declarar lotes | P3 |
 | Calidad | En revisión, Aprobado, Rechazado (por lote) | En revisión → Aprobado o Rechazado (con diálogo del resultado) | P4 |
 | Traslados | Borrador, En espera de operación, En espera, Listo, Hecho | Listo → Hecho (Validar) | P5 |
 | Recepción | Borrador, En espera, Listo, Hecho | Listo → Hecho (Validar) | P6 |

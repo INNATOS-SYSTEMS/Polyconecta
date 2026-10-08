@@ -18,9 +18,9 @@ describe('LotQuantityPickerModal', () => {
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
 
-    (el.querySelector('button.btn-link.p-0.text-decoration-none') as HTMLButtonElement).click();
+    (el.querySelector('button.o_btn_link') as HTMLButtonElement).click();
     fixture.detectChanges();
-    (el.querySelector('button.btn-outline-primary') as HTMLButtonElement).click();
+    (el.querySelector('[data-lote-agregar]') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(agregados).toEqual([{ lote: 'L-1', cantidad: 300 }]);
 
@@ -29,7 +29,7 @@ describe('LotQuantityPickerModal', () => {
     folio.dispatchEvent(new Event('input'));
     cantidad.value = '400';
     cantidad.dispatchEvent(new Event('change'));
-    (el.querySelector('button.btn-outline-primary') as HTMLButtonElement).click();
+    (el.querySelector('[data-lote-agregar]') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(el.textContent).toContain('El lote L-1 solo tiene 300.0.');
   });

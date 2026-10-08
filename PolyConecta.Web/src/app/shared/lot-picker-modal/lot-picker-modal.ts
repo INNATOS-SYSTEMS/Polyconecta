@@ -1,10 +1,17 @@
 import { Component, computed, input, model, output, signal } from '@angular/core';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { n1 } from '../../core/format/numero';
+import { OdooDialog } from '../odoo-dialog/odoo-dialog';
+import { OdooIcon } from '../odoo-icon/odoo-icon';
 import { ProductionLot } from '../../core/models/produccion';
 
-/** Réplica de Components/Forms/LotPickerModal.razor: lotes completos (producto terminado). */
+/**
+ * Réplica de Components/Forms/LotPickerModal.razor: lotes completos (producto terminado). Va en el marco de
+ * `pc-odoo-dialog` (spec 011, P3): atrapa el foco y cierra con Esc o clic fuera.
+ */
 @Component({
   selector: 'pc-lot-picker-modal',
+  imports: [OdooDialog, OdooIcon, CdkTrapFocus],
   templateUrl: './lot-picker-modal.html',
   styles: ':host { display: contents; }',
 })

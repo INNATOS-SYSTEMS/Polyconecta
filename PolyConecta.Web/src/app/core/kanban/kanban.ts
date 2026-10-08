@@ -19,6 +19,8 @@ export interface TransicionKanban<T> {
   nombre: string;
   /** Diálogo que captura los datos que pide la transición; la tarjeta se mueve solo si se confirma. */
   dialogo?: Type<unknown> | null;
+  /** Si se declara, el diálogo solo se abre cuando devuelve `true` (por ejemplo, validar solo pide confirmación si es parcial). */
+  pideDialogo?(fila: T): boolean;
   ejecutar(fila: T, datos?: unknown): string | undefined;
 }
 

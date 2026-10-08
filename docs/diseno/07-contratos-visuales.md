@@ -55,7 +55,7 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 | :--- | :--- |
 | Mover con transición | Soltar una tarjeta en otra etapa ejecuta la transición con nombre, el mismo método que el botón del formulario |
 | Rechazar | Sin transición declarada, o si no procede, la tarjeta regresa y la columna muestra el motivo |
-| Pedir datos | Si la transición pide datos (firma, resultado de calidad), abre su diálogo; la tarjeta se mueve solo si se confirma |
+| Pedir datos | Si la transición pide datos (firma, resultado de calidad), abre su diálogo; la tarjeta se mueve solo si se confirma. El diálogo puede ser condicional: validar una recolección solo lo abre si es parcial |
 | Filtrar | Usa la misma búsqueda y los mismos filtros que la lista |
 
 **Reglas**:
@@ -171,7 +171,8 @@ En solo lectura el campo es texto sin línea. Todos funcionan con formularios de
 ### 2.3 Selección de lotes
 
 - **`lot-picker-modal`:** elige lotes completos.
-- **`lot-quantity-picker-modal`:** elige lote y cantidad.
+- **`lot-quantity-picker-modal`:** elige lote y cantidad; "Tomar" propone lo que falta o lo que tiene el lote, lo que sea menor.
+- Van en el marco de `pc-odoo-dialog`: atrapan el foco y cierran con Esc, con clic fuera o con "Cerrar". El folio del lote y la cantidad son campos de línea (`o_field`); cada lote capturado se quita con un botón de ícono.
 - Solo ofrecen lotes que pueden moverse: liberados por Calidad (hard-stop).
 
 ### 2.4 Páginas vacías
