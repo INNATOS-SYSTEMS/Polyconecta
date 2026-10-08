@@ -16,11 +16,26 @@ public static class DependencyInjection
         services.AddUseCase<ReintentarSincronizacionRequest, Unit, ReintentarSincronizacion>();
         AddSeguridad(services);
         AddCatalogos(services);
+        AddPedidos(services);
         services.AddScoped<Plataforma.Sincronizacion.Sincronizador>();
         services.AddUseCase<Plataforma.Sincronizacion.SincronizarCatalogo, Plataforma.Sincronizacion.EstadoCatalogo, Plataforma.Sincronizacion.SincronizarCatalogoCaso>();
         services.AddUseCase<Plataforma.Sincronizacion.SincronizarTodo, IReadOnlyList<Plataforma.Sincronizacion.EstadoCatalogo>, Plataforma.Sincronizacion.SincronizarTodoCaso>();
         services.AddUseCase<Plataforma.Sincronizacion.EstadoDeSincronizacion, IReadOnlyList<Plataforma.Sincronizacion.EstadoCatalogo>, Plataforma.Sincronizacion.EstadoDeSincronizacionCaso>();
         return services;
+    }
+
+    private static void AddPedidos(IServiceCollection services)
+    {
+        services.AddScoped<Ventas.ServicioDePedidos>();
+        services.AddScoped<IValidator<Ventas.CrearPedido>, Ventas.ValidarDatosPedido>();
+        services.AddScoped<IValidator<Ventas.EditarPedido>, Ventas.ValidarDatosPedido>();
+        services.AddUseCase<Ventas.ObtenerPedido, Ventas.PedidoDetalle, Ventas.ObtenerPedidoCaso>();
+        services.AddUseCase<Ventas.CrearPedido, Ventas.PedidoDetalle, Ventas.CrearPedidoCaso>();
+        services.AddUseCase<Ventas.EditarPedido, Ventas.PedidoDetalle, Ventas.EditarPedidoCaso>();
+        services.AddUseCase<Ventas.ConfirmarPedido, Ventas.PedidoDetalle, Ventas.ConfirmarPedidoCaso>();
+        services.AddUseCase<Ventas.AutorizarPedido, Ventas.PedidoDetalle, Ventas.AutorizarPedidoCaso>();
+        services.AddUseCase<Ventas.RevocarAutorizacion, Ventas.PedidoDetalle, Ventas.RevocarAutorizacionCaso>();
+        services.AddUseCase<Ventas.CancelarPedido, Ventas.PedidoDetalle, Ventas.CancelarPedidoCaso>();
     }
 
     private static void AddCatalogos(IServiceCollection services)

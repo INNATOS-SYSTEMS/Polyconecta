@@ -82,3 +82,21 @@ public sealed class IncluirCliente : IIncluirEnAlmacen<Customer>
 {
     public IQueryable<Customer> Incluir(IQueryable<Customer> consulta) => consulta.Include(c => c.Addresses);
 }
+
+/// <summary>El pedido se carga con su cliente y domicilios, sus líneas con producto y unidad, y sus firmas.</summary>
+public sealed class IncluirPedido : IIncluirEnAlmacen<SalesOrder>
+{
+    public IQueryable<SalesOrder> Incluir(IQueryable<SalesOrder> consulta) =>
+        consulta.Include(p => p.Customer).ThenInclude(c => c.Addresses)
+            .Include(p => p.Lines).ThenInclude(l => l.Product).ThenInclude(p => p.PackagingUnits)
+            .Include(p => p.Signatures)
+            .AsSplitQuery();
+}
+
+/// <summary>Monedas del pedido desde la sección Erp (D-146).</summary>
+public sealed class ConfiguracionDeMonedas(Microsoft.Extensions.Options.IOptions<Erp.ErpOptions> opciones) : Application.Ventas.IConfiguracionDeMonedas
+{
+    public ReglasDeMoneda Monedas { get; } = new(
+        opciones.Value.MonedaBase.ToUpperInvariant(),
+        opciones.Value.Monedas.Select(m => m.ToUpperInvariant()).Append(opciones.Value.MonedaBase.ToUpperInvariant()).Distinct().ToList());
+}

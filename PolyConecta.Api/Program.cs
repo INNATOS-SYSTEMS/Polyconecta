@@ -11,6 +11,8 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        // Los enums viajan por su nombre ("Comercial", "Borrador"), como los pinta la web.
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     })
     // Un cuerpo que no se puede leer responde como cualquier 400 de la API: code VALIDACION y errores[].
     .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = contexto =>

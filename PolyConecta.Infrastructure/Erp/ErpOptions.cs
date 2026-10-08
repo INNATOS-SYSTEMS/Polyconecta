@@ -28,6 +28,12 @@ public sealed class ErpOptions
 
     public int IntervaloMs { get; set; } = 1000;
 
+    /// <summary>Moneda base: su tipo de cambio es 1 y no se edita (D-146, R-09).</summary>
+    public string MonedaBase { get; set; } = "MXN";
+
+    /// <summary>Monedas que el bridge sabe traducir (BridgeConfig__Monedas__{ISO}); un pedido no acepta otra.</summary>
+    public List<string> Monedas { get; set; } = ["MXN", "USD"];
+
     public const string RutaCallback = "/api/v1/plataforma/bridge/callbacks";
 
     public bool Habilitado(string commandType) => ComandosHabilitados.Count == 0 || ComandosHabilitados.Contains(commandType);

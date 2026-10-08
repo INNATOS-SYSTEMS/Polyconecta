@@ -36,6 +36,7 @@ public class ProblemDetailsMiddleware(RequestDelegate next, ILogger<ProblemDetai
     public static (HttpStatusCode Estado, string Codigo, string? Razon) Traducir(Exception ex) => ex switch
     {
         ValidacionException => (HttpStatusCode.BadRequest, "VALIDACION", ex.Message),
+        DatosIncompletosException => (HttpStatusCode.BadRequest, "VALIDACION", ex.Message),
         PermisoDenegadoException p => (HttpStatusCode.Forbidden, "PERMISO_DENEGADO", p.Razon),
         KeyNotFoundException => (HttpStatusCode.NotFound, "NO_ENCONTRADO", ex.Message),
         DbUpdateConcurrencyException => (HttpStatusCode.Conflict, "DOCUMENTO_MODIFICADO",
@@ -65,6 +66,8 @@ public class ProblemDetailsMiddleware(RequestDelegate next, ILogger<ProblemDetai
         problem.Extensions["razon"] = razon;
         if (exception is ValidacionException v)
             problem.Extensions["errores"] = v.Errores.Select(e => new { campo = e.Campo, mensaje = e.Mensaje }).ToList();
+        if (exception is DatosIncompletosException d)
+            problem.Extensions["errores"] = d.Faltantes.Select(e => new { campo = e.Campo, mensaje = e.Mensaje }).ToList();
         problem.Extensions["traceId"] = context.TraceIdentifier;
         problem.Extensions["timestamp"] = DateTime.UtcNow;
 

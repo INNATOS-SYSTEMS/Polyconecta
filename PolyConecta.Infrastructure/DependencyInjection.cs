@@ -89,6 +89,8 @@ public static class DependencyInjection
         services.AddScoped(typeof(IAlmacen<>), typeof(PolyConecta.Infrastructure.Persistence.Almacenes.AlmacenEf<>));
         services.AddScoped<PolyConecta.Infrastructure.Persistence.Almacenes.IIncluirEnAlmacen<Domain.Inventario.Product>, Plataforma.Sincronizacion.IncluirProducto>();
         services.AddScoped<PolyConecta.Infrastructure.Persistence.Almacenes.IIncluirEnAlmacen<Domain.Ventas.Customer>, Plataforma.Sincronizacion.IncluirCliente>();
+        services.AddScoped<PolyConecta.Infrastructure.Persistence.Almacenes.IIncluirEnAlmacen<Domain.Ventas.SalesOrder>, Plataforma.Sincronizacion.IncluirPedido>();
+        services.AddSingleton<Application.Ventas.IConfiguracionDeMonedas, Plataforma.Sincronizacion.ConfiguracionDeMonedas>();
         services.AddScoped<Application.Plataforma.Sincronizacion.ICandadoDeSincronizacion, Plataforma.Sincronizacion.CandadoSqlServer>();
         services.AddScoped<Application.Plataforma.Sincronizacion.IEstadosDeSincronizacion, Plataforma.Sincronizacion.EstadosDeSincronizacion>();
         return services;
