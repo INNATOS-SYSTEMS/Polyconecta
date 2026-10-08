@@ -23,6 +23,10 @@ namespace Contpaq.Bridge.Api.Controllers
         public Task<IActionResult> Clientes(string? search, DateTimeOffset? modified_since, int limit = 100, string? cursor = null) =>
             Leer(limit, () => lecturas.ClientesAsync(search, modified_since, limit, cursor));
 
+        [HttpGet("catalogs/agents")]
+        public Task<IActionResult> Agentes(int limit = 100, string? cursor = null) =>
+            Leer(limit, () => lecturas.AgentesAsync(limit, cursor));
+
         [HttpGet("catalogs/warehouses")]
         public Task<IActionResult> Almacenes() => Leer(1, () => lecturas.AlmacenesAsync());
 

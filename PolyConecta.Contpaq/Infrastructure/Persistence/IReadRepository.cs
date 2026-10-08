@@ -19,6 +19,11 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
 
         Task<ClienteContrato?> ClienteAsync(string codigo);
 
+        /// <summary>Desde 1.1 (D-153). El cursor es el id del último agente de la página anterior.</summary>
+        Task<Pagina<AgenteContrato>> AgentesAsync(int limit, string? cursor);
+
+        Task<AgenteContrato?> AgenteAsync(string codigo);
+
         Task<IReadOnlyList<AlmacenContrato>> AlmacenesAsync();
 
         Task<AlmacenContrato?> AlmacenAsync(string codigo);

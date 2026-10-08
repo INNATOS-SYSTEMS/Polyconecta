@@ -62,6 +62,12 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
         public async Task<ClienteContrato?> ClienteAsync(string codigo) =>
             (await ConsultarAsync<ClienteContrato>($"{Clientes} WHERE CCODIGOCLIENTE = @codigo;", new { codigo })).FirstOrDefault();
 
+        public Task<Pagina<AgenteContrato>> AgentesAsync(int limit, string? cursor) =>
+            throw new LecturaNoDisponibleException("La lectura de agentes llega con L1-T006.");
+
+        public Task<AgenteContrato?> AgenteAsync(string codigo) =>
+            throw new LecturaNoDisponibleException("La lectura de agentes llega con L1-T006.");
+
         private const string Almacenes = @"
             SELECT RTRIM(CCODIGOALMACEN) AS Codigo, RTRIM(CNOMBREALMACEN) AS Nombre, CAST(CIDALMACEN AS bigint) AS IdErp
             FROM admAlmacenes WITH (NOLOCK)";

@@ -28,7 +28,7 @@ namespace Contpaq.Bridge.Core.Validation
                     () => Almacen(t.AlmacenOrigen), () => Almacen(t.AlmacenDestino),
                     () => Lineas(t.Lineas!), () => Existencia(t.Lineas!, t.AlmacenOrigen)),
                 CargaAltaPedido p => await Primero(
-                    () => Cliente(p.Cliente), () => Task.FromResult(Moneda(p.Moneda)), () => LineasPedido(p.Lineas!)),
+                    () => Cliente(p.Cliente), () => Agente(p.Agente), () => Task.FromResult(Moneda(p.Moneda)), () => LineasPedido(p.Lineas!)),
                 CargaAltaAlmacen => null,
                 CargaCierreProduccion c => await Primero(
                     () => Almacen(c.AlmacenWip),
@@ -70,6 +70,12 @@ namespace Contpaq.Bridge.Core.Validation
         private async Task<ErrorContrato?> Cliente(string codigo) =>
             await lecturas.ClienteAsync(codigo) is null
                 ? ErrorContrato.De(CodigosError.ClienteNoExiste, $"El cliente {codigo} no existe en CONTPAQi.", new() { ["cliente"] = codigo })
+                : null;
+
+        /// <summary>El agente es opcional (D-153); si viene, debe existir en admAgentes.</summary>
+        private async Task<ErrorContrato?> Agente(string? codigo) =>
+            codigo is not null && await lecturas.AgenteAsync(codigo) is null
+                ? ErrorContrato.De(CodigosError.AgenteNoExiste, $"El agente {codigo} no existe en CONTPAQi.", new() { ["agente"] = codigo })
                 : null;
 
         private ErrorContrato? Moneda(string codigo) =>
