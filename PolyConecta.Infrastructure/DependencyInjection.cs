@@ -65,6 +65,7 @@ public static class DependencyInjection
         services.AddSingleton<IClock, SystemClock>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUserDesdeCookie>();
+        services.AddScoped<IPermisosDelUsuario, PermisosDelUsuario>();
         return services;
     }
 

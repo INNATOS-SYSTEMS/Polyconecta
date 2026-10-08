@@ -81,6 +81,7 @@ public static class ServiciosDePrueba
                 .Options));
         services.AddScoped(sp => (PruebasDbContext)sp.GetRequiredService<PolyDbContext>());
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+        services.AddScoped<IPermisosDelUsuario, PolyConecta.Infrastructure.Plataforma.Identidad.PermisosDelUsuario>();
         services.AddScoped<PolyConecta.Application.Plataforma.Folios.IReferenceSequenceService, PolyConecta.Infrastructure.Plataforma.ReferenceSequenceService>();
 
         services.Configure<PolyConecta.Infrastructure.Erp.ErpOptions>(o =>

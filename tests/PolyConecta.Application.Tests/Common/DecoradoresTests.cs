@@ -66,6 +66,12 @@ public class DecoradoresTests
         public string CorrelationId => "prueba";
     }
 
+    private sealed class SinPermisos : IPermisosDelUsuario
+    {
+        public Task<IReadOnlyList<AsignacionEfectiva>> AsignacionesAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<AsignacionEfectiva>>([]);
+    }
+
     private static (IUseCase<Peticion, string> UseCase, List<string> Bitacora, CasoDePrueba Caso) Construir()
     {
         var bitacora = new List<string>();
@@ -75,6 +81,9 @@ public class DecoradoresTests
             .AddSingleton<IUnitOfWork>(new UnidadDeTrabajoFalsa(bitacora))
             .AddSingleton<ICorrelationContext, Correlacion>()
             .AddSingleton<IValidator<Peticion>, ValidadorNoVacio>()
+            // La cadena de decoradores incluye la autorización (L2-T005); esta petición no exige permiso.
+            .AddSingleton<ICurrentUser>(new PolyConecta.Tests.Compartido.UsuarioFijo("sistema"))
+            .AddSingleton<IPermisosDelUsuario, SinPermisos>()
             .AddSingleton(typeof(Microsoft.Extensions.Logging.ILogger<>), typeof(NullLogger<>));
         services.AddUseCase<Peticion, string, CasoDePrueba>();
         // AddUseCase registra el caso como Scoped; la instancia de prueba se resuelve igual.

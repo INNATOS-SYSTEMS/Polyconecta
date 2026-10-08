@@ -1,64 +1,73 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PolyConecta.Application.Common;
+using PolyConecta.Domain.Common;
 
 namespace PolyConecta.Api.Middleware;
 
 /// <summary>
-/// Global exception handling middleware producing RFC 7807 ProblemDetails responses.
+/// Traduce las excepciones a ProblemDetails (RFC 7807) con el <c>code</c> estable de contracts/api-f1.md:
+/// 400 VALIDACION (con <c>errores[]</c>), 403 PERMISO_DENEGADO y 409 TRANSICION_INVALIDA,
+/// DOCUMENTO_MODIFICADO o el de la regla, siempre con la <c>razon</c> que pinta la interfaz (CT-26).
 /// </summary>
-public class ProblemDetailsMiddleware
+public class ProblemDetailsMiddleware(RequestDelegate next, ILogger<ProblemDetailsMiddleware> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<ProblemDetailsMiddleware> _logger;
-
-    public ProblemDetailsMiddleware(RequestDelegate next, ILogger<ProblemDetailsMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await next(context);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!context.Response.HasStarted)
         {
-            _logger.LogError(ex, "Unhandled exception encountered: {Message}", ex.Message);
-            await HandleExceptionAsync(context, ex);
+            var (estado, codigo, razon) = Traducir(ex);
+            if (estado >= HttpStatusCode.InternalServerError)
+                logger.LogError(ex, "Excepción no controlada: {Mensaje}", ex.Message);
+            else
+                logger.LogInformation("Petición rechazada {Codigo}: {Mensaje}", codigo, ex.Message);
+            await EscribirAsync(context, ex, estado, codigo, razon);
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    public static (HttpStatusCode Estado, string Codigo, string? Razon) Traducir(Exception ex) => ex switch
+    {
+        ValidacionException => (HttpStatusCode.BadRequest, "VALIDACION", ex.Message),
+        PermisoDenegadoException p => (HttpStatusCode.Forbidden, "PERMISO_DENEGADO", p.Razon),
+        KeyNotFoundException => (HttpStatusCode.NotFound, "NO_ENCONTRADO", ex.Message),
+        DbUpdateConcurrencyException => (HttpStatusCode.Conflict, "DOCUMENTO_MODIFICADO",
+            "Otro usuario cambió el documento mientras lo tenías abierto. Recarga para ver sus cambios."),
+        DbUpdateException { InnerException: Microsoft.Data.SqlClient.SqlException { Number: 2601 or 2627 } } =>
+            (HttpStatusCode.Conflict, "DUPLICADO", "Ya existe un registro con esos datos, o alguien hizo lo mismo al mismo tiempo."),
+        TransicionInvalidaException => (HttpStatusCode.Conflict, "TRANSICION_INVALIDA", ex.Message),
+        ReglaDeNegocioException r => (HttpStatusCode.Conflict, r.Codigo, r.Razon),
+        ArgumentException or InvalidOperationException => (HttpStatusCode.BadRequest, "VALIDACION", ex.Message),
+        UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "SIN_SESION", ex.Message),
+        _ => (HttpStatusCode.InternalServerError, "ERROR_INTERNO", null),
+    };
+
+    private static Task EscribirAsync(HttpContext context, Exception exception, HttpStatusCode estado, string codigo, string? razon)
     {
         context.Response.ContentType = "application/problem+json";
-        
-        var statusCode = exception switch
-        {
-            KeyNotFoundException => HttpStatusCode.NotFound,
-            PolyConecta.Application.Common.ValidacionException => HttpStatusCode.BadRequest,
-            PolyConecta.Domain.Common.TransicionInvalidaException => HttpStatusCode.Conflict,
-            ArgumentException or InvalidOperationException => HttpStatusCode.BadRequest,
-            UnauthorizedAccessException => HttpStatusCode.Unauthorized,
-            _ => HttpStatusCode.InternalServerError
-        };
-
-        context.Response.StatusCode = (int)statusCode;
+        context.Response.StatusCode = (int)estado;
 
         var problem = new ProblemDetails
         {
-            Status = (int)statusCode,
-            Title = exception.GetType().Name,
-            Detail = exception.Message,
-            Instance = context.Request.Path
+            Status = (int)estado,
+            Title = codigo,
+            Detail = estado == HttpStatusCode.InternalServerError ? "Error interno." : exception.Message,
+            Instance = context.Request.Path,
         };
-
+        problem.Extensions["code"] = codigo;
+        problem.Extensions["razon"] = razon;
+        if (exception is ValidacionException v)
+            problem.Extensions["errores"] = v.Errores.Select(e => new { campo = e.Campo, mensaje = e.Mensaje }).ToList();
         problem.Extensions["traceId"] = context.TraceIdentifier;
         problem.Extensions["timestamp"] = DateTime.UtcNow;
 
-        var json = JsonSerializer.Serialize(problem);
-        return context.Response.WriteAsync(json);
+        return context.Response.WriteAsync(JsonSerializer.Serialize(problem, Json));
     }
 }
