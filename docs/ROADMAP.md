@@ -2,7 +2,7 @@
 
 La construcción avanza **fase a fase** según el [plan de trabajo](plan/Tarea%20(project.task)%20-%20replaneacion(2).xlsx) (D-116), por **dos caminos en paralelo**, cada uno con su líder y sus agentes. Las reglas de cómo se construye están en la [constitución técnica](diseno/06-constitucion-tecnica.md). Aquí están las fases, las specs, qué entrega cada camino y el tablero de avance.
 
-**Actualizado:** 8 de octubre de 2026 (cierre de la spec de contratos visuales).
+**Actualizado:** 8 de octubre de 2026 (spec de F1 completa, por ratificar).
 
 ---
 
@@ -67,9 +67,9 @@ Estos elementos están en `docs/diseno/` pero ninguna tarea del plan los nombra.
 
 | Elemento | Diseño | Spec propuesta |
 | :--- | :--- | :--- |
-| Pedido capturado en CONTPAQi que entra por sincronización (D-53) | [02 §1](diseno/02-flujo-y-reglas.md) | `003-pedidos-de-venta` |
-| Revocación de la autorización | [02 §1](diseno/02-flujo-y-reglas.md) | `003-pedidos-de-venta` |
-| Ficha técnica, unidades de venta y clasificación propia (D-86) | [04 §3](diseno/04-modelo-de-dominio.md) | `003-pedidos-de-venta` |
+| Pedido capturado en CONTPAQi que entra por sincronización (D-53) | [02 §1](diseno/02-flujo-y-reglas.md) | Fuera de alcance (D-145) |
+| Revocación de la autorización | [02 §1](diseno/02-flujo-y-reglas.md) | `003-pedidos-de-venta`, confirmado (D-145) |
+| Ficha técnica, unidades de venta y clasificación propia (D-86) | [04 §3](diseno/04-modelo-de-dominio.md) | `003-pedidos-de-venta`, confirmado (D-145) |
 | Motor de abastecimiento (rutas MTSO/MTO, simulación y reserva) y visor de disponibilidad | [02 §2](diseno/02-flujo-y-reglas.md) | `004-planeacion-produccion` |
 | Reservas lote por lote con control de concurrencia (§9) | [03](diseno/03-almacenes-y-operaciones.md) | `005-almacen` |
 | Re-lotificación | [03](diseno/03-almacenes-y-operaciones.md) | `005-almacen` |
@@ -78,7 +78,7 @@ Estos elementos están en `docs/diseno/` pero ninguna tarea del plan los nombra.
 | Registro dual millares/kg en bolseo | [02 §4](diseno/02-flujo-y-reglas.md) | `006-captura-produccion` |
 | Re-liberación de lotes en cuarentena | [02 §3](diseno/02-flujo-y-reglas.md) | `007-calidad-y-cierre` |
 | Carga inicial de almacenes e inventarios (D-100) | [03](diseno/03-almacenes-y-operaciones.md) | `010-flujo-completo` |
-| Cotejo de F-01, F-02 y F-05 con la UI de CONTPAQi (T-06, ex A-13) | [preguntas-abiertas](diseno/preguntas-abiertas.md) | `003-pedidos-de-venta` (con 1.4) |
+| Cotejo de F-01, F-02 y F-05 con la UI de CONTPAQi (T-06, ex A-13) | [preguntas-abiertas](diseno/preguntas-abiertas.md) | `003-pedidos-de-venta` (con 1.4), confirmado (D-145) |
 
 ## 4. Tablero de avance
 
@@ -89,7 +89,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Réplica Angular (paralelo) | ✅ | `001-angular-presentation` · integrada en `docs/diseno/` y borrada | ✅ 7-oct · `db071b6` | n/a | n/a | — |
 | Contratos visuales (fase abierta) | ✅ | `011-contratos-visuales` · líder L2; P1 a P8 en un solo PR; integrada en `docs/diseno/` y borrada | ✅ 8-oct · `351b62c` | n/a | n/a | — |
 | F0 · Construcción técnica | ✅ | `002-construccion-tecnica` · integrada en `docs/diseno/` y borrada | ✅ 6-oct · `d5eaf35` | ✅ 6-oct: contrato `1.0`, bridge simulado y bridge x86 en el VPS (evidencia `56da557`) | n/a: F0 no entrega comandos que escriban en CONTPAQi | — |
-| F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R1 |
+| F1 · Pedidos de venta | 🟨 | `003-pedidos-de-venta` · spec completa el 8-oct, por ratificar con los dos líderes | ⬜ | ⬜ | ⬜ | ⬜ R1 |
 | F2 · Planeación de producción | ✅ | `004-planeacion-produccion` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R2 |
 | F3 · Almacén | ✅ | `005-almacen` · esqueleto | ⬜ | ⬜ | ⬜ | ⬜ R3 |
 | F4 · Captura de producción | ✅ | `006-captura-produccion` · esqueleto | ⬜ | n/a | ⬜ | ⬜ R4 |
@@ -108,7 +108,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Fase | Preguntas abiertas ([preguntas-abiertas.md](diseno/preguntas-abiertas.md)) o decisiones por validar |
 | :--- | :--- |
 | F0 | ninguna |
-| F1 | T-06 (lectura de existencias, tarea 1.4): se puede especificar con la lectura directa de D-87 como supuesto. P-28 (contrato HTTP de la consulta de listas): se fija con la primera lista que lea de la API. |
+| F1 | T-06 (lectura de existencias, tarea 1.4): se puede especificar con la lectura directa de D-87 como supuesto. P-28 (contrato HTTP de la consulta de listas): se fija en el plan de la 003 con la lista de Pedidos. D-146 (moneda por pedido) y el contrato `1.1` (clasificación en la lectura de productos) se ratifican con la spec. |
 | F2 a F5, F7 | Contrato `bridge-v1` `1.0` firmado el 6-oct (D-132). T-17 (costo de la Entrada) se resuelve antes de F3 |
 | F6 | D-114 (cancelar el pedido remisionado) por validar con la operación |
 | F8 | T-06 (la conciliación depende de F-05) |
