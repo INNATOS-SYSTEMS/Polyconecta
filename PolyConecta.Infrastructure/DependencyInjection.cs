@@ -9,6 +9,8 @@ using PolyConecta.Application.Plataforma.Erp;
 using PolyConecta.Domain.Common;
 using PolyConecta.Infrastructure.Common;
 using PolyConecta.Infrastructure.Persistence;
+using PolyConecta.Infrastructure.Persistence.Sembradores;
+using PolyConecta.Infrastructure.Plataforma.Identidad;
 
 namespace PolyConecta.Infrastructure;
 
@@ -25,6 +27,23 @@ public static class DependencyInjection
         services.AddDbContext<PolyDbContext>((sp, options) =>
             options.UseSqlServer(conexion).AddInterceptors(sp.GetRequiredService<AuditoriaInterceptor>()));
         services.AddScoped<IReferenceSequenceService, ReferenceSequenceService>();
+
+        // Identity solo para credenciales (R-01): contraseña de 8 con mayúscula y número, bloqueo de 15
+        // minutos tras 5 intentos fallidos. Grupos y permisos son del dominio.
+        services.AddIdentityCore<CredencialUsuario>(o =>
+            {
+                o.Password.RequiredLength = 8;
+                o.Password.RequireNonAlphanumeric = false;
+                o.Password.RequireLowercase = false;
+                o.Password.RequireUppercase = true;
+                o.Password.RequireDigit = true;
+                o.Lockout.MaxFailedAccessAttempts = 5;
+                o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+                o.Lockout.AllowedForNewUsers = true;
+                o.User.AllowedUserNameCharacters += "ñÑ";
+            })
+            .AddEntityFrameworkStores<PolyDbContext>();
+        services.AddScoped<IDataSeeder, SembradorSeguridad>();
 
         // Bridge (D-122, CT-03): el despachador solo arranca si hay Erp__BridgeUrl.
         services.Configure<ErpOptions>(configuration.GetSection(ErpOptions.Seccion));

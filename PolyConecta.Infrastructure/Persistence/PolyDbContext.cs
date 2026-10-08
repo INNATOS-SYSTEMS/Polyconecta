@@ -1,12 +1,20 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using PolyConecta.Domain.Common;
 using PolyConecta.Domain.Entities;
 using PolyConecta.Domain.Plataforma;
+using PolyConecta.Domain.Plataforma.Seguridad;
+using PolyConecta.Infrastructure.Plataforma.Identidad;
 
 namespace PolyConecta.Infrastructure.Persistence;
 
-public class PolyDbContext : DbContext
+/// <summary>
+/// Contexto de PolyConecta. Hereda de <see cref="IdentityUserContext{TUser, TKey}"/> solo por las
+/// credenciales (R-01): sin las tablas de roles de Identity, que no se usan (los grupos son del dominio).
+/// </summary>
+public class PolyDbContext : IdentityUserContext<CredencialUsuario, long>
 {
     public PolyDbContext(DbContextOptions<PolyDbContext> options) : base(options) { }
 
@@ -27,6 +35,12 @@ public class PolyDbContext : DbContext
     public DbSet<ReferenceSequence> ReferenceSequences => Set<ReferenceSequence>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
+    // Seguridad (F1, D-148)
+    public DbSet<Plant> Plants => Set<Plant>();
+    public DbSet<User> Usuarios => Set<User>();
+    public DbSet<Group> Groups => Set<Group>();
+    public DbSet<Permission> Permissions => Set<Permission>();
+
     // Additional Entities
     public DbSet<PolyLocation> Locations => Set<PolyLocation>();
     public DbSet<LotGenealogy> LotGenealogies => Set<LotGenealogy>();
@@ -42,6 +56,11 @@ public class PolyDbContext : DbContext
         modelBuilder.Ignore<TransicionRegistrada>();
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PolyDbContext).Assembly);
+
+        // Identity reducida a credenciales, en plt (R-01).
+        modelBuilder.Entity<IdentityUserClaim<long>>().ToTable("user_credential_claim", "plt");
+        modelBuilder.Entity<IdentityUserLogin<long>>().ToTable("user_credential_login", "plt");
+        modelBuilder.Entity<IdentityUserToken<long>>().ToTable("user_credential_token", "plt");
 
         // Un esquema por módulo (CT-12). Las entidades previas a F0 se ubican en su módulo sin
         // rediseñarlas; cada fase las rehace con el modelo de 04-modelo-de-dominio.md.
