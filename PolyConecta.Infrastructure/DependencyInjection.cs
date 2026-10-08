@@ -58,6 +58,13 @@ public static class DependencyInjection
             http.BaseAddress = new Uri(string.IsNullOrWhiteSpace(url) ? "http://localhost:9030" : url);
             http.Timeout = TimeSpan.FromSeconds(30);
         });
+        // Lecturas de catálogos del contrato §6 (R-05), con la misma URL del bridge.
+        services.AddHttpClient<IBridgeLecturas, BridgeLecturasHttp>((sp, http) =>
+        {
+            var url = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<ErpOptions>>().Value.BridgeUrl;
+            http.BaseAddress = new Uri(string.IsNullOrWhiteSpace(url) ? "http://localhost:9030" : url);
+            http.Timeout = TimeSpan.FromSeconds(60);
+        });
         if (!string.IsNullOrWhiteSpace(configuration[$"{ErpOptions.Seccion}:BridgeUrl"]))
             services.AddHostedService<BridgeDispatcher>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
