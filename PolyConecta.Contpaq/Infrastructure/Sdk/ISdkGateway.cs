@@ -11,8 +11,16 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
     {
         bool EsReal { get; }
 
+        /// <summary>El SDK ya hizo sus inicios de sesión (una vez por proceso, R-07).</summary>
+        bool SdkIniciado { get; }
+
+        /// <summary>La empresa está abierta para un lote.</summary>
         bool SesionActiva { get; }
 
+        /// <summary>Inicia el SDK si todavía no lo está. El worker lo llama al arrancar.</summary>
+        bool IniciarSdk();
+
+        /// <summary>El SDK iniciado y la empresa abierta, para un lote.</summary>
         bool AsegurarSesion();
 
         void CerrarSiInactiva();

@@ -23,7 +23,11 @@ namespace Contpaq.Bridge.Simulated
 
         public bool EsReal => false;
 
+        public bool SdkIniciado => true;
+
         public bool SesionActiva => true;
+
+        public bool IniciarSdk() => true;
 
         public bool AsegurarSesion() => true;
 
