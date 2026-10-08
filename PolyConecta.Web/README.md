@@ -7,7 +7,7 @@ Réplica en Angular del prototipo Blazor `PolyConecta.Presentation` (spec 001). 
 - Node 24.16.0 (`.nvmrc`; `nvm use` en esta carpeta).
 - Dependencias: `npm ci`.
 - Para las pruebas de navegador: `npx playwright install chromium`, el SDK de .NET de `global.json` y el runtime de ASP.NET Core 8, que usa el prototipo.
-- Conexión a Google Fonts y jsDelivr: las dos aplicaciones cargan de ahí Inter, Bootstrap y Bootstrap Icons.
+- Conexión a Google Fonts y jsDelivr: las dos aplicaciones cargan de ahí Inter y Bootstrap (el prototipo también Bootstrap Icons; la réplica usa Lucide, empaquetado).
 
 ## Puertos
 

@@ -1,5 +1,5 @@
 /**
- * Origen de datos de una lista (spec 011, data-model §1). La tabla y el kanban piden cada vista a un
+ * Origen de datos de una lista (contratos visuales §4.1). La tabla y el kanban piden cada vista a un
  * origen y nunca ordenan, filtran, agrupan ni paginan por su cuenta. Hasta F1 el origen es en memoria;
  * en F1 se agrega uno por HTTP con la misma interfaz.
  */

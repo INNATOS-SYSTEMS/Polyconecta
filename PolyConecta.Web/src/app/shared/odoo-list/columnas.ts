@@ -3,7 +3,7 @@ import { n1 } from '../../core/format/numero';
 
 export type TipoColumna = 'texto' | 'numero' | 'moneda' | 'fecha' | 'estado';
 
-/** Columna de `pc-odoo-list` (spec 011, contracts/componentes.md). */
+/** Columna de `pc-odoo-list` (contratos visuales, docs/diseno/07). */
 export interface ColumnaLista<T> {
   campo: string;
   titulo: string;

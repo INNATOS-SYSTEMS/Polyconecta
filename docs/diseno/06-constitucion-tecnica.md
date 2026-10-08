@@ -53,7 +53,7 @@ flowchart LR
 | Build del frontend | **Node 24 LTS** (D-69) | — |
 | Estilos | Bootstrap 5.3.2 y las clases `o_*` del prototipo | La paridad de píxeles con el prototipo se retiró (D-135); el acabado lo fijan los contratos visuales (spec 011) |
 | Componentes de interfaz | TanStack Table (`@tanstack/angular-table`), Angular CDK y Spartan (`@spartan-ng/brain`), todos MIT (D-135) | Sin librerías con licencia comercial o llave. El HTML y el estilo son nuestros, con las clases `o_*` |
-| Íconos | Lucide (paquete `lucide`, ISC, un módulo por ícono) (D-135) | Sustituye a Bootstrap Icons al migrar cada pantalla en la spec 011 |
+| Íconos | Lucide (paquete `lucide`, ISC, un módulo por ícono) (D-135) | Catálogo por intención en `pc-odoo-icon`; sustituyó a Bootstrap Icons en la spec 011. La barra superior, que va en la carga inicial, lleva sus tres SVG en línea para no cargar el catálogo |
 | Tiempo real | SignalR (`@microsoft/signalr`) | Chatter y avisos de sincronización. Los mensajes del chatter se guardan en la base (D-78) |
 | Pruebas .NET | **xUnit v3** + AwesomeAssertions (D-71, D-72) | Una sola versión en todos los proyectos de prueba |
 | Pruebas extremo a extremo | Playwright | — |

@@ -71,7 +71,7 @@ export class PedidosAcciones {
     return new OrigenEnMemoria<FilaPedido>({ datos: () => this.filas(), id: f => f.id, vista: PEDIDOS });
   }
 
-  /** Transiciones que se pueden arrastrar en el kanban (data-model §3). */
+  /** Transiciones que se pueden arrastrar en el kanban (contratos visuales §4.3). */
   transiciones(): TransicionKanban<FilaPedido>[] {
     return [
       { desde: 'Borrador', hacia: 'Confirmado', nombre: 'Confirmar', ejecutar: f => this.confirmar(f.folio) },

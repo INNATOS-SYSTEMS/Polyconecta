@@ -42,7 +42,7 @@ const features = tableFeatures({
 });
 
 /**
- * Tabla de lista (spec 011, contracts/componentes.md): TanStack Table en modo servidor. Nunca ordena,
+ * Tabla de lista (contratos visuales, docs/diseno/07): TanStack Table en modo servidor. Nunca ordena,
  * filtra, agrupa ni pagina por su cuenta: cada vista la pide al `OrigenDeLista`. Pinta la misma tabla de
  * Bootstrap que las listas de la réplica, para no cambiar su estructura.
  */

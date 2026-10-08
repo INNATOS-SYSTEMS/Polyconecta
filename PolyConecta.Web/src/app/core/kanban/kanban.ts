@@ -1,6 +1,6 @@
 import { Type } from '@angular/core';
 
-/** Columna de un kanban (spec 011, data-model §3). */
+/** Columna de un kanban (contratos visuales §4.3). */
 export interface EtapaKanban {
   /** Estado del documento, o valor del campo de agrupación. */
   valor: string;

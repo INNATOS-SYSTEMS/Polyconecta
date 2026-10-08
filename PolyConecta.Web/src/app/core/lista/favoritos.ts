@@ -1,6 +1,6 @@
 import { FiltroLista, OrdenLista } from './origen';
 
-/** Vista guardada de una lista: la forma de `SavedSearch` (04 §3, data-model §2). */
+/** Vista guardada de una lista: la forma de `SavedSearch` (04 §3, contratos visuales §4.2). */
 export interface Favorito {
   id: string;
   /** Llave de la lista, por ejemplo `ventas.pedidos`. */

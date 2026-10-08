@@ -13,7 +13,7 @@ import { abrirDialogo } from '../odoo-dialog/odoo-dialog';
 import { OdooBuscarMas } from './odoo-buscar-mas';
 
 /**
- * Selección de registro, el many2one de Odoo (spec 011, contracts/componentes.md): busca en el origen
+ * Selección de registro, el many2one de Odoo (contratos visuales, docs/diseno/07): busca en el origen
  * mientras se escribe, muestra hasta `limite` opciones y "Buscar más…" abre la lista completa.
  */
 @Component({

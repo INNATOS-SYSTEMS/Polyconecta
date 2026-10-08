@@ -33,7 +33,7 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 | Favoritos | Guardar la búsqueda, la agrupación, el orden, las columnas y el tamaño de página con nombre; uno por omisión se aplica al abrir. Hasta F1 se guardan en el navegador |
 
 **Reglas**:
-- **Nunca** ordena, filtra, agrupa ni pagina en el navegador: todo lo pide al `OrigenDeLista` (data-model de la spec 011).
+- **Nunca** ordena, filtra, agrupa ni pagina en el navegador: todo lo pide al `OrigenDeLista` (§4.1).
 - Hasta F1 el origen es en memoria; en F1, HTTP, sin cambiar la pantalla.
 - Clic en la fila abre el formulario; la casilla no.
 - **Aspecto:** la barra de búsqueda es blanca, con borde gris y radio de 6 px, como los botones (no es una píldora); al enfocarla, el borde toma el color primario. En la tabla, los encabezados van en peso medio (500) y el contenido en peso normal, a 0.85rem; ni el folio ni los totales van en negrita.
@@ -80,6 +80,7 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 - Los botones inteligentes sin origen se ven atenuados y no navegan (documento libre).
 - La acción primaria es una sola.
 - Las secundarias poco frecuentes (duplicar, imprimir, archivar…) van en el menú del engranaje. No hay botón "Acciones" con texto en la barra.
+- El control de calidad conserva la estructura del prototipo: su estado (Planeado, Parcial, Aprobado) es una insignia en la barra de acciones, no etapas en la hoja, porque sale de sus lotes.
 
 ### 1.4 "Nuevo" (modo libre)
 
@@ -156,8 +157,7 @@ En solo lectura el campo es texto sin línea. Todos funcionan con formularios de
 - **Estados:** reposo, hover, foco con teclado (anillo de 2 px separado por 2 px de blanco), presionado, deshabilitado (45 %) y cargando. Los colores son las variables de E3 en `app.css`; los componentes no escriben colores sueltos.
 - **Íconos:** `pc-odoo-icon` con un nombre del catálogo (`confirmar`, `editar`, `hard-stop`…).
   - Tamaño por contexto: 16 px en botones, 18 px en botones de ícono y 15 px en botones inteligentes.
-  - Lucide con trazo 2.
-  - Acepta el nombre viejo de Bootstrap mientras dura la migración.
+  - Lucide con trazo 2; solo nombres del catálogo (Bootstrap Icons ya no se carga).
 
 ### 2.2 Barra superior, migas, vistas y paginador
 
@@ -196,4 +196,51 @@ En solo lectura el campo es texto sin línea. Todos funcionan con formularios de
 | Lista sin kanban | Inventario actual, Inventario para Ventas |
 | Captura | Captura masiva |
 
-La migración de cada pantalla a estos componentes se hace por flujo, en las partes P1 a P8 de la spec 011.
+Las 28 pantallas se migraron a estos componentes en la spec 011 (partes P1 a P8). Transiciones del kanban por lista: D-138; confirmaciones y hard-stop: D-139.
+
+---
+
+## 4. Contratos de datos de la interfaz
+
+Viven en `src/app/core/lista/` y `core/kanban/`. La tabla y el kanban **nunca** ordenan, filtran, agrupan ni paginan por su cuenta: todo lo piden al origen (una prueba cuenta las consultas).
+
+### 4.1 Origen de datos de lista
+
+`OrigenDeLista<T>` tiene un solo método, `consultar(ConsultaLista): Promise<ResultadoLista<T>>`.
+
+| `ConsultaLista` | Regla |
+| :--- | :--- |
+| `pagina`, `tamano` | Página desde 0; 20, 40, 80 (por omisión) o 200 filas. Agrupada, la página es de grupos de primer nivel |
+| `orden` | `{ campo, desc }[]` en orden de prioridad; vacío, el orden de la lista |
+| `filtros` | `FiltroLista` (`campo`, operador `contiene`, `igual`, `entre` o `en`, `valor`), con Y entre campos y O dentro del mismo |
+| `nombrados` | Filtros con nombre de la vista de búsqueda (`core/search`), evaluados por nombre |
+| `busqueda` | Texto libre sobre los campos buscables |
+| `agruparPor`, `grupo` | Niveles de agrupación (campo o etiqueta de la vista) y la ruta del grupo que se abre |
+| `ids` | Solo esas filas, para exportar las seleccionadas |
+
+`ResultadoLista<T>` trae `filas` (vacío si la respuesta es de grupos), `grupos` (`GrupoLista`: `campo`, `valor`, `etiqueta`, `cantidad`, `totales` y `textos`, como la unidad común), `total` (filas o grupos, para el paginador) y `totales` (sumas de las columnas sumables sobre todo el filtro).
+
+- **`OrigenEnMemoria<T>`** (hasta F1): sobre la colección de un servicio de estado, con su vista de búsqueda, columnas sumables y, si se declara `unidad`, totales solo cuando el grupo comparte unidad (D-140).
+- **`OrigenHttp<T>`** (F1): manda la misma consulta a la API; la ruta y el formato quedan en P-28.
+
+### 4.2 Favoritos
+
+`Favorito` (la forma de `SavedSearch`, 04 §3): `lista` (llave, como `ventas.pedidos`), `nombre` único por lista, filtros, búsqueda, agrupación, orden, columnas visibles en su orden, tamaño de página y `porOmision` (uno por lista). `AlmacenDeFavoritos` lista, guarda y borra. Hasta F1, `FavoritosEnNavegador` (`localStorage`, `polyconecta.favoritos.<lista>`); en F1, por usuario en la base.
+
+### 4.3 Kanban
+
+- **`EtapaKanban`**: `valor` (estado o valor del campo de agrupación), `titulo` y `plegada` (las terminales empiezan plegadas).
+- **`TransicionKanban`**: `desde`, `hacia`, `nombre` (el del botón del formulario), `dialogo` opcional con su condición `pideDialogo(fila)`, y `ejecutar(fila, datos?)`, que llama a la misma acción que el botón y devuelve el motivo si no procede. Sin transición declarada, la tarjeta regresa con "No se puede pasar de X a Y".
+
+| Lista | Etapas | Se arrastra |
+| :--- | :--- | :--- |
+| Pedidos | Borrador, Confirmado, Autorizado, En progreso, Hecho | Borrador → Confirmado; Confirmado → Autorizado, con el diálogo de firma |
+| Fabricación | Borrador, Planeado, En progreso, Hecho | Borrador → Planeado (pide componentes); En progreso → Hecho (hard-stop de Calidad y WIP en cero) |
+| Incidencias | Por centro de trabajo | Nada: no tienen estado |
+| Recolecciones | Borrador, En espera, Listo, Hecho | Listo → Hecho, con el diálogo de cantidades si es parcial |
+| Calidad | Planeado, Parcial, Aprobado (controles) | Nada: el estado sale de los lotes |
+| Traslados | Borrador, En espera de operación, En espera, Listo, Hecho | Listo → Hecho; sin lotes, regresa con el motivo |
+| Recepción | Borrador, En espera, Listo, Hecho | Listo → Hecho, con "Validar recepción" (D-56) |
+| Entregas | Borrador, En espera, Listo, Hecho | Listo → Hecho; un lote no liberado lo bloquea (hard-stop) |
+
+Lo que avanza el sistema (Planeado → En progreso, Autorizado → En progreso, En espera → Listo al declarar lotes) no se arrastra (D-138).
