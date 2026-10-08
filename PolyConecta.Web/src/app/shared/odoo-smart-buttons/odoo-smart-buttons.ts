@@ -4,7 +4,7 @@ import { OdooIcon } from '../odoo-icon/odoo-icon';
 export interface SmartButtonModel {
   label: string;
   countBadge: number;
-  /** Nombre del catálogo de íconos (`entrega`) o, mientras dura la migración, la clase de Bootstrap (`bi bi-truck`). */
+  /** Nombre del catálogo de íconos (`entrega`). */
   iconClass: string;
   targetRoute: string;
   /** Documento libre sin ese origen (FR-014): se ve atenuado y no navega. */

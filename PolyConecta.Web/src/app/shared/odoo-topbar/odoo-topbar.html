@@ -1,7 +1,8 @@
 <header class="o_main_navbar">
   <div class="d-flex align-items-center gap-3">
     <button class="app-brand" (click)="goHome()" title="Inicio">
-      <i class="bi bi-grid-3x3-gap-fill fs-5"></i>
+      <!-- Lucide layout-grid, bell y circle-user en línea: la barra va en la carga inicial y no carga el catálogo de pc-odoo-icon (límite de 89 kB). -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" /></svg>
     </button>
     @if (currentModule().name) {
       <span class="o_module_name">{{ currentModule().name }}</span>
@@ -31,10 +32,10 @@
   </div>
 
   <div class="d-flex align-items-center gap-3">
-    <i class="bi bi-bell fs-5" style="cursor:pointer; opacity:0.9;" title="Notificaciones"></i>
+    <span style="cursor:pointer; opacity:0.9;" title="Notificaciones"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0" /><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></svg></span>
     <div class="d-flex align-items-center gap-2">
       <span class="small">Alejandro Porras</span>
-      <i class="bi bi-person-circle fs-4"></i>
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="10" r="3" /><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" /></svg>
     </div>
   </div>
 </header>

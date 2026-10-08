@@ -149,9 +149,9 @@ export class Catalogo {
   ];
   protected readonly migas = [{ label: 'Pedidos', url: '/catalogo' }, { label: 'PV-2026-0001' }];
   protected readonly botonesInteligentes: SmartButtonModel[] = [
-    { label: 'Entrega', countBadge: 1, iconClass: 'bi bi-truck', targetRoute: '/catalogo' },
-    { label: 'Fabricación', countBadge: 3, iconClass: 'bi bi-diagram-3', targetRoute: '/catalogo' },
-    { label: 'Pedido', countBadge: 0, iconClass: 'bi bi-cart-check', targetRoute: '', deshabilitado: true },
+    { label: 'Entrega', countBadge: 1, iconClass: 'entrega', targetRoute: '/catalogo' },
+    { label: 'Fabricación', countBadge: 3, iconClass: 'fabricacion', targetRoute: '/catalogo' },
+    { label: 'Pedido', countBadge: 0, iconClass: 'pedido', targetRoute: '', deshabilitado: true },
   ];
   protected readonly etapasDocumento = ['Borrador', 'Confirmado', 'Autorizado', 'En progreso', 'Hecho'];
   protected readonly catalogoProductos = PRODUCTOS_EJEMPLO.map(p => ({ ...p, clasificacion: 'Bolsa' as const }));

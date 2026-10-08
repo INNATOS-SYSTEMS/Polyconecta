@@ -78,29 +78,12 @@ export const ICONOS = {
 
 export type NombreIcono = keyof typeof ICONOS;
 
-/** Íconos de Bootstrap que la aplicación usaba, con su equivalente: permite migrar pantalla por pantalla. */
-export const DE_BOOTSTRAP: Record<string, NombreIcono> = {
-  'bi-x-circle-fill': 'quitar-linea', 'bi-gear-wide-connected': 'orden', 'bi-x-octagon': 'hard-stop', 'bi-x-lg': 'cerrar',
-  'bi-list-ul': 'lista', 'bi-check-circle': 'confirmar', 'bi-truck': 'entrega', 'bi-plus-lg': 'nuevo', 'bi-pencil': 'editar',
-  'bi-chevron-right': 'siguiente', 'bi-x-circle': 'cancelar', 'bi-x': 'quitar', 'bi-search': 'buscar', 'bi-exclamation-circle': 'aviso',
-  'bi-cart-check': 'pedido', 'bi-upc-scan': 'escanear', 'bi-square': 'casilla', 'bi-shield-check': 'calidad', 'bi-printer': 'imprimir',
-  'bi-file-earmark-excel': 'excel', 'bi-exclamation-triangle': 'advertencia', 'bi-diagram-3': 'fabricacion', 'bi-check2-circle': 'validar',
-  'bi-check-square-fill': 'casilla-marcada', 'bi-box-arrow-right': 'recoleccion', 'bi-box-arrow-in-down': 'recepcion',
-  'bi-arrow-return-right': 'devolucion', 'bi-wifi-off': 'sin-conexion', 'bi-stack': 'lotes', 'bi-person-circle': 'usuario',
-  'bi-link-45deg': 'vinculo', 'bi-kanban': 'kanban', 'bi-grid-3x3-gap-fill': 'aplicaciones', 'bi-gear': 'configuracion',
-  'bi-funnel': 'filtro', 'bi-file-text': 'documento', 'bi-cloud-check': 'sincronizado', 'bi-chevron-left': 'anterior',
-  'bi-check-lg': 'hecho', 'bi-cart-check-fill': 'pedido', 'bi-caret-right-fill': 'expandir', 'bi-caret-down-fill': 'contraer',
-  'bi-boxes': 'inventario', 'bi-box-seam': 'paquete', 'bi-bell': 'notificaciones',
-};
+export type ContextoIcono = 'boton' | 'icono' | 'inteligente' | 'barra' | 'aplicacion';
+const TAMANOS: Record<ContextoIcono, number> = { boton: 16, icono: 18, inteligente: 15, barra: 20, aplicacion: 34 };
 
-export type ContextoIcono = 'boton' | 'icono' | 'inteligente' | 'barra';
-const TAMANOS: Record<ContextoIcono, number> = { boton: 16, icono: 18, inteligente: 15, barra: 20 };
-
-/** Resuelve un nombre del catálogo, o uno de Bootstrap (`bi bi-truck`, `bi-truck`), a su nombre del catálogo. */
+/** El nombre del catálogo, o `undefined` si no existe. */
 export function resolverIcono(nombre: string): NombreIcono | undefined {
-  if (nombre in ICONOS) return nombre as NombreIcono;
-  const bi = nombre.split(/\s+/).find(c => c.startsWith('bi-'));
-  return bi ? DE_BOOTSTRAP[bi] : undefined;
+  return nombre in ICONOS ? (nombre as NombreIcono) : undefined;
 }
 
 /**

@@ -192,13 +192,6 @@ body {
     font-weight: 600;
 }
 
-.o_main_navbar .o_company_name {
-    font-weight: 500;
-    font-size: 0.85rem;
-    color: white;
-    opacity: 0.85;
-}
-
 /* --- Control panel / breadcrumbs ---
    El bloque de la izquierda (boton "Nuevo" + breadcrumb) manda: toma automaticamente
    el ancho que sus textos necesiten, sin comprimirse ni partirlos en dos lineas.
@@ -315,42 +308,6 @@ body {
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
-}
-
-.o_statusbar_status {
-    display: flex;
-    align-items: center;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    overflow: hidden;
-    background: white;
-    height: 34px;
-}
-
-.o_status_btn {
-    padding: 0 0.85rem;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    font-size: 0.775rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    border-right: 1px solid var(--border-color);
-    white-space: nowrap;
-    background: white;
-}
-
-.o_status_btn:last-child { border-right: none; }
-
-.o_status_btn.active {
-    background-color: var(--brand-primary);
-    color: white;
-    font-weight: 700;
-}
-
-.o_status_btn.done {
-    color: var(--brand-primary);
-    background-color: #F3F4F6;
 }
 
 /* --- Statusbar tipo "arrow pipeline" (Borrador -> Confirmado -> ... -> Hecho) --- */
@@ -566,33 +523,7 @@ body {
     padding: 1.5rem;
 }
 
-/* --- Chatter --- */
-.o_chatter {
-    background: #FAFAFA;
-    border-left: 1px solid var(--border-color);
-}
-
-.o_chatter_msg {
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 0.65rem 0.85rem;
-    font-size: 0.8rem;
-}
-
-/* --- Badges y tarjetas de marca --- */
-.btn-brand-primary {
-    background-color: var(--brand-primary);
-    color: white;
-    font-weight: 600;
-    border-color: var(--brand-primary);
-}
-.btn-brand-primary:hover {
-    background-color: var(--brand-primary-hover);
-    border-color: var(--brand-primary-hover);
-    color: white;
-}
-
+/* --- Insignias de marca --- */
 .badge-brand {
     background-color: var(--brand-light);
     color: var(--brand-primary);
@@ -921,7 +852,6 @@ body {
 .o_tabs [role="tab"] { cursor: pointer; }
 
 /* --- Estado de sincronización con CONTPAQi (pc-odoo-sync-status, CT-15) --- */
-.o_sync_status { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid var(--border-color); background: white; }
 .o_sync_NoAplica { color: var(--text-muted); }
 .o_sync_Pendiente, .o_sync_Enviado { color: #B54708; border-color: #F5D9B5; background: #FFF8EF; }
 .o_sync_Confirmado { color: #16794C; border-color: #BFE3CF; background: #F1FAF5; }
@@ -967,7 +897,6 @@ body {
 .o_sync_icono.o_sync_Error { color: #B42318; border-color: #F4C7C3; background: #FEF3F2; }
 .o_sync_popover { padding: 0.75rem 0.9rem; min-width: 260px; max-width: 340px; font-size: 0.85rem; }
 .o_sync_popover_titulo { font-weight: 600; margin-bottom: 0.25rem; }
-.o_chatter_cabecera { display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; min-height: 30px; }
 
 /* --- Revisión de la galería (2026-10-07) --- */
 /* Tablas: encabezado en peso medio y gris, contenido en peso normal y a 0.85rem. */

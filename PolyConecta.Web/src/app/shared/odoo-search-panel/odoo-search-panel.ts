@@ -1,4 +1,5 @@
 import { Component, computed, input, model, output, signal } from '@angular/core';
+import { OdooIcon } from '../odoo-icon/odoo-icon';
 import { Favorito } from '../../core/lista/favoritos';
 import { SearchView, etiquetasCampos } from '../../core/search/search-view';
 
@@ -15,6 +16,7 @@ export interface Facet {
  */
 @Component({
   selector: 'pc-odoo-search-panel',
+  imports: [OdooIcon],
   templateUrl: './odoo-search-panel.html',
   styles: ':host { display: contents; }',
 })

@@ -1,97 +1,65 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { n1, ordenCultural } from '../../../core/format/numero';
+import { OrigenEnMemoria } from '../../../core/lista/origen-en-memoria';
 import { StockQuant } from '../../../core/models/inventario';
-import { aplicar } from '../../../core/search/search-view';
+import { adaptarVista } from '../../../core/search/search-view';
 import { INVENTARIO_ACTUAL } from '../../../core/search/views';
 import { InventoryState } from '../../../core/state/inventory-state';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
-import { OdooPager } from '../../../shared/odoo-pager/odoo-pager';
+import { ColumnaLista } from '../../../shared/odoo-list/columnas';
+import { OdooList } from '../../../shared/odoo-list/odoo-list';
 import { OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-panel';
+import { OdooViewSwitcher } from '../../../shared/odoo-view-switcher/odoo-view-switcher';
 
-interface Grupo {
-  ruta: string;
-  etiqueta: string;
-  nivel: number;
+/** Renglón de existencias: la cantidad de un lote en una ubicación. */
+interface FilaInventario {
+  id: string;
+  ubicacion: string;
+  producto: string;
+  lote: string;
   cantidad: number;
-  total: number;
-  unidad?: string;
+  unidad: string;
+  quant: StockQuant;
 }
 
-interface Renglon {
-  grupo?: Grupo;
-  quant?: StockQuant;
-}
-
-/** Réplica de Pages/InventarioActualList.razor (en /inventario y /ventas/inventario). */
+/**
+ * Réplica de Pages/InventarioActualList.razor (en /inventario y /ventas/inventario) sobre `pc-odoo-list`
+ * (spec 011, P8): agrupa por omisión con la vista de búsqueda, los grupos abren plegados y el total de
+ * un grupo solo aparece si todo el grupo comparte unidad. Lista sin kanban.
+ */
 @Component({
   selector: 'pc-inventario-actual',
-  imports: [OdooBreadcrumb, OdooSearchPanel, OdooPager],
+  imports: [OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooList],
   templateUrl: './inventario-actual.html',
   styles: ':host { display: contents; }',
 })
 export class InventarioActual {
   private readonly inv = inject(InventoryState);
-  protected readonly vista = INVENTARIO_ACTUAL;
-  protected readonly n1 = n1;
+  protected readonly vista = adaptarVista(INVENTARIO_ACTUAL, (f: FilaInventario) => f.quant);
+
+  protected readonly origen = new OrigenEnMemoria<FilaInventario>({
+    datos: () =>
+      [...this.inv.existencias()]
+        .sort((a, b) => ordenCultural(a.ubicacion, b.ubicacion) || ordenCultural(a.producto.clave, b.producto.clave) || ordenCultural(a.lote, b.lote))
+        .map(q => ({
+          id: `${q.ubicacion}|${q.producto.clave}|${q.lote}`, ubicacion: q.ubicacion, producto: `[${q.producto.clave}] ${q.producto.nombre}`,
+          lote: q.lote, cantidad: q.cantidad, unidad: q.producto.unidad, quant: q,
+        })),
+    id: f => f.id,
+    vista: this.vista,
+    sumables: ['cantidad'],
+    unidad: f => f.unidad,
+  });
+  protected readonly idFila = (f: FilaInventario) => f.id;
+  protected readonly columnas: ColumnaLista<FilaInventario>[] = [
+    { campo: 'ubicacion', titulo: 'Ubicación' },
+    { campo: 'producto', titulo: 'Producto' },
+    { campo: 'lote', titulo: 'Lote', clase: 'font-monospace small' },
+    { campo: 'cantidad', titulo: 'Cantidad', tipo: 'numero', texto: f => n1(f.cantidad), sumable: true },
+    { campo: 'unidad', titulo: 'Unidad', clase: 'text-muted' },
+  ];
 
   protected readonly searchText = signal('');
   protected readonly filtros = signal<string[]>([]);
   protected readonly agrupaciones = signal<string[]>([...(INVENTARIO_ACTUAL.agrupacionesPorDefecto ?? [])]);
-  /** Grupos expandidos, por su ruta de claves. Como en Odoo, abren plegados. */
-  protected readonly abiertos = signal(new Set<string>());
-
-  protected readonly filtradas = computed(() => {
-    this.inv.cambios();
-    return aplicar(this.vista, this.inv.existencias(), this.searchText(), this.filtros()).sort(
-      (a, b) => ordenCultural(a.ubicacion, b.ubicacion) || ordenCultural(a.producto.clave, b.producto.clave) || ordenCultural(a.lote, b.lote),
-    );
-  });
-
-  /**
-   * Aplana la agrupación anidada en renglones: encabezado de grupo y, si está abierto, su contenido.
-   * El total solo se muestra cuando todo el grupo comparte unidad.
-   */
-  protected readonly renglones = computed<Renglon[]>(() => {
-    const claves = this.agrupaciones()
-      .map(e => this.vista.agrupaciones.find(a => a.etiqueta === e))
-      .filter(a => a !== undefined);
-    const abiertos = this.abiertos();
-    const res: Renglon[] = [];
-    const agregar = (items: StockQuant[], nivel: number, ruta: string) => {
-      if (nivel === claves.length) {
-        res.push(...items.map(quant => ({ quant })));
-        return;
-      }
-      const grupos = new Map<string, StockQuant[]>();
-      for (const q of items) {
-        const k = claves[nivel]!.clave(q);
-        grupos.set(k, [...(grupos.get(k) ?? []), q]);
-      }
-      for (const [clave, g] of [...grupos].sort(([a], [b]) => ordenCultural(a, b))) {
-        const rutaGrupo = `${ruta}/${clave}`;
-        const unidades = [...new Set(g.map(q => q.producto.unidad))];
-        res.push({
-          grupo: {
-            ruta: rutaGrupo,
-            etiqueta: clave,
-            nivel,
-            cantidad: g.length,
-            total: g.reduce((t, q) => t + q.cantidad, 0),
-            unidad: unidades.length === 1 ? unidades[0] : undefined,
-          },
-        });
-        if (abiertos.has(rutaGrupo)) agregar(g, nivel + 1, rutaGrupo);
-      }
-    };
-    agregar(this.filtradas(), 0, '');
-    return res;
-  });
-
-  protected alternarGrupo(ruta: string): void {
-    this.abiertos.update(s => {
-      const n = new Set(s);
-      if (!n.delete(ruta)) n.add(ruta);
-      return n;
-    });
-  }
 }

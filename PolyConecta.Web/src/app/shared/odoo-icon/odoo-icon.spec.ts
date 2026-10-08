@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
-import { DE_BOOTSTRAP, ICONOS, OdooIcon, resolverIcono } from './odoo-icon';
+import { OdooIcon, resolverIcono } from './odoo-icon';
 
 describe('OdooIcon', () => {
   it('pinta el ícono Lucide con el tamaño del contexto', () => {
@@ -15,15 +15,9 @@ describe('OdooIcon', () => {
     expect(svg.children.length).toBeGreaterThan(0);
   });
 
-  it('acepta el nombre de Bootstrap para migrar por partes', () => {
-    expect(resolverIcono('bi bi-truck')).toBe('entrega');
-    expect(resolverIcono('bi-x-octagon me-1')).toBe('hard-stop');
+  it('solo resuelve nombres del catálogo', () => {
+    expect(resolverIcono('entrega')).toBe('entrega');
     expect(resolverIcono('no-existe')).toBeUndefined();
-  });
-
-  it('cubre los 45 íconos de Bootstrap que usaba la aplicación', () => {
-    expect(Object.keys(DE_BOOTSTRAP)).toHaveLength(45);
-    for (const n of Object.values(DE_BOOTSTRAP)) expect(ICONOS[n]).toBeDefined();
   });
 
   it('no pinta nada con un nombre desconocido', () => {

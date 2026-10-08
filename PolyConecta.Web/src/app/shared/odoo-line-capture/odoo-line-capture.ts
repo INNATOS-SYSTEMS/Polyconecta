@@ -1,4 +1,5 @@
 import { Component, computed, input, model, output, signal } from '@angular/core';
+import { OdooIcon } from '../odoo-icon/odoo-icon';
 import { ProductRef } from '../../core/models/inventario';
 
 export interface LineDraft {
@@ -24,6 +25,7 @@ let siguienteId = 0;
  */
 @Component({
   selector: 'pc-odoo-line-capture',
+  imports: [OdooIcon],
   templateUrl: './odoo-line-capture.html',
   styles: ':host { display: contents; }',
 })

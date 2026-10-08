@@ -10,6 +10,11 @@ export interface OpcionesOrigenEnMemoria<T> {
   leer?: (fila: T, campo: string) => unknown;
   /** Columnas que se suman en los totales. */
   sumables?: readonly string[];
+  /**
+   * Unidad de cada fila: si se declara, un total solo se calcula cuando todas sus filas comparten
+   * unidad (no se suman kilos con piezas). Así lo hacía Inventario Actual.
+   */
+  unidad?: (fila: T) => string;
   /** Campos en los que busca la barra de búsqueda, si no hay vista. */
   buscables?: readonly string[];
   /**
@@ -140,6 +145,8 @@ export class OrigenEnMemoria<T> implements OrigenDeLista<T> {
   }
 
   private sumar(filas: T[]): Record<string, number> {
+    const unidad = this.opciones.unidad;
+    if (unidad && new Set(filas.map(unidad)).size > 1) return {};
     return Object.fromEntries((this.opciones.sumables ?? []).map(s => [s, filas.reduce((t, f) => t + (Number(this.leer(f, s)) || 0), 0)]));
   }
 }

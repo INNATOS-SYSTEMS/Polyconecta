@@ -1,12 +1,12 @@
 <div class="d-flex align-items-center gap-2 position-relative">
   <div class="o_search_bar">
-    <i class="bi bi-search"></i>
+    <pc-odoo-icon nombre="buscar" />
     @for (f of facetasContexto(); track f.campo) {
       <span class="o_search_facet" [title]="f.campo">
         <span class="o_search_facet_field">{{ f.campo }}</span>
         <span class="o_search_facet_value">{{ f.valor }}</span>
         @if (f.onRemove) {
-          <button type="button" class="o_search_facet_remove" title="Quitar filtro" (click)="f.onRemove()"><i class="bi bi-x"></i></button>
+          <button type="button" class="o_search_facet_remove" title="Quitar filtro" (click)="f.onRemove()"><pc-odoo-icon nombre="quitar" /></button>
         }
       </span>
     }
@@ -14,14 +14,14 @@
       <span class="o_search_facet" [title]="grupo.key">
         <span class="o_search_facet_field">{{ grupo.key }}</span>
         <span class="o_search_facet_value">{{ grupo.items.join(' o ') }}</span>
-        <button type="button" class="o_search_facet_remove" title="Quitar filtro" (click)="quitarGrupo(grupo.key)"><i class="bi bi-x"></i></button>
+        <button type="button" class="o_search_facet_remove" title="Quitar filtro" (click)="quitarGrupo(grupo.key)"><pc-odoo-icon nombre="quitar" /></button>
       </span>
     }
     @if (agrupacionesActivas().length > 0) {
       <span class="o_search_facet" title="Agrupar por">
-        <span class="o_search_facet_field"><i class="bi bi-stack"></i></span>
+        <span class="o_search_facet_field"><pc-odoo-icon nombre="agrupar" /></span>
         <span class="o_search_facet_value">{{ agrupacionesActivas().join(' > ') }}</span>
-        <button type="button" class="o_search_facet_remove" title="Quitar agrupación" (click)="agrupacionesActivas.set([])"><i class="bi bi-x"></i></button>
+        <button type="button" class="o_search_facet_remove" title="Quitar agrupación" (click)="agrupacionesActivas.set([])"><pc-odoo-icon nombre="quitar" /></button>
       </span>
     }
     <input type="text" [placeholder]="placeholder()" [value]="texto()" (input)="onInput($event)" />
@@ -29,7 +29,7 @@
 
   @if (view().filtros.length > 0 || puedeAgrupar() || conFavoritos()) {
     <button class="btn btn-sm btn-light border" (click)="menuAbierto.set(!menuAbierto())" title="Filtros del modelo">
-      <i class="bi bi-funnel"></i>
+      <pc-odoo-icon nombre="filtro" />
       @if (filtrosActivos().length > 0) {
         <span class="badge bg-primary ms-1">{{ filtrosActivos().length }}</span>
       }
@@ -43,7 +43,7 @@
         <div class="o_search_menu_group">{{ grupo.key }}</div>
         @for (filtro of grupo.items; track filtro.nombre) {
           <button class="o_search_menu_item" [class.active]="filtrosActivos().includes(filtro.nombre)" (click)="alternar(filtro.nombre)">
-            <i class="bi" [class.bi-check-square-fill]="filtrosActivos().includes(filtro.nombre)" [class.bi-square]="!filtrosActivos().includes(filtro.nombre)"></i> {{ filtro.nombre }}
+            <pc-odoo-icon [nombre]="filtrosActivos().includes(filtro.nombre) ? 'casilla-marcada' : 'casilla'" /> {{ filtro.nombre }}
           </button>
         }
       }
@@ -51,7 +51,7 @@
         <div class="o_search_menu_title border-top mt-1">Agrupar por</div>
         @for (agrupacion of view().agrupaciones; track agrupacion.etiqueta) {
           <button class="o_search_menu_item" [class.active]="agrupacionesActivas().includes(agrupacion.etiqueta)" (click)="alternarAgrupacion(agrupacion.etiqueta)">
-            <i class="bi" [class.bi-check-square-fill]="agrupacionesActivas().includes(agrupacion.etiqueta)" [class.bi-square]="!agrupacionesActivas().includes(agrupacion.etiqueta)"></i> {{ agrupacion.etiqueta }}
+            <pc-odoo-icon [nombre]="agrupacionesActivas().includes(agrupacion.etiqueta) ? 'casilla-marcada' : 'casilla'" /> {{ agrupacion.etiqueta }}
           </button>
         }
       }
@@ -72,7 +72,7 @@
       }
       @if (filtrosActivos().length > 0) {
         <button class="o_search_menu_item text-danger border-top" (click)="limpiarTodo()">
-          <i class="bi bi-x-circle"></i> Quitar todos los filtros
+          <pc-odoo-icon nombre="cancelar" /> Quitar todos los filtros
         </button>
       }
     </div>

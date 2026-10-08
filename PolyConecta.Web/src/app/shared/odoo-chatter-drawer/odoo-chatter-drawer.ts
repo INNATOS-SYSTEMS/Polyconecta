@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, input, model, signal } from '@angular/core';
+import { OdooIcon } from '../odoo-icon/odoo-icon';
 import { ChatterService } from '../../core/chatter/chatter.service';
 import { horaCorta } from '../../core/format/numero';
 
@@ -16,6 +17,7 @@ export interface ChatterEntry {
  */
 @Component({
   selector: 'pc-odoo-chatter-drawer',
+  imports: [OdooIcon],
   templateUrl: './odoo-chatter-drawer.html',
   styles: ':host { display: contents; }',
 })

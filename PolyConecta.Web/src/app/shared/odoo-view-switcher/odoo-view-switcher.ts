@@ -1,17 +1,19 @@
 import { Component, computed, inject, input } from '@angular/core';
+import { OdooIcon } from '../odoo-icon/odoo-icon';
 import { UiViewState, ViewMode } from '../../core/state/ui-view-state';
 
 /** Réplica de Components/Views/OdooViewSwitcher.razor. */
 @Component({
   selector: 'pc-odoo-view-switcher',
+  imports: [OdooIcon],
   template: `
     <div class="btn-group btn-group-sm o_view_switcher">
       <button class="btn-view" [class.active]="isListActive()" title="Vista de lista" [disabled]="!kanbanEnabled()" (click)="setMode('List')">
-        <i class="bi bi-list-ul"></i>
+        <pc-odoo-icon nombre="lista" />
       </button>
       @if (kanbanEnabled()) {
         <button class="btn-view" [class.active]="viewState.viewMode() === 'Kanban'" title="Vista kanban" (click)="setMode('Kanban')">
-          <i class="bi bi-kanban"></i>
+          <pc-odoo-icon nombre="kanban" />
         </button>
       }
     </div>
