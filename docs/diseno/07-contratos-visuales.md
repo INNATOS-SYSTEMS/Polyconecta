@@ -26,7 +26,7 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 | Ordenar | Clic en el encabezado: primero ascendente, luego descendente. Ordena **todo el filtro** en el origen, no la página |
 | Filtrar y buscar | Texto libre sobre los campos de la vista de búsqueda; filtros con nombre del mismo campo con O y de campos distintos con Y. Cambiar el filtro regresa a la página 1 |
 | Agrupar | Uno o varios niveles, desde el menú de búsqueda. Cada grupo muestra conteo y subtotales; se abre bajo pedido |
-| Columnas | Mostrar u ocultar y subir o bajar entre las visibles |
+| Columnas | Mostrar u ocultar y subir o bajar entre las visibles. El menú se abre en un popover sobre la página, nunca dentro de la tabla |
 | Paginar | 20, 40, 80 (por omisión) o 200 por página; el texto es "inicio-fin / total" |
 | Seleccionar | Casillas, con "seleccionar todo" de la página. Aparece la barra con las acciones masivas y "Exportar" |
 | Exportar | `.xlsx` con las seleccionadas o, sin selección, todo el filtro; columnas visibles en su orden, números como números y fechas `dd/mm/yyyy` |
@@ -77,6 +77,7 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 4. a la derecha de la hoja, el chatter, alineado arriba con ella.
 
 **Reglas**:
+- **Botones inteligentes** (D-141): un nombre por tipo de documento, en singular con 1 y en plural con otro conteo (Recolección, Traslado, Recepción, Entrega, Pedido, Orden de fabricación, Control de calidad), en este orden: movimientos de inventario, documento origen o relacionado, documentos de control. Se arman con `botonInteligente(tipo, conteo, ruta)`.
 - Los botones inteligentes sin origen se ven atenuados y no navegan (documento libre).
 - La acción primaria es una sola.
 - Las secundarias poco frecuentes (duplicar, imprimir, archivar…) van en el menú del engranaje. No hay botón "Acciones" con texto en la barra.
@@ -112,6 +113,10 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 **Aspecto de todo campo capturable**: solo una **línea inferior** y fondo **transparente**, sin caja, antes y después de enfocarlo; al enfocarlo, la línea toma el color primario; con error, la línea es roja y el motivo va debajo. Lo extra del campo (signo de moneda, código de moneda, unidad, ícono del calendario) va en gris, sobre la misma línea. Es la clase `o_field` de `app.css` (y `o_inline_input` para un `input` suelto).
 
 En solo lectura el campo es texto sin línea. Todos funcionan con formularios de Angular (`ngModel` o formularios reactivos).
+
+### 1.6 bis Nombre de producto (D-141)
+
+Todo producto se muestra como **"Clave - Nombre"**: en campos, tablas, tarjetas, diálogos y agrupaciones. La clave sigue siendo el identificador (datos, búsquedas y selección). En las tablas de líneas, Clave y Producto son una sola columna "Producto". Se arma con `nombreProducto` (`core/format/producto.ts`) o, si hay que buscar en el catálogo, con `etiquetaProducto` (`core/format/producto-etiqueta.ts`); si el dato trae su propia descripción, se respeta.
 
 ### 1.7 Avisos y bloqueos
 

@@ -1,5 +1,6 @@
 import { Page, expect, test } from '@playwright/test';
 import { ANGULAR, BLAZOR, abrir } from '../soporte/apps';
+import { catalogoSemilla } from '../../src/app/core/seed/inventario';
 
 /**
  * Guiones de escenario (spec 001, FR-018): la misma lista de pasos se ejecuta contra Blazor y contra
@@ -37,6 +38,67 @@ export interface Guion {
 }
 
 const normalizar = (texto: string): string => texto.replace(/\s+/g, ' ').trim();
+
+/**
+ * Diferencias de texto decididas después de la réplica (D-141), que el corredor lleva a una forma común
+ * antes de comparar las dos aplicaciones. Los `esperado` de cada paso se revisan contra el texto real.
+ * - Producto: el prototipo muestra la clave y el nombre en columnas separadas, o solo uno de los dos; la
+ *   réplica muestra "Clave - Nombre". Las dos formas quedan como «Clave».
+ * - Botones inteligentes: nombre por tipo en singular o plural y orden por grupo. Cada botón queda como
+ *   «tipo conteo», ordenados (ver `textoComparable`).
+ */
+const PRODUCTOS = catalogoSemilla().sort((a, b) => b.clave.length - a.clave.length || b.nombre.length - a.nombre.length);
+const escapar = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+export function canonico(texto: string): string {
+  let t = texto.replace(/\bClave Producto\b/g, 'Producto').replace(/\bLote Clave\b/g, 'Lote Producto');
+  for (const p of PRODUCTOS) {
+    const c = escapar(p.clave), n = escapar(p.nombre);
+    t = t.replace(new RegExp(`(?:\\[${c}\\]|${c})(?: - | )${n}`, 'g'), `«${p.clave}»`);
+  }
+  for (const p of PRODUCTOS) {
+    t = t.replace(new RegExp(`(?<=^|\\s)${escapar(p.clave)}(?=\\s|$)`, 'g'), `«${p.clave}»`);
+    t = t.replace(new RegExp(`(?<=^|\\s)${escapar(p.nombre)}(?=\\s|$)`, 'g'), `«${p.clave}»`);
+  }
+  // Una línea con la clave de un producto y la descripción de otro queda «A» - «B» en la réplica.
+  return t.replace(/» - «/g, '» «');
+}
+
+const TIPOS_DE_BOTON: Record<string, string> = {
+  'Pedido': 'pedido', 'Pedidos': 'pedido', 'Pedido de Venta': 'pedido', 'Entrega': 'entrega', 'Entregas': 'entrega',
+  'Fabricación': 'orden', 'Orden de Fabricación': 'orden', 'Orden de fabricación': 'orden', 'Órdenes de fabricación': 'orden',
+  'Recolección': 'recoleccion', 'Recolecciones': 'recoleccion', 'Traslado': 'traslado', 'Traslados': 'traslado',
+  'Recepción': 'recepcion', 'Recepciones': 'recepcion', 'Calidad': 'control', 'Control de calidad': 'control', 'Controles de calidad': 'control',
+};
+
+/**
+ * Texto de un punto de control: el real y el comparable, con los botones inteligentes como «tipo conteo»
+ * en orden alfabético. Cambia el DOM solo durante la lectura y lo deja como estaba.
+ */
+async function textoComparable(page: Page, selector: string): Promise<{ real: string; comparable: string }> {
+  const el = page.locator(selector).first();
+  const real = normalizar(await el.innerText());
+  const conBotones = await el.evaluate((raiz, tipos) => {
+    const cajas = new Set(Array.from(raiz.querySelectorAll('.o_smart_button')).map(b => b.parentElement!));
+    const deshacer: (() => void)[] = [];
+    for (const caja of cajas) {
+      const botones = Array.from(caja.children).filter(b => b.classList.contains('o_smart_button')) as HTMLElement[];
+      const marcas = botones.map(b => {
+        const etiqueta = (b.querySelector('.stat-label, .o_stat_text')?.textContent ?? '').trim();
+        const conteo = (b.querySelector('.stat-count, .o_stat_value')?.textContent ?? '').trim();
+        return `«${tipos[etiqueta] ?? etiqueta} ${conteo}»`;
+      });
+      const marca = document.createElement('span');
+      marca.textContent = marcas.sort().join(' ');
+      botones.forEach(b => (b.style.display = 'none'));
+      caja.appendChild(marca);
+      deshacer.push(() => { marca.remove(); botones.forEach(b => (b.style.display = '')); });
+    }
+    const texto = (raiz as HTMLElement).innerText;
+    deshacer.forEach(d => d());
+    return texto;
+  }, TIPOS_DE_BOTON);
+  return { real, comparable: canonico(normalizar(conBotones)) };
+}
 
 
 interface Corrida {
@@ -98,9 +160,9 @@ async function ejecutar(page: Page, base: string, pasos: Paso[]): Promise<Corrid
       controles[paso.control] = habilitado ? 'habilitado' : 'deshabilitado';
       if (paso.esperado !== undefined) expect(habilitado, paso.control).toBe(paso.esperado);
     } else {
-      const texto = normalizar(await page.locator(paso.en).first().innerText());
-      controles[paso.control] = texto;
-      if (paso.esperado !== undefined) expect(texto, paso.control).toMatch(paso.esperado);
+      const { real, comparable } = await textoComparable(page, paso.en);
+      controles[paso.control] = comparable;
+      if (paso.esperado !== undefined) expect(real, paso.control).toMatch(paso.esperado);
     }
   }
   return { controles };

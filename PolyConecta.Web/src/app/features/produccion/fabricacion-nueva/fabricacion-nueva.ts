@@ -1,4 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Component, computed, inject, signal, WritableSignal } from '@angular/core';
 import { Router } from '@angular/router';
 import { n1 } from '../../../core/format/numero';
@@ -55,7 +56,7 @@ const AL_GUARDAR = 'Se habilita al guardar la orden.';
       </div>
       <datalist id="of-nueva-catalogo">
         @for (p of inv.catalogo; track p.clave) {
-          <option [value]="p.clave">{{ p.nombre }}</option>
+          <option [value]="p.clave">{{ etiqueta(p.clave, p.nombre) }}</option>
         }
       </datalist>
 
@@ -75,18 +76,17 @@ const AL_GUARDAR = 'Se habilita al guardar la orden.';
 
       <ng-template #tabla let-lineas let-nombre="nombre">
         <table class="table table-sm align-middle mb-0" [attr.data-lineas-nuevas]="nombre">
-          <thead class="text-muted small"><tr><th style="width:15%;">Clave</th><th>Producto</th><th class="text-center" style="width:110px;">Cantidad</th><th class="text-center" style="width:80px;">Unidad</th><th style="width:60px;"></th></tr></thead>
+          <thead class="text-muted small"><tr><th>Producto</th><th class="text-center" style="width:110px;">Cantidad</th><th class="text-center" style="width:80px;">Unidad</th><th style="width:60px;"></th></tr></thead>
           <tbody>
             @for (l of lineas(); track $index) {
               <tr>
-                <td class="fw-semibold text-primary small">{{ l.clave }}</td>
-                <td class="small">{{ l.producto }}</td>
+                <td>{{ etiqueta(l.clave, l.producto) }}</td>
                 <td class="text-center">{{ n1(l.cantidad) }}</td>
                 <td class="text-center small text-muted">{{ l.unidad }}</td>
                 <td class="text-center"><button type="button" class="btn o_btn_icon" title="Eliminar" (click)="quitar(lineas, $index)"><pc-odoo-icon nombre="quitar-linea" contexto="icono" /></button></td>
               </tr>
             } @empty {
-              <tr><td colspan="5" class="small text-muted">Sin líneas. Se pueden agregar ahora o después de guardar.</td></tr>
+              <tr><td colspan="4" class="small text-muted">Sin líneas. Se pueden agregar ahora o después de guardar.</td></tr>
             }
           </tbody>
         </table>
@@ -96,6 +96,7 @@ const AL_GUARDAR = 'Se habilita al guardar la orden.';
   styles: ':host { display: contents; }',
 })
 export class FabricacionNueva {
+  protected readonly etiqueta = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
   private readonly ofs = inject(OfLibre);
   protected readonly inv = inject(InventoryState);
   protected readonly router = inject(Router);

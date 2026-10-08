@@ -1,4 +1,5 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Router } from '@angular/router';
 import { n1 } from '../../../core/format/numero';
 import { LotBalance } from '../../../core/models/inventario';
@@ -51,7 +52,7 @@ import { CONFIG, TipoLogistica } from './tipos';
               <tr>
                 <td><input type="checkbox" class="form-check-input" [attr.aria-label]="l.lote" [checked]="elegidos().has(l.lote)" (change)="alternar(l.lote)" /></td>
                 <td><code>{{ l.lote }}</code></td>
-                <td class="small">{{ inv.getProducto(l.clave)?.nombre ?? l.clave }}</td>
+                <td class="small">{{ producto(l.clave) }}</td>
                 <td class="small">{{ l.ubicacion }}</td>
                 <td class="text-end">{{ n1(l.cantidad) }}</td>
                 <td class="small">{{ inv.getProducto(l.clave)?.unidad }}</td>
@@ -67,6 +68,7 @@ import { CONFIG, TipoLogistica } from './tipos';
   styles: ':host { display: contents; }',
 })
 export class LogisticaNuevo {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
   private readonly libres = inject(OperacionesLibres);
   protected readonly inv = inject(InventoryState);
   protected readonly router = inject(Router);

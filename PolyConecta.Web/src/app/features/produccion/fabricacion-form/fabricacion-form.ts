@@ -1,4 +1,5 @@
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { fechaCorta, fechaHora, n1 } from '../../../core/format/numero';
@@ -11,7 +12,7 @@ import { OfLibre } from '../../../core/state/libre/of-libre';
 import { Crumb, OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
 import { LineDraft, OdooLineCapture, emptyDraft } from '../../../shared/odoo-line-capture/odoo-line-capture';
-import { OdooSmartButtons, SmartButtonModel } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
+import { OdooSmartButtons, SmartButtonModel, botonInteligente } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooTabs } from '../../../shared/odoo-tabs/odoo-tabs';
@@ -27,6 +28,7 @@ type Tab = 'componentes' | 'subproductos' | 'produccion' | 'planeacion';
   styles: ':host { display: contents; }',
 })
 export class FabricacionForm {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
   protected readonly flow = inject(OperationalFlowState);
   protected readonly inv = inject(InventoryState);
   private readonly ops = inject(StockOperationState);
@@ -113,15 +115,15 @@ export class FabricacionForm {
     // Primarias y secundarias llegan al pedido directamente; la jerarquía se navega en la lista.
     // FR-014: una OF libre no tiene pedido; el botón queda vacío y deshabilitado, nunca con un origen falso.
     const list: SmartButtonModel[] = this.of()?.libre
-      ? [{ label: 'Pedido', countBadge: 0, iconClass: 'pedido', targetRoute: '', deshabilitado: true }]
-      : [{ label: 'Pedido', countBadge: 1, iconClass: 'pedido', targetRoute: `/pedidos/${this.of()?.pedidoFolio}` }];
+      ? [botonInteligente('pedido', 0, '', true)]
+      : [botonInteligente('pedido', 1, `/pedidos/${this.of()?.pedidoFolio}`)];
     // El traslado interplanta cuelga de la orden que tiene secundarias (la que genera el envío).
     if (this.flow.getSecondaries(folio).length > 0)
-      list.push({ label: 'Traslado', countBadge: 1, iconClass: 'traslado', targetRoute: `/traslados/${this.flow.traslado().folio}` });
+      list.push(botonInteligente('traslado', 1, `/traslados/${this.flow.traslado().folio}`));
     const recolecciones = this.ops.deOf(folio);
     if (recolecciones.length > 0)
-      list.push({ label: 'Recolección', countBadge: recolecciones.length, iconClass: 'recoleccion', targetRoute: `/recolecciones/${recolecciones[0].folio}` });
-    list.push({ label: 'Calidad', countBadge: 1, iconClass: 'calidad', targetRoute: `/calidad/${folio}` });
+      list.push(botonInteligente('recoleccion', recolecciones.length, `/recolecciones/${recolecciones[0].folio}`));
+    list.push(botonInteligente('control', 1, `/calidad/${folio}`));
     return list;
   });
 

@@ -1,4 +1,5 @@
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Dialog } from '@angular/cdk/dialog';
 import { firstValueFrom } from 'rxjs';
@@ -16,7 +17,7 @@ import { ETAPAS_RECOLECCION, RecoleccionAcciones, ValidarRecoleccion } from '../
 import { LotQuantityPickerModal } from '../../../shared/lot-quantity-picker-modal/lot-quantity-picker-modal';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
-import { OdooSmartButtons, SmartButtonModel } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
+import { OdooSmartButtons, SmartButtonModel, botonInteligente } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
 
 /**
@@ -30,6 +31,7 @@ import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-st
   styles: ':host { display: contents; }',
 })
 export class RecoleccionForm {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
   protected readonly ops = inject(StockOperationState);
   private readonly inv = inject(InventoryState);
   private readonly router = inject(Router);
@@ -77,12 +79,12 @@ export class RecoleccionForm {
     const sinOf = op !== undefined && op.ofFolio === '';
     const lista: SmartButtonModel[] = [
       sinOf
-        ? { label: 'Orden de Fabricación', countBadge: 0, iconClass: 'fabricacion', targetRoute: '', deshabilitado: true }
-        : { label: 'Orden de Fabricación', countBadge: 1, iconClass: 'fabricacion', targetRoute: `/fabricacion/${op?.ofFolio ?? ''}` },
+        ? botonInteligente('orden', 0, '', true)
+        : botonInteligente('orden', 1, `/fabricacion/${op?.ofFolio ?? ''}`),
     ];
     const hermanas = op && !sinOf ? this.ops.deOf(op.ofFolio).filter(o => o.folio !== op.folio) : [];
     if (hermanas.length > 0)
-      lista.push({ label: 'Recolecciones', countBadge: hermanas.length, iconClass: 'recoleccion', targetRoute: '/recolecciones' });
+      lista.push(botonInteligente('recoleccion', hermanas.length, '/recolecciones'));
     return lista;
   });
 

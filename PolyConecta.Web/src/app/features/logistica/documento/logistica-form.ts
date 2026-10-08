@@ -1,4 +1,5 @@
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Dialog } from '@angular/cdk/dialog';
 import { firstValueFrom } from 'rxjs';
@@ -10,7 +11,7 @@ import { OperationalFlowState } from '../../../core/state/operational-flow-state
 import { LotPickerModal } from '../../../shared/lot-picker-modal/lot-picker-modal';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
-import { OdooSmartButtons } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
+import { OdooSmartButtons, botonInteligente } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooTabs } from '../../../shared/odoo-tabs/odoo-tabs';
@@ -31,6 +32,7 @@ import { CONFIG, TipoLogistica } from './tipos';
   styles: ':host { display: contents; }',
 })
 export class LogisticaForm {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
   protected readonly flow = inject(OperationalFlowState);
   private readonly router = inject(Router);
   protected readonly acciones = inject(LogisticaAcciones);
@@ -60,7 +62,7 @@ export class LogisticaForm {
     this.flow.cambios();
     // FR-014: un documento libre no tiene origen; sus smart buttons quedan vacíos y deshabilitados.
     const botones = this.cfg().smartButtons(this.flow);
-    return this.doc().libre ? botones.map(b => ({ ...b, countBadge: 0, targetRoute: '', deshabilitado: true })) : botones;
+    return this.doc().libre ? botones.map(b => (b.tipo ? botonInteligente(b.tipo, 0, '', true) : { ...b, countBadge: 0, targetRoute: '', deshabilitado: true })) : botones;
   });
   /** El documento libre solo ofrece los lotes que permite su regla (FR-012); la semilla, los del prototipo. */
   protected readonly lotes = computed(() => {

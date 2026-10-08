@@ -1,4 +1,6 @@
 import { Component, inject, Injectable } from '@angular/core';
+import { InventoryState } from '../../../core/state/inventory-state';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { n1 } from '../../../core/format/numero';
 import { TransicionKanban } from '../../../core/kanban/kanban';
@@ -105,10 +107,10 @@ export class LogisticaAcciones {
     <pc-odoo-dialog titulo="Validar recepción" textoPrimario="Recibir" (confirmar)="ref.close(true)" (cancelar)="ref.close(false)">
       <p class="mb-2" data-regla-recepcion>Solo se reciben lotes <strong>en tránsito</strong> (<code>TRANS/*</code>): material que salió de otra planta con su traslado (D-56). Entran a <strong>{{ datos.fila.doc.destino }}</strong>.</p>
       <table class="table table-sm align-middle mb-0">
-        <thead><tr><th>Clave</th><th>Lote</th><th class="text-end">Cantidad</th><th>Unidad</th></tr></thead>
+        <thead><tr><th>Producto</th><th>Lote</th><th class="text-end">Cantidad</th><th>Unidad</th></tr></thead>
         <tbody>
           @for (l of lotes; track l.lote) {
-            <tr><td>{{ l.clave }}</td><td><code>{{ l.lote }}</code></td><td class="text-end">{{ n1(l.cantidad) }}</td><td>{{ l.unidad }}</td></tr>
+            <tr><td>{{ producto(l.clave) }}</td><td><code>{{ l.lote }}</code></td><td class="text-end">{{ n1(l.cantidad) }}</td><td>{{ l.unidad }}</td></tr>
           }
         </tbody>
       </table>
@@ -116,6 +118,8 @@ export class LogisticaAcciones {
   `,
 })
 export class ValidarRecepcion {
+  private readonly invProductos = inject(InventoryState);
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.invProductos.catalogo, claveONombre, nombre);
   protected readonly ref = inject<DialogRef<boolean>>(DialogRef);
   protected readonly datos = inject<{ fila: { doc: DocumentoLogistica } }>(DIALOG_DATA);
   protected readonly n1 = n1;

@@ -1,4 +1,5 @@
 import { InventoryState } from '../state/inventory-state';
+import { nombreProducto } from '../format/producto';
 import { ProductClass, StockQuant } from '../models/inventario';
 import { StockOperation } from '../models/operaciones';
 import { Incidencia, ManufacturingOrder } from '../models/produccion';
@@ -173,7 +174,7 @@ export const INVENTARIO_ACTUAL: SearchView<StockQuant> = {
   ],
   agrupaciones: [
     { etiqueta: 'Ubicación', clave: q => q.ubicacion },
-    { etiqueta: 'Producto', clave: q => q.producto.clave + ' ' + q.producto.nombre },
+    { etiqueta: 'Producto', clave: q => nombreProducto(q.producto.clave, q.producto.nombre) },
     { etiqueta: 'Clasificación', clave: q => InventoryState.classLabel(q.producto.clasificacion) },
     { etiqueta: 'Lote', clave: q => q.lote },
   ],

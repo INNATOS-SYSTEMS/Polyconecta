@@ -25,10 +25,11 @@
             [attr.aria-sort]="ordenDe(c.campo) === 'asc' ? 'ascending' : ordenDe(c.campo) === 'desc' ? 'descending' : null"
             [attr.data-columna]="c.campo" (click)="alternarOrden(c.campo)">{{ c.titulo }}@if (ordenDe(c.campo); as o) {<span class="o_list_sort_icon"><pc-odoo-icon [nombre]="o === 'asc' ? 'contraer' : 'expandir'" /></span>}</th>
       }
-      <th style="width:40px;" class="text-end position-relative">
-        <button type="button" class="btn o_btn_icon" aria-label="Columnas" data-lista="columnas" (click)="menuColumnas.set(!menuColumnas())"><pc-odoo-icon nombre="columnas" contexto="icono" /></button>
-        @if (menuColumnas()) {
-          <div class="o_dropdown_panel o_list_columnas_menu position-absolute end-0 text-start" style="z-index:20;" role="menu">
+      <th style="width:40px;" class="text-end" (click)="$event.stopPropagation()">
+        <!-- En un popover (capa sobre la página): dentro de la tabla, su overflow lo recortaba. -->
+        <div brnPopover align="end">
+        <button type="button" brnPopoverTrigger class="btn o_btn_icon" aria-label="Columnas" data-lista="columnas"><pc-odoo-icon nombre="columnas" contexto="icono" /></button>
+          <div *brnPopoverContent class="o_dropdown_panel o_list_columnas_menu text-start" role="menu" [attr.data-columnas-de]="lista()">
             @for (campo of ordenColumnas(); track campo; let i = $index, ultimo = $last) {
               @let col = table.getColumn(campo);
               <div class="o_search_menu_item">
@@ -41,7 +42,7 @@
               </div>
             }
           </div>
-        }
+        </div>
       </th>
     </tr>
   </thead>

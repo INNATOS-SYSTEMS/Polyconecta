@@ -107,7 +107,7 @@ guion({
     { pulsar: 'div.position-fixed button', texto: 'Cancelar' },
     { pulsar: '.o_smart_button', texto: 'Entrega' },
     { control: 'entrega desde el pedido', en: 'main' },
-    { pulsar: '.o_smart_button', texto: 'Pedido de Venta' },
+    { pulsar: '.o_smart_button', texto: 'Pedido' },
     { control: 'regreso al pedido', en: 'main' },
   ],
 });

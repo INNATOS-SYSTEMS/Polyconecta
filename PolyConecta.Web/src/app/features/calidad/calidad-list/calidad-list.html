@@ -21,7 +21,7 @@
                 <div class="fw-semibold text-dark small">{{ f.folio }}</div>
                 <span class="badge badge-brand">{{ f.estado }}</span>
             </div>
-            <div class="text-muted small">{{ f.libre ? 'Control libre' : f.producto }}</div>
+            <div class="text-muted small">{{ f.libre ? 'Control libre' : producto(f.producto) }}</div>
             @if (!f.libre) {
                 <div class="o_kanban_card_dato"><pc-odoo-icon nombre="fabricacion" />{{ f.orden }} · {{ f.proceso }}</div>
             }

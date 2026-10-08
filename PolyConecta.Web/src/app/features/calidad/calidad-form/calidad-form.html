@@ -29,7 +29,7 @@
                     <h4 class="fw-bold text-primary mb-3">{{ qcFolio() }}</h4>
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
-                            <div class="o_form_label_row"><span class="o_form_label">Producto</span><span class="o_form_value fw-semibold">{{ of.producto }}</span></div>
+                            <div class="o_form_label_row"><span class="o_form_label">Producto</span><span class="o_form_value fw-semibold">{{ producto(of.producto) }}</span></div>
                             <div class="o_form_label_row"><span class="o_form_label">Orden de Fabricación</span><span class="o_form_value"><a [routerLink]="'/fabricacion/' + of.folio" class="text-decoration-none">{{ of.folio }}</a></span></div>
                         </div>
                         <div class="col-md-6">
@@ -52,7 +52,7 @@
                                 @for (lote of of.produccion; track $index; let i = $index) {
                                     <tr>
                                         <td>{{ i + 1 }}</td>
-                                        <td class="small">{{ of.producto }}</td>
+                                        <td class="small">{{ producto(of.producto) }}</td>
                                         <td><code>{{ lote.lote }}</code></td>
                                         <td class="text-end">{{ n1(cantidadPlaneadaPorLote()) }}</td>
                                         <td class="text-end">{{ n1(lote.real) }} {{ lote.unidad }}</td>

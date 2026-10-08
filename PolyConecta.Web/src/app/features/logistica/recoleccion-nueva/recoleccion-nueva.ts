@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Router } from '@angular/router';
 import { n1 } from '../../../core/format/numero';
 import { InventoryState } from '../../../core/state/inventory-state';
@@ -49,15 +50,14 @@ type Tipo = 'recoleccion' | 'devolucion';
         <ng-template pcPestana="operaciones">
       <pc-odoo-line-capture [(draft)]="draft" [catalogo]="inv.catalogo" [unidadFija]="true" (submitted)="agregar($event)" />
       <table class="table table-sm align-middle mb-0">
-        <thead><tr><th>Clave</th><th>Producto</th><th class="text-end">Cantidad</th><th style="width:70px;">Unidad</th><th class="text-center" style="width:60px;"></th></tr></thead>
+        <thead><tr><th>Producto</th><th class="text-end">Cantidad</th><th style="width:70px;">Unidad</th><th class="text-center" style="width:60px;"></th></tr></thead>
         <tbody>
           @if (lineas().length === 0) {
-            <tr><td colspan="5" class="text-muted small fst-italic">Sin líneas todavía.</td></tr>
+            <tr><td colspan="4" class="text-muted small fst-italic">Sin líneas todavía.</td></tr>
           }
           @for (l of lineas(); track $index) {
             <tr>
-              <td class="small">{{ l.clave }}</td>
-              <td>{{ l.producto }}</td>
+              <td>{{ producto(l.clave, l.producto) }}</td>
               <td class="text-end">{{ n1(l.cantidad) }}</td>
               <td class="small">{{ l.unidad }}</td>
               <td class="text-center"><button type="button" class="btn o_btn_icon" aria-label="Quitar línea" title="Quitar línea" (click)="quitar($index)"><pc-odoo-icon nombre="quitar-linea" contexto="icono" /></button></td>
@@ -72,6 +72,7 @@ type Tipo = 'recoleccion' | 'devolucion';
   styles: ':host { display: contents; }',
 })
 export class RecoleccionNueva {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
   private readonly libres = inject(OperacionesLibres);
   protected readonly inv = inject(InventoryState);
   protected readonly router = inject(Router);

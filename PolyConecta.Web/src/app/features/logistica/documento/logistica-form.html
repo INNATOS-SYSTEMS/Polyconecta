@@ -52,12 +52,11 @@
 
                 <pc-odoo-tabs [pestanas]="pestanas" activa="operaciones" />
                 <table class="table table-sm align-middle mb-0">
-                    <thead><tr><th>Clave</th><th>Producto</th><th class="text-end">Demanda</th><th class="text-end">{{ cfg().columnaCantidad }}</th><th style="width:70px;">Unidad</th><th>Lotes</th></tr></thead>
+                    <thead><tr><th>Producto</th><th class="text-end">Demanda</th><th class="text-end">{{ cfg().columnaCantidad }}</th><th style="width:70px;">Unidad</th><th>Lotes</th></tr></thead>
                     <tbody>
                         @for (l of doc().lineas; track $index) {
                             <tr>
-                                <td class="small">{{ l.clave }}</td>
-                                <td>{{ l.producto }}</td>
+                                <td>{{ producto(l.clave, l.producto) }}</td>
                                 <td class="text-end">{{ n1(l.demanda) }}</td>
                                 <td class="text-end">{{ n1(l.entregado) }}</td>
                                 <td class="small">{{ l.unidad }}</td>

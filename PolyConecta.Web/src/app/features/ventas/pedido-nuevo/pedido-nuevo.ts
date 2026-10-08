@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Router } from '@angular/router';
 import { n1, n2 } from '../../../core/format/numero';
 import { SalesOrderLine, subtotal } from '../../../core/models/ventas';
@@ -39,15 +40,14 @@ import { ETAPAS_PEDIDO } from '../pedidos-acciones';
           <table class="table align-middle mb-0" data-lineas-nuevas>
             <thead>
               <tr class="text-muted small">
-                <th style="width:15%;">Clave</th><th>Producto</th><th class="text-center" style="width:110px;">Cantidad</th>
+                <th>Producto</th><th class="text-center" style="width:110px;">Cantidad</th>
                 <th class="text-center">Unidad</th><th class="text-end">Precio Unitario</th><th class="text-end">Subtotal</th><th></th>
               </tr>
             </thead>
             <tbody>
               @for (l of lineas(); track $index) {
                 <tr>
-                  <td class="fw-semibold text-primary small">{{ l.clave }}</td>
-                  <td class="small">{{ l.producto }}</td>
+                  <td>{{ producto(l.clave, l.producto) }}</td>
                   <td class="text-center">{{ n1(l.cantidad) }}</td>
                   <td class="text-center small text-muted">{{ l.unidad }}</td>
                   <td class="text-end text-muted">\${{ n2(l.precioUnitario) }} {{ l.moneda }}</td>
@@ -55,7 +55,7 @@ import { ETAPAS_PEDIDO } from '../pedidos-acciones';
                   <td class="text-center"><button type="button" class="btn o_btn_icon" title="Eliminar" (click)="quitar($index)"><pc-odoo-icon nombre="quitar-linea" contexto="icono" /></button></td>
                 </tr>
               } @empty {
-                <tr><td colspan="7" class="small text-muted">Sin líneas. Se pueden agregar ahora o después de guardar.</td></tr>
+                <tr><td colspan="6" class="small text-muted">Sin líneas. Se pueden agregar ahora o después de guardar.</td></tr>
               }
             </tbody>
           </table>
@@ -67,6 +67,7 @@ import { ETAPAS_PEDIDO } from '../pedidos-acciones';
   styles: ':host { display: contents; }',
 })
 export class PedidoNuevo {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
   private readonly libre = inject(PedidoLibre);
   protected readonly inv = inject(InventoryState);
   protected readonly router = inject(Router);

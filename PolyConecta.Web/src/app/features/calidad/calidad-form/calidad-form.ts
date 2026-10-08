@@ -1,11 +1,13 @@
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
+import { InventoryState } from '../../../core/state/inventory-state';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { n1 } from '../../../core/format/numero';
 import { OperationalFlowState } from '../../../core/state/operational-flow-state';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
-import { OdooSmartButtons, SmartButtonModel } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
+import { OdooSmartButtons, SmartButtonModel, botonInteligente } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooTabs } from '../../../shared/odoo-tabs/odoo-tabs';
 import { CalidadAcciones } from '../calidad-acciones';
@@ -22,6 +24,8 @@ import { estadoQc, qcFolio } from '../calidad-estado';
   styles: ':host { display: contents; }',
 })
 export class CalidadForm {
+  private readonly invProductos = inject(InventoryState);
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.invProductos.catalogo, claveONombre, nombre);
   protected readonly flow = inject(OperationalFlowState);
   private readonly router = inject(Router);
   protected readonly acciones = inject(CalidadAcciones);
@@ -48,7 +52,7 @@ export class CalidadForm {
   });
 
   protected readonly smartButtons = computed<SmartButtonModel[]>(() => [
-    { label: 'Orden de Fabricación', countBadge: 1, iconClass: 'fabricacion', targetRoute: `/fabricacion/${this.folioOf()}` },
+    botonInteligente('orden', 1, `/fabricacion/${this.folioOf()}`),
   ]);
 
   protected navegar(ruta: string): void {

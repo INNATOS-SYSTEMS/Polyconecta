@@ -7,7 +7,7 @@ import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb'
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { PedidosAcciones } from '../pedidos-acciones';
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
-import { OdooSmartButtons, SmartButtonModel } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
+import { OdooSmartButtons, SmartButtonModel, botonInteligente } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
 import { PocSalesOrderForm } from '../../../shared/poc-sales-order-form/poc-sales-order-form';
 
@@ -46,18 +46,13 @@ export class PedidoForm {
       // FR-014: un pedido libre no tiene entrega ni OF hasta que se generen; nunca un origen falso.
       const ofs = this.flow.ordenesDePedido(this.pedido().folio).length;
       return [
-        { label: 'Entrega', countBadge: 0, iconClass: 'entrega', targetRoute: '', deshabilitado: true },
-        { label: 'Fabricación', countBadge: ofs, iconClass: 'fabricacion', targetRoute: `/fabricacion?pedido=${this.pedido().folio}`, deshabilitado: ofs === 0 },
+        botonInteligente('entrega', 0, '', true),
+        botonInteligente('orden', ofs, `/fabricacion?pedido=${this.pedido().folio}`, ofs === 0),
       ];
     }
     return [
-      { label: 'Entrega', countBadge: 1, iconClass: 'entrega', targetRoute: `/entregas/${this.flow.entrega().folio}` },
-      {
-        label: 'Fabricación',
-        countBadge: this.flow.ordenesDePedido(this.folio()).length,
-        iconClass: 'fabricacion',
-        targetRoute: `/fabricacion?pedido=${this.folio()}`,
-      },
+      botonInteligente('entrega', 1, `/entregas/${this.flow.entrega().folio}`),
+      botonInteligente('orden', this.flow.ordenesDePedido(this.folio()).length, `/fabricacion?pedido=${this.folio()}`),
     ];
   });
 

@@ -22,7 +22,7 @@
                 <span class="badge badge-brand">{{ f.estado }}</span>
             </div>
             <div class="text-muted small">{{ f.cliente }}</div>
-            <div class="o_kanban_card_dato"><pc-odoo-icon nombre="paquete" />{{ f.producto }}</div>
+            <div class="o_kanban_card_dato"><pc-odoo-icon nombre="paquete" />{{ producto(f.producto) }}</div>
             @if (f.entrega) {
                 <div class="o_kanban_card_dato"><pc-odoo-icon nombre="calendario" />Entrega estimada: {{ fechaCampo(f.entrega) }}</div>
             }

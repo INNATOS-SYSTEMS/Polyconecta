@@ -83,9 +83,10 @@ test.describe('lista', () => {
 
   test('oculta y reordena columnas', async ({ page }) => {
     await lista(page).locator('[data-lista="columnas"]').first().click();
-    await lista(page).locator('[data-columna-visible="fecha"]').first().uncheck();
+    // El menú de columnas va en un popover sobre la página, fuera del contenedor de la lista.
+    await page.locator('[data-columna-visible="fecha"]').first().uncheck();
     await expect(lista(page).locator('table[data-lista="catalogo.pedidos"] th[data-columna="fecha"]')).toHaveCount(0);
-    await lista(page).locator('[data-columna-subir="total"]').first().click();
+    await page.locator('[data-columna-subir="total"]').first().click();
     await expect.poll(() => tabla(page).locator('thead th[data-columna]').evaluateAll(ths => ths.map(t => t.getAttribute('data-columna'))))
       .toEqual(['folio', 'total', 'cliente', 'estado']);
   });

@@ -1,4 +1,5 @@
 import { fechaCampo } from '../../core/format/numero';
+import { nombreProducto } from '../../core/format/producto';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DIALOG_DATA, Dialog, DialogRef } from '@angular/cdk/dialog';
@@ -27,7 +28,7 @@ import { OdooMany2one } from '../../shared/odoo-many2one/odoo-many2one';
 import { OdooNumber } from '../../shared/odoo-number/odoo-number';
 import { OdooPager } from '../../shared/odoo-pager/odoo-pager';
 import { OdooSearchPanel } from '../../shared/odoo-search-panel/odoo-search-panel';
-import { OdooSmartButtons, SmartButtonModel } from '../../shared/odoo-smart-buttons/odoo-smart-buttons';
+import { OdooSmartButtons, SmartButtonModel, botonInteligente } from '../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooStatusPipeline } from '../../shared/odoo-status-pipeline/odoo-status-pipeline';
 import { OdooSyncStatus } from '../../shared/odoo-sync-status/odoo-sync-status';
 import { OdooTabs, PcPestana } from '../../shared/odoo-tabs/odoo-tabs';
@@ -129,7 +130,7 @@ export class Catalogo {
 
   // --- Campos ---
   protected readonly origenProductos = new OrigenEnMemoria<ProductoEjemplo>({ datos: () => PRODUCTOS_EJEMPLO, id: p => p.clave, buscables: ['clave', 'nombre'] });
-  protected readonly textoProducto = (p: ProductoEjemplo) => `${p.clave} · ${p.nombre}`;
+  protected readonly textoProducto = (p: ProductoEjemplo) => nombreProducto(p.clave, p.nombre);
   protected readonly idProducto = (p: ProductoEjemplo) => p.clave;
   protected producto: ProductoEjemplo | null = null;
   protected readonly productoFijo = PRODUCTOS_EJEMPLO[0];
@@ -149,9 +150,9 @@ export class Catalogo {
   ];
   protected readonly migas = [{ label: 'Pedidos', url: '/catalogo' }, { label: 'PV-2026-0001' }];
   protected readonly botonesInteligentes: SmartButtonModel[] = [
-    { label: 'Entrega', countBadge: 1, iconClass: 'entrega', targetRoute: '/catalogo' },
-    { label: 'Fabricación', countBadge: 3, iconClass: 'fabricacion', targetRoute: '/catalogo' },
-    { label: 'Pedido', countBadge: 0, iconClass: 'pedido', targetRoute: '', deshabilitado: true },
+    botonInteligente('entrega', 1, '/catalogo'),
+    botonInteligente('orden', 3, '/catalogo'),
+    botonInteligente('pedido', 0, '', true),
   ];
   protected readonly etapasDocumento = ['Borrador', 'Confirmado', 'Autorizado', 'En progreso', 'Hecho'];
   protected readonly catalogoProductos = PRODUCTOS_EJEMPLO.map(p => ({ ...p, clasificacion: 'Bolsa' as const }));

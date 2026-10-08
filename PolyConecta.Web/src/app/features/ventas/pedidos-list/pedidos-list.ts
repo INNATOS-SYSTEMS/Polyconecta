@@ -1,4 +1,6 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
+import { InventoryState } from '../../../core/state/inventory-state';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Router } from '@angular/router';
 import { PEDIDOS } from '../../../core/search/views';
 import { UiViewState } from '../../../core/state/ui-view-state';
@@ -22,6 +24,8 @@ import { ETAPAS_PEDIDO, FilaPedido, PedidosAcciones } from '../pedidos-acciones'
   styles: ':host { display: contents; }',
 })
 export class PedidosList {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
+  private readonly inv = inject(InventoryState);
   private readonly router = inject(Router);
   private readonly acciones = inject(PedidosAcciones);
   protected readonly viewState = inject(UiViewState);
@@ -37,7 +41,7 @@ export class PedidosList {
   protected readonly columnas: ColumnaLista<FilaPedido>[] = [
     { campo: 'folio', titulo: 'Folio', clase: 'fw-semibold text-primary' },
     { campo: 'cliente', titulo: 'Cliente' },
-    { campo: 'producto', titulo: 'SKU Producto Terminado' },
+    { campo: 'producto', titulo: 'SKU Producto Terminado', texto: f => etiquetaProducto(this.inv.catalogo, f.producto) },
     { campo: 'cantidad', titulo: 'Cantidad', clase: 'text-end', ordenable: false },
     { campo: 'estado', titulo: 'Estado', tipo: 'estado' },
   ];

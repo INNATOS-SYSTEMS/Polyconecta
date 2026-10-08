@@ -1,4 +1,6 @@
 import { Component, computed, inject, input, signal, TemplateRef, viewChild } from '@angular/core';
+import { InventoryState } from '../../../core/state/inventory-state';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Router } from '@angular/router';
 import { fechaCampo, n1 } from '../../../core/format/numero';
 import { FiltroLista } from '../../../core/lista/origen';
@@ -26,6 +28,8 @@ import { ETAPAS_OF, FabricacionAcciones, FilaOf } from '../fabricacion-acciones'
   styles: ':host { display: contents; }',
 })
 export class FabricacionList {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
+  private readonly inv = inject(InventoryState);
   private readonly router = inject(Router);
   private readonly acciones = inject(FabricacionAcciones);
   protected readonly viewState = inject(UiViewState);
@@ -52,7 +56,7 @@ export class FabricacionList {
 
   protected readonly columnas = computed<ColumnaLista<FilaOf>[]>(() => [
     { campo: 'folio', titulo: 'Folio', clase: 'fw-semibold text-primary', celda: this.celdaFolio() },
-    { campo: 'producto', titulo: 'Producto' },
+    { campo: 'producto', titulo: 'Producto', texto: f => etiquetaProducto(this.inv.catalogo, f.producto) },
     { campo: 'proceso', titulo: 'Proceso' },
     { campo: 'cantidad', titulo: 'Cantidad', texto: f => `${n1(f.cantidad)} ${f.unidad}`, valor: f => f.cantidad, clase: 'text-end' },
     { campo: 'estado', titulo: 'Estado', tipo: 'estado' },

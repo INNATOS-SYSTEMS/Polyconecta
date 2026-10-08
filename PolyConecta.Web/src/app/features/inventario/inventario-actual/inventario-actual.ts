@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { n1, ordenCultural } from '../../../core/format/numero';
+import { nombreProducto } from '../../../core/format/producto';
 import { OrigenEnMemoria } from '../../../core/lista/origen-en-memoria';
 import { StockQuant } from '../../../core/models/inventario';
 import { adaptarVista } from '../../../core/search/search-view';
@@ -42,7 +43,7 @@ export class InventarioActual {
       [...this.inv.existencias()]
         .sort((a, b) => ordenCultural(a.ubicacion, b.ubicacion) || ordenCultural(a.producto.clave, b.producto.clave) || ordenCultural(a.lote, b.lote))
         .map(q => ({
-          id: `${q.ubicacion}|${q.producto.clave}|${q.lote}`, ubicacion: q.ubicacion, producto: `[${q.producto.clave}] ${q.producto.nombre}`,
+          id: `${q.ubicacion}|${q.producto.clave}|${q.lote}`, ubicacion: q.ubicacion, producto: nombreProducto(q.producto.clave, q.producto.nombre),
           lote: q.lote, cantidad: q.cantidad, unidad: q.producto.unidad, quant: q,
         })),
     id: f => f.id,

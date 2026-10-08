@@ -1,4 +1,6 @@
 import { Component, inject, Injectable } from '@angular/core';
+import { InventoryState } from '../../core/state/inventory-state';
+import { etiquetaProducto } from '../../core/format/producto-etiqueta';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { n1 } from '../../core/format/numero';
 import { TransicionKanban } from '../../core/kanban/kanban';
@@ -90,11 +92,11 @@ function fila(op: StockOperation): FilaRecoleccion {
     <pc-odoo-dialog titulo="Validar parcialmente" textoPrimario="Validar y crear backorder" (confirmar)="ref.close(true)" (cancelar)="ref.close(false)">
       <p class="mb-2">Lo declarado en <strong>{{ datos.fila.folio }}</strong> no cubre todo lo pedido. El remanente se va a un backorder ligado a la misma orden.</p>
       <table class="table table-sm align-middle mb-0" data-validar-parcial>
-        <thead><tr><th>Clave</th><th class="text-end">Pendiente</th><th class="text-end">Declarado</th><th class="text-end">Al backorder</th><th>Unidad</th></tr></thead>
+        <thead><tr><th>Producto</th><th class="text-end">Pendiente</th><th class="text-end">Declarado</th><th class="text-end">Al backorder</th><th>Unidad</th></tr></thead>
         <tbody>
           @for (l of lineas; track l.clave) {
             <tr>
-              <td>{{ l.clave }}</td>
+              <td>{{ producto(l.clave) }}</td>
               <td class="text-end">{{ n1(l.pendiente) }}</td>
               <td class="text-end">{{ n1(l.declarado) }}</td>
               <td class="text-end" [class.fw-semibold]="l.remanente > 0">{{ n1(l.remanente) }}</td>
@@ -107,6 +109,8 @@ function fila(op: StockOperation): FilaRecoleccion {
   `,
 })
 export class ValidarRecoleccion {
+  private readonly invProductos = inject(InventoryState);
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.invProductos.catalogo, claveONombre, nombre);
   protected readonly ref = inject<DialogRef<boolean>>(DialogRef);
   protected readonly datos = inject<{ fila: { folio: string } }>(DIALOG_DATA);
   protected readonly n1 = n1;

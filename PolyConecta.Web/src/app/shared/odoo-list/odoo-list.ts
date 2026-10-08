@@ -1,4 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
+import { BrnPopover, BrnPopoverContent, BrnPopoverTrigger } from '@spartan-ng/brain/popover';
 import { Component, computed, effect, inject, input, model, OnInit, output, signal, untracked } from '@angular/core';
 import {
   columnOrderingFeature,
@@ -48,7 +49,7 @@ const features = tableFeatures({
  */
 @Component({
   selector: 'pc-odoo-list',
-  imports: [NgTemplateOutlet, OdooIcon, OdooPager],
+  imports: [NgTemplateOutlet, OdooIcon, OdooPager, BrnPopover, BrnPopoverTrigger, BrnPopoverContent],
   templateUrl: './odoo-list.html',
   styles: ':host { display: block; }',
 })
@@ -90,7 +91,6 @@ export class OdooList<T> implements OnInit {
   readonly total = signal(0);
   readonly totales = signal<Record<string, number>>({});
   readonly cargando = signal(false);
-  readonly menuColumnas = signal(false);
   readonly menuTamano = signal(false);
   readonly favoritos = signal<Favorito[]>([]);
   protected readonly tamanos = TAMANOS_PAGINA;

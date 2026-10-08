@@ -54,7 +54,6 @@
         <table class="table align-middle mb-0">
             <thead>
                 <tr class="text-muted small">
-                    <th style="width:15%;">Clave</th>
                     <th>Producto</th>
                     <th class="text-center" style="width: 110px;">Cantidad</th>
                     <th class="text-center" style="width: 110px;" title="Disponible en ubicaciones vendibles (CONTPAQi)">Existencia</th>
@@ -67,9 +66,8 @@
             <tbody>
                 @for (linea of lineas(); track $index) {
                     <tr>
-                        <td class="fw-semibold text-primary small">{{ linea.clave }}</td>
                         <td class="small">
-                            {{ linea.producto }}
+                            {{ producto(linea.clave, linea.producto) }}
                             <button class="btn btn-sm btn-link p-0 ms-1" title="Ficha técnica" (click)="showFichaTecnica.set(true)">
                                 <pc-odoo-icon nombre="documento" />
                             </button>
@@ -120,7 +118,7 @@
                         <td><input type="checkbox" class="form-check-input" [checked]="proc.activo" disabled /></td>
                         <td class="fw-semibold">{{ procesoLabel(proc.proceso) }}</td>
                         <td class="small">{{ proc.origen }}</td>
-                        <td class="small">{{ proc.producto }}</td>
+                        <td class="small">{{ producto(proc.producto) }}</td>
                     </tr>
                 }
             </tbody>

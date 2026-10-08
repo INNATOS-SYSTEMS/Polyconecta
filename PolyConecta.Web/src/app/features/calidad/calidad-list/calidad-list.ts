@@ -1,4 +1,6 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
+import { InventoryState } from '../../../core/state/inventory-state';
+import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Router } from '@angular/router';
 import { UiViewState } from '../../../core/state/ui-view-state';
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
@@ -24,6 +26,8 @@ import { CalidadAcciones, ETAPAS_CALIDAD, FilaControl } from '../calidad-accione
   styles: ':host { display: contents; }',
 })
 export class CalidadList {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
+  private readonly inv = inject(InventoryState);
   private readonly router = inject(Router);
   private readonly acciones = inject(CalidadAcciones);
   protected readonly viewState = inject(UiViewState);
@@ -36,7 +40,7 @@ export class CalidadList {
   protected readonly etapaControl = (f: FilaControl) => f.estado;
   protected readonly columnas: ColumnaLista<FilaControl>[] = [
     { campo: 'folio', titulo: 'Folio', clase: 'fw-semibold text-primary' },
-    { campo: 'producto', titulo: 'Producto' },
+    { campo: 'producto', titulo: 'Producto', texto: f => (f.libre ? f.producto : etiquetaProducto(this.inv.catalogo, f.producto)) },
     { campo: 'orden', titulo: 'Orden de Fabricación' },
     { campo: 'proceso', titulo: 'Proceso' },
     { campo: 'lotes', titulo: 'Lotes', texto: f => String(f.lotes), clase: 'text-end' },

@@ -1,4 +1,5 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
+import { etiquetaProducto } from '../../core/format/producto-etiqueta';
 import { n1, n2 } from '../../core/format/numero';
 import { SalesOrderLine, subtotal } from '../../core/models/ventas';
 import { PEDIDO_FOLIO } from '../../core/seed/flujo';
@@ -20,6 +21,7 @@ import { OdooTabs, PcPestana } from '../odoo-tabs/odoo-tabs';
   styles: ':host { display: contents; }',
 })
 export class PocSalesOrderForm {
+  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
   protected readonly pestanas = [{ id: 'detalle', titulo: 'Detalle' }];
   protected readonly flow = inject(OperationalFlowState);
   protected readonly inv = inject(InventoryState);
