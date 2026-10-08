@@ -39,3 +39,4 @@ tools/sdk-lab/lab.config.json
 PolyConecta.Contpaq/*.db
 PolyConecta.Contpaq/*.db-*
 PolyConecta.Contpaq/logs/
+.claude/worktrees/
