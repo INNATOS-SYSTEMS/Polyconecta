@@ -6,9 +6,10 @@
   1. Inicio de sesión automático del administrador con Autologon de Sysinternals, el mecanismo
      probado en S-04: guarda la contraseña cifrada como secreto LSA, no en el registro en claro.
   2. Tarea programada "PolyConecta-Bridge", "al iniciar sesión" de ese usuario, con LogonType
-     Interactive: levanta C:\PolyConecta\bridge\Contpaq.Bridge.exe en su sesión, donde el SDK abre
-     la empresa y donde están sus variables de entorno (BridgeConfig__*). Lo arranca sin ventana,
-     para que nadie lo detenga cerrándola por error.
+     Interactive: corre Start-BridgeSupervisado.ps1 en su sesión, donde el SDK abre la empresa y donde
+     están sus variables de entorno (BridgeConfig__*). El supervisor lanza C:\PolyConecta\bridge\
+     Contpaq.Bridge.exe sin ventana (para que nadie lo detenga cerrándola por error) y lo relanza
+     cuando sale solo, con código 0 (reinicio diario) o 3 (tiempo límite).
   3. Evidencia, sin secretos, en tools\sdk-lab\evidence\F0\0.9.md.
 
   Requiere una consola de PowerShell abierta como administrador y el bridge ya publicado
@@ -78,15 +79,17 @@ if (Get-ScheduledTask -TaskName $NombreTarea -ErrorAction SilentlyContinue) {
     Aviso "La tarea $NombreTarea ya existía: se reemplazó."
 }
 $cuenta = "$env:COMPUTERNAME\$Usuario"
-# PowerShell lanza el bridge con la consola oculta y termina; el bridge sigue en esta sesión.
-$lanzar = "Start-Process -FilePath '$exe' -WorkingDirectory '$CarpetaBridge' -WindowStyle Hidden"
-$accion = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ("-NoProfile -NonInteractive -WindowStyle Hidden -Command `"{0}`"" -f $lanzar) -WorkingDirectory $CarpetaBridge
+# La tarea corre el supervisor con la consola oculta (L1-T011). El supervisor sigue vivo mientras el bridge
+# corre y lo relanza cuando sale con 0 (reinicio diario) o 3 (tiempo límite); por eso la tarea queda "en
+# ejecución". Lanzar el bridge y terminar, como antes, dejaba al Programador de tareas sin nada que reiniciar.
+$supervisor = Join-Path $PSScriptRoot 'Start-BridgeSupervisado.ps1'
+$accion = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ("-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"{0}`" -Exe `"{1}`"" -f $supervisor, $exe) -WorkingDirectory $CarpetaBridge
 $disparo = New-ScheduledTaskTrigger -AtLogOn -User $cuenta
 $disparo.Delay = ('PT{0}S' -f $RetrasoSegundos)
 $principal = New-ScheduledTaskPrincipal -UserId $cuenta -LogonType Interactive -RunLevel Highest
 $ajustes = New-ScheduledTaskSettingsSet -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -MultipleInstances IgnoreNew -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 Register-ScheduledTask -TaskName $NombreTarea -Action $accion -Trigger $disparo -Principal $principal -Settings $ajustes `
-    -Description 'Levanta el bridge de CONTPAQi (PolyConecta.Contpaq) en la sesión del administrador (D-115).' | Out-Null
+    -Description 'Supervisor del bridge de CONTPAQi (PolyConecta.Contpaq): lo levanta en la sesión del administrador y lo relanza si sale solo (D-115).' | Out-Null
 $t = Get-ScheduledTask -TaskName $NombreTarea
 Ok ("Tarea {0}: {1}, al iniciar sesión de {2} con {3} s de espera" -f $NombreTarea, $t.State, $cuenta, $RetrasoSegundos)
 
@@ -96,7 +99,7 @@ foreach ($v in $viejas) { Aviso ("Otra tarea relacionada sigue registrada: {0} (
 Add-Evidencia '0.9.md' 'Arranque automático (L1-T016)' @(
     ("Inicio de sesión automático: {0}\{1}, AutoAdminLogon={2}, contraseña como secreto LSA (Autologon de Sysinternals)" -f $wl.DefaultDomainName, $wl.DefaultUserName, $wl.AutoAdminLogon),
     ("Tarea: {0}, estado {1}, disparo al iniciar sesión de {2} (+{3} s), LogonType Interactive, RunLevel Highest" -f $NombreTarea, $t.State, $cuenta, $RetrasoSegundos),
-    ("Acción: {0} sin ventana (Start-Process -WindowStyle Hidden), carpeta {1}" -f $exe, $CarpetaBridge)
+    ("Acción: supervisor {0} sin ventana; relanza {1} al salir con 0 o 3; log en {2}\logs\supervisor-AAAAMMDD.log" -f $supervisor, $exe, $CarpetaBridge)
 )
 Write-Host ''
 Write-Host 'Siguiente: Remove-BridgeTestUser.ps1 (L1-T017) y después Measure-BridgeRestart.ps1 (L1-T018).'

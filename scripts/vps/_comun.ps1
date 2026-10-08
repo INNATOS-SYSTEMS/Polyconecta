@@ -21,6 +21,19 @@ function Start-BridgeOculto {
     Start-Process -FilePath $exe -WorkingDirectory $script:CarpetaBridge -WindowStyle Hidden
 }
 
+$script:NombreTareaBridge = 'PolyConecta-Bridge'
+
+# Detiene el supervisor (Start-BridgeSupervisado.ps1) y la tarea que lo corre. Hay que hacerlo antes de
+# detener el bridge: si no, el supervisor lo relanza.
+function Stop-BridgeSupervisor {
+    Stop-ScheduledTask -TaskName $script:NombreTareaBridge -ErrorAction SilentlyContinue
+    $supervisores = @(Get-CimInstance Win32_Process -Filter "Name = 'powershell.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -like '*Start-BridgeSupervisado*' -and $_.ProcessId -ne $PID })
+    foreach ($s in $supervisores) { Stop-Process -Id $s.ProcessId -Force -ErrorAction SilentlyContinue }
+    if ($supervisores.Count -gt 0) { Start-Sleep -Seconds 1 }
+    return $supervisores.Count
+}
+
 # Llama al bridge y devuelve el objeto, o $null si no responde.
 function Invoke-Bridge([string]$ruta, [int]$Puerto = 9030) {
     try { return Invoke-RestMethod -Uri ("http://localhost:{0}{1}" -f $Puerto, $ruta) -TimeoutSec 15 }

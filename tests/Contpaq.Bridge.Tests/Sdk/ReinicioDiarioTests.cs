@@ -36,7 +36,7 @@ namespace Contpaq.Bridge.Tests.Sdk
         [Fact]
         public void Un_proceso_que_arranca_pasada_la_hora_espera_a_la_del_dia_siguiente()
         {
-            // Lo levantó la tarea de D-115 a las 03:00:05: no debe volver a salir enseguida.
+            // Lo relanzó el supervisor a las 03:00:05: no debe volver a salir enseguida.
             var reloj = new RelojFalso(Hoy(3, 0).AddSeconds(5));
             var reinicio = new ReinicioDiario("03:00", reloj);
 

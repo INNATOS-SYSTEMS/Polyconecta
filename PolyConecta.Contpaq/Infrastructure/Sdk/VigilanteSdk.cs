@@ -10,7 +10,7 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
     /// Vigilante de tiempo límite por llamada nativa (FR-005, R-07, L1-T003). Un hilo bloqueado dentro de
     /// la DLL no se puede abortar sin dejar el SDK inconsistente: al vencer el tiempo se avisa con
     /// <see cref="AlVencer"/> (que responde SDK_TIMEOUT a la transacción en curso y registra el bloqueo)
-    /// y el proceso sale con código distinto de 0 para que la tarea de D-115 lo levante.
+    /// y el proceso sale con código distinto de 0 para que el supervisor del VPS (Start-BridgeSupervisado.ps1) lo levante.
     /// </summary>
     public sealed class VigilanteSdk(TimeSpan limite, TimeProvider reloj)
     {
