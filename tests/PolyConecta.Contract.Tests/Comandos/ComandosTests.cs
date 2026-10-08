@@ -14,6 +14,7 @@ public class ComandosTests(Bridge bridge)
     [ContratoTheory]
     [InlineData("traspaso.valido.json")]
     [InlineData("alta-pedido.valido.json")]
+    [InlineData("alta-pedido.valido.con-agente.json")]
     [InlineData("alta-almacen.valido.json")]
     [InlineData("cierre-produccion.valido.json")]
     [InlineData("remision.valido.json")]
@@ -59,6 +60,7 @@ public class ComandosTests(Bridge bridge)
     [ContratoTheory]
     [InlineData("traspaso.invalido.lotes-no-cuadran.json", "LOTES_NO_CUADRAN")]
     [InlineData("alta-pedido.invalido.cliente-no-existe.json", "CLIENTE_NO_EXISTE")]
+    [InlineData("alta-pedido.invalido.agente-no-existe.json", "AGENTE_NO_EXISTE")]
     [InlineData("cierre-produccion.invalido.unidad-no-admitida.json", "UNIDAD_NO_ADMITIDA")]
     [InlineData("remision.invalido.existencia-insuficiente-lote.json", "EXISTENCIA_INSUFICIENTE_LOTE")]
     public async Task La_carga_invalida_falla_por_callback_con_el_codigo_del_contrato(string ejemplo, string codigo)

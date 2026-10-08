@@ -68,5 +68,10 @@ namespace Contpaq.Bridge.Core.Configuration
         /// <summary>CIDMONEDA de un código ISO. admMonedas no guarda el ISO (contrato §5.2).</summary>
         public int? IdMoneda(string codigoIso) =>
             int.TryParse(config[$"BridgeConfig:Monedas:{codigoIso}"], out var id) ? id : null;
+
+        /// <summary>Código ISO de un CIDMONEDA, con la misma configuración (BridgeConfig__Monedas__{ISO}); null si no está configurado.</summary>
+        public string? CodigoIso(int idMoneda) =>
+            config.GetSection("BridgeConfig:Monedas").GetChildren()
+                .FirstOrDefault(m => int.TryParse(m.Value, out var id) && id == idMoneda)?.Key;
     }
 }

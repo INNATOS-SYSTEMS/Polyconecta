@@ -8,7 +8,7 @@ namespace Contpaq.Bridge.Core.Contract
     public static class Contrato
     {
         public const string VersionMayor = "1";
-        public const string VersionActual = "1.0";
+        public const string VersionActual = "1.1";
         public const string ClientApp = "polyconecta";
 
         public static readonly JsonSerializerOptions Json = new()
@@ -56,6 +56,7 @@ namespace Contpaq.Bridge.Core.Contract
         public const string AlmacenNoExiste = "ALMACEN_NO_EXISTE";
         public const string AlmacenYaExiste = "ALMACEN_YA_EXISTE";
         public const string ClienteNoExiste = "CLIENTE_NO_EXISTE";
+        public const string AgenteNoExiste = "AGENTE_NO_EXISTE";
         public const string MonedaNoSoportada = "MONEDA_NO_SOPORTADA";
         public const string UnidadNoAdmitida = "UNIDAD_NO_ADMITIDA";
         public const string VarianteSinConcepto = "VARIANTE_SIN_CONCEPTO";
@@ -155,6 +156,8 @@ namespace Contpaq.Bridge.Core.Contract
         [JsonPropertyName("referencia_negocio")] public string? ReferenciaNegocio { get; set; }
         [JsonPropertyName("cliente")] public string Cliente { get; set; } = string.Empty;
         [JsonPropertyName("orden_compra_cliente")] public string? OrdenCompraCliente { get; set; }
+        /// <summary>Desde 1.1 (D-153): código del agente de CONTPAQi (CCODIGOAGENTE). Opcional.</summary>
+        [JsonPropertyName("agente")] public string? Agente { get; set; }
         [JsonPropertyName("moneda")] public string Moneda { get; set; } = string.Empty;
         [JsonPropertyName("tipo_cambio")] public decimal? TipoCambio { get; set; }
         [JsonPropertyName("lineas")] public List<LineaPedido>? Lineas { get; set; }

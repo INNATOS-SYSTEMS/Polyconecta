@@ -31,8 +31,14 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
         IWebhookDispatcher callbacks,
         BridgeOptions opciones,
         CircuitBreakerPolicy circuito,
-        ILogger<OutboxWorker> logger) : BackgroundService
+        ILogger<OutboxWorker> logger,
+        ICierreProceso? proceso = null,
+        ReinicioDiario? reinicio = null,
+        VigilanteSdk? vigilante = null) : BackgroundService
     {
+        // Una llamada nativa venció: la transacción ya se respondió y el proceso está por salir; no se sigue.
+        private volatile bool _timeoutDisparado;
+
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var tcs = new TaskCompletionSource();
@@ -58,8 +64,18 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
         private void Ciclo(CancellationToken stoppingToken)
         {
             LogInicio(logger, gateway.EsReal ? "Real" : "Simulated");
+            if (vigilante is not null) vigilante.AlVencer = ManejarTimeout;
+            // El SDK se inicia una vez al arrancar (R-07); si falla, AsegurarSesion lo reintenta con cada lote.
+            if (!gateway.IniciarSdk()) LogSdkNoIniciado(logger);
+            var reiniciar = false;
             while (!stoppingToken.IsCancellationRequested)
             {
+                if (reinicio?.Debido() == true)
+                {
+                    LogReinicio(logger, reinicio.Hora.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture));
+                    reiniciar = true;
+                    break;
+                }
                 gateway.BombearMensajes();
                 try
                 {
@@ -89,6 +105,7 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
                     foreach (var tx in pendientes)
                     {
                         if (stoppingToken.IsCancellationRequested) break;
+                        if (reinicio?.Debido() == true) break; // termina la actual, no toma otra
                         Procesar(tx);
                         PerformanceMetrics.RecordWriteOp();
                     }
@@ -101,6 +118,40 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
                 }
             }
             gateway.Apagar();
+            if (reiniciar) proceso?.Salir(0); // la tarea de D-115 lo vuelve a levantar
+        }
+
+        /// <summary>
+        /// Una llamada nativa no regresó en el tiempo límite (FR-005). Desde el hilo del vigilante: registra el
+        /// bloqueo con su correlation_id, responde SDK_TIMEOUT a la transacción en curso (reintentable) y saca
+        /// el proceso con código distinto de 0. El hilo bloqueado en la DLL no se puede abortar sin dejar el SDK
+        /// en estado desconocido.
+        /// </summary>
+        public void ManejarTimeout(string llamada, ContextoLlamada? contexto)
+        {
+            _timeoutDisparado = true;
+            LogTimeout(logger, llamada, contexto?.CorrelationId ?? "(sin transacción)", vigilante?.Limite.TotalSeconds ?? 0);
+            try
+            {
+                if (contexto is not null && repo.GetByIdAsync(contexto.TransactionId).GetAwaiter().GetResult() is { } tx)
+                    ResponderTimeout(tx, llamada);
+            }
+            catch (Exception ex)
+            {
+                LogErrorCiclo(logger, ex);
+            }
+            proceso?.Salir(VigilanteSdk.CodigoSalidaTimeout);
+        }
+
+        /// <summary>Responde SDK_TIMEOUT a una transacción: se reintenta tras el proceso nuevo o, agotados los reintentos, va a la DLQ.</summary>
+        public void ResponderTimeout(BridgeTransaction tx, string llamada)
+        {
+            var error = ErrorContrato.De(CodigosError.SdkTimeout,
+                $"La llamada {llamada} al SDK no regresó en {vigilante?.Limite.TotalSeconds ?? 0:0} s.",
+                new() { ["llamada"] = llamada, ["correlation_id"] = tx.CorrelationId });
+            var ms = (long)(vigilante?.Limite.TotalMilliseconds ?? 0);
+            Registrar(tx, ResultadoEjecucion.Fallo(error), ms);
+            ManejarFalloReintentable(tx, error, omitirCallback: false);
         }
 
         /// <summary>Procesa una transacción. Público para las pruebas, que lo llaman sin el hilo.</summary>
@@ -109,6 +160,7 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
             repo.MarcarProcesandoAsync(tx.TransactionId).GetAwaiter().GetResult();
             var reloj = Stopwatch.StartNew();
             ResultadoEjecucion resultado;
+            if (vigilante is not null) vigilante.Contexto = new ContextoLlamada(tx.TransactionId, tx.CorrelationId);
             try
             {
                 var (comando, errorLectura) = LectorComandos.Leer(Reconstruir(tx));
@@ -122,6 +174,11 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
                 resultado = ResultadoEjecucion.Fallo(ErrorContrato.De(CodigosError.SdkError, ex.Message,
                     new() { ["excepcion"] = ex.GetType().Name }));
             }
+            finally
+            {
+                if (vigilante is not null) vigilante.Contexto = null;
+            }
+            if (_timeoutDisparado) return; // el vigilante ya respondió la transacción
             reloj.Stop();
             MetricCollectorService.AverageSdkLatencyMs = reloj.ElapsedMilliseconds;
             Registrar(tx, resultado, reloj.ElapsedMilliseconds);
@@ -141,12 +198,18 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
                 return;
             }
 
-            // Reintentable (SDK_TIMEOUT, SDK_SESION): no se notifica hasta agotar los reintentos (§3).
+            ManejarFalloReintentable(tx, error, resultado.OmitirCallback);
+        }
+
+        /// <summary>Reintentable (SDK_TIMEOUT, SDK_SESION): no se notifica hasta agotar los reintentos (§3).</summary>
+        private void ManejarFalloReintentable(BridgeTransaction tx, ErrorContrato error, bool omitirCallback)
+        {
+            var errorJson = JsonSerializer.Serialize(error);
             circuito.RecordFailure();
             var intento = tx.RetryCount + 1;
             if (intento >= opciones.MaxRetries)
             {
-                Terminar(tx, Estados.DeadLetter, null, errorJson, error.Message, resultado.OmitirCallback);
+                Terminar(tx, Estados.DeadLetter, null, errorJson, error.Message, omitirCallback);
                 return;
             }
             repo.ProgramarReintentoAsync(tx.TransactionId, intento, DateTime.UtcNow.Add(Espera(intento)), errorJson, error.Message)
@@ -197,6 +260,15 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
 
         [LoggerMessage(Level = LogLevel.Information, Message = "Ciclo del outbox del bridge iniciado (modo {Modo})")]
         private static partial void LogInicio(ILogger logger, string modo);
+
+        [LoggerMessage(Level = LogLevel.Error, Message = "El SDK no se pudo iniciar al arrancar; se reintenta con cada lote")]
+        private static partial void LogSdkNoIniciado(ILogger logger);
+
+        [LoggerMessage(Level = LogLevel.Information, Message = "Reinicio diario ({Hora}): ya no se toman transacciones; se cierra el SDK y el proceso sale con código 0")]
+        private static partial void LogReinicio(ILogger logger, string hora);
+
+        [LoggerMessage(Level = LogLevel.Critical, Message = "SDK_TIMEOUT: la llamada {Llamada} no regresó en {Segundos} s (correlation_id {CorrelationId}); el proceso sale para que lo levante la tarea programada")]
+        private static partial void LogTimeout(ILogger logger, string llamada, string correlationId, double segundos);
 
         [LoggerMessage(Level = LogLevel.Error, Message = "Error no controlado en el ciclo del outbox")]
         private static partial void LogErrorCiclo(ILogger logger, Exception ex);
