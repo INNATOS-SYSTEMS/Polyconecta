@@ -76,13 +76,13 @@ Decisiones técnicas de la fase 1. El estado del código es el de la rama `003-p
 ## R-05 · Sincronización de catálogos
 
 **Decisión**:
-- **Puerto** `IBridgeLecturas` en `Application/Plataforma/Erp/` (productos, clientes, almacenes y existencias, con cursor y `modified_since`), implementado en `Infrastructure/Erp/BridgeLecturasHttp.cs` sobre el mismo `HttpClient` del bridge. Propaga el `correlation_id` (CT-31).
-- **Caso de uso** `SincronizarCatalogo(catalogo)` por catálogo, y `SincronizarTodo`, que los corre en orden (almacenes, clientes y productos). Cada uno lee por páginas de 500 con `modified_since = marca − 5 min`, hace upsert por código de CONTPAQi y guarda `erp_*` (CT-13). Un registro inactivo se archiva (FR-015); uno que vuelve a estar activo se restaura. Nunca borra.
-- **Marca por catálogo** en `plt.catalog_sync_state`: `catalogo`, `marca` (inicio de la última corrida exitosa), `ultima_corrida`, `ultimo_resultado` (`Exito` o `Error`), `registros_leidos`, `registros_cambiados` y `ultimo_error`. Si una corrida falla, la marca no avanza (caso límite del reinicio del bridge). Los 5 minutos de traslape cubren la diferencia de relojes. El upsert es idempotente, así que repetir un registro no cambia nada (SC-004: sin cambios, cero modificados, porque solo se escribe si algún campo difiere).
+- **Puerto** `IBridgeLecturas` en `Application/Plataforma/Erp/` (productos, clientes, almacenes y existencias, con cursor), implementado en `Infrastructure/Erp/BridgeLecturasHttp.cs` sobre el mismo `HttpClient` del bridge. Propaga el `correlation_id` (CT-31).
+- **Caso de uso** `SincronizarCatalogo(catalogo)` por catálogo, y `SincronizarTodo`, que los corre en orden (almacenes, clientes y productos). Cada uno **lee el catálogo completo** por páginas de 500 (D-150: `CTIMESTAMP` no sirve para `modified_since`), hace upsert por id de CONTPAQi y guarda `erp_*` (CT-13). Solo escribe un registro si algún campo difiere. Un registro inactivo, o que ya no viene en la lectura completa, se archiva (FR-015); uno que vuelve a estar activo se restaura. Nunca borra. Si una corrida falla a la mitad, no archiva nada: el archivado por ausencia solo corre al terminar la lectura completa.
+- **Estado por catálogo** en `plt.catalog_sync_state`: `catalogo`, `ultima_corrida`, `ultima_exitosa`, `ultimo_resultado` (`Exito` o `Error`), `registros_leidos`, `registros_cambiados`, `registros_archivados`, `duracion_ms` y `ultimo_error`. El upsert es idempotente: sin cambios en CONTPAQi, cero modificados (SC-004). Se mide la duración de la lectura completa en el VPS; si pasa de un minuto, se sube el intervalo.
 - **Periódica** con un `BackgroundService` (`SincronizadorCatalogos`), cada `Erp:Sincronizacion:IntervaloMinutos` (15), y **bajo demanda** con `POST /api/v1/plataforma/sincronizacion/{catalogo}` y `POST /api/v1/plataforma/sincronizacion` (todos), que exigen el permiso `plataforma.sincronizacion.ejecutar` (Sistemas y Administrador).
 - **Una instancia por catálogo**: `sp_getapplock` con el nombre `sync:<catalogo>`, igual que el despachador. Si está tomado, la petición manual responde `409` con "Ya hay una sincronización de productos en curso".
 - **Lo que es de PolyConecta no se sobrescribe**: clasificación (solo se llena si está vacía), ficha técnica y el enlace ubicación ↔ almacén (CT-14).
-- **El bridge simulado** se amplía con un catálogo semilla suficiente para R1: 5 clientes con moneda y domicilios, 20 productos (MP, rollos y PT, con KG, PZA y MIL) y los almacenes de las dos plantas. Es tarea de L1 (el simulador es común y lo cambian los dos líderes). Además, `PUT /admin/simulated/catalog/{products|clients}/{codigo}` cambia un registro del catálogo semilla en caliente (activo, nombre, moneda) y le pone fecha de modificación, para probar `modified_since` y el archivado sin reiniciar.
+- **El bridge simulado** se amplía con un catálogo semilla suficiente para R1: 5 clientes con moneda y domicilios, 20 productos (MP, rollos y PT, con KG, PZA y MIL) y los almacenes de las dos plantas. Es tarea de L1 (el simulador es común y lo cambian los dos líderes). Además, `PUT /admin/simulated/catalog/{products|clients}/{codigo}` cambia, agrega o quita un registro del catálogo semilla en caliente (activo, nombre, moneda, domicilios), para probar la comparación y el archivado sin reiniciar.
 
 **Alternativas**:
 - Leer CONTPAQi al momento en cada pantalla, sin copia: el pedido referencia productos y clientes con su id propio, y la lista necesita filtrar y agrupar en SQL Server.
@@ -90,16 +90,15 @@ Decisiones técnicas de la fase 1. El estado del código es el de la rama `003-p
 
 ---
 
-## R-06 · `modified_since` y lecturas reales (L1, 1.4)
+## R-06 · Lecturas reales (L1, 1.4)
 
-**Decisión** (supuesto hasta verificarlo en el VPS):
-- `admProductos`, `admClientes` y `admDomicilios` tienen `CTIMESTAMP` (`V`, 23 caracteres, "Concurrencia", `Referencia_BD_CONTPAQi.md`). La propuesta es filtrar por esa columna convertida a fecha y hora en la zona horaria del servidor de CONTPAQi (D-121). **Supuesto**: que CONTPAQi la actualiza en cada modificación hecha desde la UI y desde el SDK. L1 lo verifica en 1.4: modifica un producto y un domicilio de cliente en la UI y compara `CTIMESTAMP` antes y después. Si no se actualiza, `modified_since` se descarta y la sincronización lee el catálogo completo (los clientes y productos de PolyConecta caben en una lectura completa cada 15 minutos; se mide).
-- Un cliente se considera modificado si cambió él o cualquiera de sus domicilios.
-- **Moneda del cliente**: `admClientes.CIDMONEDA` ("moneda del cliente") o `CIDMONEDA2` ("moneda asumida en documentos"). Se traduce a código ISO con la misma configuración que usa `ALTA_PEDIDO` (`BridgeConfig__Monedas__{ISO}`). Cuál de las dos propone la UI de CONTPAQi se verifica en 1.4 (FR-008).
-- **Domicilios**: `admDomicilios` con `CTIPOCATALOGO = 1` (clientes) y `CIDCATALOGO = CIDCLIENTEPROVEEDOR`; `CTIPODIRECCION` 0 fiscal y 1 envío. `fBuscaDireccionCteProv(aCodCteProv, aTipoDireccion)` busca por cliente y tipo (`Referencia_SDK_CONTPAQi.md`), lo que sugiere un domicilio por tipo. Se cuenta en 1.4 con una consulta de solo lectura. El contrato lleva una lista para no depender de eso.
+**Verificado por el usuario en CONTPAQi el 8-oct (D-150):**
+- **`CTIMESTAMP` no es la fecha de última modificación** (`Referencia_BD_CONTPAQi.md` lo describe como "Concurrencia"). `modified_since` no se puede implementar en productos ni clientes: la sincronización lee completo y compara (R-05). La contingencia que aquí era la alternativa pasa a ser la decisión.
+- **Moneda del cliente**: `admClientes` trae `CIDMONEDA` y `CIDMONEDA2`; la que tiene efecto es la **moneda del cliente, `CIDMONEDA`**. Se traduce a código ISO con la misma configuración que usa `ALTA_PEDIDO` (`BridgeConfig__Monedas__{ISO}`).
+- **Domicilios**: `admDomicilios` con `CTIPOCATALOGO = 1` (clientes) y `CIDCATALOGO = CIDCLIENTEPROVEEDOR`. Un cliente tiene **un domicilio fiscal** (`CTIPODIRECCION = 0`) y **N de envío** (`CTIPODIRECCION = 1`). El contrato los lleva como lista.
 - **Existencias** (FR-007): ya se leen como D-87 para un producto. 1.4 agrega varios productos por consulta con `IN` parametrizado, en lotes de 100.
 
-**Alternativas**: comparar una huella (hash) de cada registro en PolyConecta y leer siempre todo. Es la contingencia si `CTIMESTAMP` no sirve.
+**Alternativas**: buscar otra columna de fecha (`CFECHAALTA…` solo da el alta) o un disparador en las tablas `adm*` (prohibido, Principio II). Se descartan.
 
 ---
 
@@ -157,7 +156,9 @@ Decisiones técnicas de la fase 1. El estado del código es el de la rama `003-p
 | Lectura | Campo nuevo, opcional | Origen en CONTPAQi |
 | :--- | :--- | :--- |
 | `GET /catalogs/products` | `clasificacion`: `{ codigo, nombre }` del valor de "TIPO DE PRODUCTOS" | `admProductos.CIDVALORCLASIFICACION{n}` → `admClasificacionesValores` (A-05). El número de la clasificación lo da la configuración |
-| `GET /catalogs/clients` | `moneda`: código ISO | `admClientes.CIDMONEDA` o `CIDMONEDA2` (R-06), traducido con `BridgeConfig__Monedas__{ISO}` |
+| `GET /catalogs/clients` | `moneda`: código ISO | `admClientes.CIDMONEDA` (R-06, D-150), traducido con `BridgeConfig__Monedas__{ISO}` |
 | `GET /catalogs/clients` | `domicilios[]`: `id_erp`, `tipo` (`fiscal` o `envio`), `calle`, `numero_exterior`, `numero_interior`, `colonia`, `codigo_postal`, `ciudad`, `municipio`, `estado`, `pais`, `sucursal` | `admDomicilios` (R-06) |
+
+Además, **`modified_since` se declara obsoleto** en productos y clientes: `CTIMESTAMP` no es una fecha de modificación (D-150), así que el bridge real no lo puede cumplir. Sigue respondiendo `501` si alguien lo manda, y PolyConecta no lo usa.
 
 Los tres son opcionales: PolyConecta funciona sin ellos (FR-003). La suite de contrato agrega sus pruebas y los ejemplos van a `docs/contratos/ejemplos/`. Hasta la aprobación, L1 no los expone en el modo real y el simulador sí, marcados como `1.1` en el `_nota` de su semilla.

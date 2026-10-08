@@ -98,7 +98,7 @@ La forma de `Favorito` de 07 §4.2: `user_id`, `list_key` (`ventas.pedidos`), `n
 
 ### `CatalogSyncState` · `plt.catalog_sync_state`
 
-Una fila por catálogo (`productos`, `clientes`, `almacenes`): `watermark`, `last_run_at`, `last_result` (`Exito` o `Error`), `records_read`, `records_changed` y `last_error` (R-05). Solo la escribe la sincronización.
+Una fila por catálogo (`productos`, `clientes`, `almacenes`): `last_run_at`, `last_success_at`, `last_result` (`Exito` o `Error`), `records_read`, `records_changed`, `records_archived`, `duration_ms` y `last_error` (R-05, D-150). Solo la escribe la sincronización.
 
 ---
 
@@ -163,13 +163,13 @@ Una fila por catálogo (`productos`, `clientes`, `almacenes`): `watermark`, `las
 | `erp_code` | `nvarchar(30)` | Único |
 | `legal_name` | `nvarchar(60)` | Razón social |
 | `tax_id` | `nvarchar(20)`, opcional | RFC |
-| `currency` | `char(3)`, opcional | ISO; sin dato, el pedido propone la base (D-146) |
+| `currency` | `char(3)`, opcional | ISO, de `CIDMONEDA`; sin dato, el pedido propone la base (D-146, D-150) |
 
 De solo lectura (CT-14). Inactivo en CONTPAQi → archivado.
 
 ### `CustomerAddress` · `ven.customer_address` (D-149)
 
-`customer_id`, `erp_address_id` (`CIDDIRECCION`, único), `kind` (`Fiscal` o `Envio`), `street`, `exterior_number`, `interior_number`, `neighborhood`, `postal_code`, `city`, `municipality`, `state`, `country` y `branch`. La sincronización reemplaza los del cliente: agrega, cambia y archiva los que ya no vienen.
+`customer_id`, `erp_address_id` (`CIDDIRECCION`, único), `kind` (`Fiscal`, uno por cliente, o `Envio`, N por cliente, D-150), `street`, `exterior_number`, `interior_number`, `neighborhood`, `postal_code`, `city`, `municipality`, `state`, `country` y `branch`. La sincronización reemplaza los del cliente: agrega, cambia y archiva los que ya no vienen.
 
 ### `SalesOrder` · `ven.sales_order`
 
@@ -184,7 +184,7 @@ Hereda `DocumentoConEstado<SalesOrderState>`.
 | `agent` | `nvarchar(60)`, opcional | Texto libre en F1: el catálogo de agentes de CONTPAQi no está en el contrato |
 | `order_date` | `date` | Fecha de negocio (D-123); por omisión, hoy |
 | `promise_date` | `date`, opcional | Fecha estimada de entrega (D-140) |
-| `delivery_address_id` | FK a `CustomerAddress`, opcional | Propone el de envío (D-149) |
+| `delivery_address_id` | FK a `CustomerAddress` de tipo envío, opcional | Propone el único si hay uno; con varios, AC elige (D-149, D-150) |
 | `delivery_address_text` | `nvarchar(400)`, opcional | Copia del domicilio al confirmar (R-09) |
 | `currency` | `char(3)` | Propone la del cliente; admitidas en `Erp:Monedas` (D-146) |
 | `exchange_rate` | `decimal(18,6)` | 1 en la moneda base; obligatorio y mayor que 0 en otra |

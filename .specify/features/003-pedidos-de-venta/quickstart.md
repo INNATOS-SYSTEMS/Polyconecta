@@ -34,7 +34,7 @@ Esperado: la suite de contrato al 100 %, incluidas las lecturas de F1 (FR-002), 
 ## 3. Sincronización (US3)
 
 1. Como `sistemas`, en Configuración › Sincronización, pulsar **Sincronizar todo**. Esperado: productos, clientes y almacenes con resultado `Éxito` y el conteo del catálogo semilla (SC-004).
-2. Pulsar **Sincronizar ahora** solo en Productos: `0` cambiados.
+2. Pulsar **Sincronizar ahora** solo en Productos: `0` cambiados y `0` archivados.
 3. En el bridge simulado, marcar inactivo un producto (`PUT /admin/simulated/catalog/products/{codigo}`, que agrega L1 en 1.4, R-05) y sincronizar Productos: aparece archivado y no se ofrece en una línea nueva.
 4. Detener el bridge y sincronizar: resultado `Error` con su motivo y nada archivado. Levantarlo y sincronizar: `Éxito`.
 5. Abrir un producto PT, clasificarlo y capturar su ficha técnica (bloques Rollo y PT). Sincronizar otra vez: la clasificación no cambia.
@@ -69,7 +69,7 @@ Siguiendo `PolyConecta.Contpaq/AGENTS.md` y `scripts/vps/`:
 2. Durante una hora, correr la sonda de lectura cada minuto y la suite de contrato de lecturas contra el real. Sin nuevos inicios de sesión (SC-006).
 3. Forzar el tiempo límite de una llamada (`BridgeConfig__Sdk__TimeoutSegundos=1` con la sonda lenta): responde `SDK_TIMEOUT`, se reinicia y la tarea lo levanta.
 4. Ajustar `BridgeConfig__ReinicioDiario` a dos minutos adelante: cierra limpio y vuelve.
-5. Cotejo de T-06: cambiar una existencia en la UI de CONTPAQi, medir cuándo la refleja `GET /inventory/stocks` y comparar F-01 y F-02 con la UI. Verificar la moneda del cliente (`CIDMONEDA` o `CIDMONEDA2`), los domicilios por cliente y que `CTIMESTAMP` cambia al editar (R-06). Todo a la matriz y a `evidence/F1/`.
+5. Cotejo de T-06: cambiar una existencia en la UI de CONTPAQi, medir cuándo la refleja `GET /inventory/stocks` y comparar F-01 y F-02 con la UI. Medir la duración de la lectura completa de productos y clientes (R-05). Todo a la matriz y a `evidence/F1/`.
 
 ## 7. Cierre
 

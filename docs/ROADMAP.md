@@ -108,7 +108,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ cerrado · ⛔ bloqueado. Al cerr
 | Fase | Preguntas abiertas ([preguntas-abiertas.md](diseno/preguntas-abiertas.md)) o decisiones por validar |
 | :--- | :--- |
 | F0 | ninguna |
-| F1 | T-06 (lectura de existencias, tarea 1.4): se puede especificar con la lectura directa de D-87 como supuesto. P-28 (contrato HTTP de la consulta de listas): se fija en el plan de la 003 con la lista de Pedidos. El contrato `1.1` (clasificación en productos; moneda y domicilios en clientes) lo aprueban los dos líderes con la spec. |
+| F1 | T-06 (lectura de existencias, tarea 1.4): se puede especificar con la lectura directa de D-87 como supuesto. P-28 (contrato HTTP de la consulta de listas): se fija en el plan de la 003 con la lista de Pedidos. El contrato `1.1` (clasificación en productos; moneda y domicilios en clientes; `modified_since` obsoleto, D-150) lo aprueban los dos líderes con la spec. |
 | F2 a F5, F7 | Contrato `bridge-v1` `1.0` firmado el 6-oct (D-132). T-17 (costo de la Entrada) se resuelve antes de F3 |
 | F6 | D-114 (cancelar el pedido remisionado) por validar con la operación |
 | F8 | T-06 (la conciliación depende de F-05) |

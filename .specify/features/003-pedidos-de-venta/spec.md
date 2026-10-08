@@ -120,8 +120,8 @@ Productos, clientes y almacenes llegan de CONTPAQi por el bridge y se mantienen 
 
 **Acceptance Scenarios**:
 
-1. **Given** una base vacía, **When** corre la primera sincronización, **Then** quedan en PolyConecta todos los productos (con clave, nombre, unidad base, si lleva lote y si está activo), clientes (con su moneda y sus domicilios fiscal y de envío) y almacenes que lee el bridge, con su `erp_*` (CT-13).
-2. **Given** una sincronización previa, **When** corre la siguiente, **Then** solo pide lo modificado desde la última (`modified_since`) y actualiza lo que cambió.
+1. **Given** una base vacía, **When** corre la primera sincronización, **Then** quedan en PolyConecta todos los productos (con clave, nombre, unidad base, si lleva lote y si está activo), clientes (con su moneda, su domicilio fiscal y sus domicilios de envío) y almacenes que lee el bridge, con su `erp_*` (CT-13).
+2. **Given** una sincronización previa, **When** corre la siguiente, **Then** lee el catálogo completo y solo escribe lo que cambió; un registro que ya no viene de CONTPAQi se archiva (D-150).
 3. **Given** un producto que pasa a inactivo en CONTPAQi, **When** se sincroniza, **Then** se archiva: no aparece al capturar una línea nueva y los pedidos que ya lo tienen no cambian.
 4. **Given** el bridge caído, **When** toca sincronizar, **Then** la sincronización queda en error con su motivo, se reintenta en la siguiente vuelta y no borra ni archiva nada de lo ya sincronizado.
 5. **Given** un producto nuevo, **When** se sincroniza, **Then** su clasificación propia toma como valor inicial la de CONTPAQi, si el contrato la trae (FR-003); **When** el Administrador la cambia en PolyConecta, **Then** una sincronización posterior no la sobrescribe (CT-14, D-86).
@@ -152,7 +152,7 @@ Las listas que leen de la API buscan, filtran, agrupan, ordenan y paginan en el 
 
 ### User Story 5 - Sesión permanente del bridge y lecturas de catálogos y existencias (Priority: P1) · L1 (1.1, 1.4)
 
-El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesión, y la mantiene; cada llamada tiene tiempo límite. Sus lecturas cumplen el §6 del contrato: paginación, `modified_since`, unidad base y lote del producto, y existencias de varios productos por consulta. El cotejo con la UI de CONTPAQi confirma que la lectura directa es fiel.
+El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesión, y la mantiene; cada llamada tiene tiempo límite. Sus lecturas cumplen el §6 del contrato: paginación, unidad base y lote del producto, moneda y domicilios del cliente, y existencias de varios productos por consulta. El cotejo con la UI de CONTPAQi confirma que la lectura directa es fiel.
 
 **Why this priority**: la sincronización de US3 depende de estas lecturas, y la sesión permanente es requisito de todos los comandos de F2 en adelante (D-91, D-108).
 
@@ -163,7 +163,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 1. **Given** el bridge real al arrancar, **When** inicia el SDK, **Then** inicia sesión con el usuario de Comercial antes de `fSetNombrePAQ` y con el usuario centralizado después, con credenciales de variables de entorno, sin que aparezca ninguna ventana (CT-40, D-108).
 2. **Given** una llamada al SDK que no responde, **When** vence su tiempo límite, **Then** el bridge la corta, la registra con su `correlation_id` y responde con el error del contrato, sin quedarse bloqueado.
 3. **Given** la ventana diaria configurada, **When** llega, **Then** el bridge cierra empresa y SDK y vuelve a iniciar solo (D-91).
-4. **Given** `GET /catalogs/products?modified_since=…&limit=…`, **When** se pide, **Then** responde una página en `snake_case` con cursor, unidad base (`CABREVIATURA`), si lleva lote y si está activo, solo con lo modificado desde esa fecha.
+4. **Given** `GET /catalogs/products?limit=…&cursor=…`, **When** se pide, **Then** responde una página en `snake_case` con cursor, unidad base (`CABREVIATURA`), si lleva lote y si está activo.
 5. **Given** `GET /inventory/stocks` con varios productos, **When** se pide, **Then** responde la existencia por producto y almacén (F-01) y por lote (F-02), con la unidad base.
 6. **Given** el cotejo de T-06, **When** se cambia una existencia en la UI de CONTPAQi del VPS, **Then** se mide cuándo la refleja la lectura (F-05), y F-01 y F-02 se comparan con lo que muestra la UI; el resultado va a la matriz y a `preguntas-abiertas.md` o `decisiones.md`.
 
@@ -177,7 +177,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 - El usuario que firmó se archiva antes de la segunda firma: su firma sigue valiendo y atribuida a él.
 - Un pedido se edita en otra pestaña después de la primera firma: al guardar, la API detecta que tiene firmas y pide la confirmación de D-147; sin ella no guarda.
 - La sincronización corre dos veces a la vez (dos instancias de la API): solo una procesa (bloqueo de aplicación, como el despachador).
-- El bridge reinicia en su ventana diaria mientras corre una sincronización: la lectura falla, se reintenta en la siguiente vuelta y `modified_since` no avanza.
+- El bridge reinicia en su ventana diaria mientras corre una sincronización: la lectura falla, se reintenta en la siguiente vuelta y no se archiva nada, porque el archivado por ausencia solo corre al terminar la lectura completa.
 - Una moneda distinta de la base sin tipo de cambio: el pedido no se confirma.
 - La sesión del usuario vence con un formulario abierto: al guardar se le pide entrar otra vez y no se pierde la captura.
 
@@ -189,7 +189,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 
 **Común · contrato**
 
-- **FR-001**: Las lecturas de §6 del contrato (`products`, `clients`, `warehouses` e `inventory/stocks`) MUST cumplir lo que el contrato `1.0` marca para F1: paginación con `limit` y `cursor`, `modified_since` en productos y clientes, unidad base y lote en productos, varios productos por consulta en existencias y nombres en `snake_case`.
+- **FR-001**: Las lecturas de §6 del contrato (`products`, `clients`, `warehouses` e `inventory/stocks`) MUST cumplir lo que el contrato `1.0` marca para F1: paginación con `limit` y `cursor`, unidad base y lote en productos, varios productos por consulta en existencias y nombres en `snake_case`.
 - **FR-002**: La suite de contrato (CT-23) MUST cubrir esas lecturas y pasar contra el simulador en CI y contra el bridge real en el VPS.
 - **FR-003**: Se propone el contrato `1.1` (cambio compatible, §8 del contrato) con tres campos opcionales: `clasificacion` en `GET /catalogs/products`, el valor de la clasificación "TIPO DE PRODUCTOS" de CONTPAQi (A-05); y en `GET /catalogs/clients`, `moneda` (código ISO de la moneda por omisión del cliente, D-146) y `domicilios[]` (los de `admDomicilios` del cliente: tipo fiscal o envío, calle, números, colonia, código postal, ciudad, municipio, estado, país y sucursal, D-149). Lo aprueban los dos líderes (CT-22). Sin `clasificacion`, la clasificación propia empieza vacía; sin `moneda`, el pedido propone la moneda base; sin `domicilios`, el pedido no ofrece domicilio de entrega.
 
@@ -199,7 +199,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 - **FR-005**: Toda llamada al SDK MUST tener tiempo límite configurable; al vencer, el bridge MUST registrarla con su `correlation_id` y responder con el error del contrato.
 - **FR-006**: El bridge MUST reiniciarse en una ventana diaria configurable, cerrando siempre empresa y SDK (D-91, H-7).
 - **FR-007**: Las lecturas reales MUST salir por SQL de solo lectura (CT-30), con las columnas documentadas en `docs/contpaq/` (Principio VII): existencia por producto y almacén de `admExistenciaCosto` del ejercicio vigente, y por lote de `admCapasProducto` agrupada por número de lote (D-87).
-- **FR-008**: L1 MUST ejecutar F-05 y cotejar F-01 y F-02 con la UI de CONTPAQi en el VPS (T-06), registrar el resultado en la matriz del SDK y llevar la conclusión a `decisiones.md` o a `preguntas-abiertas.md`. Para FR-003 MUST verificar además, con una consulta de solo lectura y la UI: cuál de `admClientes.CIDMONEDA` y `CIDMONEDA2` es la moneda que CONTPAQi propone en los documentos del cliente, y cuántos domicilios de cada tipo tiene un cliente en `admDomicilios` (`CTIPOCATALOGO = 1`).
+- **FR-008**: L1 MUST ejecutar F-05 y cotejar F-01 y F-02 con la UI de CONTPAQi en el VPS (T-06), registrar el resultado en la matriz del SDK y llevar la conclusión a `decisiones.md` o a `preguntas-abiertas.md`. La moneda del cliente, los domicilios y `CTIMESTAMP` ya los verificó el usuario el 8-oct (D-150).
 
 **L2 · PolyConecta**
 
@@ -213,7 +213,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 
 *Catálogos (1.3)*
 
-- **FR-014**: Una sincronización periódica (cada 15 minutos por omisión, configurable) y bajo demanda ("Sincronizar ahora" por catálogo y en general, Sistemas y Administrador) MUST traer productos, clientes y almacenes por el bridge con `modified_since`, guardar su `erp_*` (CT-13) y su marca de última sincronización por catálogo, y correr una sola instancia por catálogo a la vez.
+- **FR-014**: Una sincronización periódica (cada 15 minutos por omisión, configurable) y bajo demanda ("Sincronizar ahora" por catálogo y en general, Sistemas y Administrador) MUST leer completos productos, clientes y almacenes por el bridge, escribir solo lo que cambió, archivar lo que ya no viene, guardar su `erp_*` (CT-13) y el resultado de la última corrida por catálogo, y correr una sola instancia por catálogo a la vez.
 - **FR-015**: Lo sincronizado MUST ser de solo lectura en PolyConecta, salvo lo que es de PolyConecta (CT-14). Un producto o cliente inactivo en CONTPAQi MUST archivarse, no borrarse.
 - **FR-016**: `Product` MUST guardar su unidad base de CONTPAQi (`erp_uom`) y si lleva lote; `PackagingUnit` MUST reflejar la unidad base (`is_erp_base_unit`), sin conversión (D-124, D-127).
 - **FR-017**: `ProductClassification` MUST ser un catálogo de PolyConecta, editable por el Administrador; la sincronización solo llena la clasificación de un producto que aún no tiene (D-86, FR-003).
@@ -222,7 +222,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 *Pedido de venta (1.5)*
 
 - **FR-019**: `SalesOrder` y `SalesOrderLine` MUST seguir 04 §3 con `origin = Manual`, heredar la base común y cambiar de estado solo por transiciones nombradas (CT-32). Sus estados son los de 02 §1; en F1 se usan Borrador, Confirmado, Autorizado y Cancelado.
-- **FR-020**: El maestro MUST llevar cliente (sincronizado y activo), orden de compra del cliente, agente, fecha del pedido, fecha estimada de entrega (`promise_date`, D-140), domicilio de entrega elegido entre los del cliente (propone el de envío, D-149), moneda (propone la del cliente y AC la puede cambiar) y tipo de cambio (D-146). Cada línea MUST llevar producto activo, cantidad en la unidad base del producto (no editable, D-127), **precio unitario como columna capturable de la captura de líneas** (`[Producto] [Cantidad] [Unidad] [Precio unitario] [Agregar]`, D-74), y meta de producción y tolerancia opcionales (02 §1). El precio es por la unidad base, que es la que viaja a CONTPAQi (`admMovimientos.CPRECIO`).
+- **FR-020**: El maestro MUST llevar cliente (sincronizado y activo), orden de compra del cliente, agente, fecha del pedido, fecha estimada de entrega (`promise_date`, D-140), domicilio de entrega elegido entre los domicilios de envío del cliente (propone el único si tiene uno; si tiene varios, AC elige, D-149, D-150), moneda (propone la del cliente y AC la puede cambiar) y tipo de cambio (D-146). Cada línea MUST llevar producto activo, cantidad en la unidad base del producto (no editable, D-127), **precio unitario como columna capturable de la captura de líneas** (`[Producto] [Cantidad] [Unidad] [Precio unitario] [Agregar]`, D-74), y meta de producción y tolerancia opcionales (02 §1). El precio es por la unidad base, que es la que viaja a CONTPAQi (`admMovimientos.CPRECIO`).
 - **FR-021**: El folio MUST salir de `IReferenceSequenceService`, con un tipo de documento propio del pedido de venta.
 - **FR-022**: "Confirmar" (AC, Administrador) MUST exigir cliente, al menos una línea y, en cada línea, cantidad mayor que cero y precio; y tipo de cambio si la moneda no es la base.
 - **FR-023**: "Autorizar" MUST ser un solo botón para Comercial y Cobranza que registra la firma del grupo (Comercial o Cobranza) con el que actúa el usuario (titular o suplente). Un grupo no firma dos veces, un grupo sin el permiso de firmar no firma, y **ninguna persona aporta las dos firmas del mismo pedido** (RF-3, RF-4, D-34). La segunda firma pasa el pedido a Autorizado.
@@ -327,3 +327,4 @@ Las secciones anteriores son el **objetivo primario** de la fase, fijado al rati
 | 2026-10-08 | L2 | El `Product` de F1 es una entidad nueva en `Domain/Inventario/` (`inv.product`); la previa a F0 queda `[Obsolete]` hasta que su fase rediseñe a quien la usa | No reescribir cinco entidades de otras fases | FR-016 | research R-08 |
 | 2026-10-08 | L2 | El flujo en memoria pierde su pedido semilla: el botón "Pedido" de la OF de la réplica queda deshabilitado con "Se conecta en F2"; los guiones de escenario de Pedidos se sustituyen por pruebas extremo a extremo contra la API | Pedidos lee de la API y las otras pantallas siguen en memoria | FR-027 | research R-10 |
 | 2026-10-08 | L2 | El agente del pedido es texto libre en F1: el catálogo de agentes de CONTPAQi no está en el contrato | Sin lectura de agentes en `bridge-v1` | FR-020 | data-model §4 |
+| 2026-10-08 | Común | Verificado por el usuario en CONTPAQi: `CTIMESTAMP` no es la fecha de última modificación; la moneda que tiene efecto es la del cliente (`CIDMONEDA`); un cliente tiene un domicilio fiscal y N de envío. La sincronización lee completo y compara; `modified_since` no se usa en productos ni clientes | Pendientes de R-06 | US3, US5, FR-001, FR-008, FR-014, FR-020; contrato `1.1` | D-150 |

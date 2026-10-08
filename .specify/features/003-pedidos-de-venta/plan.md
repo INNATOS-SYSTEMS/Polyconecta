@@ -24,7 +24,7 @@ F1 entrega el primer documento de negocio sobre la API: el **pedido libre con do
 - Identity solo para credenciales, con cookie y mismo origen. Grupos y permisos son del dominio, y un decorador de autorización corre antes de cada caso de uso (R-01, R-02).
 - Una ruta de consulta por lista que traduce `ConsultaLista` a `IQueryable`, con la vista de búsqueda declarada en el servidor. Resuelve P-28 (R-03).
 - El interceptor de auditoría de F0 también escribe el chatter de cada transición (R-04).
-- La sincronización es un caso de uso por catálogo, periódico y bajo demanda, con marca de agua y bloqueo de aplicación (R-05).
+- La sincronización es un caso de uso por catálogo, periódico y bajo demanda, que lee completo y escribe solo lo que cambió, con bloqueo de aplicación (R-05, D-150).
 - Las pantallas de Pedidos ya existen: solo cambian su origen de datos y sus acciones a la API (R-10).
 
 Detalles y alternativas en [research.md](research.md).
@@ -68,7 +68,7 @@ Detalles y alternativas en [research.md](research.md).
 | II · Toda escritura a CONTPAQi va por outbox y bridge | F1 no escribe en CONTPAQi. Las lecturas son SQL de solo lectura en el bridge (CT-30) | ✅ | ✅ |
 | III · Catálogos | El producto es único por código de CONTPAQi; la clasificación y la ficha son de PolyConecta (CT-14) | ✅ | ✅ |
 | V · Aprobaciones digitales | Dos firmas de personas distintas, con suplentes y atribución (RF-3, RF-4, D-34, D-38) | ✅ | ✅ |
-| VII · Respaldo técnico | Precio por movimiento: `tMovimiento.aPrecio` y S-14. `modified_since` sobre `CTIMESTAMP`, la moneda del cliente y los domicilios quedan como **supuestos** hasta verificarlos en 1.4 (R-06) | ⚠️ | ⚠️ |
+| VII · Respaldo técnico | Precio por movimiento: `tMovimiento.aPrecio` y S-14. `CTIMESTAMP`, la moneda del cliente (`CIDMONEDA`) y los domicilios (1 fiscal, N de envío) los verificó el usuario en CONTPAQi (D-150) | ⚠️ | ✅ |
 | VIII · Realidad de CONTPAQi | Columnas de `admClientes`, `admDomicilios` y `admMovimientos` tomadas de `Referencia_BD_CONTPAQi.md` | ✅ | ✅ |
 | IX · Odoo 19 | Lista, kanban, formulario y chatter con los contratos visuales; componentes nuevos primero a 07 y la galería (R-10) | ✅ | ✅ |
 | X · Documentos libres | El pedido es libre ("Nuevo"). Su modo ligado por sincronización quedó fuera de alcance por decisión del usuario (D-145) | ⚠️ | ✅ |
@@ -82,7 +82,7 @@ Detalles y alternativas en [research.md](research.md).
 | CT-40 · Sesión del SDK | Una sesión por proceso, timeout por llamada y reinicio diario (R-07) | ✅ | ✅ |
 | CT-43 · Exploración | Los cambios del plan están en "Exploración y cambios" | ✅ | ✅ |
 
-**Lo que queda en ⚠️**: Principio VII. Tres datos dependen de verificarlos en el VPS en la tarea 1.4 (R-06). Ninguno bloquea a L2: el simulador los trae y el contrato los marca como opcionales (FR-003). Si `CTIMESTAMP` no sirve, la sincronización lee el catálogo completo. Si la moneda resulta ser la otra columna, solo cambia la consulta del bridge.
+**Nada queda en ⚠️.** Los tres datos que dependían del VPS los verificó el usuario el 8-oct (D-150). Lo único sin verificar es el cotejo de T-06, que es tarea de la fase (FR-008) y no condiciona el diseño.
 
 ### Contrato
 
@@ -123,7 +123,7 @@ docs/contratos/
 
 PolyConecta.Contpaq/                     # L1
 ├── Infrastructure/Sdk/                  # sesión permanente, vigilante de timeout, reinicio diario (1.1)
-├── Infrastructure/Persistence/          # SqlContractReadRepository: modified_since, moneda, domicilios, clasificación, existencias por lote de productos (1.4)
+├── Infrastructure/Persistence/          # SqlContractReadRepository: moneda, domicilios, clasificación, existencias por lote de productos (1.4)
 └── Simulated/                           # seed.json ampliado y rutas de operación del catálogo (común)
 
 PolyConecta.Domain/
@@ -186,8 +186,7 @@ tests/
 
 ### 1.4 · Lecturas y cotejo (R-06, R-11)
 
-- Verificar primero en el VPS, con consultas de solo lectura: `CTIMESTAMP` al editar, `CIDMONEDA` contra `CIDMONEDA2` y domicilios por cliente. Lo que salga decide el resto de 1.4 y va a la matriz.
-- `modified_since` en productos y clientes (o lectura completa si `CTIMESTAMP` no sirve). Un cliente cuenta como modificado si cambió un domicilio.
+- Lectura completa paginada de productos y clientes; `modified_since` responde `501` (D-150). Clientes con `CIDMONEDA` y sus domicilios (1 fiscal, N de envío). Medir en el VPS la duración de la lectura completa.
 - Campos de `1.1` en el modo real, detrás de `BridgeConfig__Contrato__Expone11` hasta la aprobación.
 - Existencias de varios productos por consulta (lotes de 100).
 - Ampliar `Simulated/seed.json` y agregar las rutas de operación del catálogo simulado (común, con L2).
