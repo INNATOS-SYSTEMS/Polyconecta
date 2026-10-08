@@ -1,7 +1,7 @@
 @if (show() && line(); as linea) {
   <div class="o_dialog_overlay o_dialog_backdrop" (click)="closed.emit()" (keydown.escape)="closed.emit()">
     <div cdkTrapFocus [cdkTrapFocusAutoCapture]="true" style="width: 560px;" (click)="$event.stopPropagation()">
-      <pc-odoo-dialog titulo="Selección de lotes" [textoPrimario]="null" textoSecundario="Cerrar" (cancelar)="closed.emit()">
+      <pc-odoo-dialog titulo="Selección de Lotes" [textoPrimario]="null" textoSecundario="Cerrar" (cancelar)="closed.emit()">
         <div class="d-flex justify-content-between align-items-center mb-3 small">
           <span class="text-muted">Requerido: <span class="fw-semibold text-dark">{{ n1(pendiente(linea)) }} {{ linea.unidad }}</span></span>
           <span class="text-muted">Declarado: <span class="fw-semibold" [class.text-success]="declarado(linea) >= pendiente(linea)" [class.text-dark]="declarado(linea) < pendiente(linea)">{{ n1(declarado(linea)) }} {{ linea.unidad }}</span></span>
@@ -20,7 +20,7 @@
           <div class="o_field" style="width:110px;">
             <input type="number" step="0.1" class="text-end" placeholder="Cantidad" [value]="scanQty()" (change)="onQty($event)" />
           </div>
-          <button type="button" class="btn btn-sm btn-primary" data-lote-agregar (click)="agregar()">Agregar</button>
+          <button type="button" class="btn o_btn_icon" aria-label="Agregar lote" title="Agregar lote" data-lote-agregar (click)="agregar()"><pc-odoo-icon nombre="nuevo" contexto="icono" /></button>
         </div>
         @if (errorMsg()) {
           <div class="text-danger small mb-2"><pc-odoo-icon nombre="aviso" />{{ errorMsg() }}</div>

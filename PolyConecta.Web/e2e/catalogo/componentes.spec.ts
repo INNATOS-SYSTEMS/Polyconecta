@@ -68,6 +68,8 @@ test.describe('lista', () => {
   test('agrupa en el origen, con conteo y total, y abre un grupo bajo pedido', async ({ page }) => {
     await lista(page).locator('button[title="Filtros del modelo"]').click();
     await lista(page).locator('.o_search_menu_item', { hasText: 'Cliente' }).last().click();
+    // Se cierra el menú: con la búsqueda al centro del panel, queda encima de la tabla.
+    await lista(page).locator('button[title="Filtros del modelo"]').click();
     const grupos = lista(page).locator('table[data-lista="catalogo.pedidos"] .o_group_row');
     await expect(grupos).toHaveCount(5);
     await expect(filas(page)).toHaveCount(0);
@@ -257,16 +259,16 @@ test.describe('formulario, avisos y sincronización', () => {
     await expect(page.locator('[data-aviso="aviso"]')).toContainText('Reintento encolado.');
   });
 
-  test('formulario: engranaje junto a las migas y sincronización arriba del chatter', async ({ page }) => {
+  test('formulario: engranaje junto a las migas y sincronización en la barra de acciones', async ({ page }) => {
     const f = page.locator('[data-catalogo="formulario"]');
     await expect(f.locator('.o_control_panel [data-acciones]')).toHaveText('');
     await expect(f.locator('.o_statusbar [data-acciones]')).toHaveCount(0);
-    await expect(f.locator('.o_chatter_cabecera [data-sync]')).toHaveCount(1);
+    await expect(f.locator('.o_statusbar [data-sync]')).toHaveCount(1);
     await expect(f.locator('.o_control_panel')).toHaveCSS('border-bottom-color', 'rgba(0, 0, 0, 0)');
   });
 
-  test('kanban: etapas de 260 px', async ({ page }) => {
+  test('kanban: etapas de 338 px', async ({ page }) => {
     const anchos = await page.locator('[data-catalogo="kanban"] .o_kanban_column:not(.o_kanban_plegada)').evaluateAll(cs => cs.map(c => c.getBoundingClientRect().width));
-    expect(new Set(anchos)).toEqual(new Set([260]));
+    expect(new Set(anchos)).toEqual(new Set([338]));
   });
 });

@@ -1,7 +1,8 @@
 import { Paso, guion } from './runner';
 
 const GUARDAR: Paso = { pulsar: '.o_statusbar button', texto: 'Guardar' };
-const MODAL = 'div.position-fixed';
+/** El modal de lotes: en el prototipo, un div fijo; en la réplica, el marco de pc-odoo-dialog (spec 011). */
+const MODAL = ':is(div.position-fixed, .o_dialog_overlay)';
 const CAPTURA = 'main .o_line_capture';
 
 /** US-3, escenario 1: OF sin pedido; lotes con el folio de la OF raíz (D-54); genera recolección y control. */
@@ -42,6 +43,7 @@ guion({
     { control: 'su control de calidad', en: 'main', esperado: /QC-BOL-2026-0002.*R001-BOL-2026-0002.*R002-BOL-2026-0002/ },
     { pulsar: 'main tbody button', texto: 'Aprueba' },
     { pulsar: 'main tbody button', texto: 'Falla' },
+    { pulsar: '[data-dialogo="confirmar"]', soloAngular: true },
     { control: 'mismos efectos que una ligada', en: 'main tbody', esperado: /R001-BOL-2026-0002 .*Aprobado.*R002-BOL-2026-0002\.S .*Rechazado/ },
     { navegar: '/fabricacion' },
     { control: 'en la lista sin pedido', en: 'main', esperado: /BOL-2026-0002 BOLSA MEDIANA/ },
@@ -58,9 +60,9 @@ guion({
     { capturar: `${CAPTURA} input[placeholder=Cantidad]`, valor: '200' },
     { pulsar: `${CAPTURA} button`, texto: 'Agregar' },
     GUARDAR,
-    { pulsar: 'main td button.btn-link' },
+    { pulsar: 'main td :is(button.btn-link, button.o_btn_link)' },
     { pulsar: `${MODAL} button`, texto: 'Tomar' },
-    { pulsar: `${MODAL} .input-group button` },
+    { pulsar: `${MODAL} :is(.input-group button, [data-lote-agregar])` },
     { pulsar: `${MODAL} button`, texto: 'Cerrar' },
     { pulsar: '.o_statusbar button', texto: 'Validar' },
     { control: 'recolección libre validada', en: 'main', esperado: /Hecho/ },

@@ -15,6 +15,8 @@ import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-st
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooTabs } from '../../../shared/odoo-tabs/odoo-tabs';
 import { LogisticaAcciones, ValidarRecepcion } from './logistica-acciones';
+import { InventoryState } from '../../../core/state/inventory-state';
+import { ProductionLot } from '../../../core/models/produccion';
 import { CONFIG, TipoLogistica } from './tipos';
 
 /**
@@ -33,6 +35,7 @@ export class LogisticaForm {
   private readonly router = inject(Router);
   protected readonly acciones = inject(LogisticaAcciones);
   private readonly dialog = inject(Dialog);
+  private readonly inv = inject(InventoryState);
 
   readonly tipo = input.required<TipoLogistica>();
   /** Folio con "/" (SC/OUT/31688), resuelto por folioMatcher. */
@@ -69,7 +72,13 @@ export class LogisticaForm {
   /** Lotes de producción que Calidad no ha liberado: el selector explica el hard-stop si se capturan. */
   protected readonly noLiberados = computed(() => {
     this.flow.cambios();
-    return this.flow.manufacturingOrders.flatMap(o => o.produccion).filter(l => l.estado !== 'Aprobado');
+    this.inv.cambios();
+    const enRevision = this.flow.manufacturingOrders.flatMap(o => o.produccion).filter(l => l.estado !== 'Aprobado');
+    // Un lote rechazado vive en cuarentena del inventario aunque ya no esté en la OF.
+    const retenidos = this.inv.lotes
+      .filter(l => !InventoryState.esVendible(l.ubicacion))
+      .map(l => ({ lote: l.lote, real: l.cantidad, unidad: '', estado: 'Rechazado' as ProductionLot['estado'] }));
+    return [...enRevision, ...retenidos];
   });
 
   protected async validar(): Promise<void> {

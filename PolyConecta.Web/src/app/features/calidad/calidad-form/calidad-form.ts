@@ -7,9 +7,8 @@ import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb'
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
 import { OdooSmartButtons, SmartButtonModel } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
-import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
 import { OdooTabs } from '../../../shared/odoo-tabs/odoo-tabs';
-import { CalidadAcciones, ETAPAS_CALIDAD } from '../calidad-acciones';
+import { CalidadAcciones } from '../calidad-acciones';
 import { estadoQc, qcFolio } from '../calidad-estado';
 
 /**
@@ -18,7 +17,7 @@ import { estadoQc, qcFolio } from '../calidad-estado';
  */
 @Component({
   selector: 'pc-calidad-form',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooChatterDrawer, OdooStatusPipeline, OdooTabs, OdooIcon, RouterLink],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooChatterDrawer, OdooTabs, OdooIcon, RouterLink],
   templateUrl: './calidad-form.html',
   styles: ':host { display: contents; }',
 })
@@ -31,7 +30,6 @@ export class CalidadForm {
 
   protected readonly n1 = n1;
   protected readonly tab = signal<string>('controles');
-  protected readonly etapas = ETAPAS_CALIDAD;
   protected readonly pestanas = [{ id: 'controles', titulo: 'Controles' }, { id: 'notas', titulo: 'Notas' }];
   protected readonly chatterEntries: ChatterEntry[] = [{ author: 'Sistema', timestamp: 'hoy', text: 'Ficha de Control de Calidad generada.' }];
 

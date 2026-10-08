@@ -43,6 +43,8 @@ export interface GrupoLista {
   etiqueta: string;
   cantidad: number;
   totales: Record<string, number>;
+  /** Textos del grupo por campo que no se suman, como la unidad común (Inventario Actual). */
+  textos?: Record<string, string>;
 }
 
 export interface ResultadoLista<T> {

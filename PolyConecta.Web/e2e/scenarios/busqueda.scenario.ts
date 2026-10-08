@@ -67,16 +67,17 @@ guion({
   pasos: [
     { ir: '/inventario' },
     buscar('PT1113'),
-    { control: 'texto', en: 'main' },
+    // Agrupada, la lista nueva pagina grupos, como Odoo ("1-1 / 1"); el prototipo contaba existencias. Se compara la tabla.
+    { control: 'texto', en: 'main table' },
     buscar(''),
     abrirMenu,
     filtro('PIM'),
     filtro('Santa Cruz'),
-    { control: 'dos plantas', en: 'main' },
+    { control: 'dos plantas', en: 'main table' },
     { pulsar: MENU, texto: 'Ubicación' },
-    { control: 'agrupado', en: 'main' },
+    { control: 'agrupado', en: 'main table' },
     { pulsar: '.o_search_facet_remove' },
-    { control: 'faceta quitada', en: 'main' },
+    { control: 'faceta quitada', en: 'main table' },
   ],
 });
 
@@ -88,7 +89,9 @@ guion({
     filtro('Borrador'),
     filtro('Hecho'),
     filtro('Recolecciones'),
-    { control: 'recolecciones filtradas', en: 'main' },
+    // El menú también agrupa y guarda favoritos (spec 011, D-135): se comparan la lista y las facetas.
+    { control: 'recolecciones filtradas', en: 'main .p-4' },
+    { control: 'facetas de recolecciones', en: '.o_search_bar' },
     { navegar: '/incidencias' },
     buscar('EXT'),
     { control: 'incidencias por texto', en: 'main' },

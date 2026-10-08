@@ -1,3 +1,4 @@
+import { ordenCultural } from '../format/numero';
 import { SearchView, aplicar } from '../search/search-view';
 import { ConsultaLista, FiltroLista, GrupoLista, OrigenDeLista, ResultadoLista } from './origen';
 
@@ -15,6 +16,8 @@ export interface OpcionesOrigenEnMemoria<T> {
    * unidad (no se suman kilos con piezas). Así lo hacía Inventario Actual.
    */
   unidad?: (fila: T) => string;
+  /** Campo donde el grupo muestra su unidad común; por omisión, `unidad`. */
+  campoUnidad?: string;
   /** Campos en los que busca la barra de búsqueda, si no hay vista. */
   buscables?: readonly string[];
   /**
@@ -138,10 +141,19 @@ export class OrigenEnMemoria<T> implements OrigenDeLista<T> {
       etiqueta: valor === '' ? 'Ninguno' : (this.opciones.etiqueta?.(campo, valor) ?? valor),
       cantidad: fs.length,
       totales: this.sumar(fs),
+      textos: this.unidadComun(fs),
     }));
     // Si se ordena por el campo agrupado, los grupos siguen ese orden; si no, por etiqueta.
     const orden = c.orden.find(o => o.campo === campo);
-    return orden ? grupos : grupos.sort((a, b) => comparar(a.etiqueta, b.etiqueta));
+    // Etiquetas con el orden cultural del prototipo (es-419, sin orden numérico): C4235 antes que C455.
+    return orden ? grupos : grupos.sort((a, b) => ordenCultural(a.etiqueta, b.etiqueta));
+  }
+
+  private unidadComun(filas: T[]): Record<string, string> | undefined {
+    const unidad = this.opciones.unidad;
+    if (!unidad) return undefined;
+    const unidades = new Set(filas.map(unidad));
+    return unidades.size === 1 ? { [this.opciones.campoUnidad ?? 'unidad']: [...unidades][0] } : undefined;
   }
 
   private sumar(filas: T[]): Record<string, number> {

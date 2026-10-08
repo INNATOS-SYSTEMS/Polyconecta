@@ -1,7 +1,7 @@
 @if (show()) {
   <div class="o_dialog_overlay o_dialog_backdrop" (click)="closed.emit()" (keydown.escape)="closed.emit()">
     <div cdkTrapFocus [cdkTrapFocusAutoCapture]="true" style="width: 480px;" (click)="$event.stopPropagation()">
-      <pc-odoo-dialog titulo="Selección de lotes" [textoPrimario]="null" textoSecundario="Cerrar" (cancelar)="closed.emit()">
+      <pc-odoo-dialog titulo="Selección de Lotes" [textoPrimario]="null" textoSecundario="Cerrar" (cancelar)="closed.emit()">
         <div class="d-flex justify-content-between align-items-center mb-3 small">
           <span class="text-muted">Requerido: <span class="fw-semibold text-dark">{{ n1(requiredQty()) }} {{ unidad() }}</span></span>
           <span class="text-muted">Seleccionado: <span class="fw-semibold" [class.text-success]="selectedWeight() >= requiredQty()" [class.text-dark]="selectedWeight() < requiredQty()">{{ n1(selectedWeight()) }} {{ unidad() }}</span></span>

@@ -1,6 +1,7 @@
 import { Paso, guion } from './runner';
 
-const MODAL = 'div.position-fixed';
+/** El modal de lotes: en el prototipo, un div fijo; en la réplica, el marco de pc-odoo-dialog (spec 011). */
+const MODAL = ':is(div.position-fixed, .o_dialog_overlay)';
 
 /** Captura un lote de producción en la pestaña Producción de la OF abierta. */
 const capturarLote = (lote: string, cantidad: string): Paso[] => [
@@ -22,17 +23,19 @@ guion({
     { control: 'OF planeada', en: 'main' },
     { pulsar: '.o_smart_button', texto: 'Recolección' },
     { control: 'recolección liberada', en: 'main' },
-    { pulsar: 'main td button.btn-link' },
+    { pulsar: 'main td :is(button.btn-link, button.o_btn_link)' },
     { control: 'modal de lotes', en: MODAL },
     { pulsar: `${MODAL} button`, texto: 'Tomar' },
-    { pulsar: `${MODAL} .input-group button` },
+    { pulsar: `${MODAL} :is(.input-group button, [data-lote-agregar])` },
     { control: 'lote asignado', en: MODAL },
     { pulsar: `${MODAL} button`, texto: 'Cerrar' },
     { control: 'recolección con lotes', en: 'main' },
     { pulsar: '.o_statusbar button', texto: 'Validar' },
+    // Parcial: la réplica lo confirma en un diálogo (aclaración P3 de la spec 011).
+    { pulsar: '[data-dialogo="confirmar"]', soloAngular: true },
     { control: 'recolección validada', en: 'main', esperado: /Hecho/ },
     { navegar: '/inventario' },
-    { control: 'inventario tras recolección (WIP)', en: 'main' },
+    { control: 'inventario tras recolección (WIP)', en: 'main table' },
     { navegar: '/fabricacion/BOL-2026-0001' },
     { pulsar: 'main .nav-link', texto: 'Producción' },
     ...capturarLote('R001-BOL-2026-0001', '5000'),
@@ -42,6 +45,7 @@ guion({
     { control: 'calidad pendiente', en: 'main' },
     { pulsar: 'main button', texto: 'Aprueba' },
     { pulsar: 'main button', texto: 'Falla' },
+    { pulsar: '[data-dialogo="confirmar"]', soloAngular: true },
     { control: 'uno aprobado y otro rechazado', en: 'main', esperado: /R002-BOL-2026-0001\.S/ },
     { navegar: '/fabricacion/BOL-2026-0001' },
     { pulsar: 'main .nav-link', texto: 'Producción' },
@@ -67,6 +71,7 @@ guion({
     { navegar: '/calidad/BOL-2026-0001' },
     { pulsar: 'main button', texto: 'Aprueba' },
     { pulsar: 'main button', texto: 'Falla' },
+    { pulsar: '[data-dialogo="confirmar"]', soloAngular: true },
     { control: 'calidad resuelta', en: 'main' },
     { navegar: '/fabricacion/BOL-2026-0001' },
     { control: 'cerrar habilitado', habilitado: '.o_statusbar button', texto: 'Cerrar Producción', esperado: true },
@@ -75,6 +80,6 @@ guion({
     { navegar: '/fabricacion' },
     { control: 'lista tras cerrar', en: 'main' },
     { navegar: '/inventario' },
-    { control: 'inventario final', en: 'main' },
+    { control: 'inventario final', en: 'main table' },
   ],
 });

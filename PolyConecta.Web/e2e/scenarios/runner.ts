@@ -7,7 +7,14 @@ import { ANGULAR, BLAZOR, abrir } from '../soporte/apps';
  * libre, que Blazor no tiene) solo verifica sus puntos de control contra lo esperado. Desde la spec 011 ya
  * no se comparan píxeles (D-135): los componentes nuevos cambian el acabado, no los textos ni el flujo.
  */
-export type Paso =
+/**
+ * Un paso marcado `soloAngular` solo corre en Angular: es el clic de un diálogo que la réplica agregó
+ * por decisión de la spec 011 (confirmar al fallar un lote, validar parcial, recibir), sin cambiar el
+ * flujo ni los textos que se comparan.
+ */
+export type Paso = PasoBase & { soloAngular?: true };
+
+type PasoBase =
   | { ir: string }
   /** Cambia de ruta sin recargar, para conservar el estado (Blazor lo pierde al abrir otro circuito). */
   | { navegar: string }
@@ -39,6 +46,7 @@ interface Corrida {
 async function ejecutar(page: Page, base: string, pasos: Paso[]): Promise<Corrida> {
   const controles: Record<string, string> = {};
   for (const paso of pasos) {
+    if (paso.soloAngular && base !== ANGULAR) continue;
     if ('ir' in paso) {
       await abrir(page, base, paso.ir);
     } else if ('navegar' in paso) {

@@ -53,7 +53,7 @@
             <span class="o_group_name"><pc-odoo-icon [nombre]="row.getIsExpanded() ? 'contraer' : 'expandir'" />{{ g.etiqueta }} <span class="text-muted">({{ g.cantidad }})</span></span>
           </td>
           @for (c of columnasVisibles().slice(1); track c.campo) {
-            <td [class.text-end]="esNumerica(c.tipo)">{{ totalDe(c, g.totales) }}</td>
+            <td [class.text-end]="esNumerica(c.tipo)" [class.text-muted]="!!g.textos?.[c.campo]">{{ g.textos?.[c.campo] ?? totalDe(c, g.totales) }}</td>
           }
           <td></td>
         </tr>

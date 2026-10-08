@@ -19,12 +19,12 @@
                     <pc-odoo-icon nombre="cancelar" /> Falla
                 </button>
             </div>
+            <span class="badge badge-brand px-3 py-2">{{ estado() }}</span>
         </div>
 
         <div class="d-flex gap-3 align-items-start">
             <div class="o_form_sheet flex-grow-1">
                 <div class="o_sheet_body">
-                    <pc-odoo-status-pipeline [stages]="etapas" [currentStage]="estado()" />
                     <h3 class="fw-bold mb-1">Control de calidad</h3>
                     <h4 class="fw-bold text-primary mb-3">{{ qcFolio() }}</h4>
                     <div class="row g-4 mb-4">

@@ -7,9 +7,8 @@ import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
-import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
 import { OdooTabs } from '../../../shared/odoo-tabs/odoo-tabs';
-import { CalidadAcciones, ETAPAS_CALIDAD } from '../calidad-acciones';
+import { CalidadAcciones } from '../calidad-acciones';
 
 /**
  * Control de calidad libre (FR-012): el mismo formulario que el control de una OF, sobre los lotes
@@ -18,7 +17,7 @@ import { CalidadAcciones, ETAPAS_CALIDAD } from '../calidad-acciones';
  */
 @Component({
   selector: 'pc-calidad-libre-form',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooChatterDrawer, OdooStatusPipeline, OdooTabs, OdooIcon, RouterLink],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooChatterDrawer, OdooTabs, OdooIcon, RouterLink],
   template: `
     @if (control(); as control) {
       <div class="o_control_panel">
@@ -33,11 +32,11 @@ import { CalidadAcciones, ETAPAS_CALIDAD } from '../calidad-acciones';
             <button class="btn btn-outline-success btn-sm px-3" (click)="aprobarSiguiente()" [disabled]="pendientes() === 0"><pc-odoo-icon nombre="confirmar" /> Aprueba</button>
             <button class="btn btn-outline-danger btn-sm px-3" (click)="fallarSiguiente()" [disabled]="pendientes() === 0"><pc-odoo-icon nombre="cancelar" /> Falla</button>
           </div>
+          <span class="badge badge-brand px-3 py-2">{{ estado() }}</span>
         </div>
         <div class="d-flex gap-3 align-items-start">
           <div class="o_form_sheet flex-grow-1">
             <div class="o_sheet_body">
-              <pc-odoo-status-pipeline [stages]="etapas" [currentStage]="estado()" />
               <h3 class="fw-bold mb-1">Control de calidad</h3>
               <h4 class="fw-bold text-primary mb-3">{{ control.folio }}</h4>
               <div class="row g-4 mb-4">
@@ -89,7 +88,6 @@ export class CalidadLibreForm {
   readonly folio = input('');
   private readonly acciones = inject(CalidadAcciones);
   protected readonly n1 = n1;
-  protected readonly etapas = ETAPAS_CALIDAD;
   protected readonly pestanas = [{ id: 'controles', titulo: 'Controles' }];
   protected readonly chatter: ChatterEntry[] = [{ author: 'Sistema', timestamp: 'hoy', text: 'Control de calidad creado con Nuevo, sin orden de origen.' }];
 

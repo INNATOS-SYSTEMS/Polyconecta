@@ -27,6 +27,7 @@ guion({
     { control: 'control creado', en: 'main', esperado: /QC-2026-0001.*— \(control libre\).*BOL-2026-0001 R101-IV310-26.*BOL-2026-0001 R102-IV310-26/ },
     { pulsar: '.o_statusbar button', texto: 'Aprueba' },
     { pulsar: '.o_statusbar button', texto: 'Falla' },
+    { pulsar: '[data-dialogo="confirmar"]', soloAngular: true },
     { control: 'aprobado y rechazado con .S', en: 'main tbody', esperado: /R101-IV310-26 .*Aprobado.*R102-IV310-26\.S .*Rechazado/ },
     { control: 'sin pendientes', habilitado: '.o_statusbar button', texto: 'Aprueba', esperado: false },
     { navegar: '/calidad/BOL-2026-0001' },
