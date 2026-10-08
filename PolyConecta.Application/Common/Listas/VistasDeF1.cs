@@ -37,7 +37,7 @@ public static class VistasDeF1
         Agrupaciones =
         [
             new() { Campo = "estado", Etiqueta = "Estado", Clave = o => o.State.ToString() },
-            new() { Campo = "cliente", Etiqueta = "Cliente", Clave = o => o.Customer.ErpCode, EtiquetaGrupo = o => o.Customer.Etiqueta },
+            new() { Campo = "cliente", Etiqueta = "Cliente", Clave = o => o.Customer.ErpCode, EtiquetaGrupo = o => o.Customer != null ? o.Customer.Etiqueta : "" },
         ],
         AgrupacionesPorDefecto = [],
         OrdenPorDefecto = [new("folio", Desc: true)],

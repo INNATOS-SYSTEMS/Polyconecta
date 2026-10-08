@@ -93,6 +93,41 @@ public static class DependencyInjection
         services.AddSingleton<Application.Ventas.IConfiguracionDeMonedas, Plataforma.Sincronizacion.ConfiguracionDeMonedas>();
         services.AddScoped<Application.Plataforma.Sincronizacion.ICandadoDeSincronizacion, Plataforma.Sincronizacion.CandadoSqlServer>();
         services.AddScoped<Application.Plataforma.Sincronizacion.IEstadosDeSincronizacion, Plataforma.Sincronizacion.EstadosDeSincronizacion>();
+        services.AddListas();
+        return services;
+    }
+
+    /// <summary>Registro de las cinco listas de F1 (contracts/api-listas.md, D-151).</summary>
+    public static IServiceCollection AddListas(this IServiceCollection services)
+    {
+        services.AddScoped(typeof(Plataforma.Listas.ConsultaDeListaEf<>));
+        services.AddScoped<Plataforma.Listas.IIncluirEnLista<Domain.Ventas.SalesOrder>, Plataforma.Listas.IncluirPedidoEnLista>();
+
+        services.AddScoped<PolyConecta.Application.Common.Listas.IConsultaDeLista>(sp =>
+            ActivatorUtilities.CreateInstance<Plataforma.Listas.ConsultaDeListaEf<Domain.Ventas.SalesOrder>>(sp, PolyConecta.Application.Common.Listas.VistasDeF1.Pedidos));
+        services.AddScoped<PolyConecta.Application.Common.Listas.IConsultaDeLista<Domain.Ventas.SalesOrder>>(sp =>
+            ActivatorUtilities.CreateInstance<Plataforma.Listas.ConsultaDeListaEf<Domain.Ventas.SalesOrder>>(sp, PolyConecta.Application.Common.Listas.VistasDeF1.Pedidos));
+
+        services.AddScoped<PolyConecta.Application.Common.Listas.IConsultaDeLista>(sp =>
+            ActivatorUtilities.CreateInstance<Plataforma.Listas.ConsultaDeListaEf<Domain.Inventario.Product>>(sp, PolyConecta.Application.Common.Listas.VistasDeF1.Productos));
+        services.AddScoped<PolyConecta.Application.Common.Listas.IConsultaDeLista<Domain.Inventario.Product>>(sp =>
+            ActivatorUtilities.CreateInstance<Plataforma.Listas.ConsultaDeListaEf<Domain.Inventario.Product>>(sp, PolyConecta.Application.Common.Listas.VistasDeF1.Productos));
+
+        services.AddScoped<PolyConecta.Application.Common.Listas.IConsultaDeLista>(sp =>
+            ActivatorUtilities.CreateInstance<Plataforma.Listas.ConsultaDeListaEf<Domain.Ventas.Customer>>(sp, PolyConecta.Application.Common.Listas.VistasDeF1.Clientes));
+        services.AddScoped<PolyConecta.Application.Common.Listas.IConsultaDeLista<Domain.Ventas.Customer>>(sp =>
+            ActivatorUtilities.CreateInstance<Plataforma.Listas.ConsultaDeListaEf<Domain.Ventas.Customer>>(sp, PolyConecta.Application.Common.Listas.VistasDeF1.Clientes));
+
+        services.AddScoped<PolyConecta.Application.Common.Listas.IConsultaDeLista>(sp =>
+            ActivatorUtilities.CreateInstance<Plataforma.Listas.ConsultaDeListaEf<Domain.Plataforma.Seguridad.User>>(sp, PolyConecta.Application.Common.Listas.VistasDeF1.Usuarios));
+        services.AddScoped<PolyConecta.Application.Common.Listas.IConsultaDeLista<Domain.Plataforma.Seguridad.User>>(sp =>
+            ActivatorUtilities.CreateInstance<Plataforma.Listas.ConsultaDeListaEf<Domain.Plataforma.Seguridad.User>>(sp, PolyConecta.Application.Common.Listas.VistasDeF1.Usuarios));
+
+        services.AddScoped<PolyConecta.Application.Common.Listas.IConsultaDeLista>(sp =>
+            ActivatorUtilities.CreateInstance<Plataforma.Listas.ConsultaDeListaEf<Domain.Plataforma.Seguridad.Group>>(sp, PolyConecta.Application.Common.Listas.VistasDeF1.Grupos));
+        services.AddScoped<PolyConecta.Application.Common.Listas.IConsultaDeLista<Domain.Plataforma.Seguridad.Group>>(sp =>
+            ActivatorUtilities.CreateInstance<Plataforma.Listas.ConsultaDeListaEf<Domain.Plataforma.Seguridad.Group>>(sp, PolyConecta.Application.Common.Listas.VistasDeF1.Grupos));
+
         return services;
     }
 

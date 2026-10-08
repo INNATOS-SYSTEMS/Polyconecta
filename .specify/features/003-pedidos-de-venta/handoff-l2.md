@@ -91,14 +91,14 @@ Si dos documentos se contradicen: manda `docs/diseno/` y, dentro de él, la deci
 | L2-T021 | Configuración de `ven` y migración `F1_Pedidos` | `a092caa` |
 | L2-T022 | Casos de uso del pedido de venta | `3746fcd` |
 | L2-T023 | Controlador y pruebas de integración del pedido de venta | `00111ec` |
-| L2-T027 | Contratos y vistas de búsqueda de las cinco listas de F1 | pendiente commit |
+| L2-T027 | Contratos y vistas de búsqueda de las cinco listas de F1 | `bc1f202` |
+| L2-T028 | Consulta de listas en el servidor y listas híbridas (D-151) | `b72b35d` |
 | L2-T036 | Rutas de la web con prefijo de módulo (D-155) | `0e7fa96` |
 
 ### Pendientes (en este orden)
 
 | Tarea | Qué es | Notas |
 | :--- | :--- | :--- |
-| L2-T028 | Consulta de listas en el servidor y **listas híbridas** (D-151) | Implementación de `IConsultaDeLista<T>`, `ListasController` y pruebas. Ver `contracts/api-listas.md` |
 | L2-T010 | Sesión en la web: proxy de desarrollo, guardia, interceptor y diálogo de inicio de sesión que no pierde la captura | El `HttpClient` y la guardia van en las rutas perezosas, no en la raíz (peso, ver §7) |
 | L2-T011 | Contratos visuales nuevos: dos paneles en árbol (`pc-odoo-dual-list`) e inicio de sesión | Primero 07 y la galería, después las pantallas |
 | L2-T012 | Pantallas de inicio de sesión, usuarios y grupos | Bajo `/plataforma/...` (D-155) |

@@ -64,7 +64,11 @@ public sealed class AuditoriaInterceptor(IClock clock, ICurrentUser user, ICorre
         foreach (var entry in db.ChangeTracker.Entries<AuditableEntity>())
         {
             if (entry.State == EntityState.Added)
-                entry.Entity.MarcarCreado(ahora, user.UserName);
+            {
+                var quien = string.IsNullOrWhiteSpace(entry.Entity.CreatedBy) ? user.UserName : entry.Entity.CreatedBy;
+                var cuando = entry.Entity.CreatedAt == default ? ahora : entry.Entity.CreatedAt;
+                entry.Entity.MarcarCreado(cuando, quien);
+            }
             else if (entry.State == EntityState.Modified)
                 entry.Entity.MarcarModificado(ahora, user.UserName);
 

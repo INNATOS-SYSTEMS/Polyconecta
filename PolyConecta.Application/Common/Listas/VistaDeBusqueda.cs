@@ -12,6 +12,8 @@ public sealed class ColumnaVista<T>
     public string? Tipo { get; init; }
     public Expression<Func<T, object?>>? Selector { get; init; }
     public Expression<Func<T, decimal>>? Suma { get; init; }
+    public Func<FiltroLista, Expression<Func<T, bool>>?>? Filtro { get; init; }
+    public Func<T, string>? Unidad { get; init; }
 }
 
 public sealed class CampoBuscable<T>
@@ -35,6 +37,7 @@ public sealed class AgrupacionVista<T>
     public required string Etiqueta { get; init; }
     public required Expression<Func<T, string?>> Clave { get; init; }
     public Func<T, string?>? EtiquetaGrupo { get; init; }
+    public Func<string, Expression<Func<T, bool>>>? FiltroValor { get; init; }
 }
 
 public sealed class VistaDeBusqueda<T> where T : class
