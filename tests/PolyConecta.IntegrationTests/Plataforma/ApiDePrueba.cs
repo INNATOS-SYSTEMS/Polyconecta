@@ -16,10 +16,14 @@ public sealed class ApiDePrueba(Entorno entorno, IDictionary<string, string?>? a
 {
     public const string Secreto = "secreto-callback";
 
+    /// <summary>Contraseña del Administrador inicial que siembra la API (Seguridad__AdministradorInicial__Contrasena).</summary>
+    public const string ContrasenaAdmin = "Admin2026x";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:PolyConecta", entorno.Conexion);
         builder.UseSetting("Erp:CallbackSecret", Secreto);
+        builder.UseSetting("Seguridad:AdministradorInicial:Contrasena", ContrasenaAdmin);
         foreach (var (clave, valor) in ajustes ?? new Dictionary<string, string?>())
             builder.UseSetting(clave, valor);
 

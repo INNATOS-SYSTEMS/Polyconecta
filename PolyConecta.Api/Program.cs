@@ -49,6 +49,17 @@ builder.Services.AddSignalR();
 
 var app = builder.Build();
 
+// Datos iniciales (plantas, permisos, grupos y Administrador inicial). La base ya viene migrada con el
+// login de migraciones (CT-30); aquí solo se escriben datos.
+try
+{
+    await PolyConecta.Infrastructure.Persistence.Sembradores.Sembrar.SembrarAsync(app.Services);
+}
+catch (Exception ex) when (ex is Microsoft.Data.SqlClient.SqlException or InvalidOperationException)
+{
+    app.Logger.LogError(ex, "No se pudieron sembrar los datos iniciales: {Mensaje}", ex.Message);
+}
+
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ProblemDetailsMiddleware>();
 app.UseSwagger();
@@ -62,7 +73,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ChatterHub>("/hubs/chatter").RequireCors(PoliticaChatter);
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program
 {

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PolyConecta.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using PolyConecta.Infrastructure.Persistence;
 namespace PolyConecta.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(PolyDbContext))]
-    partial class PolyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261008210302_F1_Seguridad")]
+    partial class F1_Seguridad
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
