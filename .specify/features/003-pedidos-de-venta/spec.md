@@ -12,7 +12,7 @@
 
 **Input**: Tareas 1.1 a 1.7 del [plan de trabajo](../../../docs/plan/Tarea%20(project.task)%20-%20replaneacion(2).xlsx) y la fila F1 de [ROADMAP.md §3](../../../docs/ROADMAP.md).
 
-**Decisiones que la rigen** (`docs/diseno/decisiones.md`): D-15, D-32 a D-38 (roles, firmas y suplentes), D-52, D-53, D-74, D-78, D-86, D-87, D-88, D-91, D-93, D-108, D-113, D-123, D-124, D-127, D-116 a D-120 (fases y specs), D-134 a D-144 (contratos visuales), D-145 (alcance de F1), D-146 (moneda del pedido), D-147 (editar con firmas), D-148 (grupos y permisos), D-149 (domicilios del cliente), D-150 (lecturas verificadas), D-151 (listas híbridas), D-152 (espejo de existencias) y D-153 (agente del pedido).
+**Decisiones que la rigen** (`docs/diseno/decisiones.md`): D-15, D-32 a D-38 (roles, firmas y suplentes), D-52, D-53, D-74, D-78, D-86, D-87, D-88, D-91, D-93, D-108, D-113, D-123, D-124, D-127, D-116 a D-120 (fases y specs), D-134 a D-144 (contratos visuales), D-145 (alcance de F1), D-146 (moneda del pedido), D-147 (editar con firmas), D-148 (grupos y permisos), D-149 (domicilios del cliente), D-150 (lecturas verificadas), D-151 (listas híbridas), D-152 (espejo de existencias), D-153 (agente del pedido) y D-154 (rutas por id).
 
 ---
 
@@ -229,7 +229,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 - **FR-024**: El maestro y las líneas MUST editarse en Borrador, Confirmado y Autorizado (AC). Si el pedido ya tiene firmas, la interfaz MUST avisar antes de guardar que el cambio revoca la autorización, y al confirmarlo la API MUST guardar el cambio y revocar en la misma transacción: borra las firmas, regresa el pedido a Confirmado y deja en el chatter el cambio y la revocación automática, con usuario y grupo (D-147). Sin la confirmación, la API MUST rechazar el guardado. Desde F2, si la revocación no procede (D-33), la edición tampoco.
 - **FR-025**: "Revocar autorización" (firmantes del pedido y Administrador) MUST exigir motivo, borrar las firmas y regresar el pedido a Confirmado (D-33). En F1 no hay documentos generados; F2 agrega la verificación de que ninguno haya avanzado.
 - **FR-026**: "Cancelar" (AC y Administrador) MUST exigir motivo y proceder desde Borrador, Confirmado o Autorizado. Un pedido Cancelado no se edita.
-- **FR-027**: La lista, el kanban, el formulario y "Nuevo" de Pedidos que ya existen en `PolyConecta.Web` MUST leer y escribir por la API, sin cambiar su estructura (07); las transiciones del kanban MUST llamar a las mismas acciones que los botones (D-138).
+- **FR-027**: La lista, el kanban, el formulario y "Nuevo" de Pedidos que ya existen en `PolyConecta.Web` MUST leer y escribir por la API, sin cambiar su estructura (07); las transiciones del kanban MUST llamar a las mismas acciones que los botones (D-138). Las rutas pasan de folio a id: `/ventas/pedidos/:id` (D-154).
 
 *Búsqueda, favoritos y chatter (1.6)*
 
@@ -237,6 +237,7 @@ El bridge real abre la sesión del SDK una sola vez, con los dos inicios de sesi
 - **FR-029**: `OrigenHttp<T>` MUST implementar `OrigenDeLista<T>` contra esa API y elegir el modo (conjunto o servidor) sin que la pantalla lo note; un cambio propio (guardar, una transición) o volver a la lista vuelve a cargar el conjunto. La lista de Pedidos y las de Usuarios, Grupos, Productos y Clientes MUST usarlo.
 - **FR-030**: Los favoritos (`SavedSearch`) MUST guardarse por usuario y lista en la base, con uno por omisión por lista (07 §4.2), sustituyendo `FavoritosEnNavegador`.
 - **FR-031**: El chatter MUST guardarse en la base por documento (`ChatterMessage`): mensaje, nota interna o registro de cambio de estado, con autor, rol y fecha (D-78). Cada transición MUST escribir su registro en el mismo `SaveChanges`. El hub `/hubs/chatter` MUST exigir sesión y tomar el autor de ella, no del cliente.
+- **FR-031a**: Toda ruta de documento de la API y de la web MUST resolverse por id (D-154): la lista, el kanban, los botones inteligentes y el chatter navegan por id; el folio solo se muestra. Un id inexistente o fuera de las reglas de fila MUST mostrar "Página no encontrada" en la web y `404` en la API.
 
 *Revisión (1.7)*
 
@@ -335,3 +336,4 @@ Las secciones anteriores son el **objetivo primario** de la fase, fijado al rati
 | 2026-10-08 | Común | Observación al agente: es el agente de CONTPAQi. Se sincroniza `admAgentes`, cada usuario de AC se liga a su agente y el pedido lo propone. Sustituye "agente como texto libre" | Ratificación; `tDocumento.aCodigoAgente` y `admDocumentos.CIDAGENTE` | FR-003, FR-020; contrato `1.1`; tareas de 1.2, 1.3, 1.4 y 1.5 | D-153 |
 | 2026-10-08 | L2 | Correcciones del análisis de consistencia: diálogo de inicio de sesión que no pierde la captura (L2-T010); estado de la lista en la URL (L2-T029); una migración por tarea (L2-T007 y siguientes); `409` para la segunda firma de la misma persona (quickstart); medición de SC-001 en el guion de R1 (L2-T034); la regla de fila se conecta a las listas en L2-T028; Grupos en FR-029 | `/speckit-analyze` | Tareas de 1.2, 1.3, 1.5, 1.6 y 1.7 | — |
 | 2026-10-08 | Común | Contrato `1.1` editado en `docs/contratos/` (C-T002, C-T003). Se agregó `id_erp` a productos y clientes, que el `1.0` no traía y PolyConecta necesita para `erp_product_id` y `erp_customer_id` (CT-13), y `activo` a clientes para archivarlos (FR-015). Ambos opcionales y compatibles | Al editar el contrato | FR-003, FR-015, FR-016 | `bridge-v1.md` §6 y §8 |
+| 2026-10-08 | L2 | Las rutas de documento se resuelven por id y no por folio, en la API (ya lo estaba) y en la web (`pedidos/:folio` → `pedidos/:id`); las pantallas en memoria cambian al conectarse en su fase | Decisión del usuario | FR-027, FR-031a; L2-T024, L2-T025, L2-T012, L2-T018 | D-154 |
