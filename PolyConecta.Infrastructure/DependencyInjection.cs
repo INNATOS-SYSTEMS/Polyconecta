@@ -63,7 +63,8 @@ public static class DependencyInjection
         services.AddScoped<CorrelationContext>();
         services.AddScoped<ICorrelationContext>(sp => sp.GetRequiredService<CorrelationContext>());
         services.AddSingleton<IClock, SystemClock>();
-        services.AddSingleton<ICurrentUser, SistemaCurrentUser>();
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, CurrentUserDesdeCookie>();
         return services;
     }
 

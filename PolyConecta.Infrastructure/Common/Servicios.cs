@@ -40,12 +40,29 @@ public sealed class SystemClock : IClock
     public DateTimeOffset Now => DateTimeOffset.UtcNow;
 }
 
-/// <summary>Hasta que exista identidad (F1, tarea 1.2), todo lo hace "sistema".</summary>
-public sealed class SistemaCurrentUser : ICurrentUser
+/// <summary>
+/// Usuario "sistema": lo que corre fuera de una petición (despachador, sincronización periódica,
+/// sembradores). Es por ámbito porque el grupo ejercido cambia por caso de uso.
+/// </summary>
+public class SistemaCurrentUser : ICurrentUser
 {
-    public string UserName => "sistema";
+    public const string Nombre = "sistema";
 
-    public string? Role => null;
+    public virtual string UserName => Nombre;
+
+    public virtual long? UserId => null;
+
+    public virtual string NombreVisible => "Sistema";
+
+    public string? GrupoEjercido { get; private set; }
+
+    public bool EsSuplente { get; private set; }
+
+    public void EjercerGrupo(string? grupo, bool esSuplente)
+    {
+        GrupoEjercido = grupo;
+        EsSuplente = esSuplente;
+    }
 }
 
 /// <summary>correlation_id del ámbito; lo fija el middleware de la API o el despachador (CT-31).</summary>

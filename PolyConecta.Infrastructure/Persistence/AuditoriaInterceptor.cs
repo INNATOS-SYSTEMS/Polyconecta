@@ -82,7 +82,7 @@ public sealed class AuditoriaInterceptor(IClock clock, ICurrentUser user, ICorre
             foreach (var t in entidad.TransicionesPendientes)
             {
                 db.Set<StateTransitionLog>().Add(new StateTransitionLog(
-                    entidad.GetType().Name, entidad.Id, t.Desde, t.Hacia, user.UserName, user.Role, ahora, t.Nota,
+                    entidad.GetType().Name, entidad.Id, t.Desde, t.Hacia, user.UserName, user.GrupoEjercido, ahora, t.Nota,
                     correlation.CorrelationId));
             }
             entidad.LimpiarTransicionesPendientes();
