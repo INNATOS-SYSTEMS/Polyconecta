@@ -20,6 +20,9 @@ public static class DependencyInjection
         services.AddScoped<Plataforma.Sincronizacion.Sincronizador>();
         services.AddUseCase<Plataforma.Sincronizacion.SincronizarCatalogo, Plataforma.Sincronizacion.EstadoCatalogo, Plataforma.Sincronizacion.SincronizarCatalogoCaso>();
         services.AddUseCase<Plataforma.Sincronizacion.SincronizarTodo, IReadOnlyList<Plataforma.Sincronizacion.EstadoCatalogo>, Plataforma.Sincronizacion.SincronizarTodoCaso>();
+        services.AddScoped<Plataforma.Chatter.DocumentosConChatter>();
+        services.AddUseCase<Plataforma.Chatter.ObtenerChatter, IReadOnlyList<Plataforma.Chatter.MensajeChatterDto>, Plataforma.Chatter.ObtenerChatterCaso>();
+        services.AddUseCase<Plataforma.Chatter.PublicarMensaje, Plataforma.Chatter.MensajeChatterDto, Plataforma.Chatter.PublicarMensajeCaso>();
         services.AddUseCase<Plataforma.Listas.ListarFavoritos, IReadOnlyList<Plataforma.Listas.FavoritoDto>, Plataforma.Listas.ListarFavoritosCaso>();
         services.AddUseCase<Plataforma.Listas.GuardarFavorito, Plataforma.Listas.FavoritoDto, Plataforma.Listas.GuardarFavoritoCaso>();
         services.AddUseCase<Plataforma.Listas.BorrarFavorito, Unit, Plataforma.Listas.BorrarFavoritoCaso>();
@@ -88,7 +91,8 @@ public static class DependencyInjection
         services.AddScoped<IUseCase<TRequest, TResult>>(sp =>
         {
             IUseCase<TRequest, TResult> useCase = sp.GetRequiredService<TUseCase>();
-            useCase = new TransactionDecorator<TRequest, TResult>(useCase, sp.GetRequiredService<IUnitOfWork>());
+            useCase = new TransactionDecorator<TRequest, TResult>(
+                useCase, sp.GetRequiredService<IUnitOfWork>(), sp.GetService<Plataforma.Chatter.IChatterNotificador>());
             useCase = new ValidationDecorator<TRequest, TResult>(useCase, sp.GetServices<IValidator<TRequest>>());
             useCase = new AuthorizationDecorator<TRequest, TResult>(
                 useCase, sp.GetRequiredService<Autorizacion>(), sp.GetRequiredService<ICurrentUser>());

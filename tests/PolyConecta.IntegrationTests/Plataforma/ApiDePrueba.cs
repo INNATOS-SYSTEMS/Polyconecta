@@ -1,9 +1,15 @@
+using System.Collections.Concurrent;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using PolyConecta.Api.Hubs;
 using PolyConecta.Application.Common;
+using PolyConecta.Application.Plataforma.Chatter;
+using PolyConecta.Domain.Plataforma.Chatter;
 using PolyConecta.Infrastructure;
 using PolyConecta.Infrastructure.Common;
 using PolyConecta.Infrastructure.Persistence;
@@ -21,6 +27,27 @@ public sealed class ApiDePrueba(Entorno entorno, IDictionary<string, string?>? a
 
     /// <summary>Contraseña de los usuarios que crean las pruebas.</summary>
     public const string Contrasena = "Prueba2026x";
+
+    /// <summary>Lo que el chatter transmitió a los grupos de SignalR, después de cada confirmación (R-04).</summary>
+    public ConcurrentQueue<MensajeChatterDto> Transmitidos { get; } = new();
+
+    /// <summary>
+    /// Corre <paramref name="accion"/> en un alcance de la API como si la petición fuera de ese usuario
+    /// (los claims de la cookie), para los casos de uso que solo llegan por el hub.
+    /// </summary>
+    public async Task<T> ComoUsuarioAsync<T>(long userId, string usuario, string nombre, Func<IServiceProvider, Task<T>> accion)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim(PolyConecta.Infrastructure.Plataforma.Identidad.ClaimsDeSesion.UserId, userId.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            new Claim(PolyConecta.Infrastructure.Plataforma.Identidad.ClaimsDeSesion.UserName, usuario),
+            new Claim(PolyConecta.Infrastructure.Plataforma.Identidad.ClaimsDeSesion.NombreVisible, nombre),
+        ], "Prueba"));
+        scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext =
+            new DefaultHttpContext { User = principal, RequestServices = scope.ServiceProvider };
+        return await accion(scope.ServiceProvider);
+    }
 
     /// <summary>
     /// Cliente con sesión (FR-009): entra con el usuario y manda X-Requested-With en toda petición, como
@@ -80,6 +107,33 @@ public sealed class ApiDePrueba(Entorno entorno, IDictionary<string, string?>? a
                     .Options));
             services.AddScoped(sp => (PruebasDbContext)sp.GetRequiredService<PolyDbContext>());
             services.AddDocumentoSincronizable<DocumentoDePrueba, TraductorDocumentoDePrueba>();
+            services.AddScoped<ChatterNotificadorSignalR>();
+            services.AddScoped<IChatterNotificador>(sp => new NotificadorQueGraba(sp.GetRequiredService<ChatterNotificadorSignalR>(), Transmitidos));
         });
+    }
+}
+
+/// <summary>Deja pasar al notificador real y anota lo que transmite.</summary>
+internal sealed class NotificadorQueGraba(IChatterNotificador real, ConcurrentQueue<MensajeChatterDto> transmitidos) : IChatterNotificador
+{
+    private readonly List<ChatterMessage> _pendientes = [];
+
+    public void Encolar(ChatterMessage mensaje)
+    {
+        _pendientes.Add(mensaje);
+        real.Encolar(mensaje);
+    }
+
+    public void Descartar()
+    {
+        _pendientes.Clear();
+        real.Descartar();
+    }
+
+    public async Task EnviarAsync(CancellationToken cancellationToken = default)
+    {
+        foreach (var m in _pendientes) transmitidos.Enqueue(MensajeChatterDto.De(m));
+        _pendientes.Clear();
+        await real.EnviarAsync(cancellationToken);
     }
 }

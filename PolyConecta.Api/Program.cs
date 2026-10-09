@@ -64,6 +64,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddSignalR();
+builder.Services.AddScoped<PolyConecta.Application.Plataforma.Chatter.IChatterNotificador, ChatterNotificadorSignalR>();
 
 var app = builder.Build();
 

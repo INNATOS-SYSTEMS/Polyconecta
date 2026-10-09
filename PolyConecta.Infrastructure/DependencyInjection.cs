@@ -94,6 +94,7 @@ public static class DependencyInjection
         services.AddScoped<Application.Plataforma.Sincronizacion.ICandadoDeSincronizacion, Plataforma.Sincronizacion.CandadoSqlServer>();
         services.AddScoped<Application.Plataforma.Sincronizacion.IEstadosDeSincronizacion, Plataforma.Sincronizacion.EstadosDeSincronizacion>();
         services.AddScoped<Application.Plataforma.Listas.IFavoritos, Plataforma.Listas.FavoritosEf>();
+        services.AddScoped<Application.Plataforma.Chatter.IMensajesChatter, Plataforma.Chatter.MensajesChatterEf>();
         services.AddListas();
         return services;
     }
