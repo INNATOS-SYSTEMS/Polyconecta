@@ -74,13 +74,13 @@ export class PocSalesOrderForm {
   }
 
   protected editarLinea(linea: SalesOrderLine): void {
-    this.draftLinea.set({ clave: linea.clave, producto: linea.producto, cantidad: linea.cantidad, unidad: linea.unidad, precioUnitario: linea.precioUnitario, moneda: linea.moneda });
+    this.draftLinea.set({ clave: linea.clave, producto: linea.producto, cantidad: linea.cantidad, unidad: linea.unidad, precioUnitario: linea.precioUnitario });
     this.flow.quitarLineaPedido(linea, this.folio());
   }
 
   protected agregarLinea(d: LineDraft): void {
     if (this.pedido().libre) {
-      const error = this.pedidoLibre.agregarLinea(this.folio(), d.clave, d.cantidad, d.precioUnitario ?? 0, d.moneda ?? 'MXN');
+      const error = this.pedidoLibre.agregarLinea(this.folio(), d.clave, d.cantidad, d.precioUnitario ?? 0, 'MXN');
       this.errorLinea.set(error);
       if (!error) this.draftLinea.set(emptyDraft());
       return;

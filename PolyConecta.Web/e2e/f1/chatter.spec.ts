@@ -1,5 +1,6 @@
 import { Browser, expect, Page, test } from '@playwright/test';
 import { ANGULAR } from '../soporte/apps';
+import { botonBarra, capturarLinea, claveProducto, elegir } from '../soporte/pedido';
 import { entrarComo } from '../soporte/sesion';
 
 /**
@@ -29,12 +30,9 @@ test.describe('Chatter guardado del pedido (F1 / US4, contra la API)', () => {
   test('un mensaje llega en vivo al otro navegador, sigue al recargar y las transiciones dejan su Cambio', async ({ browser }) => {
     const ac = await entrar(browser, 'ac1');
     await ac.goto(`${ANGULAR}/ventas/pedidos/nuevo`);
-    await ac.selectOption('#campo-cliente', { index: 1 });
-    await ac.selectOption('#campo-linea-producto', { index: 1 });
-    await ac.fill('#campo-linea-cantidad', '5');
-    await ac.fill('#campo-linea-precio', '3');
-    await ac.click('#btn-agregar-linea');
-    await ac.click('#btn-guardar-nuevo-pedido');
+    await elegir(ac, 'Cliente');
+    await capturarLinea(ac, await claveProducto(ac, 1), '5', '3');
+    await botonBarra(ac, 'Guardar').click();
     await expect(ac).toHaveURL(/\/ventas\/pedidos\/\d+$/);
     const url = ac.url();
     const panelAc = ac.locator('pc-odoo-chatter-drawer');

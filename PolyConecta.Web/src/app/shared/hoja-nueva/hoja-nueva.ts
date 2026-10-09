@@ -22,7 +22,7 @@ import { OdooStatusPipeline } from '../odoo-status-pipeline/odoo-status-pipeline
     <div class="p-4">
       <div class="o_statusbar">
         <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-primary btn-sm fw-bold px-3" (click)="guardar.emit()"><pc-odoo-icon nombre="sincronizado" /> Guardar</button>
+          <button class="btn btn-primary btn-sm fw-bold px-3" (click)="guardar.emit()">Guardar</button>
           <button class="btn btn-outline-secondary btn-sm px-3" (click)="descartar.emit()">Descartar</button>
         </div>
         <span class="badge bg-secondary-subtle text-secondary-emphasis px-3 py-2" title="Creado con Nuevo: sin documento de origen">Libre</span>

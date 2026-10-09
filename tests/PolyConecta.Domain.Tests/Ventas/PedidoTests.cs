@@ -71,23 +71,22 @@ public class PedidoTests
     }
 
     [Fact]
-    public void D149_con_un_solo_domicilio_de_envio_lo_propone_y_solo_acepta_los_de_envio_del_cliente()
+    public void D160_el_domicilio_de_entrega_es_el_primero_de_envio_y_no_se_elige()
     {
         SalesOrder.Crear("PV-1", Datos(Cliente(envios: 1)), Monedas).DeliveryAddressId.Should().Be(901);
-        SalesOrder.Crear("PV-2", Datos(Cliente(envios: 2)), Monedas).DeliveryAddressId.Should().BeNull("con varios, AC elige");
-
-        var fiscal = () => SalesOrder.Crear("PV-3", Datos(domicilio: 900), Monedas);
-        fiscal.Should().Throw<DatosIncompletosException>().Which.Faltantes.Single().Campo.Should().Be("domicilioEntregaId");
+        SalesOrder.Crear("PV-2", Datos(Cliente(envios: 2)), Monedas).DeliveryAddressId.Should().Be(901, "con varios, el primero");
+        SalesOrder.Crear("PV-3", Datos(Cliente(envios: 2), domicilio: 900), Monedas).DeliveryAddressId.Should().Be(901, "lo que mande la interfaz no cuenta");
+        SalesOrder.Crear("PV-4", Datos(Cliente(envios: 0)), Monedas).DeliveryAddressId.Should().BeNull("sin domicilios de envío no hay entrega");
     }
 
     [Fact]
-    public void D146_la_moneda_base_lleva_tipo_de_cambio_1_y_otra_lo_exige_al_confirmar()
+    public void D161_la_moneda_base_lleva_tipo_de_cambio_1_y_otra_se_confirma_sin_capturarlo()
     {
         SalesOrder.Crear("PV-1", Datos(moneda: "MXN", tc: 20), Monedas).ExchangeRate.Should().Be(1);
 
         var usd = SalesOrder.Crear("PV-2", Datos(moneda: "USD"), Monedas);
-        var confirmar = () => usd.Confirmar(Monedas);
-        confirmar.Should().Throw<DatosIncompletosException>().Which.Faltantes.Should().ContainSingle(f => f.Campo == "tipoCambio");
+        usd.Confirmar(Monedas);
+        usd.State.Should().Be(SalesOrderState.Confirmado, "PolyConecta no captura el tipo de cambio (D-161, P-30)");
 
         var noAdmitida = () => SalesOrder.Crear("PV-3", Datos(moneda: "EUR"), Monedas);
         noAdmitida.Should().Throw<DatosIncompletosException>();

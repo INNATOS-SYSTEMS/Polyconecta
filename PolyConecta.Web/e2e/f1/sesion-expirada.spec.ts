@@ -1,5 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import { ANGULAR, abrir } from '../soporte/apps';
+import { botonBarra, capturarLinea, elegir, lineas } from '../soporte/pedido';
 
 /**
  * Sesión vencida durante la captura (spec 003, caso límite; L2-T010). Sobre el formulario real
@@ -50,12 +51,9 @@ async function simularCatalogos(page: Page): Promise<{ entradas: unknown[] }> {
 }
 
 async function capturarPedido(page: Page): Promise<void> {
-  await page.selectOption('#campo-cliente', { label: 'EMM-001 - EMPRESA MEXICANA DE MANUFACTURA' });
-  await page.selectOption('#campo-linea-producto', { label: 'PT1113 C567 - BOLSA MEDIANA 44X84 C.430 BOL-004 [77]' });
-  await page.fill('#campo-linea-cantidad', '100');
-  await page.fill('#campo-linea-precio', '7.5');
-  await page.click('#btn-agregar-linea');
-  await expect(page.locator('#tabla-lineas-nuevo-pedido')).toContainText('PT1113 C567');
+  await elegir(page, 'Cliente', 'EMPRESA');
+  await capturarLinea(page, 'PT1113 C567', '100', '7.5');
+  await expect(lineas(page)).toContainText(['PT1113 C567']);
 }
 
 test.describe('Sesión vencida durante la captura (F1)', () => {
@@ -75,7 +73,7 @@ test.describe('Sesión vencida durante la captura (F1)', () => {
 
     await abrir(page, ANGULAR, '/ventas/pedidos/nuevo');
     await capturarPedido(page);
-    await page.click('#btn-guardar-nuevo-pedido');
+    await botonBarra(page, 'Guardar').click();
 
     const dialogo = page.locator('pc-dialogo-login');
     await expect(dialogo).toBeVisible();

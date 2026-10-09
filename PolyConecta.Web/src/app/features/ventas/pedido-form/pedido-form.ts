@@ -1,203 +1,174 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { importe, n2 } from '../../../core/format/numero';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { Dialog } from '@angular/cdk/dialog';
 import { firstValueFrom } from 'rxjs';
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
+import { OdooActionMenu, AccionMenu } from '../../../shared/odoo-action-menu/odoo-action-menu';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
+import { OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
+import { OdooDialog } from '../../../shared/odoo-dialog/odoo-dialog';
+import { AvisosService } from '../../../shared/odoo-dialog/avisos';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooSmartButtons, SmartButtonModel, botonInteligente } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
-import { OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
+import { EstadoSincronizacion, OdooSyncStatus } from '../../../shared/odoo-sync-status/odoo-sync-status';
 import { PaginaNoEncontrada } from '../../../shared/pagina-no-encontrada/pagina-no-encontrada';
-import { OdooDialog } from '../../../shared/odoo-dialog/odoo-dialog';
 import { FirmaPedido } from '../firma-pedido';
+import { BorradorPedido } from '../pedido-hoja/borrador-pedido';
+import { PedidoHoja } from '../pedido-hoja/pedido-hoja';
 import {
-  PedidosService,
-  PedidoDetalleDto,
-  EditarPedidoInputDto,
   AgenteVentaDto,
+  ClienteBusquedaDto,
   ErrorApi,
+  PedidoDetalleDto,
+  PedidosService,
+  ProductoBusquedaDto,
 } from '../pedidos.service';
 
-export interface LineaEditable {
-  productoId: number;
-  clave: string;
-  producto: string;
-  unidad: string;
-  cantidad: number;
-  precioUnitario: number | null;
-}
+const ETAPAS = ['Borrador', 'Confirmado', 'Autorizado', 'En progreso', 'Hecho'];
 
+/**
+ * Formulario del pedido de venta (spec 011 conectada a la API, FR-027): la misma hoja, con edición en su
+ * lugar (D-164). Revocar y Cancelar van en el engranaje y piden motivo (FR-025, FR-026); guardar un pedido
+ * con firmas avisa que revoca la autorización (D-147).
+ */
 @Component({
   selector: 'pc-pedido-form',
   imports: [
-    FormsModule,
-    BotonNuevo,
-    OdooBreadcrumb,
-    OdooSmartButtons,
-    OdooStatusPipeline,
-    OdooChatterDrawer,
-    OdooIcon,
-    OdooDialog,
-    PaginaNoEncontrada,
+    BotonNuevo, OdooBreadcrumb, OdooActionMenu, OdooSmartButtons, OdooStatusPipeline, OdooSyncStatus,
+    OdooChatterDrawer, OdooIcon, OdooDialog, PaginaNoEncontrada, PedidoHoja,
   ],
   templateUrl: './pedido-form.html',
-  styles: `
-    :host { display: block; }
-  `,
+  styles: ':host { display: block; }',
 })
 export class PedidoForm implements OnInit {
-  protected readonly importe = importe;
-  protected readonly n2 = n2;
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  private readonly pedidosService = inject(PedidosService);
+  private readonly pedidos = inject(PedidosService);
   private readonly dialog = inject(Dialog);
+  private readonly avisos = inject(AvisosService);
 
-  protected readonly id = signal<string>(this.route.snapshot.paramMap.get('id') ?? '');
   protected readonly cargando = signal(true);
   protected readonly guardando = signal(false);
   protected readonly noEncontrado = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly exito = signal<string | null>(null);
-  protected readonly erroresCampos = signal<Record<string, string>>({});
-
   protected readonly pedido = signal<PedidoDetalleDto | null>(null);
+  protected readonly borrador = new BorradorPedido();
 
-  // Edición y D-147
-  protected readonly editando = signal(false);
-  protected readonly mostrarDialogoD147 = signal(false);
-  /** Revocar y cancelar exigen el motivo del usuario (FR-025, FR-026, D-33): queda en el chatter. */
+  protected readonly clientes = signal<ClienteBusquedaDto[]>([]);
+  protected readonly agentes = signal<AgenteVentaDto[]>([]);
+  protected readonly productos = signal<ProductoBusquedaDto[]>([]);
+
+  /** Revocar y cancelar exigen el motivo (FR-025, FR-026, D-33): queda en la bitácora. */
   protected readonly dialogoMotivo = signal<'revocar' | 'cancelar' | null>(null);
   protected readonly motivo = signal('');
-  protected readonly ordenCompraEditada = signal('');
-  protected readonly fechaPromesaEditada = signal('');
-  protected readonly domicilioEntregaIdEditado = signal<number | null>(null);
-  protected readonly monedaEditada = signal('MXN');
-  protected readonly tipoCambioEditado = signal<number | null>(1);
-  protected readonly agenteIdEditado = signal<number | null>(null);
-  protected readonly lineasEditables = signal<LineaEditable[]>([]);
-  protected readonly domiciliosDisponibles = signal<Array<{ id: number; texto: string }>>([]);
-  protected readonly agentes = signal<AgenteVentaDto[]>([]);
+  protected readonly dialogoD147 = signal(false);
 
-  protected readonly stages = ['Borrador', 'Confirmado', 'Autorizado', 'Cancelado'];
+  private accion(nombre: string) {
+    return computed(() => this.pedido()?.acciones.find(a => a.accion === nombre));
+  }
+  protected readonly accionConfirmar = this.accion('confirmar');
+  protected readonly accionAutorizar = this.accion('autorizar');
+  protected readonly accionRevocar = this.accion('revocar');
+  protected readonly accionCancelar = this.accion('cancelar');
+  protected readonly accionEditar = this.accion('editar');
 
-  protected readonly subtotalCalculado = computed(() => {
-    if (this.editando()) {
-      return this.lineasEditables().reduce((acc, l) => acc + (l.cantidad * (l.precioUnitario ?? 0)), 0);
-    }
-    const p = this.pedido();
-    if (!p) return 0;
-    return p.lineas.reduce((acc, l) => acc + (l.subtotal ?? (l.cantidad * (l.precioUnitario ?? 0))), 0);
+  /** Se edita en su lugar mientras el estado lo permite (FR-024, D-164). */
+  protected readonly editable = computed(() => !!this.accionEditar()?.disponible);
+
+  protected readonly etapas = computed(() => (this.pedido()?.estado === 'Cancelado' ? [...ETAPAS, 'Cancelado'] : ETAPAS));
+
+  protected readonly sincronizacion = computed<EstadoSincronizacion>(() => {
+    const s = this.pedido()?.sincronizacion as { estado?: string } | undefined;
+    return (s?.estado as EstadoSincronizacion) ?? 'NoAplica';
   });
 
-  protected readonly ivaCalculado = computed(() => this.subtotalCalculado() * 0.16);
-  protected readonly totalCalculado = computed(() => this.subtotalCalculado() + this.ivaCalculado());
+  protected readonly accionesMenu = computed<AccionMenu[]>(() => {
+    const r = this.accionRevocar(), c = this.accionCancelar();
+    const menu: AccionMenu[] = [];
+    if (r) menu.push({ nombre: 'Revocar autorización', icono: 'firma', deshabilitada: !r.disponible, ejecutar: () => this.pedirMotivo('revocar') });
+    if (c) menu.push({ nombre: 'Cancelar pedido', icono: 'cancelar', deshabilitada: !c.disponible, ejecutar: () => this.pedirMotivo('cancelar') });
+    return menu;
+  });
 
   protected readonly smartButtons = computed<SmartButtonModel[]>(() => {
     const p = this.pedido();
     if (!p) return [];
-    return [
-      botonInteligente('entrega', 0, '', true),
-      botonInteligente('orden', 0, `/produccion/fabricacion?pedido=${p.folio}`, true),
-    ];
+    return [botonInteligente('entrega', 0, '', true), botonInteligente('orden', 0, `/produccion/fabricacion?pedido=${p.folio}`, true)];
   });
 
-  protected readonly accionConfirmar = computed(() =>
-    this.pedido()?.acciones.find(a => a.accion === 'confirmar')
-  );
-  protected readonly accionAutorizar = computed(() =>
-    this.pedido()?.acciones.find(a => a.accion === 'autorizar')
-  );
-  protected readonly accionRevocar = computed(() =>
-    this.pedido()?.acciones.find(a => a.accion === 'revocar')
-  );
-  protected readonly accionCancelar = computed(() =>
-    this.pedido()?.acciones.find(a => a.accion === 'cancelar')
-  );
-  protected readonly accionEditar = computed(() =>
-    this.pedido()?.acciones.find(a => a.accion === 'editar')
-  );
-
-  protected readonly avisoEdicion = computed(() => {
-    const ed = this.pedido()?.acciones.find(a => a.accion === 'editar');
-    return ed?.aviso ?? null;
-  });
-
-  /** El chatter del pedido se guarda y llega en vivo (R-04, L2-T032). */
+  /** La bitácora del pedido se guarda y llega en vivo (R-04, L2-T032). */
   protected readonly documentoChatter = computed(() => {
     const p = this.pedido();
     return p ? { tipo: 'ventas.pedido', id: p.id } : undefined;
   });
 
   async ngOnInit(): Promise<void> {
-    await this.cargarPedido();
-  }
-
-  protected async cargarPedido(): Promise<void> {
-    const paramId = this.id();
-    if (!paramId || isNaN(Number(paramId))) {
+    const id = this.route.snapshot.paramMap.get('id') ?? '';
+    if (!id || isNaN(Number(id))) {
       this.noEncontrado.set(true);
       this.cargando.set(false);
       return;
     }
-
-    this.cargando.set(true);
-    this.error.set(null);
     try {
-      const p = await this.pedidosService.obtener(paramId);
-      this.pedido.set(p);
+      this.pedido.set(await this.pedidos.obtener(id));
     } catch {
       this.noEncontrado.set(true);
-    } finally {
       this.cargando.set(false);
+      return;
     }
+    this.cargarBorrador();
+    this.cargando.set(false);
+    if (this.editable()) await this.cargarCatalogos();
   }
 
-  protected async confirmar(): Promise<void> {
+  private async cargarCatalogos(): Promise<void> {
+    const [clis, agts, prods] = await Promise.all([
+      this.pedidos.buscarClientes().catch(() => []),
+      this.pedidos.listarAgentes().catch(() => []),
+      this.pedidos.buscarProductos().catch(() => []),
+    ]);
+    this.clientes.set(clis);
+    this.agentes.set(agts);
+    this.productos.set(prods);
+    if (!this.borrador.sucio()) this.cargarBorrador();
+  }
+
+  private cargarBorrador(): void {
     const p = this.pedido();
-    if (!p) return;
+    if (p) this.borrador.cargar(p, this.clientes(), this.agentes());
+  }
+
+  private async ejecutar(accion: () => Promise<PedidoDetalleDto>, exito: string): Promise<void> {
     this.guardando.set(true);
     this.error.set(null);
-    this.exito.set(null);
     try {
-      const res = await this.pedidosService.confirmar(p.id, p.rowVersion);
-      this.pedido.set(res);
-      this.exito.set('Pedido confirmado exitosamente.');
+      this.pedido.set(await accion());
+      this.cargarBorrador();
+      this.avisos.exito(exito);
     } catch (e: unknown) {
-      this.error.set((e as Error).message || 'Error al confirmar el pedido.');
+      this.error.set((e as Error).message || 'No se pudo completar la acción.');
     } finally {
       this.guardando.set(false);
     }
   }
 
-  protected async autorizar(rol?: string | null): Promise<void> {
+  protected confirmar(): void {
+    const p = this.pedido();
+    if (p) void this.ejecutar(() => this.pedidos.confirmar(p.id, p.rowVersion), 'Pedido confirmado.');
+  }
+
+  protected async autorizar(): Promise<void> {
     const p = this.pedido();
     if (!p) return;
-
-    if (!rol && p.rolesPorFirmar.length > 1) {
-      const ref = this.dialog.open<string | boolean>(FirmaPedido, {
-        data: { fila: { id: p.id, folio: p.folio } },
-      });
+    let rol: string | undefined;
+    if (p.rolesPorFirmar.length > 1) {
+      const ref = this.dialog.open<string | boolean>(FirmaPedido, { data: { fila: { id: p.id, folio: p.folio } } });
       const resultado = await firstValueFrom(ref.closed);
       if (!resultado) return;
       rol = typeof resultado === 'string' ? resultado : undefined;
     }
-
-    this.guardando.set(true);
-    this.error.set(null);
-    this.exito.set(null);
-    try {
-      const res = await this.pedidosService.autorizar(p.id, p.rowVersion, rol);
-      this.pedido.set(res);
-      this.exito.set('Firma de autorización registrada exitosamente.');
-    } catch (e: unknown) {
-      this.error.set((e as Error).message || 'Error al autorizar el pedido.');
-    } finally {
-      this.guardando.set(false);
-    }
+    await this.ejecutar(() => this.pedidos.autorizar(p.id, p.rowVersion, rol), 'Firma registrada.');
   }
 
   protected pedirMotivo(accion: 'revocar' | 'cancelar'): void {
@@ -206,192 +177,47 @@ export class PedidoForm implements OnInit {
   }
 
   protected async confirmarMotivo(): Promise<void> {
-    const accion = this.dialogoMotivo();
-    const motivo = this.motivo().trim();
-    if (!accion || !motivo) return;
+    const p = this.pedido(), accion = this.dialogoMotivo(), motivo = this.motivo().trim();
+    if (!p || !accion || !motivo) return;
     this.dialogoMotivo.set(null);
-    await (accion === 'revocar' ? this.revocar(motivo) : this.cancelar(motivo));
+    await (accion === 'revocar'
+      ? this.ejecutar(() => this.pedidos.revocar(p.id, p.rowVersion, motivo), 'Autorización revocada.')
+      : this.ejecutar(() => this.pedidos.cancelar(p.id, p.rowVersion, motivo), 'Pedido cancelado.'));
   }
 
-  private async revocar(motivo: string): Promise<void> {
-    const p = this.pedido();
-    if (!p) return;
-    this.guardando.set(true);
-    this.error.set(null);
-    this.exito.set(null);
-    try {
-      const res = await this.pedidosService.revocar(p.id, p.rowVersion, motivo);
-      this.pedido.set(res);
-      this.exito.set('Autorización revocada.');
-    } catch (e: unknown) {
-      this.error.set((e as Error).message || 'Error al revocar la autorización.');
-    } finally {
-      this.guardando.set(false);
-    }
-  }
-
-  private async cancelar(motivo: string): Promise<void> {
-    const p = this.pedido();
-    if (!p) return;
-    this.guardando.set(true);
-    this.error.set(null);
-    this.exito.set(null);
-    try {
-      const res = await this.pedidosService.cancelar(p.id, p.rowVersion, motivo);
-      this.pedido.set(res);
-      this.exito.set('Pedido cancelado.');
-    } catch (e: unknown) {
-      this.error.set((e as Error).message || 'Error al cancelar el pedido.');
-    } finally {
-      this.guardando.set(false);
-    }
-  }
-
-  // --- Modo edición y D-147 ---
-
-  protected async iniciarEdicion(): Promise<void> {
-    const p = this.pedido();
-    if (!p) return;
-    this.ordenCompraEditada.set(p.ordenCompraCliente ?? '');
-    this.fechaPromesaEditada.set(p.fechaPromesa ?? '');
-    this.domicilioEntregaIdEditado.set(p.domicilioEntrega?.id ?? null);
-    this.monedaEditada.set(p.moneda);
-    this.tipoCambioEditado.set(p.tipoCambio ?? 1);
-    this.agenteIdEditado.set(p.agente?.id ?? null);
-    this.lineasEditables.set(p.lineas.map(l => ({
-      productoId: l.productoId,
-      clave: l.clave,
-      producto: l.producto,
-      unidad: l.unidad,
-      cantidad: l.cantidad,
-      precioUnitario: l.precioUnitario,
-    })));
-    if (p.domicilioEntrega) {
-      this.domiciliosDisponibles.set([{ id: p.domicilioEntrega.id, texto: p.domicilioEntrega.texto }]);
-    } else {
-      this.domiciliosDisponibles.set([]);
-    }
-    void this.pedidosService.buscarClientes(p.cliente.clave).then(clis => {
-      const cli = clis.find(c => c.id === p.cliente.id) ?? clis[0];
-      if (cli?.domiciliosEnvio?.length) {
-        this.domiciliosDisponibles.set(cli.domiciliosEnvio);
-      }
-    }).catch(() => {});
-    this.erroresCampos.set({});
-    this.error.set(null);
-    this.exito.set(null);
-    this.editando.set(true);
-
-    if (this.agentes().length === 0) {
-      try {
-        const ags = await this.pedidosService.listarAgentes();
-        this.agentes.set(ags);
-      } catch {
-        // Ignorar
-      }
-    }
-  }
-
-  protected cancelarEdicion(): void {
-    this.editando.set(false);
-    this.error.set(null);
-    this.erroresCampos.set({});
-  }
-
-  protected intentarGuardarEdicion(): void {
-    const p = this.pedido();
-    if (!p) return;
-    if (p.firmas.length > 0) {
-      this.mostrarDialogoD147.set(true);
-    } else {
-      void this.ejecutarGuardarEdicion(false);
-    }
+  protected guardar(): void {
+    if ((this.pedido()?.firmas.length ?? 0) > 0) this.dialogoD147.set(true);
+    else void this.ejecutarGuardar(false);
   }
 
   protected async confirmarD147(): Promise<void> {
-    this.mostrarDialogoD147.set(false);
-    await this.ejecutarGuardarEdicion(true);
+    this.dialogoD147.set(false);
+    await this.ejecutarGuardar(true);
   }
 
-  protected cancelarD147(): void {
-    this.mostrarDialogoD147.set(false);
-  }
-
-  protected async ejecutarGuardarEdicion(revocarAutorizacion: boolean): Promise<void> {
+  private async ejecutarGuardar(revocarAutorizacion: boolean): Promise<void> {
     const p = this.pedido();
     if (!p) return;
     this.guardando.set(true);
     this.error.set(null);
-    this.erroresCampos.set({});
-
-    const payload: EditarPedidoInputDto = {
-      rowVersion: p.rowVersion,
-      revocarAutorizacion,
-      clienteId: p.cliente.id,
-      ordenCompraCliente: this.ordenCompraEditada().trim() || null,
-      agenteId: this.agenteIdEditado(),
-      fechaPedido: p.fechaPedido,
-      fechaPromesa: this.fechaPromesaEditada() || null,
-      domicilioEntregaId: this.domicilioEntregaIdEditado(),
-      moneda: this.monedaEditada(),
-      tipoCambio: this.monedaEditada() === 'MXN' ? 1 : this.tipoCambioEditado(),
-      lineas: this.lineasEditables().map(l => ({
-        productoId: l.productoId,
-        cantidad: l.cantidad,
-        precioUnitario: l.precioUnitario,
-        metaProduccionKg: null,
-        toleranciaPorcentaje: null,
-      })),
-    };
-
     try {
-      const res = await this.pedidosService.editar(p.id, payload);
-      this.pedido.set(res);
-      this.editando.set(false);
-      this.exito.set('Pedido actualizado exitosamente.');
+      this.pedido.set(await this.pedidos.editar(p.id, { ...this.borrador.payload(), rowVersion: p.rowVersion, revocarAutorizacion }));
+      this.cargarBorrador();
+      this.avisos.exito('Pedido guardado.');
     } catch (e: unknown) {
-      if (e instanceof ErrorApi) {
-        if (e.code === 'EDICION_REVOCA_AUTORIZACION') {
-          this.mostrarDialogoD147.set(true);
-          return;
-        }
-        this.error.set(e.message);
-        if (e.errores) {
-          const mapa: Record<string, string> = {};
-          for (const err of e.errores) {
-            mapa[err.campo] = err.mensaje;
-          }
-          this.erroresCampos.set(mapa);
-        }
-      } else {
-        this.error.set((e as Error).message || 'Error al actualizar el pedido.');
+      if (e instanceof ErrorApi && e.code === 'EDICION_REVOCA_AUTORIZACION') {
+        this.dialogoD147.set(true);
+        return;
       }
+      this.error.set((e as Error).message || 'No se pudo guardar el pedido.');
     } finally {
       this.guardando.set(false);
     }
   }
 
-  protected actualizarCantidadLinea(index: number, valor: string | number): void {
-    const cant = Number(valor) || 0;
-    this.lineasEditables.update(ls =>
-      ls.map((l, i) => (i === index ? { ...l, cantidad: cant } : l))
-    );
-  }
-
-  protected actualizarPrecioLinea(index: number, valor: string | number | null): void {
-    const precio = valor !== null && valor !== '' && !isNaN(Number(valor)) ? Number(valor) : null;
-    this.lineasEditables.update(ls =>
-      ls.map((l, i) => (i === index ? { ...l, precioUnitario: precio } : l))
-    );
-  }
-
-  protected alCambiarMonedaEdicion(m: string): void {
-    this.monedaEditada.set(m);
-    if (m === 'MXN') {
-      this.tipoCambioEditado.set(1);
-    } else if (this.tipoCambioEditado() === 1 || !this.tipoCambioEditado()) {
-      this.tipoCambioEditado.set(18.5);
-    }
+  protected descartar(): void {
+    this.error.set(null);
+    this.cargarBorrador();
   }
 
   protected navegar(ruta: string): void {

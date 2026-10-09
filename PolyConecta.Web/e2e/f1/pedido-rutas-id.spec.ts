@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { ANGULAR, abrir } from '../soporte/apps';
 import { simularListas } from '../soporte/listas';
+import { aviso, pestana, simularCatalogosPedido } from '../soporte/pedido';
 
 /**
  * Escenarios de rutas por id y acciones del pedido de venta (F1 / US1, L2-T024, D-154, FR-031a):
@@ -102,6 +103,7 @@ test.describe('Pedidos de venta: rutas por id y acciones (F1 / US1 / L2-T024)', 
     });
 
     await simularListas(page);
+    await simularCatalogosPedido(page);
 
     await abrir(page, ANGULAR, '/ventas/pedidos');
     await expect(page.getByText('PV-2026-0015')).toBeVisible();
@@ -128,6 +130,7 @@ test.describe('Pedidos de venta: rutas por id y acciones (F1 / US1 / L2-T024)', 
     });
 
     await simularListas(page);
+    await simularCatalogosPedido(page);
 
     await abrir(page, ANGULAR, '/ventas/pedidos/999999');
 
@@ -194,6 +197,7 @@ test.describe('Pedidos de venta: rutas por id y acciones (F1 / US1 / L2-T024)', 
     });
 
     await simularListas(page);
+    await simularCatalogosPedido(page);
 
     await abrir(page, ANGULAR, '/ventas/pedidos/15');
 
@@ -203,7 +207,7 @@ test.describe('Pedidos de venta: rutas por id y acciones (F1 / US1 / L2-T024)', 
     await expect(btnConfirmar).toBeEnabled();
     await btnConfirmar.click();
 
-    await expect(page.locator('#alerta-exito')).toContainText('Pedido confirmado');
+    await expect(aviso(page)).toContainText('Pedido confirmado');
     await expect(page.locator('.o_statusbar_pipeline .arrow-step.active')).toHaveText('Confirmado');
 
     // 2. Autorizar pedido confirmado
@@ -212,8 +216,10 @@ test.describe('Pedidos de venta: rutas por id y acciones (F1 / US1 / L2-T024)', 
     await expect(btnAutorizar).toBeEnabled();
     await btnAutorizar.click();
 
-    await expect(page.locator('#alerta-exito')).toContainText('Firma de autorización');
-    await expect(page.locator('#badge-firmas-pedido')).toContainText('1/2 firmas');
-    await expect(page.locator('#texto-firmas-pendientes')).toContainText('Cobranza');
+    await expect(aviso(page)).toContainText('Firma registrada');
+    await expect(page.locator('#badge-firmas-pedido')).toHaveText('1/2');
+    await pestana(page, 'firmas');
+    await expect(page.locator('[data-firmas-pedido]')).toContainText('Comercial 1');
+    await expect(page.locator('[data-firmas-pendientes]')).toContainText('Cobranza');
   });
 });

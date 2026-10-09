@@ -1,16 +1,16 @@
 import { expect, test } from '@playwright/test';
 import { ANGULAR, abrir } from '../soporte/apps';
 import { simularListas } from '../soporte/listas';
+import { aviso, botonBarra, capturarLinea, conMotivo, editarLinea, elegir, etapa, lineas, pestana, simularCatalogosPedido } from '../soporte/pedido';
 
 /**
  * Suite E2E de Pedidos de Venta F1 / US1 (quickstart §4, L2-T025):
- * 1. Captura en pedido-nuevo: cliente, moneda y domicilio propuestos, líneas con unidad fija, guardado.
+ * 1. Captura en pedido-nuevo: cliente con su moneda y su primer domicilio de envío (D-160), líneas con unidad fija, guardado.
  * 2. Validación de confirmación (sin precio falla y muestra qué falta; con precio confirma).
  * 3. Primera firma (Comercial) muestra 1/2 firmas y falta Cobranza.
  * 4. Edición con firmas: diálogo modal D-147 revoca la autorización y regresa a Confirmado.
  * 5. Segunda firma (Cobranza suplente) transiciona a Autorizado con firma suplente.
  * 6. Revocación manual regresa a Confirmado.
- * 7. Arrastre en Kanban ejecuta transiciones con diálogo de firma.
  */
 test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', () => {
   const sesionAc = {
@@ -180,32 +180,27 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
 
     await abrir(page, ANGULAR, '/ventas/pedidos/nuevo');
 
-    // 1. Seleccionar cliente EMM-001 -> propone moneda USD
-    await page.selectOption('#campo-cliente', { label: 'EMM-001 - EMPRESA MEXICANA DE MANUFACTURA' });
-    await expect(page.locator('#campo-moneda')).toHaveValue('USD');
+    // 1. Elegir cliente EMM-001: propone su moneda (USD) y entrega en su primer domicilio de envío, como texto (D-160)
+    await elegir(page, 'Cliente', 'EMPRESA');
+    await expect(page.locator('[data-many2one="Moneda"] input')).toHaveValue('USD');
+    await expect(page.locator('[data-entregar-en]')).toContainText('Planta Monterrey');
+    await expect(page.locator('[data-campo="tipo-cambio"]'), 'sin tipo de cambio (D-161)').toHaveCount(0);
 
-    // 2. Elegir domicilio de entrega
-    await page.selectOption('#campo-domicilio-entrega', { index: 1 });
+    // 2. Capturar orden de compra
+    await page.locator('[data-campo="orden-compra"] input').fill('OC-4471');
 
-    // 3. Capturar orden de compra
-    await page.fill('#campo-orden-compra', 'OC-4471');
-
-    // 4. Capturar línea: producto, cantidad, precio (la unidad debe ser fija MIL)
-    await page.selectOption('#campo-linea-producto', { label: 'PT1113 C567 - BOLSA MEDIANA 44X84 C.430 BOL-004 [77]' });
-    await expect(page.locator('#campo-linea-unidad')).toHaveValue('MIL');
-    await expect(page.locator('#campo-linea-unidad')).toBeDisabled();
-
-    await page.fill('#campo-linea-cantidad', '100');
-    await page.fill('#campo-linea-precio', '7.5');
-    await page.click('#btn-agregar-linea');
+    // 3. Capturar línea: producto, cantidad y precio; la unidad es la base del producto y no se edita
+    await capturarLinea(page, 'PT1113 C567', '100', '7.5');
 
     // Línea agregada a la tabla
-    await expect(page.locator('#tabla-lineas-nuevo-pedido')).toContainText('PT1113 C567');
-    await expect(page.locator('#tabla-lineas-nuevo-pedido')).toContainText('100.00');
-    await expect(page.locator('#tabla-lineas-nuevo-pedido')).toContainText('7.50');
+    await expect(lineas(page)).toHaveCount(1);
+    await expect(lineas(page).first()).toContainText('PT1113 C567');
+    await expect(lineas(page).first()).toContainText('MIL');
+    await expect(lineas(page).first()).toContainText('100.00');
+    await expect(lineas(page).first()).toContainText('7.50');
 
-    // 5. Guardar pedido
-    await page.click('#btn-guardar-nuevo-pedido');
+    // 4. Guardar pedido
+    await botonBarra(page, 'Guardar').click();
 
     // Redirige al formulario por id /ventas/pedidos/101 y muestra folio en título
     await expect(page).toHaveURL(/.*\/ventas\/pedidos\/101$/);
@@ -215,6 +210,9 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
     expect(pedidoGuardadoPayload).not.toBeNull();
     expect(pedidoGuardadoPayload.clienteId).toBe(3);
     expect(pedidoGuardadoPayload.moneda).toBe('USD');
+    expect(pedidoGuardadoPayload.domicilioEntregaId).toBe(11);
+    expect(pedidoGuardadoPayload.ordenCompraCliente).toBe('OC-4471');
+    expect(pedidoGuardadoPayload.tipoCambio).toBeUndefined();
     expect(pedidoGuardadoPayload.lineas.length).toBe(1);
     expect(pedidoGuardadoPayload.lineas[0].cantidad).toBe(100);
   });
@@ -421,6 +419,7 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
     });
 
     await simularListas(page);
+    await simularCatalogosPedido(page, { clientes: clientesMock, agentes: agentesMock, productos: productosMock });
 
     await abrir(page, ANGULAR, '/ventas/pedidos/101');
 
@@ -428,11 +427,10 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
     await page.click('#btn-confirmar-pedido');
     await expect(page.locator('#alerta-error')).toContainText('requiere precio unitario mayor a cero');
 
-    // 2. Corregir precio entrando en modo edición
-    await page.click('#btn-editar-pedido');
-    await page.fill('#input-precio-linea-0', '8.5');
-    await page.click('#btn-guardar-edicion');
-    await expect(page.locator('#alerta-exito')).toContainText('Pedido actualizado exitosamente');
+    // 2. Corregir el precio en su lugar (D-164): editar la línea y guardar
+    await editarLinea(page, 0, { precio: '8.5' });
+    await botonBarra(page, 'Guardar').click();
+    await expect(aviso(page)).toContainText('Pedido guardado');
 
     // 3. Confirmar exitosamente
     await page.click('#btn-confirmar-pedido');
@@ -440,28 +438,29 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
 
     // 4. Paso 3: Autorizar como Comercial
     await page.click('#btn-autorizar-pedido');
-    await expect(page.locator('#badge-firmas-pedido')).toContainText('1/2 firmas');
-    await expect(page.locator('#texto-firmas-pendientes')).toContainText('Cobranza');
+    await expect(page.locator('#badge-firmas-pedido')).toHaveText('1/2');
+    await pestana(page, 'firmas');
+    await expect(page.locator('[data-firmas-pendientes]')).toContainText('Cobranza');
+    await pestana(page, 'detalle');
 
     // 5. Paso 4: Cambiar una cantidad y guardar -> aviso D-147
-    await page.click('#btn-editar-pedido');
-    await page.fill('#input-cantidad-linea-0', '250');
-    await page.click('#btn-guardar-edicion');
+    await editarLinea(page, 0, { cantidad: '250' });
+    await botonBarra(page, 'Guardar').click();
 
     // Modal de diálogo D-147 aparece
     await expect(page.locator('#dialogo-d147')).toBeVisible();
     await expect(page.locator('#texto-aviso-d147')).toContainText('revoca la autorización');
 
     // Confirmar en el modal D-147
-    await page.locator('#dialogo-d147 button', { hasText: 'Continuar y revocar autorización' }).click();
+    await page.locator('#dialogo-d147 button', { hasText: 'Guardar y revocar' }).click();
 
     // Verificación: la firma se borró y regresa a Confirmado para autorizar de nuevo
-    await expect(page.locator('#alerta-exito')).toContainText('Pedido actualizado');
-    await expect(page.locator('.o_statusbar_pipeline .arrow-step.active')).toHaveText('Confirmado');
-    await expect(page.locator('#badge-firmas-pedido')).toContainText('0/2 firmas');
+    await expect(aviso(page)).toContainText('Pedido guardado');
+    await expect(etapa(page)).toHaveText('Confirmado');
+    await expect(page.locator('#badge-firmas-pedido')).toHaveText('0/2');
   });
 
-  test('Pasos 5, 6 y 7: Firma suplente, revocación manual y kanban', async ({ page }) => {
+  test('Pasos 5 y 6: Firma suplente y revocación manual', async ({ page }) => {
     let motivoRevocacion: string | undefined;
     let firmasActuales: any[] = [
       {
@@ -584,26 +583,21 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
     });
 
     await simularListas(page);
+    await simularCatalogosPedido(page, { clientes: clientesMock, agentes: agentesMock, productos: productosMock });
 
     await abrir(page, ANGULAR, '/ventas/pedidos/101');
 
     // 1. Estado Autorizado y firma de suplente
     await expect(page.locator('.o_statusbar_pipeline .arrow-step.active')).toHaveText('Autorizado');
-    const tablaFirmas = page.locator('table', { hasText: 'Firmante' });
+    await pestana(page, 'firmas');
+    const tablaFirmas = page.locator('[data-firmas-pedido]');
     await expect(tablaFirmas).toContainText('Suplente');
     await expect(tablaFirmas).toContainText('Cobranza');
 
-    // 2. Revocar autorización
-    const btnRevocar = page.locator('#btn-revocar-pedido');
-    await expect(btnRevocar).toBeVisible();
-    await btnRevocar.click();
-    // FR-025: el motivo lo escribe quien revoca; sin él no se puede confirmar.
-    const confirmarRevocacion = page.locator('#dialogo-motivo .btn-primary');
-    await expect(confirmarRevocacion).toBeDisabled();
-    await page.fill('#campo-motivo', 'Cambio de precio');
-    await confirmarRevocacion.click();
+    // 2. Revocar autorización desde el engranaje; FR-025: sin motivo no se puede confirmar.
+    await conMotivo(page, 'Revocar autorización', 'Cambio de precio');
 
-    await expect(page.locator('#alerta-exito')).toContainText('Autorización revocada');
+    await expect(aviso(page)).toContainText('Autorización revocada');
     expect(motivoRevocacion).toBe('Cambio de precio');
     await expect(page.locator('.o_statusbar_pipeline .arrow-step.active')).toHaveText('Confirmado');
   });

@@ -165,8 +165,6 @@ public sealed class SalesOrder : DocumentoConEstado<SalesOrderState>, ISyncedDoc
             if (l.RequestedQty <= 0) f.Add(new($"lineas[{i}].cantidad", $"La línea {i + 1} no tiene cantidad."));
             if (l.UnitPrice is null) f.Add(new($"lineas[{i}].precioUnitario", $"La línea {i + 1} no tiene precio."));
         }
-        if (Currency != monedas.Base && ExchangeRate is not > 0)
-            f.Add(new("tipoCambio", $"Falta el tipo de cambio de {Currency}."));
         return f;
     }
 
@@ -304,20 +302,14 @@ public sealed class SalesOrder : DocumentoConEstado<SalesOrderState>, ISyncedDoc
         if (d.FechaPromesa is { } promesa && promesa < d.FechaPedido)
             throw new DatosIncompletosException("Fecha de entrega inválida.", [new("fechaPromesa", "La entrega estimada no es anterior a la fecha del pedido.")]);
 
-        if (d.DomicilioEntregaId is { } dom
-            && !d.Cliente.DomiciliosDeEnvio.Any(a => a.Id == dom)
-            && !(dom == DeliveryAddressId && d.Cliente.Id == CustomerId))
-            throw new DatosIncompletosException("Domicilio de entrega inválido.", [new("domicilioEntregaId", "El domicilio de entrega es uno de envío del cliente (D-149).")]);
-
         Customer = d.Cliente;
         CustomerId = d.Cliente.Id;
         CustomerPo = string.IsNullOrWhiteSpace(d.OrdenCompra) ? null : d.OrdenCompra.Trim();
         AgentId = d.Agente?.Id;
         OrderDate = d.FechaPedido;
         PromiseDate = d.FechaPromesa;
-        // Con un solo domicilio de envío se propone ese (D-149).
-        var envios = d.Cliente.DomiciliosDeEnvio.ToList();
-        DeliveryAddressId = d.DomicilioEntregaId ?? (envios.Count == 1 ? envios[0].Id : null);
+        // El domicilio de entrega es siempre el primer domicilio de envío del cliente: no se elige (D-160).
+        DeliveryAddressId = d.Cliente.DomiciliosDeEnvio.FirstOrDefault()?.Id;
         Currency = moneda;
         ExchangeRate = moneda == monedas.Base ? 1m : d.TipoCambio;
         AplicarLineas(d.Lineas);

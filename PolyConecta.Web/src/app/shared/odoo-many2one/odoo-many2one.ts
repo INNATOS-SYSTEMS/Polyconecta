@@ -72,8 +72,10 @@ export class OdooMany2one<T> implements ControlValueAccessor {
   protected readonly sinFiltro = () => true;
 
   constructor() {
+    // Recarga al escribir y también cuando cambia el origen (un catálogo que llega después de pintar el campo).
     effect(() => {
       const t = this.texto();
+      this.origen();
       untracked(() => void this.cargar(t));
     });
   }

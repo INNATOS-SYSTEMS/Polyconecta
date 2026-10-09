@@ -79,7 +79,7 @@ public sealed class Customer : ArchivableEntity
     public string Etiqueta => $"{ErpCode} - {LegalName}";
 
     /// <summary>Domicilios de envío vigentes: entre ellos elige el pedido (D-149).</summary>
-    public IEnumerable<CustomerAddress> DomiciliosDeEnvio => _domicilios.Where(d => d.IsActive && d.Kind == TipoDomicilio.Envio);
+    public IEnumerable<CustomerAddress> DomiciliosDeEnvio => _domicilios.Where(d => d.IsActive && d.Kind == TipoDomicilio.Envio).OrderBy(d => d.Id);
 
     private Customer() { }
 

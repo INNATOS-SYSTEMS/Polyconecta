@@ -16,9 +16,12 @@
         </div>
         <div class="border rounded p-2 flex-grow-1 small" [class.bg-light]="msg.clase !== 'Nota'" [class.o_chatter_nota]="msg.clase === 'Nota'">
           <div class="d-flex justify-content-between text-muted mb-1" style="font-size: 0.725rem;">
-            <span><span class="fw-bold text-dark">{{ msg.author }}</span>@if (msg.grupo) { <span> · {{ msg.grupo }}</span> }</span>
-            <span>{{ msg.timestamp }}</span>
+            <span class="fw-bold text-dark">{{ msg.author }}</span>
+            <span class="text-nowrap ms-2">{{ msg.timestamp }}</span>
           </div>
+          @if (msg.grupo) {
+            <div class="text-muted mb-1" style="font-size: 0.7rem;" data-chatter-grupo>{{ msg.grupo }}</div>
+          }
           @if (msg.clase === 'Nota') {
             <div class="text-muted mb-1" style="font-size: 0.7rem;">Nota interna</div>
           }

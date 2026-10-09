@@ -30,7 +30,7 @@ const PRESENTACION: Record<EstadoSincronizacion, { titulo: string; texto: string
         <div class="o_sync_popover_titulo">{{ presentacion().titulo }}</div>
         <div class="text-muted">{{ presentacion().texto }}</div>
         @if (estado() === 'Confirmado' && (folio() || idErp())) {
-          <div class="mt-1" data-sync-folio>@if (folio()) {Folio <strong>{{ folio() }}</strong>}@if (folio() && idErp()) { · }@if (idErp()) {Id {{ idErp() }}}</div>
+          <div class="mt-1" data-sync-folio>@if (folio()) {Folio <strong>{{ folio() }}</strong>}@if (folio() && idErp()) { · }@if (idErp()) {Contpaq ID <strong>{{ idErp() }}</strong>}</div>
         }
         @if (estado() === 'Error' && error(); as e) {
           <div class="text-danger mt-1" data-sync-error><strong>{{ e.codigo }}</strong> · {{ e.mensaje }}</div>

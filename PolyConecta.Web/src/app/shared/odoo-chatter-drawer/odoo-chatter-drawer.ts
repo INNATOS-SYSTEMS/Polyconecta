@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, input, model, signal } from '@angular/core';
 import { OdooIcon } from '../odoo-icon/odoo-icon';
 import { ChatterService, DocumentoChatter, MensajeGuardado } from '../../core/chatter/chatter.service';
-import { fechaHora, horaCorta } from '../../core/format/numero';
+import { fechaCorta, horaCorta } from '../../core/format/numero';
 
 export interface ChatterEntry {
   author: string;
@@ -108,7 +108,7 @@ export class OdooChatterDrawer {
 
 const entrada = (m: MensajeGuardado): ChatterEntry => ({
   author: m.autor,
-  timestamp: fechaHora(new Date(m.fecha)),
+  timestamp: fechaCorta(new Date(m.fecha)),
   text: m.texto,
   clase: m.clase,
   grupo: m.grupo,

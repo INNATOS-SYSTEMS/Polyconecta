@@ -520,7 +520,7 @@ public class PedidosTests(SqlServerFixture sql)
         var errSinPrecio = await ErrorJsonAsync(rConfSinPrecio, HttpStatusCode.BadRequest);
         errSinPrecio["errores"]!.AsArray().Should().Contain(e => e!["campo"]!.GetValue<string>() == "lineas[0].precioUnitario");
 
-        // 3. Pedido en moneda extranjera sin tipo de cambio
+        // 3. Pedido en moneda extranjera sin tipo de cambio: se confirma (D-161)
         var sinTc = await JsonAsync(await ctx.Ac.PostAsJsonAsync("/api/v1/ventas/pedidos", new
         {
             clienteId = ctx.Cat.Emm,
@@ -530,8 +530,8 @@ public class PedidosTests(SqlServerFixture sql)
         }));
         var rConfSinTc = await ctx.Ac.PostAsJsonAsync($"/api/v1/ventas/pedidos/{sinTc["id"]!.GetValue<long>()}/confirmar",
             new { rowVersion = sinTc["rowVersion"]!.GetValue<string>() });
-        var errSinTc = await ErrorJsonAsync(rConfSinTc, HttpStatusCode.BadRequest);
-        errSinTc["errores"]!.AsArray().Should().Contain(e => e!["campo"]!.GetValue<string>() == "tipoCambio");
+        rConfSinTc.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await JsonAsync(rConfSinTc))["estado"]!.GetValue<string>().Should().Be("Confirmado");
     }
 
     [Fact]
@@ -551,7 +551,7 @@ public class PedidosTests(SqlServerFixture sql)
         cliUnico["domicilioEntrega"]!["id"]!.GetValue<long>().Should().Be(ctx.Cat.Cli002 == 0 ? 0 : cliUnico["domicilioEntrega"]!["id"]!.GetValue<long>());
         cliUnico["agente"]!["id"]!.GetValue<long>().Should().Be(ctx.Cat.Agente, "D-153 propone el agente de CONTPAQi del usuario");
 
-        // Si se intenta poner el domicilio FISCAL como domicilio de entrega -> error 400
+        // El domicilio que mande la interfaz no cuenta: es el primero de envío (D-160)
         var rFiscal = await ctx.Ac.PostAsJsonAsync("/api/v1/ventas/pedidos", new
         {
             clienteId = ctx.Cat.Emm,
@@ -559,8 +559,8 @@ public class PedidosTests(SqlServerFixture sql)
             moneda = "MXN",
             lineas = new[] { new { id = (long?)null, productoId = ctx.Cat.Bolsa, cantidad = 10m, precioUnitario = (decimal?)5m, metaProduccionKg = (decimal?)null, toleranciaPorcentaje = (decimal?)null } }
         });
-        var errFiscal = await ErrorJsonAsync(rFiscal, HttpStatusCode.BadRequest);
-        errFiscal["errores"]!.AsArray().Should().Contain(e => e!["campo"]!.GetValue<string>() == "domicilioEntregaId");
+        var conFiscal = await JsonAsync(rFiscal);
+        conFiscal["domicilioEntrega"]!["id"]!.GetValue<long>().Should().Be(ctx.Cat.EnvioNorte);
     }
 
     [Fact]
