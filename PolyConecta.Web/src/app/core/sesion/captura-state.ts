@@ -20,7 +20,7 @@ export class CapturaState {
 export function tieneCambiosPendientes(captura?: CapturaState | null): boolean {
   if (captura?.tieneCambiosSinGuardar()) return true;
   if (typeof document !== 'undefined') {
-    const elementosSucios = document.querySelectorAll('form.ng-dirty, input.ng-dirty, textarea.ng-dirty, [data-captura-pendiente="true"]');
+    const elementosSucios = document.querySelectorAll('form.ng-dirty, input.ng-dirty, select.ng-dirty, textarea.ng-dirty, [data-captura-pendiente="true"]');
     return elementosSucios.length > 0;
   }
   return false;

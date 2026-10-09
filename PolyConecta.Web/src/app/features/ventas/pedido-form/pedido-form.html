@@ -5,7 +5,7 @@
     <div class="spinner-border text-primary" role="status"></div>
   </div>
 } @else if (pedido(); as p) {
-  <div class="o_control_panel">
+  <div class="o_control_panel" [attr.data-captura-pendiente]="editando()">
     <div class="d-flex align-items-center gap-3">
       <pc-boton-nuevo [ruta]="'/ventas/pedidos/nuevo'" />
       <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos', url: '/ventas/pedidos' }, { label: p.folio }]" />

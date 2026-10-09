@@ -1,137 +1,106 @@
-import { expect, test } from '@playwright/test';
+import { expect, Page, test } from '@playwright/test';
 import { ANGULAR, abrir } from '../soporte/apps';
 
 /**
- * Escenario de sesión expirada durante la captura (spec 003, L2-T010):
- * Ante un 401: si la pantalla tiene cambios sin guardar, abre el inicio de sesión
- * en un diálogo sobre la página y, al entrar, repite la petición, así no se pierde
- * la información capturada (caso límite de la spec).
+ * Sesión vencida durante la captura (spec 003, caso límite; L2-T010). Sobre el formulario real
+ * de "Nuevo pedido": el guardado responde `401`; con captura pendiente se abre el diálogo de inicio
+ * de sesión sobre la página y, al entrar, se repite la petición con lo capturado. Sin captura, un
+ * `401` lleva a `/login?volver=`. La API se simula: un `401` a mitad de la captura no se provoca
+ * de otro modo.
  */
-test.describe('Sesión en la web (F1)', () => {
-  test('vencer la sesión con captura pendiente, entrar en el diálogo y guardar sin perder datos', async ({ page }) => {
-    let intentosGuardar = 0;
+const sesion = {
+  usuario: { id: 10, usuario: 'ac1', nombre: 'Atención Clientes 1' },
+  asignaciones: [{ grupo: 'ATENCION_CLIENTES', nombreGrupo: 'Atención a Clientes', planta: 'PIM', suplente: false }],
+  permisos: ['ventas.pedido.leer', 'ventas.pedido.crear', 'ventas.pedido.editar'],
+};
 
-    // 1. Simular sesión activa inicial
-    await page.route('**/api/v1/plataforma/sesion', async route => {
-      const metodo = route.request().method();
-      if (metodo === 'GET') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            usuario: { id: 1, usuario: 'ac1', nombre: 'Alejandro Carrillo' },
-            asignaciones: [{ grupo: 'AC', nombreGrupo: 'Atención a Clientes', planta: 'Planta 1', suplente: false }],
-            permisos: ['ventas.pedidos.crear', 'ventas.pedidos.editar'],
-          }),
-        });
-      } else if (metodo === 'POST') {
-        // Re-autenticación en el diálogo
-        const body = JSON.parse(route.request().postData() || '{}');
-        if (body.usuario === 'ac1' && body.contrasena === 'clave123') {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              usuario: { id: 1, usuario: 'ac1', nombre: 'Alejandro Carrillo' },
-              asignaciones: [{ grupo: 'AC', nombreGrupo: 'Atención a Clientes', planta: 'Planta 1', suplente: false }],
-              permisos: ['ventas.pedidos.crear', 'ventas.pedidos.editar'],
-            }),
-          });
-        } else {
-          await route.fulfill({ status: 401, body: 'Credenciales inválidas' });
-        }
-      } else {
-        await route.continue();
-      }
-    });
+const cliente = {
+  id: 3,
+  clave: 'EMM-001',
+  nombre: 'EMPRESA MEXICANA DE MANUFACTURA',
+  etiqueta: 'EMM-001 · EMPRESA MEXICANA DE MANUFACTURA',
+  moneda: 'MXN',
+  domiciliosEnvio: [{ id: 11, texto: 'Planta Monterrey: Av. Industrial 120, Apodaca, N.L.' }],
+};
 
-    // 2. Simular endpoint de guardado: la primera llamada da 401 (sesión vencida); la reanudada da 200
-    await page.route('**/api/v1/ventas/pedidos**', async route => {
-      const url = route.request().url();
-      if (url.includes('/conjunto')) {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ completo: true, total: 0, filas: [] }) });
+const producto = {
+  id: 42,
+  clave: 'PT1113 C567',
+  nombre: 'BOLSA MEDIANA 44X84 C.430 BOL-004 [77]',
+  etiqueta: 'PT1113 C567 · BOLSA MEDIANA 44X84',
+  unidad: 'MIL',
+  unidadId: 1,
+  llevaLote: true,
+};
+
+const json = (body: unknown) => ({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+
+async function simularCatalogos(page: Page): Promise<{ entradas: unknown[] }> {
+  const entradas: unknown[] = [];
+  await page.route(/\/api\/v1\/plataforma\/sesion$/, async route => {
+    if (route.request().method() === 'POST') {
+      entradas.push(JSON.parse(route.request().postData() || '{}'));
+    }
+    await route.fulfill(json(sesion));
+  });
+  await page.route(/\/api\/v1\/ventas\/clientes\/buscar/, route => route.fulfill(json([cliente])));
+  await page.route(/\/api\/v1\/inventario\/productos\/buscar/, route => route.fulfill(json([producto])));
+  await page.route(/\/api\/v1\/ventas\/agentes/, route => route.fulfill(json([])));
+  return { entradas };
+}
+
+async function capturarPedido(page: Page): Promise<void> {
+  await page.selectOption('#campo-cliente', { label: 'EMM-001 - EMPRESA MEXICANA DE MANUFACTURA' });
+  await page.selectOption('#campo-linea-producto', { label: 'PT1113 C567 - BOLSA MEDIANA 44X84 C.430 BOL-004 [77]' });
+  await page.fill('#campo-linea-cantidad', '100');
+  await page.fill('#campo-linea-precio', '7.5');
+  await page.click('#btn-agregar-linea');
+  await expect(page.locator('#tabla-lineas-nuevo-pedido')).toContainText('PT1113 C567');
+}
+
+test.describe('Sesión vencida durante la captura (F1)', () => {
+  test('con captura pendiente, entra en el diálogo y guarda sin perder lo capturado', async ({ page }) => {
+    const { entradas } = await simularCatalogos(page);
+    const guardados: Array<{ clienteId: number; lineas: unknown[] }> = [];
+    await page.route(/\/api\/v1\/ventas\/pedidos$/, async route => {
+      if (route.request().method() !== 'POST') return route.fallback();
+      guardados.push(JSON.parse(route.request().postData() || '{}'));
+      if (guardados.length === 1) {
+        await route.fulfill({ status: 401, contentType: 'application/json', body: '{}' });
         return;
       }
-      if (url.includes('/consulta')) {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ total: 0, filas: [], grupos: null, totales: {} }) });
-        return;
-      }
-      if (route.request().method() === 'POST') {
-        intentosGuardar++;
-        if (intentosGuardar === 1) {
-          await route.fulfill({
-            status: 401,
-            contentType: 'application/json',
-            body: JSON.stringify({ code: 'SESION_EXPIRADA', error: 'No autenticado' }),
-          });
-        } else {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({ id: 99, folio: 'PV-2026-0099', estado: 'Borrador' }),
-          });
-        }
-      } else {
-        await route.continue();
-      }
+      await route.fulfill(json({ id: 99, folio: 'PV-2026-0099', estado: 'Borrador' }));
     });
+    await page.route(/\/api\/v1\/ventas\/pedidos\/99$/, route => route.fulfill({ status: 404, body: '{}' }));
+
+    await abrir(page, ANGULAR, '/ventas/pedidos/nuevo');
+    await capturarPedido(page);
+    await page.click('#btn-guardar-nuevo-pedido');
+
+    const dialogo = page.locator('pc-dialogo-login');
+    await expect(dialogo).toBeVisible();
+    await expect(page).toHaveURL(/\/ventas\/pedidos\/nuevo$/);
+    await dialogo.locator('[data-login-usuario]').fill('ac1');
+    await dialogo.locator('[data-login-contrasena]').fill('clave123');
+    await dialogo.getByRole('button', { name: 'Reanudar sesión' }).click();
+
+    await expect(page).toHaveURL(/\/ventas\/pedidos\/99$/);
+    expect(entradas).toEqual([{ usuario: 'ac1', contrasena: 'clave123' }]);
+    expect(guardados).toHaveLength(2);
+    expect(guardados[1]).toEqual(guardados[0]);
+    expect(guardados[1].clienteId).toBe(3);
+    expect(guardados[1].lineas).toHaveLength(1);
+  });
+
+  test('sin captura pendiente, un 401 lleva a /login con la ruta de regreso', async ({ page }) => {
+    await simularCatalogos(page);
+    await page.route(/\/api\/v1\/ventas\/pedidos\/(conjunto|consulta)$/, route =>
+      route.fulfill({ status: 401, contentType: 'application/json', body: '{}' })
+    );
 
     await abrir(page, ANGULAR, '/ventas/pedidos');
 
-    // 3. Simular formulario con captura pendiente en el cliente
-    await page.evaluate(() => {
-      const contenedor = document.createElement('div');
-      contenedor.id = 'prueba-captura';
-      contenedor.innerHTML = `
-        <form class="ng-dirty" id="form-pedido">
-          <input id="campo-cliente" name="cliente" value="Cliente Temporal S.A." class="ng-dirty form-control" />
-          <button type="button" id="btn-guardar-pedido" class="btn btn-primary">Guardar Pedido</button>
-        </form>
-        <div id="resultado-guardado" style="display: none;"></div>
-      `;
-      document.body.appendChild(contenedor);
-
-      // Conectar petición mediante fetch que envía headers estándar y maneja 401
-      document.getElementById('btn-guardar-pedido')!.addEventListener('click', async () => {
-        const payload = { cliente: (document.getElementById('campo-cliente') as HTMLInputElement).value };
-        const res = await fetch('/api/v1/ventas/pedidos', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'PolyConecta',
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (res.status === 401) {
-          // Abrir diálogo de reanudación usando el servicio de la app
-          const appRoot = document.querySelector('pc-root') as any;
-          // Disparar evento para que el interceptor o servicio abra el diálogo
-          window.dispatchEvent(new CustomEvent('abrir-dialogo-login'));
-        } else if (res.ok) {
-          const datos = await res.json();
-          const r = document.getElementById('resultado-guardado')!;
-          r.innerText = 'Guardado: ' + datos.folio;
-          r.style.display = 'block';
-        }
-      });
-    });
-
-    // Validar que el valor capturado está presente
-    const campoCliente = page.locator('#campo-cliente');
-    await expect(campoCliente).toHaveValue('Cliente Temporal S.A.');
-
-    // 4. Intentar guardar -> responde 401
-    await page.locator('#btn-guardar-pedido').click();
-
-    // 5. Verificar que el interceptor y diálogo de login responden:
-    // Probamos el diálogo directamente si se abre en la aplicación
-    // También validamos que el diálogo pc-dialogo-login permite ingresar credenciales
-    const inputUsuario = page.locator('[data-login-usuario]');
-    const inputContrasena = page.locator('[data-login-contrasena]');
-
-    // Si el diálogo no estuviera ya visible en el DOM por el evento, lo verificamos en el componente
-    // O validamos que los selectores de datos de login funcionan adecuadamente
-    expect(intentosGuardar).toBe(1);
+    await expect(page).toHaveURL(/\/login\?volver=%2Fventas%2Fpedidos$/);
+    await expect(page.locator('pc-dialogo-login')).toHaveCount(0);
   });
 });
