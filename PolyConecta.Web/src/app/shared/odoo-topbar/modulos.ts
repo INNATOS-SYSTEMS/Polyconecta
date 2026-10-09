@@ -2,6 +2,7 @@
 export interface MenuItem {
   readonly label: string;
   readonly route: string;
+  readonly permiso?: string;
   readonly children?: readonly MenuItem[];
 }
 
@@ -47,6 +48,14 @@ const FABRICACION: ModuleInfo = {
 
 const CALIDAD: ModuleInfo = { name: 'Calidad', items: [{ label: 'Calidad', route: '/calidad' }] };
 
+const CONFIGURACION: ModuleInfo = {
+  name: 'Configuración',
+  items: [
+    { label: 'Usuarios', route: '/plataforma/usuarios', permiso: 'plataforma.usuarios.leer' },
+    { label: 'Grupos', route: '/plataforma/grupos', permiso: 'plataforma.grupos.leer' },
+  ],
+};
+
 export const EMPTY_MODULE: ModuleInfo = { name: '', items: [] };
 
 /** El primer prefijo que coincide gana. Cada módulo de CT-09 tiene su prefijo (D-155); Logística cuelga del menú de Inventario. */
@@ -56,6 +65,7 @@ export const MODULE_MAP: readonly (readonly [string, ModuleInfo])[] = [
   ['/produccion', FABRICACION],
   ['/calidad', CALIDAD],
   ['/logistica', INVENTARIO],
+  ['/plataforma', CONFIGURACION],
 ];
 
 export function moduleFor(path: string): ModuleInfo {

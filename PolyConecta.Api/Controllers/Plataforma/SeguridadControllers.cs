@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PolyConecta.Application.Common;
 using PolyConecta.Application.Plataforma.Seguridad;
+using PolyConecta.Domain.Plataforma.Seguridad;
 
 namespace PolyConecta.Api.Controllers.Plataforma;
 
@@ -86,4 +87,19 @@ public sealed class GruposController(IServiceProvider servicios) : ControllerBas
 
     [HttpPost("grupos/{id:long}/restaurar")]
     public Task<GrupoDetalle> Restaurar(long id, CancellationToken ct) => Ejecutar<ArchivarGrupo, GrupoDetalle>(new(id, false), ct);
+}
+
+/// <summary>Plantas activas para asignaciones de usuario.</summary>
+[ApiController]
+[Route("api/v1/plataforma")]
+public sealed class PlantasController(IAlmacen<Plant> plantas) : ControllerBase
+{
+    public sealed record PlantaDto(long Id, string Codigo, string Nombre);
+
+    [HttpGet("plantas")]
+    public async Task<IReadOnlyList<PlantaDto>> Listar(CancellationToken ct)
+    {
+        var lista = await plantas.ListarAsync(p => p.IsActive, cancellationToken: ct);
+        return lista.Select(p => new PlantaDto(p.Id, p.Code, p.Name)).ToList();
+    }
 }

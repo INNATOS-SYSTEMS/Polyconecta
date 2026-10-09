@@ -82,7 +82,8 @@ Si dos documentos se contradicen: manda `docs/diseno/` y, dentro de él, la deci
 | L2-T008 | Autenticación con cookie y `SesionController` | `a841b9b` |
 | L2-T009 | Casos de uso y API de usuarios y grupos; ligar el usuario a su agente de CONTPAQi | `5038f90`, `dc2c635` |
 | L2-T010 | Sesión en la web: proxy de desarrollo, guardia, interceptor, diálogo de reanudación y Preferencias/Cerrar sesión | `05fd4cc` |
-| L2-T011 | Contratos visuales nuevos: pc-odoo-dual-list y pc-odoo-login-form con galería /catalogo | *este commit* |
+| L2-T011 | Contratos visuales nuevos: pc-odoo-dual-list y pc-odoo-login-form con galería /catalogo | `81883e0` |
+| L2-T012 | Pantallas en features/plataforma/: login, usuarios y grupos, dual-list y topbar | *este commit* |
 | L2-T013 | Catálogos de `inv` y `ven`, migración `F1_Catalogos` | `8c5939e` |
 | L2-T014 | Puerto `IBridgeLecturas` y `BridgeLecturasHttp` | `835a9b2` |
 | L2-T015 | Sincronización de catálogos, migración `F1_Sincronizacion` | `29a535a` |
@@ -101,7 +102,6 @@ Si dos documentos se contradicen: manda `docs/diseno/` y, dentro de él, la deci
 
 | Tarea | Qué es | Notas |
 | :--- | :--- | :--- |
-| L2-T012 | Pantallas de inicio de sesión, usuarios y grupos | Bajo `/plataforma/...` (D-155) |
 | L2-T018 | Pantallas de productos (con ficha técnica), clientes y sincronización | `/inventario/productos`, `/ventas/clientes`, `/plataforma/sincronizacion` |
 | L2-T029 | `OrigenHttp<T>`, favoritos por la API y **estado de la lista en la URL** | |
 | L2-T024, L2-T025 | Web del pedido sobre la API: lista, kanban, formulario y "Nuevo" | Rutas `/ventas/pedidos/:id` (D-154, D-155). Moneda del cliente, domicilio de envío y agente propuestos (D-146, D-149, D-153) |

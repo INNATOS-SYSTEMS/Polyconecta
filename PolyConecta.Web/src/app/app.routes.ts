@@ -14,5 +14,6 @@ export const routes: Routes = [
   { path: 'produccion', loadChildren: () => import('./features/produccion/produccion.routes').then(m => m.PRODUCCION_ROUTES) },
   { path: 'calidad', loadChildren: () => import('./features/calidad/calidad.routes').then(m => m.CALIDAD_ROUTES) },
   { path: 'logistica', loadChildren: () => import('./features/logistica/logistica.routes').then(m => m.LOGISTICA_ROUTES) },
+  { path: 'plataforma', loadChildren: () => import('./features/plataforma/plataforma.routes').then(m => m.PLATAFORMA_ROUTES) },
   { path: '**', component: PaginaNoEncontrada },
 ];

@@ -1,0 +1,200 @@
+<div class="o_control_panel">
+  <div class="d-flex align-items-center gap-3">
+    <button class="btn btn-primary" [disabled]="guardando()" (click)="guardar()">
+      Guardar
+    </button>
+    <button class="btn btn-secondary" (click)="descartar()">
+      Descartar
+    </button>
+    <pc-odoo-breadcrumb [items]="[{ label: 'Configuración' }, { label: 'Usuarios', url: '/plataforma/usuarios' }, { label: tituloMiga() }]" />
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    @if (!esNuevo()) {
+      <button class="btn btn-secondary btn-sm" (click)="restablecerContrasena()">
+        Restablecer contraseña
+      </button>
+      @if (activo()) {
+        <button class="btn btn-outline-danger btn-sm" (click)="cambiarEstado(true)">
+          Archivar
+        </button>
+      } @else {
+        <button class="btn btn-outline-success btn-sm" (click)="cambiarEstado(false)">
+          Restaurar
+        </button>
+      }
+    }
+  </div>
+</div>
+
+<div class="o_form_view">
+  @if (error()) {
+    <div class="alert alert-danger mb-3" role="alert">
+      {{ error() }}
+    </div>
+  }
+  @if (exito()) {
+    <div class="alert alert-success mb-3" role="alert">
+      {{ exito() }}
+    </div>
+  }
+
+  @if (cargando()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+  } @else {
+    <div class="o_form_sheet">
+      <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+          <h2 class="h4 mb-1">{{ esNuevo() ? 'Nuevo usuario' : nombre() }}</h2>
+          @if (!esNuevo()) {
+            <span class="text-muted small">&#64;{{ usuario() }}</span>
+          }
+        </div>
+        <div>
+          <span class="badge" [class.bg-success]="activo()" [class.bg-secondary]="!activo()">
+            {{ activo() ? 'Activo' : 'Archivado' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold text-muted">Usuario</label>
+          <input
+            type="text"
+            class="form-control"
+            [disabled]="!esNuevo()"
+            [ngModel]="usuario()"
+            (ngModelChange)="usuario.set($event)"
+            placeholder="ej. jperez"
+            id="campo-usuario"
+          />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold text-muted">Nombre visible</label>
+          <input
+            type="text"
+            class="form-control"
+            [ngModel]="nombre()"
+            (ngModelChange)="nombre.set($event)"
+            placeholder="ej. Juan Pérez"
+            id="campo-nombre"
+          />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold text-muted">Correo electrónico</label>
+          <input
+            type="email"
+            class="form-control"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            placeholder="correo@ejemplo.com"
+            id="campo-email"
+          />
+        </div>
+        @if (esNuevo()) {
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-muted">Contraseña</label>
+            <input
+              type="password"
+              class="form-control"
+              [ngModel]="contrasena()"
+              (ngModelChange)="contrasena.set($event)"
+              placeholder="Contraseña inicial"
+              id="campo-contrasena"
+            />
+          </div>
+        }
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold text-muted">Agente de CONTPAQi</label>
+          <select
+            class="form-select"
+            [ngModel]="agenteId()"
+            (ngModelChange)="actualizarAgente($event)"
+            id="campo-agente"
+          >
+            <option [ngValue]="null">Ninguno</option>
+            @for (a of agentes(); track a.id) {
+              <option [ngValue]="a.id">{{ a.codigo }} - {{ a.nombre }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="h6 mb-0 fw-bold">Asignaciones (Grupo × Planta × Suplente)</h5>
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="agregarAsignacion()" id="btn-agregar-asignacion">
+            + Agregar asignación
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>Grupo</th>
+                <th>Planta</th>
+                <th class="text-center" style="width: 120px;">¿Es Suplente?</th>
+                <th style="width: 50px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (asig of asignaciones(); track $index; let i = $index) {
+                <tr>
+                  <td>
+                    <select
+                      class="form-select form-select-sm"
+                      [value]="asig.grupoId"
+                      (change)="actualizarAsignacionGrupo(i, +$any($event.target).value)"
+                    >
+                      @for (g of grupos(); track g.id) {
+                        <option [value]="g.id">{{ g.nombre }} ({{ g.codigo }})</option>
+                      }
+                    </select>
+                  </td>
+                  <td>
+                    <select
+                      class="form-select form-select-sm"
+                      [value]="asig.plantaId"
+                      (change)="actualizarAsignacionPlanta(i, +$any($event.target).value)"
+                    >
+                      @for (p of plantas(); track p.id) {
+                        <option [value]="p.id">{{ p.codigo }} - {{ p.nombre }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td class="text-center">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      [checked]="asig.suplente"
+                      (change)="actualizarAsignacionSuplente(i, $any($event.target).checked)"
+                    />
+                  </td>
+                  <td class="text-center">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-link text-danger p-0"
+                      (click)="quitarAsignacion(i)"
+                      title="Eliminar"
+                    >
+                      <pc-odoo-icon nombre="basura" />
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="text-center text-muted py-3">
+                    No hay grupos asignados. Debe agregar al menos uno.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</div>
