@@ -7,6 +7,8 @@ export interface Favorito {
   lista: string;
   nombre: string;
   filtros: FiltroLista[];
+  /** Filtros con nombre de la vista ("Confirmado", "Mis pedidos"). Los guardados antes no lo traen. */
+  nombrados?: string[];
   busqueda: string | null;
   agruparPor: string[];
   orden: OrdenLista[];

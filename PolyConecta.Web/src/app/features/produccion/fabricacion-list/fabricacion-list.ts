@@ -66,18 +66,18 @@ export class FabricacionList {
     const p = this.pedido();
     return !p
       ? [{ label: 'Órdenes de Fabricación' }]
-      : [{ label: 'Pedidos', url: '/pedidos' }, { label: p, url: `/pedidos/${p}` }, { label: 'Órdenes de Fabricación' }];
+      : [{ label: 'Pedidos', url: '/ventas/pedidos' }, { label: p, url: `/ventas/pedidos/${p}` }, { label: 'Órdenes de Fabricación' }];
   });
 
   /** El contexto de navegación se expresa como faceta, igual que cualquier filtro. */
   protected readonly facetas = computed<Facet[]>(() => {
     const p = this.pedido();
-    return !p ? [] : [{ campo: 'Pedido', valor: p, onRemove: () => void this.router.navigateByUrl('/fabricacion') }];
+    return !p ? [] : [{ campo: 'Pedido', valor: p, onRemove: () => void this.router.navigateByUrl('/produccion/fabricacion') }];
   });
 
   /** Abre la OF arrastrando el contexto: al volver, el breadcrumb regresa a esta lista filtrada. */
   protected abrir(f: FilaOf): void {
     const p = this.pedido();
-    void this.router.navigateByUrl(!p ? `/fabricacion/${f.folio}` : `/fabricacion/${f.folio}?pedido=${p}`);
+    void this.router.navigateByUrl(!p ? `/produccion/fabricacion/${f.folio}` : `/produccion/fabricacion/${f.folio}?pedido=${p}`);
   }
 }

@@ -40,7 +40,8 @@ public sealed partial class LoggingDecorator<TRequest, TResult>(
 /// </summary>
 public sealed class TransactionDecorator<TRequest, TResult>(
     IUseCase<TRequest, TResult> inner,
-    IUnitOfWork unitOfWork) : IUseCase<TRequest, TResult>
+    IUnitOfWork unitOfWork,
+    Plataforma.Chatter.IChatterNotificador? chatter = null) : IUseCase<TRequest, TResult>
 {
     public async Task<TResult> ExecuteAsync(TRequest request, CancellationToken cancellationToken = default)
     {
@@ -48,18 +49,22 @@ public sealed class TransactionDecorator<TRequest, TResult>(
             return await inner.ExecuteAsync(request, cancellationToken);
 
         await unitOfWork.BeginTransactionAsync(cancellationToken);
+        TResult resultado;
         try
         {
-            var resultado = await inner.ExecuteAsync(request, cancellationToken);
+            resultado = await inner.ExecuteAsync(request, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             await unitOfWork.CommitAsync(cancellationToken);
-            return resultado;
         }
         catch
         {
             await unitOfWork.RollbackAsync(CancellationToken.None);
+            chatter?.Descartar();
             throw;
         }
+        // El chatter se transmite solo con la transacción confirmada (R-04).
+        if (chatter is not null) await chatter.EnviarAsync(CancellationToken.None);
+        return resultado;
     }
 }
 

@@ -2,6 +2,7 @@
 export interface MenuItem {
   readonly label: string;
   readonly route: string;
+  readonly permiso?: string;
   readonly children?: readonly MenuItem[];
 }
 
@@ -14,15 +15,22 @@ export interface ModuleInfo {
 const INVENTARIO: ModuleInfo = {
   name: 'Inventario',
   items: [
-    { label: 'Inventario', route: '/inventario', children: [{ label: 'Inventario Actual', route: '/inventario' }] },
+    {
+      label: 'Inventario',
+      route: '/inventario',
+      children: [
+        { label: 'Inventario Actual', route: '/inventario' },
+        { label: 'Productos', route: '/inventario/productos', permiso: 'inventario.producto.leer' },
+      ],
+    },
     {
       label: 'Operaciones',
-      route: '/entregas',
+      route: '/logistica/entregas',
       children: [
-        { label: 'Entrega', route: '/entregas' },
-        { label: 'Recolección', route: '/recolecciones' },
-        { label: 'Traslado', route: '/traslados' },
-        { label: 'Recepción', route: '/recepcion' },
+        { label: 'Entrega', route: '/logistica/entregas' },
+        { label: 'Recolección', route: '/logistica/recolecciones' },
+        { label: 'Traslado', route: '/logistica/traslados' },
+        { label: 'Recepción', route: '/logistica/recepcion' },
       ],
     },
   ],
@@ -31,7 +39,8 @@ const INVENTARIO: ModuleInfo = {
 const VENTAS: ModuleInfo = {
   name: 'Ventas',
   items: [
-    { label: 'Pedidos', route: '/pedidos' },
+    { label: 'Pedidos', route: '/ventas/pedidos' },
+    { label: 'Clientes', route: '/ventas/clientes', permiso: 'ventas.cliente.leer' },
     { label: 'Inventario', route: '/ventas/inventario' },
   ],
 };
@@ -39,29 +48,33 @@ const VENTAS: ModuleInfo = {
 const FABRICACION: ModuleInfo = {
   name: 'Fabricación',
   items: [
-    { label: 'Fabricación', route: '/fabricacion' },
-    { label: 'Producción', route: '/captura-masiva' },
-    { label: 'Incidencias', route: '/incidencias' },
+    { label: 'Fabricación', route: '/produccion/fabricacion' },
+    { label: 'Producción', route: '/produccion/captura-masiva' },
+    { label: 'Incidencias', route: '/produccion/incidencias' },
   ],
 };
 
 const CALIDAD: ModuleInfo = { name: 'Calidad', items: [{ label: 'Calidad', route: '/calidad' }] };
 
+const CONFIGURACION: ModuleInfo = {
+  name: 'Configuración',
+  items: [
+    { label: 'Usuarios', route: '/plataforma/usuarios', permiso: 'plataforma.usuarios.leer' },
+    { label: 'Grupos', route: '/plataforma/grupos', permiso: 'plataforma.grupos.leer' },
+    { label: 'Sincronización', route: '/plataforma/sincronizacion', permiso: 'plataforma.sincronizacion.leer' },
+  ],
+};
+
 export const EMPTY_MODULE: ModuleInfo = { name: '', items: [] };
 
-/** El primer prefijo que coincide gana, en el mismo orden que el prototipo. */
+/** El primer prefijo que coincide gana. Cada módulo de CT-09 tiene su prefijo (D-155); Logística cuelga del menú de Inventario. */
 export const MODULE_MAP: readonly (readonly [string, ModuleInfo])[] = [
-  ['/pedidos', VENTAS],
   ['/ventas', VENTAS],
   ['/inventario', INVENTARIO],
-  ['/fabricacion', FABRICACION],
-  ['/captura-masiva', FABRICACION],
-  ['/incidencias', FABRICACION],
+  ['/produccion', FABRICACION],
   ['/calidad', CALIDAD],
-  ['/traslados', INVENTARIO],
-  ['/recepcion', INVENTARIO],
-  ['/recolecciones', INVENTARIO],
-  ['/entregas', INVENTARIO],
+  ['/logistica', INVENTARIO],
+  ['/plataforma', CONFIGURACION],
 ];
 
 export function moduleFor(path: string): ModuleInfo {

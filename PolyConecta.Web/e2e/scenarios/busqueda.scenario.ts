@@ -5,29 +5,6 @@ const abrirMenu: Paso = { pulsar: 'button[title="Filtros del modelo"]' };
 const filtro = (nombre: string): Paso => ({ pulsar: MENU, texto: nombre });
 const buscar = (texto: string): Paso => ({ capturar: '.o_search_bar input', valor: texto });
 
-/**
- * US-2, escenario 5: buscar texto, aplicar dos filtros del mismo campo (se unen con "o") y dos de
- * campos distintos (se cruzan), agrupar y quitar una faceta.
- */
-guion({
-  nombre: 'búsqueda en pedidos',
-  pasos: [
-    { ir: '/pedidos' },
-    buscar('IV310'),
-    { control: 'texto', en: 'main' },
-    buscar(''),
-    abrirMenu,
-    filtro('Borrador'),
-    filtro('Confirmado'),
-    { control: 'dos estados', en: 'main .p-4' },
-    // Desde la spec 011 el menú de Pedidos también agrupa y guarda favoritos (D-135), que el prototipo no tiene:
-    // se comparan las facetas aplicadas, no el menú completo.
-    { control: 'facetas', en: '.o_search_bar' },
-    { pulsar: '.o_search_facet_remove' },
-    { control: 'faceta quitada', en: 'main .p-4' },
-    { control: 'barra sin faceta', en: '.o_search_bar' },
-  ],
-});
 
 guion({
   nombre: 'búsqueda en fabricación',

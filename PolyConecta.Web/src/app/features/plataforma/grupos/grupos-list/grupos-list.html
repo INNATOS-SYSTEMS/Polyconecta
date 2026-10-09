@@ -1,0 +1,29 @@
+<div class="o_control_panel">
+  <div class="d-flex align-items-center gap-3">
+    <pc-boton-nuevo [ruta]="'/plataforma/grupos/nuevo'" />
+    <pc-odoo-breadcrumb [items]="[{ label: 'Configuración' }, { label: 'Grupos' }]" />
+  </div>
+  <pc-odoo-search-panel
+    [view]="vista()"
+    [(texto)]="searchText"
+    [(filtrosActivos)]="filtros"
+    [(agrupacionesActivas)]="agrupaciones"
+    [permiteAgrupar]="true"
+    [conFavoritos]="false"
+  />
+  <div class="d-flex align-items-center gap-2"></div>
+</div>
+
+<div class="p-4">
+  <pc-odoo-list [almacenFavoritos]="favoritos" [estadoEnUrl]="true"
+    lista="plataforma.grupos"
+    [origen]="origen"
+    [columnas]="columnas"
+    [idDe]="idGrupo"
+    mensajeVacio="No hay grupos registrados"
+    [(busqueda)]="searchText"
+    [(nombrados)]="filtros"
+    [(agruparPor)]="agrupaciones"
+    (abrir)="abrir($event)"
+  />
+</div>

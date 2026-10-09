@@ -1,8 +1,9 @@
 import { Page, test } from '@playwright/test';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { abrir, ANGULAR, BLAZOR } from '../soporte/apps';
+import { abrir, ANGULAR, BLAZOR, rutaComparable } from '../soporte/apps';
 import { rutasSeleccionadas } from '../soporte/rutas';
+import { SESION_GUARDADA } from '../soporte/sesion-global';
 
 /**
  * Auditoría de comportamiento de primer nivel: en cada ruta, para cada botón o enlace visible,
@@ -14,8 +15,8 @@ const CLICKABLES = 'main button:visible, main a:visible, main [role=button]:visi
 const norm = (t: string) => t.replace(/\s+/g, ' ').trim();
 
 async function estado(page: Page): Promise<{ url: string; texto: string }> {
-  const url = new URL(page.url());
-  return { url: decodeURIComponent(url.pathname), texto: norm(await page.locator('body').innerText()) };
+  // En Angular, sin el prefijo de módulo (D-155), para comparar con el prototipo.
+  return { url: rutaComparable(page), texto: norm(await page.locator('body').innerText()) };
 }
 
 async function pulsar(page: Page, base: string, ruta: string, i: number): Promise<{ etiqueta: string; url: string; texto: string } | null> {
@@ -45,7 +46,7 @@ for (const ruta of rutasSeleccionadas()) {
   test(`auditoría ${ruta}`, async ({ browser }) => {
     test.setTimeout(600_000);
     const pb = await browser.newPage();
-    const pa = await browser.newPage();
+    const pa = await (await browser.newContext({ storageState: SESION_GUARDADA })).newPage();
     await abrir(pb, BLAZOR, ruta);
     await abrir(pa, ANGULAR, ruta);
     const nb = await pb.locator(CLICKABLES).count();

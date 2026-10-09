@@ -1,0 +1,301 @@
+<div class="o_control_panel" [attr.data-captura-pendiente]="clienteId() !== null || lineas().length > 0">
+  <div class="d-flex align-items-center gap-3">
+    <button class="btn btn-primary" [disabled]="guardando()" (click)="guardar()" id="btn-guardar-nuevo-pedido">
+      @if (guardando()) {
+        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        Guardando...
+      } @else {
+        Guardar
+      }
+    </button>
+    <button class="btn btn-secondary" (click)="volver()" id="btn-descartar-nuevo-pedido">
+      Descartar
+    </button>
+    <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos', url: '/ventas/pedidos' }, { label: 'Nuevo' }]" />
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <span class="badge bg-warning fs-6">Borrador</span>
+  </div>
+</div>
+
+<div class="o_form_view">
+  @if (error()) {
+    <div class="alert alert-danger mb-3" role="alert" id="alerta-error">
+      <pc-odoo-icon nombre="hard-stop" /> {{ error() }}
+    </div>
+  }
+
+  <div class="o_form_sheet">
+    <div class="border-bottom pb-3 mb-4">
+      <h2 class="h4 mb-1">Nuevo pedido de venta</h2>
+      <p class="text-muted small mb-0">Captura en Borrador (se asignará folio al guardar).</p>
+    </div>
+
+    <!-- Maestro -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <label class="form-label small fw-semibold text-muted" for="campo-cliente">Cliente *</label>
+        <select
+          class="form-select"
+          [ngModel]="clienteId()"
+          (ngModelChange)="alCambiarCliente($event)"
+          id="campo-cliente"
+        >
+          <option [ngValue]="null">Seleccione un cliente...</option>
+          @for (c of clientes(); track c.id) {
+            <option [ngValue]="c.id">{{ c.clave }} - {{ c.nombre }}</option>
+          }
+        </select>
+        @if (erroresCampos()['clienteId']) {
+          <div class="text-danger small mt-1" id="error-cliente">{{ erroresCampos()['clienteId'] }}</div>
+        }
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label small fw-semibold text-muted" for="campo-orden-compra">Orden de compra del cliente</label>
+        <input
+          type="text"
+          class="form-control"
+          [ngModel]="ordenCompra()"
+          (ngModelChange)="ordenCompra.set($event)"
+          placeholder="ej. OC-4471"
+          id="campo-orden-compra"
+        />
+        @if (erroresCampos()['ordenCompraCliente']) {
+          <div class="text-danger small mt-1" id="error-orden-compra">{{ erroresCampos()['ordenCompraCliente'] }}</div>
+        }
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label small fw-semibold text-muted" for="campo-agente">Agente de ventas</label>
+        <select
+          class="form-select"
+          [ngModel]="agenteId()"
+          (ngModelChange)="agenteId.set($event ? +$event : null)"
+          id="campo-agente"
+        >
+          <option [ngValue]="null">Sin asignar</option>
+          @for (a of agentes(); track a.id) {
+            <option [ngValue]="a.id">{{ a.clave }} - {{ a.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-muted" for="campo-fecha-pedido">Fecha del pedido</label>
+        <input
+          type="date"
+          class="form-control"
+          [ngModel]="fechaPedido()"
+          (ngModelChange)="fechaPedido.set($event)"
+          id="campo-fecha-pedido"
+        />
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-muted" for="campo-fecha-promesa">Entrega estimada</label>
+        <input
+          type="date"
+          class="form-control"
+          [ngModel]="fechaPromesa()"
+          (ngModelChange)="fechaPromesa.set($event)"
+          id="campo-fecha-promesa"
+        />
+        @if (erroresCampos()['fechaPromesa']) {
+          <div class="text-danger small mt-1" id="error-fecha-promesa">{{ erroresCampos()['fechaPromesa'] }}</div>
+        }
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-muted" for="campo-moneda">Moneda</label>
+        <select
+          class="form-select"
+          [ngModel]="moneda()"
+          (ngModelChange)="alCambiarMoneda($event)"
+          id="campo-moneda"
+        >
+          <option value="MXN">MXN - Peso Mexicano</option>
+          <option value="USD">USD - Dólar Estadounidense</option>
+        </select>
+        @if (erroresCampos()['moneda']) {
+          <div class="text-danger small mt-1" id="error-moneda">{{ erroresCampos()['moneda'] }}</div>
+        }
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-muted" for="campo-tipo-cambio">Tipo de cambio</label>
+        <input
+          type="number"
+          step="0.0001"
+          class="form-control"
+          [disabled]="moneda() === 'MXN'"
+          [ngModel]="tipoCambio()"
+          (ngModelChange)="tipoCambio.set($event ? +$event : null)"
+          id="campo-tipo-cambio"
+        />
+        @if (erroresCampos()['tipoCambio']) {
+          <div class="text-danger small mt-1" id="error-tipo-cambio">{{ erroresCampos()['tipoCambio'] }}</div>
+        }
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label small fw-semibold text-muted" for="campo-domicilio-entrega">Domicilio de envío</label>
+        <select
+          class="form-select"
+          [disabled]="domiciliosDisponibles().length === 0"
+          [ngModel]="domicilioEntregaId()"
+          (ngModelChange)="domicilioEntregaId.set($event ? +$event : null)"
+          id="campo-domicilio-entrega"
+        >
+          @if (domiciliosDisponibles().length === 0) {
+            <option [ngValue]="null">Sin domicilios de envío disponibles</option>
+          } @else {
+            <option [ngValue]="null">Seleccione un domicilio de envío...</option>
+            @for (d of domiciliosDisponibles(); track d.id) {
+              <option [ngValue]="d.id">{{ d.texto }}</option>
+            }
+          }
+        </select>
+        @if (erroresCampos()['domicilioEntregaId']) {
+          <div class="text-danger small mt-1" id="error-domicilio-entrega">{{ erroresCampos()['domicilioEntregaId'] }}</div>
+        }
+      </div>
+    </div>
+
+    <!-- Captura de líneas: [Producto] [Cantidad] [Unidad] [Precio unitario] [Agregar] -->
+    <div class="border rounded p-3 mb-4 bg-light">
+      <h5 class="h6 fw-bold mb-3">Agregar línea de producto</h5>
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold text-muted" for="campo-linea-producto">Producto</label>
+          <select
+            class="form-select form-select-sm"
+            [ngModel]="productoIdSeleccionado()"
+            (ngModelChange)="alCambiarProducto($event)"
+            id="campo-linea-producto"
+          >
+            <option [ngValue]="null">Seleccionar producto...</option>
+            @for (p of productos(); track p.id) {
+              <option [ngValue]="p.id">{{ p.clave }} - {{ p.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold text-muted" for="campo-linea-cantidad">Cantidad</label>
+          <input
+            type="number"
+            step="0.01"
+            class="form-control form-control-sm text-end"
+            [ngModel]="cantidadLinea()"
+            (ngModelChange)="cantidadLinea.set($event ? +$event : null)"
+            placeholder="0.00"
+            id="campo-linea-cantidad"
+          />
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold text-muted">Unidad base</label>
+          <input
+            type="text"
+            class="form-control form-control-sm text-center"
+            [value]="productoSeleccionado()?.unidad || '—'"
+            disabled
+            id="campo-linea-unidad"
+          />
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold text-muted" for="campo-linea-precio">Precio unitario</label>
+          <input
+            type="number"
+            step="0.0001"
+            class="form-control form-control-sm text-end"
+            [ngModel]="precioUnitarioLinea()"
+            (ngModelChange)="precioUnitarioLinea.set($event ? +$event : null)"
+            placeholder="0.00"
+            id="campo-linea-precio"
+          />
+        </div>
+
+        <div class="col-md-2">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-primary w-100"
+            (click)="agregarLinea()"
+            id="btn-agregar-linea"
+          >
+            + Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de líneas capturadas -->
+    <div class="mb-4">
+      <h5 class="h6 fw-bold text-primary mb-2">Líneas del pedido</h5>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle" id="tabla-lineas-nuevo-pedido">
+          <thead class="table-light">
+            <tr>
+              <th>Producto</th>
+              <th class="text-end" style="width: 130px;">Cantidad</th>
+              <th style="width: 90px;" class="text-center">Unidad</th>
+              <th class="text-end" style="width: 140px;">Precio Unitario</th>
+              <th class="text-end" style="width: 150px;">Subtotal</th>
+              <th style="width: 50px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of lineas(); track $index; let i = $index) {
+              <tr>
+                <td>
+                  <div class="fw-semibold">{{ l.clave }}</div>
+                  <div class="small text-muted">{{ l.nombre }}</div>
+                </td>
+                <td class="text-end">{{ n2(l.cantidad) }}</td>
+                <td class="text-center"><span class="badge bg-light text-dark border">{{ l.unidad }}</span></td>
+                <td class="text-end">{{ importe(l.precioUnitario, moneda(), 2, 4) }}</td>
+                <td class="text-end fw-semibold">{{ importe(l.subtotal, moneda()) }}</td>
+                <td class="text-center">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-link text-danger p-0"
+                    (click)="quitarLinea(i)"
+                    title="Eliminar"
+                    [attr.data-btn-quitar-linea]="i"
+                  >
+                    <pc-odoo-icon nombre="basura" />
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center text-muted py-3">
+                  Agregue al menos una línea para guardar el pedido.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-end mt-3">
+        <div style="width: 280px;">
+          <div class="d-flex justify-content-between py-1 border-bottom">
+            <span class="text-muted">Subtotal:</span>
+            <span class="fw-semibold">{{ importe(subtotal(), moneda()) }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-1 border-bottom">
+            <span class="text-muted">IVA (16%):</span>
+            <span>{{ importe(iva(), moneda()) }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-2 fw-bold fs-5 text-primary">
+            <span>Total:</span>
+            <span>{{ importe(total(), moneda()) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

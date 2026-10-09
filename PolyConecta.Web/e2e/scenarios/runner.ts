@@ -1,5 +1,6 @@
 import { Page, expect, test } from '@playwright/test';
 import { ANGULAR, BLAZOR, abrir } from '../soporte/apps';
+import { rutaAngular } from '../soporte/rutas';
 import { catalogoSemilla } from '../../src/app/core/seed/inventario';
 
 /**
@@ -46,6 +47,9 @@ const normalizar = (texto: string): string => texto.replace(/\s+/g, ' ').trim();
  *   réplica muestra "Clave - Nombre". Las dos formas quedan como «Clave».
  * - Botones inteligentes: nombre por tipo en singular o plural y orden por grupo. Cada botón queda como
  *   «tipo conteo», ordenados (ver `textoComparable`).
+ * - Botón "Pedido" de la OF y demás documentos en memoria: desde F1 el pedido vive en la API y el botón
+ *   queda deshabilitado con "Se conecta en F2" (research R-10 de la spec 003), sin conteo comparable.
+ *   Las dos formas quedan como «pedido».
  */
 const PRODUCTOS = catalogoSemilla().sort((a, b) => b.clave.length - a.clave.length || b.nombre.length - a.nombre.length);
 const escapar = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -60,7 +64,7 @@ export function canonico(texto: string): string {
     t = t.replace(new RegExp(`(?<=^|\\s)${escapar(p.nombre)}(?=\\s|$)`, 'g'), `«${p.clave}»`);
   }
   // Una línea con la clave de un producto y la descripción de otro queda «A» - «B» en la réplica.
-  return t.replace(/» - «/g, '» «');
+  return t.replace(/» - «/g, '» «').replace(/«pedido \d+»/g, '«pedido»');
 }
 
 const TIPOS_DE_BOTON: Record<string, string> = {
@@ -112,7 +116,8 @@ async function ejecutar(page: Page, base: string, pasos: Paso[]): Promise<Corrid
     if ('ir' in paso) {
       await abrir(page, base, paso.ir);
     } else if ('navegar' in paso) {
-      const ruta = paso.navegar;
+      // La réplica lleva el prefijo de su módulo (D-155).
+      const ruta = base === ANGULAR ? rutaAngular(paso.navegar) : paso.navegar;
       await page.evaluate(r => {
         const w = window as unknown as { Blazor?: { navigateTo(u: string): void }; __sinRecarga?: boolean };
         w.__sinRecarga = true;

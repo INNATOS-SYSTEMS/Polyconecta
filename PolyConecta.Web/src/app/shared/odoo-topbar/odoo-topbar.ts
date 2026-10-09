@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { OdooSystray } from './odoo-systray';
+import { SesionState } from '../../core/sesion/sesion-state';
 import { MenuItem, moduleFor } from './modulos';
 
 /**
@@ -19,6 +20,7 @@ import { MenuItem, moduleFor } from './modulos';
 })
 export class OdooTopbar {
   private readonly router = inject(Router);
+  private readonly sesion = inject(SesionState);
 
   private readonly path = toSignal(
     this.router.events.pipe(
@@ -29,13 +31,25 @@ export class OdooTopbar {
   );
 
   protected readonly currentModule = computed(() => moduleFor(this.path()));
+  protected readonly visibleItems = computed(() => {
+    return this.currentModule().items
+      .filter(item => !item.permiso || this.sesion.tienePermiso(item.permiso))
+      .map(item => {
+        if (!item.children) return item;
+        const children = item.children.filter(c => !c.permiso || this.sesion.tienePermiso(c.permiso));
+        return { ...item, children };
+      })
+      .filter(item => !item.children || item.children.length > 0);
+  });
+
   protected readonly menuAbierto = signal<string | null>(null);
   protected readonly showMenu = computed(() => {
-    const items = this.currentModule().items;
+    const items = this.visibleItems();
     return items.length > 1 || items.some(i => i.children !== undefined);
   });
 
   constructor() {
+    // La sesión la carga el menú del usuario (diferido) o la guardia: los menús con permiso aparecen al llegar.
     // Al navegar se cierra cualquier menú abierto, como en OnLocationChanged.
     this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => this.menuAbierto.set(null));
   }

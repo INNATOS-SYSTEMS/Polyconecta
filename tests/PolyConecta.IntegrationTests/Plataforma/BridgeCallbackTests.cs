@@ -146,7 +146,9 @@ public class BridgeCallbackTests(SqlServerFixture sql)
         await using var db = entorno.Contexto();
         var mensaje = await db.OutboxMessages.SingleAsync();
 
-        var r = await api.CreateClient().PostAsync($"/api/v1/plataforma/outbox/{mensaje.Id}/reintentar", null);
+        // El reintento es una ruta con sesión (FR-009); el callback no (se autentica con su firma).
+        var cliente = await api.ClienteAsync();
+        var r = await cliente.PostAsync($"/api/v1/plataforma/outbox/{mensaje.Id}/reintentar", null);
 
         r.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

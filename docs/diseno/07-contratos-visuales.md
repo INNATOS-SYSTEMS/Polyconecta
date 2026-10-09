@@ -141,7 +141,46 @@ Todo producto se muestra como **"Clave - Nombre"**: en campos, tablas, tarjetas,
 - **Estados:** `No aplica`, `Pendiente`, `Enviado`, `Confirmado` y `Error`.
 - **Reintentar:** dentro del popover, solo en `Error` y solo para Sistemas (D-93).
 - **Uso:** F1 lo conecta; en la réplica ningún documento sincroniza.
-- **Implementación:** `pc-odoo-sync-status`.
+### 1.9 Asignación de permisos en dos paneles (`pc-odoo-dual-list`, D-148, CT-24)
+
+Selector dual en árbol para administrar permisos de grupos. Presenta dos paneles: "Permisos disponibles" (izquierda) y "Permisos asignados" (derecha), agrupados jerárquicamente en **Módulo › Documento o funcionalidad › Acción**.
+
+**Anatomía**:
+- **Panel izquierdo (Disponibles)**: encabezado con título y contador de acciones disponibles, caja de búsqueda en tiempo real, contenedor con scroll y árbol jerárquico desplegable.
+- **Botones centrales de transferencia**: `>` (asignar seleccionados), `<` (quitar seleccionados), `>>` (asignar todos los visibles), `<<` (quitar todos los visibles).
+- **Panel derecho (Asignados)**: encabezado con título y contador de acciones asignadas, caja de búsqueda en tiempo real y árbol desplegable de permisos asignados.
+
+**Comportamientos**:
+
+| Hace | Criterio |
+| :--- | :--- |
+| Mover acción | Clic en la casilla y pulsar `>` / `<`; o doble clic directo en el elemento de la acción |
+| Mover objeto | Doble clic en el encabezado del objeto transfiere todas sus acciones hijas |
+| Mover módulo | Doble clic en el encabezado del módulo transfiere todas sus acciones |
+| Búsqueda | Filtrado en tiempo real en cada panel por nombre de módulo, objeto o acción |
+| Colapso / Expansión | Cada nodo de módulo u objeto puede expandirse o contraerse; inicia expandido por omisión |
+| Teclado | Foco en el contenedor permite `Enter` o `Alt+Flecha` para transferir los elementos marcados |
+
+**Reglas**:
+- La selección de izquierda a derecha asigna; de derecha a izquierda desasigna.
+- Emite la lista final completa de claves asignadas (`string[]`).
+- Implementación: `pc-odoo-dual-list`.
+
+### 1.10 Formulario de inicio de sesión (`pc-odoo-login-form`, CT-24)
+
+Tarjeta de autenticación centrada para acceder a PolyConecta.
+
+**Anatomía**:
+- Tarjeta de 400 px con radio de 10 px y sombra suave.
+- Título institucional ("PolyConecta") y subtítulo instructivo.
+- Alerta de error en rojo (`[data-login-error]`) ante credenciales incorrectas o bloqueo.
+- Campos: Usuario (texto con autocompletado `username`) y Contraseña (`password` con autocompletado `current-password`).
+- Botón primario de ancho completo: deshabilitado si faltan campos; en estado de carga muestra indicador de spinner y texto "Iniciando sesión...".
+
+**Comportamientos y accesibilidad**:
+- Tecla Enter en cualquier campo envía el formulario.
+- Entradas deshabilitadas mientras la petición de autenticación está en progreso.
+- Implementación: `pc-odoo-login-form` (utilizado en la ruta `/login` y adaptable en diálogos).
 
 ---
 

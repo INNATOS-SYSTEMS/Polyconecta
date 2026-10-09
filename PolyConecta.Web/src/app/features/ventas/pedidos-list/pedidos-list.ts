@@ -1,8 +1,5 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
-import { InventoryState } from '../../../core/state/inventory-state';
-import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
 import { Router } from '@angular/router';
-import { PEDIDOS } from '../../../core/search/views';
 import { UiViewState } from '../../../core/state/ui-view-state';
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
@@ -15,8 +12,11 @@ import { OdooPager } from '../../../shared/odoo-pager/odoo-pager';
 import { OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-panel';
 import { OdooViewSwitcher } from '../../../shared/odoo-view-switcher/odoo-view-switcher';
 import { ETAPAS_PEDIDO, FilaPedido, PedidosAcciones } from '../pedidos-acciones';
+import { SearchView } from '../../../core/search/search-view';
+import { vistaVacia } from '../../../core/lista/origen-http';
+import { FavoritosHttp } from '../../../core/lista/favoritos-http';
 
-/** Réplica de Pages/PedidosList.razor sobre los componentes de la spec 011: lista y kanban desde un origen de datos. */
+/** Lista y kanban de pedidos de venta conectados a la API HTTP (contracts/api-listas.md, D-154). */
 @Component({
   selector: 'pc-pedidos-list',
   imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooList, OdooKanban, OdooIcon, OdooPager],
@@ -24,25 +24,27 @@ import { ETAPAS_PEDIDO, FilaPedido, PedidosAcciones } from '../pedidos-acciones'
   styles: ':host { display: contents; }',
 })
 export class PedidosList {
-  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
-  private readonly inv = inject(InventoryState);
   private readonly router = inject(Router);
   private readonly acciones = inject(PedidosAcciones);
   protected readonly viewState = inject(UiViewState);
-  protected readonly vista = PEDIDOS;
+  protected readonly vista = signal<SearchView<FilaPedido>>(vistaVacia());
+  protected readonly favoritos = new FavoritosHttp();
   protected readonly lista = viewChild(OdooList<FilaPedido>);
 
   protected readonly origen = this.acciones.origen();
+
+  constructor() {
+    void this.origen.vista().then(v => this.vista.set(v));
+  }
   protected readonly transiciones = this.acciones.transiciones();
   protected readonly fechaCampo = fechaCampo;
   protected readonly etapas = ETAPAS_PEDIDO.map(e => ({ valor: e, titulo: e }));
-  protected readonly idPedido = (f: FilaPedido) => f.id;
+  protected readonly idPedido = (f: FilaPedido) => String(f.id);
   protected readonly etapaPedido = (f: FilaPedido) => f.estado;
   protected readonly columnas: ColumnaLista<FilaPedido>[] = [
     { campo: 'folio', titulo: 'Folio', clase: 'fw-semibold text-primary' },
     { campo: 'cliente', titulo: 'Cliente' },
-    { campo: 'producto', titulo: 'SKU Producto Terminado', texto: f => etiquetaProducto(this.inv.catalogo, f.producto) },
-    { campo: 'cantidad', titulo: 'Cantidad', clase: 'text-end', ordenable: false },
+    { campo: 'fechaPromesa', titulo: 'Entrega estimada', tipo: 'fecha' },
     { campo: 'estado', titulo: 'Estado', tipo: 'estado' },
   ];
 
@@ -51,6 +53,6 @@ export class PedidosList {
   protected readonly agrupaciones = signal<string[]>([]);
 
   protected abrir(f: FilaPedido): void {
-    void this.router.navigateByUrl(`/pedidos/${f.folio}`);
+    void this.router.navigateByUrl(`/ventas/pedidos/${f.id}`);
   }
 }

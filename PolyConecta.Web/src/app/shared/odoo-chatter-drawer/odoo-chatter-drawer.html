@@ -10,16 +10,19 @@
     </div>
 
     @for (msg of messages(); track $index) {
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2" [attr.data-chatter-clase]="msg.clase ?? null">
         <div class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width:28px; height:28px; font-size:0.8rem; background-color: var(--brand-primary);">
           {{ inicial(msg.author) }}
         </div>
-        <div class="bg-light border rounded p-2 flex-grow-1 small">
+        <div class="border rounded p-2 flex-grow-1 small" [class.bg-light]="msg.clase !== 'Nota'" [class.o_chatter_nota]="msg.clase === 'Nota'">
           <div class="d-flex justify-content-between text-muted mb-1" style="font-size: 0.725rem;">
-            <span class="fw-bold text-dark">{{ msg.author }}</span>
+            <span><span class="fw-bold text-dark">{{ msg.author }}</span>@if (msg.grupo) { <span> · {{ msg.grupo }}</span> }</span>
             <span>{{ msg.timestamp }}</span>
           </div>
-          <div class="text-dark">{{ msg.text }}</div>
+          @if (msg.clase === 'Nota') {
+            <div class="text-muted mb-1" style="font-size: 0.7rem;">Nota interna</div>
+          }
+          <div [class.text-dark]="msg.clase !== 'Cambio'" [class.text-muted]="msg.clase === 'Cambio'" [class.fst-italic]="msg.clase === 'Cambio'">{{ msg.text }}</div>
         </div>
       </div>
     }
@@ -29,10 +32,19 @@
     @if (inactivo()) {
       <div class="small text-muted mb-1" data-chatter-inactivo>Las notas se habilitan al guardar.</div>
     }
+    @if (documento()) {
+      <div class="btn-group btn-group-sm mb-1" role="group" aria-label="Clase de mensaje">
+        <button type="button" class="btn btn-outline-secondary" [class.active]="clase() === 'Mensaje'" data-chatter-clase-opcion="Mensaje" (click)="clase.set('Mensaje')">Mensaje</button>
+        <button type="button" class="btn btn-outline-secondary" [class.active]="clase() === 'Nota'" data-chatter-clase-opcion="Nota" (click)="clase.set('Nota')">Nota interna</button>
+      </div>
+    }
     <div class="input-group input-group-sm">
       <input type="text" class="form-control" placeholder="Escribir nota..." [disabled]="inactivo()" [value]="newMsgText()" (change)="newMsgText.set($any($event.target).value)" (keydown.enter)="newMsgText.set($any($event.target).value); send()" />
       <button class="btn text-white fw-semibold" style="background-color: var(--brand-primary);" [disabled]="inactivo()" (click)="send()">Enviar</button>
     </div>
+    @if (errorEnvio()) {
+      <div class="small text-danger mt-1" role="alert" data-chatter-error>{{ errorEnvio() }}</div>
+    }
     @if (avisoSinConexion()) {
       <div class="small text-muted mt-1"><pc-odoo-icon nombre="sin-conexion" class="me-1" />Sin conexión en vivo</div>
     }

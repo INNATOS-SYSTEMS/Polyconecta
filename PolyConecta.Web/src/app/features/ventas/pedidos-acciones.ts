@@ -1,81 +1,107 @@
 import { Injectable, inject } from '@angular/core';
 import { TransicionKanban } from '../../core/kanban/kanban';
-import { OrigenEnMemoria } from '../../core/lista/origen-en-memoria';
-import { n1 } from '../../core/format/numero';
-import { SalesOrder } from '../../core/models/ventas';
-import { PEDIDOS, SalesOrderRow } from '../../core/search/views';
-import { PedidoLibre } from '../../core/state/libre/pedido-libre';
-import { OperationalFlowState } from '../../core/state/operational-flow-state';
+import { OrigenHttp } from '../../core/lista/origen-http';
+import { PedidosService, PedidoDetalleDto } from './pedidos.service';
 import { FirmaPedido } from './firma-pedido';
 
-/** Fila de la lista de pedidos: la de la vista de búsqueda más lo que muestra la tabla. */
-export interface FilaPedido extends SalesOrderRow {
-  id: string;
-  cantidad: string;
-  /** Fecha estimada de entrega; la tarjeta del kanban la muestra. */
-  entrega: Date | null;
-  pedido: SalesOrder;
+/** Fila de la lista de pedidos proyectada por la API (contracts/api-listas.md, VistasDeF1.Pedidos). */
+export interface FilaPedido {
+  id: number | string;
+  folio: string;
+  cliente: string;
+  fechaPromesa?: string | null;
+  entrega?: Date | null;
+  estado: string;
+  producto?: string;
+  cantidad?: string;
+  rowVersion?: string;
+  _filtros?: string[];
+  [key: string]: unknown;
 }
 
-export const ETAPAS_PEDIDO = ['Borrador', 'Confirmado', 'Autorizado', 'En progreso', 'Hecho'];
+export const ETAPAS_PEDIDO = ['Borrador', 'Confirmado', 'Autorizado', 'Cancelado'];
+
 
 /**
- * Acciones del pedido (spec 011): las usan el formulario y el kanban, para que una transición tenga
- * una sola regla. También arma el origen de datos de la lista (en memoria hasta F1).
+ * Acciones del pedido sobre la API (spec 003, L2-T024):
+ * usadas por el formulario y el kanban para mantener una sola regla por transición.
  */
 @Injectable({ providedIn: 'root' })
 export class PedidosAcciones {
-  private readonly flow = inject(OperationalFlowState);
-  private readonly libre = inject(PedidoLibre);
+  private readonly pedidosService = inject(PedidosService);
 
-  /** Confirmar: el pedido libre recibe su Contpaq ID simulado (D-53). Devuelve el motivo si no procede. */
-  confirmar(folio: string): string | undefined {
-    const pedido = this.flow.pedido(folio);
-    if (pedido.stage !== 'Borrador') return 'El pedido ya fue confirmado.';
-    if (pedido.libre) return this.libre.confirmar(folio);
-    this.flow.setOrderStage('Confirmado', folio);
-    return undefined;
-  }
-
-  /** Autorizar: registra la firma pendiente; con las dos pasa a Autorizado (D-33). */
-  autorizar(folio: string): string | undefined {
-    if (!this.flow.puedeFirmar(folio)) return 'El pedido no se puede autorizar en su estado actual.';
-    this.flow.autorizar(folio);
-    const pendiente = this.flow.firmaPendiente(folio);
-    return pendiente ? `Falta la firma de ${pendiente}.` : undefined;
-  }
-
-  firmaPendiente(folio: string): string | undefined {
-    return this.flow.firmaPendiente(folio);
-  }
-
-  /** Filas de la lista, como las arma hoy la pantalla. */
-  filas(): FilaPedido[] {
-    return this.flow.pedidos.map(p => {
-      const linea = p.lineas[0];
-      return {
-        id: p.folio,
-        folio: p.folio,
-        cliente: p.cliente,
-        producto: linea?.clave ?? '',
-        estado: p.stage,
-        cantidad: linea ? `${n1(linea.cantidad)} ${linea.unidad}` : '',
-        entrega: p.fechaPromesa,
-        pedido: p,
-      };
+  /** Origen HTTP sobre /api/v1/ventas/pedidos (D-151, D-155). */
+  origen(): OrigenHttp<FilaPedido> {
+    return new OrigenHttp<FilaPedido>({
+      modulo: 'ventas',
+      lista: 'pedidos',
+      id: f => String(f.id),
     });
   }
 
-  /** Origen de la lista y del kanban: busca y filtra con la vista PEDIDOS, igual que la barra de búsqueda. */
-  origen(): OrigenEnMemoria<FilaPedido> {
-    return new OrigenEnMemoria<FilaPedido>({ datos: () => this.filas(), id: f => f.id, vista: PEDIDOS });
+  async confirmar(id: number | string, rowVersion?: string): Promise<PedidoDetalleDto> {
+    if (!rowVersion) {
+      const p = await this.pedidosService.obtener(id);
+      rowVersion = p.rowVersion;
+    }
+    return this.pedidosService.confirmar(id, rowVersion);
   }
 
-  /** Transiciones que se pueden arrastrar en el kanban (contratos visuales §4.3). */
+  async autorizar(id: number | string, rowVersion?: string, rol?: string | null): Promise<PedidoDetalleDto> {
+    if (!rowVersion) {
+      const p = await this.pedidosService.obtener(id);
+      rowVersion = p.rowVersion;
+    }
+    return this.pedidosService.autorizar(id, rowVersion, rol);
+  }
+
+  async revocar(id: number | string, rowVersion?: string, motivo?: string | null): Promise<PedidoDetalleDto> {
+    if (!rowVersion) {
+      const p = await this.pedidosService.obtener(id);
+      rowVersion = p.rowVersion;
+    }
+    return this.pedidosService.revocar(id, rowVersion, motivo);
+  }
+
+  async cancelar(id: number | string, rowVersion?: string, motivo?: string | null): Promise<PedidoDetalleDto> {
+    if (!rowVersion) {
+      const p = await this.pedidosService.obtener(id);
+      rowVersion = p.rowVersion;
+    }
+    return this.pedidosService.cancelar(id, rowVersion, motivo);
+  }
+
+  /** Transiciones arrastrables en el kanban (contratos visuales §4.3, D-138). */
   transiciones(): TransicionKanban<FilaPedido>[] {
     return [
-      { desde: 'Borrador', hacia: 'Confirmado', nombre: 'Confirmar', ejecutar: f => this.confirmar(f.folio) },
-      { desde: 'Confirmado', hacia: 'Autorizado', nombre: 'Autorizar', dialogo: FirmaPedido, ejecutar: f => this.autorizar(f.folio) },
+      {
+        desde: 'Borrador',
+        hacia: 'Confirmado',
+        nombre: 'Confirmar',
+        ejecutar: async f => {
+          try {
+            await this.confirmar(f.id, f.rowVersion);
+            return undefined;
+          } catch (e: unknown) {
+            return (e as Error).message || 'Error al confirmar el pedido';
+          }
+        },
+      },
+      {
+        desde: 'Confirmado',
+        hacia: 'Autorizado',
+        nombre: 'Autorizar',
+        dialogo: FirmaPedido,
+        ejecutar: async (f, res) => {
+          try {
+            const rol = typeof res === 'string' ? res : undefined;
+            await this.autorizar(f.id, f.rowVersion, rol);
+            return undefined;
+          } catch (e: unknown) {
+            return (e as Error).message || 'Error al autorizar el pedido';
+          }
+        },
+      },
     ];
   }
 }

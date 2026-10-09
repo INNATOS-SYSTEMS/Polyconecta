@@ -1,0 +1,28 @@
+<div class="o_control_panel">
+  <div class="d-flex align-items-center gap-3">
+    <pc-odoo-breadcrumb [items]="[{ label: 'Ventas' }, { label: 'Clientes' }]" />
+  </div>
+  <pc-odoo-search-panel
+    [view]="vista()"
+    [(texto)]="searchText"
+    [(filtrosActivos)]="filtros"
+    [(agrupacionesActivas)]="agrupaciones"
+    [permiteAgrupar]="true"
+    [conFavoritos]="false"
+  />
+  <div class="d-flex align-items-center gap-2"></div>
+</div>
+
+<div class="p-4">
+  <pc-odoo-list [almacenFavoritos]="favoritos" [estadoEnUrl]="true"
+    lista="ventas.clientes"
+    [origen]="origen"
+    [columnas]="columnas"
+    [idDe]="idCliente"
+    mensajeVacio="No hay clientes registrados"
+    [(busqueda)]="searchText"
+    [(nombrados)]="filtros"
+    [(agruparPor)]="agrupaciones"
+    (abrir)="abrir($event)"
+  />
+</div>

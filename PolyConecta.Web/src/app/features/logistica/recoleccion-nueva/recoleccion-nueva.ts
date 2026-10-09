@@ -23,7 +23,7 @@ type Tipo = 'recoleccion' | 'devolucion';
   selector: 'pc-recoleccion-nueva',
   imports: [HojaNueva, OdooLineCapture, OdooTabs, PcPestana, OdooIcon],
   template: `
-    <pc-hoja-nueva lista="Recolecciones" ruta="/recolecciones" [titulo]="tipo() === 'recoleccion' ? 'Recolección' : 'Devolución de recolección'" [stages]="stages" [error]="error()" [conChatter]="true" (guardar)="guardar()" (descartar)="router.navigateByUrl('/recolecciones')">
+    <pc-hoja-nueva lista="Recolecciones" ruta="/logistica/recolecciones" [titulo]="tipo() === 'recoleccion' ? 'Recolección' : 'Devolución de recolección'" [stages]="stages" [error]="error()" [conChatter]="true" (guardar)="guardar()" (descartar)="router.navigateByUrl('/logistica/recolecciones')">
       <div class="row g-4 mb-3">
         <div class="col-md-6">
           <div class="o_form_label_row">
@@ -103,6 +103,6 @@ export class RecoleccionNueva {
       ? this.libres.crearRecoleccion(this.planta(), this.lineas())
       : this.libres.crearDevolucion(this.planta(), this.lineas());
     this.error.set(error);
-    if (op) void this.router.navigateByUrl(`/recolecciones/${op.folio}`);
+    if (op) void this.router.navigateByUrl(`/logistica/recolecciones/${op.folio}`);
   }
 }

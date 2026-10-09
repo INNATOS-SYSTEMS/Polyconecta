@@ -1,0 +1,28 @@
+<div class="o_control_panel">
+  <div class="d-flex align-items-center gap-3">
+    <pc-odoo-breadcrumb [items]="[{ label: 'Inventario' }, { label: 'Productos' }]" />
+  </div>
+  <pc-odoo-search-panel
+    [view]="vista()"
+    [(texto)]="searchText"
+    [(filtrosActivos)]="filtros"
+    [(agrupacionesActivas)]="agrupaciones"
+    [permiteAgrupar]="true"
+    [conFavoritos]="false"
+  />
+  <div class="d-flex align-items-center gap-2"></div>
+</div>
+
+<div class="p-4">
+  <pc-odoo-list [almacenFavoritos]="favoritos" [estadoEnUrl]="true"
+    lista="inventario.productos"
+    [origen]="origen"
+    [columnas]="columnas"
+    [idDe]="idProducto"
+    mensajeVacio="No hay productos registrados"
+    [(busqueda)]="searchText"
+    [(nombrados)]="filtros"
+    [(agruparPor)]="agrupaciones"
+    (abrir)="abrir($event)"
+  />
+</div>

@@ -11,7 +11,7 @@
     }
     @if (showMenu()) {
       <nav class="o_header_menu">
-        @for (item of currentModule().items; track item.label) {
+        @for (item of visibleItems(); track item.label) {
           @if (!item.children) {
             <a [routerLink]="item.route" [class.active]="isActive(item.route)">{{ item.label }}</a>
           } @else {

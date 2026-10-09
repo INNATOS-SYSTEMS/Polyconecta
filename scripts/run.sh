@@ -144,8 +144,18 @@ if [ -z "${ConnectionStrings__PolyConecta:-}" ]; then
             echo "LOCAL_MIGRACIONES_PASSWORD=Mig_$(gen)1!"
         } > .env.local
     fi
+    # Contraseña del Administrador inicial que siembra la API (L2-T003, quickstart de F1).
+    if ! grep -q '^LOCAL_ADMIN_PASSWORD=' .env.local; then
+        echo "LOCAL_ADMIN_PASSWORD=Adm_$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 20)1!" >> .env.local
+    fi
+    # Contraseña de los usuarios de ejemplo de R1 (DatosR1, solo en desarrollo; L2-T033).
+    if ! grep -q '^LOCAL_R1_PASSWORD=' .env.local; then
+        echo "LOCAL_R1_PASSWORD=R1_$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 16)1!" >> .env.local
+    fi
     # shellcheck disable=SC1091
     . ./.env.local
+    export Seguridad__AdministradorInicial__Contrasena="${LOCAL_ADMIN_PASSWORD}"
+    export Seguridad__DatosR1__Contrasena="${LOCAL_R1_PASSWORD}"
     if ! docker ps --format '{{.Names}}' | grep -q "^${SQL_CONTAINER}$"; then
         if docker ps -a --format '{{.Names}}' | grep -q "^${SQL_CONTAINER}$"; then
             docker start "$SQL_CONTAINER" > /dev/null

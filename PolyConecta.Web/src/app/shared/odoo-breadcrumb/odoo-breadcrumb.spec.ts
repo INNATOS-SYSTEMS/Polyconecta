@@ -9,8 +9,8 @@ describe('OdooBreadcrumb', () => {
   it('colapsa los niveles anteriores en "…" y los despliega al pulsarlo', () => {
     const fixture = TestBed.createComponent(OdooBreadcrumb);
     fixture.componentRef.setInput('items', [
-      { label: 'Pedidos', url: '/pedidos' },
-      { label: 'IV310-26', url: '/pedidos/IV310-26' },
+      { label: 'Pedidos', url: '/ventas/pedidos' },
+      { label: 'IV310-26', url: '/ventas/pedidos/IV310-26' },
       { label: 'BOL-2026-0001' },
     ]);
     fixture.detectChanges();

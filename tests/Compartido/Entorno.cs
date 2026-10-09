@@ -13,11 +13,23 @@ public sealed class RelojFijo(DateTimeOffset ahora) : IClock
     public DateTimeOffset Now { get; set; } = ahora;
 }
 
-public sealed class UsuarioFijo(string nombre, string? rol = null) : ICurrentUser
+public sealed class UsuarioFijo(string nombre, string? rol = null, long? id = null) : ICurrentUser
 {
     public string UserName => nombre;
 
-    public string? Role => rol;
+    public long? UserId { get; set; } = id;
+
+    public string NombreVisible { get; set; } = nombre;
+
+    public string? GrupoEjercido { get; private set; } = rol;
+
+    public bool EsSuplente { get; private set; }
+
+    public void EjercerGrupo(string? grupo, bool esSuplente)
+    {
+        GrupoEjercido = grupo;
+        EsSuplente = esSuplente;
+    }
 }
 
 /// <summary>Base migrada más la tabla de prueba, y contextos con el interceptor de auditoría.</summary>
@@ -69,6 +81,7 @@ public static class ServiciosDePrueba
                 .Options));
         services.AddScoped(sp => (PruebasDbContext)sp.GetRequiredService<PolyDbContext>());
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+        services.AddAlmacenes();
         services.AddScoped<PolyConecta.Application.Plataforma.Folios.IReferenceSequenceService, PolyConecta.Infrastructure.Plataforma.ReferenceSequenceService>();
 
         services.Configure<PolyConecta.Infrastructure.Erp.ErpOptions>(o =>

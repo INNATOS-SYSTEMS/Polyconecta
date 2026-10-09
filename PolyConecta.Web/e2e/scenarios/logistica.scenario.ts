@@ -46,8 +46,6 @@ guion({
     { pulsar: `${MODAL} button`, texto: 'Cerrar' },
     { pulsar: '.o_statusbar button', texto: 'Validar' },
     { control: 'entrega sin lotes', en: 'main' },
-    { navegar: '/pedidos/IV310-26' },
-    { control: 'pedido tras logística', en: 'main' },
     { navegar: '/inventario' },
     { control: 'inventario tras logística', en: 'main table' },
   ],

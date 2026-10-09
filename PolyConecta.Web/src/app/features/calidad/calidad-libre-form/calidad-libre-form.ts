@@ -56,7 +56,7 @@ import { CalidadAcciones } from '../calidad-acciones';
                   @for (l of control.lotes; track $index; let i = $index) {
                     <tr>
                       <td>{{ i + 1 }}</td>
-                      <td class="small"><a [routerLink]="'/fabricacion/' + l.ofFolio" class="text-decoration-none">{{ l.ofFolio }}</a></td>
+                      <td class="small"><a [routerLink]="'/produccion/fabricacion/' + l.ofFolio" class="text-decoration-none">{{ l.ofFolio }}</a></td>
                       <td><code>{{ l.lote.lote }}</code></td>
                       <td class="text-end">{{ n1(l.lote.real) }} {{ l.lote.unidad }}</td>
                       <td>

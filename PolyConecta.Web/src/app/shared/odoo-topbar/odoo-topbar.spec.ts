@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { routes } from '../../app.routes';
+import { SesionState } from '../../core/sesion/sesion-state';
 import { OdooTopbar } from './odoo-topbar';
 import { moduleFor } from './modulos';
 
@@ -9,15 +10,17 @@ describe('OdooTopbar', () => {
   beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter(routes)] }));
 
   it('resuelve el módulo por prefijo, como el prototipo', () => {
-    expect(moduleFor('/pedidos/IV310-26').name).toBe('Ventas');
+    expect(moduleFor('/ventas/pedidos/IV310-26').name).toBe('Ventas');
     expect(moduleFor('/ventas/inventario').name).toBe('Ventas');
-    expect(moduleFor('/traslados/PIM/OUT/48213').name).toBe('Inventario');
-    expect(moduleFor('/captura-masiva').name).toBe('Fabricación');
+    expect(moduleFor('/logistica/traslados/PIM/OUT/48213').name).toBe('Inventario');
+    expect(moduleFor('/produccion/captura-masiva').name).toBe('Fabricación');
     expect(moduleFor('/').name).toBe('');
   });
 
   it('muestra el menú del módulo de la ruta actual', async () => {
-    await TestBed.inject(Router).navigateByUrl('/fabricacion');
+    // Toda ruta exige sesión (US2 escenario 2).
+    TestBed.inject(SesionState).establecerSesion({ usuario: { id: 1, usuario: 'ac1', nombre: 'Celia Villarreal' }, asignaciones: [], permisos: [] });
+    await TestBed.inject(Router).navigateByUrl('/produccion/fabricacion');
     const fixture = TestBed.createComponent(OdooTopbar);
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;

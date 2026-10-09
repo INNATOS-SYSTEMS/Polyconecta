@@ -79,9 +79,10 @@ export class Dashboard {
   protected readonly router = inject(Router);
 
   protected readonly apps: AppTile[] = [
-    { label: 'Ventas', icon: 'pedido', fondo: '#E3F0F1', icono: '#17676C', borde: '#C9E2E4', route: '/pedidos' },
-    { label: 'Fabricación', icon: 'fabricacion', fondo: '#E8EAF6', icono: '#2E3889', borde: '#D3D7EE', route: '/fabricacion' },
+    { label: 'Ventas', icon: 'pedido', fondo: '#E3F0F1', icono: '#17676C', borde: '#C9E2E4', route: '/ventas/pedidos' },
+    { label: 'Fabricación', icon: 'fabricacion', fondo: '#E8EAF6', icono: '#2E3889', borde: '#D3D7EE', route: '/produccion/fabricacion' },
     { label: 'Calidad', icon: 'calidad', fondo: '#E4F1EA', icono: '#276B47', borde: '#CBE4D6', route: '/calidad' },
     { label: 'Inventario', icon: 'inventario', fondo: '#F4ECE1', icono: '#80552A', borde: '#E6D6C0', route: '/inventario' },
+    { label: 'Configuración', icon: 'ajustes', fondo: '#F3E5F5', icono: '#7B1FA2', borde: '#E1BEE7', route: '/plataforma/usuarios' },
   ];
 }

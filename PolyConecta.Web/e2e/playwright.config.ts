@@ -1,4 +1,6 @@
+import { resolve } from 'node:path';
 import { defineConfig } from '@playwright/test';
+import { SESION_GUARDADA } from './soporte/sesion-global';
 
 /**
  * Escenarios y auditor contra el prototipo Blazor (spec 001; sin píxeles desde la spec 011, D-135): Chromium a 1600×900,
@@ -12,7 +14,10 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: [['list']],
+  // Desde F1 toda ruta exige sesión: entra una vez con un usuario de R1 (necesita la API arriba).
+  globalSetup: resolve(__dirname, 'soporte/sesion-global.ts'),
   use: {
+    storageState: SESION_GUARDADA,
     browserName: 'chromium',
     viewport: { width: 1600, height: 900 },
     reducedMotion: 'reduce',

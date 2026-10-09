@@ -35,6 +35,8 @@ import { OdooTabs, PcPestana } from '../../shared/odoo-tabs/odoo-tabs';
 import { OdooViewSwitcher } from '../../shared/odoo-view-switcher/odoo-view-switcher';
 import { PaginaNoEncontrada } from '../../shared/pagina-no-encontrada/pagina-no-encontrada';
 import { PaginaPendiente } from '../../shared/pagina-pendiente/pagina-pendiente';
+import { OdooDualList, ModuloPermisoItem } from '../../shared/odoo-dual-list/odoo-dual-list';
+import { OdooLoginForm } from '../../shared/odoo-login-form/odoo-login-form';
 import { PedidoEjemplo, pedidosEjemplo, PRODUCTOS_EJEMPLO, ProductoEjemplo } from './datos';
 
 /** Firma de la transición Confirmado → Autorizado en el kanban de ejemplo: devuelve el nombre de quien firma. */
@@ -73,7 +75,8 @@ const VISTA: SearchView<PedidoEjemplo> = {
   selector: 'pc-catalogo',
   imports: [FormsModule, OdooList, OdooKanban, OdooSearchPanel, OdooMany2one, OdooDate, OdooNumber, OdooTabs, PcPestana,
     OdooActionMenu, OdooSyncStatus, OdooIcon, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooLineCapture,
-    OdooChatterDrawer, BotonNuevo, OdooViewSwitcher, OdooPager, PaginaPendiente, PaginaNoEncontrada, LotPickerModal, LotQuantityPickerModal],
+    OdooChatterDrawer, BotonNuevo, OdooViewSwitcher, OdooPager, PaginaPendiente, PaginaNoEncontrada, LotPickerModal, LotQuantityPickerModal,
+    OdooDualList, OdooLoginForm],
   templateUrl: './catalogo.html',
   styles: `
     :host { display: block; }
@@ -198,5 +201,76 @@ export class Catalogo {
   async abrirHardStop(): Promise<void> {
     const ref = abrirDialogo<void>(this.dialog, OdooHardStop, { titulo: 'Lote en cuarentena', mensaje: 'El lote R001-BOL-2026-0007 no está liberado por Calidad: no se puede mover (hard-stop).' });
     await firstValueFrom(ref.closed);
+  }
+
+  // --- Lista dual de permisos y Formulario de login (F1) ---
+  protected readonly arbolPermisosEjemplo: ModuloPermisoItem[] = [
+    {
+      modulo: 'ventas',
+      etiqueta: 'Ventas',
+      objetos: [
+        {
+          objeto: 'pedido',
+          etiqueta: 'Pedido',
+          tipo: 'Documento',
+          acciones: [
+            { clave: 'ventas.pedido.leer', accion: 'leer', etiqueta: 'Leer' },
+            { clave: 'ventas.pedido.crear', accion: 'crear', etiqueta: 'Crear' },
+            { clave: 'ventas.pedido.editar', accion: 'editar', etiqueta: 'Editar' },
+            { clave: 'ventas.pedido.confirmar', accion: 'confirmar', etiqueta: 'Confirmar' },
+            { clave: 'ventas.pedido.cancelar', accion: 'cancelar', etiqueta: 'Cancelar' },
+          ],
+        },
+        {
+          objeto: 'cliente',
+          etiqueta: 'Cliente',
+          tipo: 'Funcionalidad',
+          acciones: [
+            { clave: 'ventas.cliente.leer', accion: 'leer', etiqueta: 'Leer' },
+          ],
+        },
+      ],
+    },
+    {
+      modulo: 'inventario',
+      etiqueta: 'Inventario',
+      objetos: [
+        {
+          objeto: 'producto',
+          etiqueta: 'Producto',
+          tipo: 'Funcionalidad',
+          acciones: [
+            { clave: 'inventario.producto.leer', accion: 'leer', etiqueta: 'Leer' },
+            { clave: 'inventario.producto.clasificar', accion: 'clasificar', etiqueta: 'Clasificar' },
+          ],
+        },
+        {
+          objeto: 'ficha',
+          etiqueta: 'Ficha técnica',
+          tipo: 'Funcionalidad',
+          acciones: [
+            { clave: 'inventario.ficha.leer', accion: 'leer', etiqueta: 'Leer' },
+            { clave: 'inventario.ficha.editar', accion: 'editar', etiqueta: 'Editar' },
+          ],
+        },
+      ],
+    },
+  ];
+
+  protected readonly permisosSeleccionados = signal<string[]>([
+    'ventas.pedido.leer',
+    'ventas.pedido.crear',
+  ]);
+
+  protected readonly loginEjemploCargando = signal(false);
+  protected readonly loginEjemploError = signal<string | null>(null);
+
+  protected enviarLoginEjemplo(c: { usuario: string; contrasena: string }): void {
+    this.loginEjemploCargando.set(true);
+    this.loginEjemploError.set(null);
+    setTimeout(() => {
+      this.loginEjemploCargando.set(false);
+      this.avisos.exito(`Autenticado como ${c.usuario}`);
+    }, 600);
   }
 }

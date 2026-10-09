@@ -1,8 +1,12 @@
 import { expect, Page, test } from '@playwright/test';
 import { abrir, ANGULAR } from '../soporte/apps';
+import { entrarComo } from '../soporte/sesion';
 
-/** Chatter en vivo entre pestañas por el hub de PolyConecta.Api (US-4, SC-005). */
-const DOCUMENTO = '/fabricacion/BOL-2026-0001';
+/**
+ * Chatter en vivo entre pestañas por el hub de PolyConecta.Api (US-4, SC-005). Desde F1 el hub exige
+ * sesión (L2-T008): las pestañas entran como un usuario de R1 antes de abrir la OF, que sigue en memoria.
+ */
+const DOCUMENTO = '/produccion/fabricacion/BOL-2026-0001';
 const PANEL = 'pc-odoo-chatter-drawer';
 
 async function escribir(page: Page, texto: string): Promise<void> {
@@ -13,6 +17,7 @@ async function escribir(page: Page, texto: string): Promise<void> {
 
 test('con la API: el mensaje llega a la otra pestaña en menos de 1 s', async ({ browser }) => {
   const contexto = await browser.newContext();
+  await entrarComo(contexto, 'ac1');
   const a = await contexto.newPage();
   const b = await contexto.newPage();
   for (const p of [a, b]) {
@@ -35,7 +40,7 @@ test('con la API: el mensaje llega a la otra pestaña en menos de 1 s', async ({
   await expect(b.locator(`${PANEL} .text-dark`, { hasText: texto })).toHaveCount(1);
   // Otro documento no lo recibe.
   const c = await contexto.newPage();
-  await abrir(c, ANGULAR, '/fabricacion/IMP-2026-0001');
+  await abrir(c, ANGULAR, '/produccion/fabricacion/IMP-2026-0001');
   await escribir(a, `${texto} (2)`);
   await expect(b.locator(PANEL)).toContainText(`${texto} (2)`);
   await expect(c.locator(PANEL)).not.toContainText(texto);

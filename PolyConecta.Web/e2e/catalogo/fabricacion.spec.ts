@@ -16,7 +16,7 @@ async function arrastrar(page: Page, origen: Locator, destino: Locator): Promise
 const columna = (page: Page, etapa: string) => page.locator(`[data-etapa="${etapa}"]`);
 
 test('kanban de OF: confirmar arrastrando; Planeado → En progreso no se arrastra; cerrar sin cumplir regresa con el motivo', async ({ page }) => {
-  await abrir(page, ANGULAR, '/fabricacion');
+  await abrir(page, ANGULAR, '/produccion/fabricacion');
   await page.locator('.o_view_switcher button').nth(1).click();
   const bol = (etapa: string) => columna(page, etapa).locator('[data-tarjeta="BOL-2026-0001"]');
   await arrastrar(page, bol('Borrador'), columna(page, 'Planeado'));
@@ -33,7 +33,7 @@ test('kanban de OF: confirmar arrastrando; Planeado → En progreso no se arrast
 });
 
 test('lista de OF: conserva la cadena y la aplana al ordenar', async ({ page }) => {
-  await abrir(page, ANGULAR, '/fabricacion');
+  await abrir(page, ANGULAR, '/produccion/fabricacion');
   const tabla = page.locator('table[data-lista="produccion.ordenes"]');
   await expect(tabla.locator('tbody tr', { hasText: 'BOL-2026-0001' })).toContainText('maestra');
   await tabla.locator('th[data-columna="folio"]').click();
@@ -42,7 +42,7 @@ test('lista de OF: conserva la cadena y la aplana al ordenar', async ({ page }) 
 });
 
 test('incidencias: kanban por centro de trabajo, sin arrastre', async ({ page }) => {
-  await abrir(page, ANGULAR, '/incidencias');
+  await abrir(page, ANGULAR, '/produccion/incidencias');
   await page.locator('.o_view_switcher button').nth(1).click();
   await expect(page.locator('[data-kanban="centroTrabajo"] .o_kanban_column').first()).toBeVisible();
   await expect(page.locator('[data-kanban="centroTrabajo"] .cdk-drag-disabled').first()).toBeVisible();

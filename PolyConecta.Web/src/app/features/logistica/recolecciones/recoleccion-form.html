@@ -1,7 +1,7 @@
 <div class="o_control_panel">
     <div class="d-flex align-items-center gap-3">
-        <pc-boton-nuevo [ruta]="'/recolecciones'" />
-        <pc-odoo-breadcrumb [items]="[{ label: 'Recolecciones', url: '/recolecciones' }, { label: folio() ?? '' }]" />
+        <pc-boton-nuevo [ruta]="'/logistica/recolecciones'" />
+        <pc-odoo-breadcrumb [items]="[{ label: 'Recolecciones', url: '/logistica/recolecciones' }, { label: folio() ?? '' }]" />
     </div>
     <div class="o_button_box">
         <pc-odoo-smart-buttons [buttons]="smartButtons()" (smartNavigate)="navegar($event)" />
@@ -51,7 +51,7 @@
                     @if (op.backorderDe !== undefined) {
                         <div class="alert alert-light border py-2 px-3 small mb-3">
                             <pc-odoo-icon nombre="devolucion" />
-                            Remanente de <a [routerLink]="'/recolecciones/' + op.backorderDe" class="fw-semibold">{{ op.backorderDe }}</a>.
+                            Remanente de <a [routerLink]="'/logistica/recolecciones/' + op.backorderDe" class="fw-semibold">{{ op.backorderDe }}</a>.
                         </div>
                     }
 

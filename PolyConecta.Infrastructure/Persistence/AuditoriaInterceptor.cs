@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using PolyConecta.Application.Common;
+using PolyConecta.Application.Plataforma.Chatter;
 using PolyConecta.Domain.Common;
 using PolyConecta.Domain.Plataforma;
+using PolyConecta.Domain.Plataforma.Chatter;
 
 namespace PolyConecta.Infrastructure.Persistence;
 
@@ -10,9 +12,12 @@ namespace PolyConecta.Infrastructure.Persistence;
 /// Llena la auditoría de los mixins (04 §1) y convierte las transiciones pendientes de cada
 /// documento en filas de StateTransitionLog (CT-32). Las filas de la bitácora se insertan después
 /// del guardado principal, cuando ya se conoce el id de los documentos nuevos; dentro de un caso
-/// de uso las dos escrituras van en la misma transacción.
+/// de uso las dos escrituras van en la misma transacción. En los documentos con chatter guardado, cada
+/// transición deja además su mensaje <c>Cambio</c> en ese mismo guardado, sin que el caso de uso lo
+/// escriba (R-04); se transmite cuando se confirma la transacción.
 /// </summary>
-public sealed class AuditoriaInterceptor(IClock clock, ICurrentUser user, ICorrelationContext correlation) : SaveChangesInterceptor
+public sealed class AuditoriaInterceptor(
+    IClock clock, ICurrentUser user, ICorrelationContext correlation, IChatterNotificador? notificador = null) : SaveChangesInterceptor
 {
     private readonly List<AuditableEntity> _conTransiciones = [];
     private bool _guardandoBitacora;
@@ -64,7 +69,11 @@ public sealed class AuditoriaInterceptor(IClock clock, ICurrentUser user, ICorre
         foreach (var entry in db.ChangeTracker.Entries<AuditableEntity>())
         {
             if (entry.State == EntityState.Added)
-                entry.Entity.MarcarCreado(ahora, user.UserName);
+            {
+                var quien = string.IsNullOrWhiteSpace(entry.Entity.CreatedBy) ? user.UserName : entry.Entity.CreatedBy;
+                var cuando = entry.Entity.CreatedAt == default ? ahora : entry.Entity.CreatedAt;
+                entry.Entity.MarcarCreado(cuando, quien);
+            }
             else if (entry.State == EntityState.Modified)
                 entry.Entity.MarcarModificado(ahora, user.UserName);
 
@@ -82,8 +91,14 @@ public sealed class AuditoriaInterceptor(IClock clock, ICurrentUser user, ICorre
             foreach (var t in entidad.TransicionesPendientes)
             {
                 db.Set<StateTransitionLog>().Add(new StateTransitionLog(
-                    entidad.GetType().Name, entidad.Id, t.Desde, t.Hacia, user.UserName, user.Role, ahora, t.Nota,
+                    entidad.GetType().Name, entidad.Id, t.Desde, t.Hacia, user.UserName, user.GrupoEjercido, ahora, t.Nota,
                     correlation.CorrelationId));
+                if (DocumentosConChatter.TipoDe(entidad.GetType()) is { } tipo)
+                {
+                    var cambio = ChatterMessage.RegistrarCambio(tipo, entidad.Id, t.Desde, t.Hacia, t.Nota, user.NombreVisible, user.GrupoEjercido, ahora);
+                    db.Set<ChatterMessage>().Add(cambio);
+                    notificador?.Encolar(cambio);
+                }
             }
             entidad.LimpiarTransicionesPendientes();
         }
