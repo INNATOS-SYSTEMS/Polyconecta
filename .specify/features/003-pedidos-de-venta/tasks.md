@@ -114,8 +114,8 @@ Responsables: L1 redacta, L2 revisa.
 ### 1.7 · Preparar la revisión R1 (19 oct, 4 h)
 
 - [x] L2-T033 [US1] Sembrador de desarrollo `Infrastructure/Persistence/Sembradores/DatosR1.cs` (solo con `ASPNETCORE_ENVIRONMENT=Development` o la bandera `Seguridad__SembrarDatosR1`) con los usuarios de la [tabla de R1](quickstart.md#tabla-de-usuarios-de-r1), y `scripts/dev/sembrar-pedidos.sh` que crea N pedidos por la API como `ac1`, en estados variados.
-- [ ] L2-T034 [US1] Guion de la revisión R1 en `docs/revisiones/R1.md`: el recorrido de US1 a US4 con los usuarios de ejemplo, qué debe confirmar la operación en cada paso y dónde anotar sus pedidos de ajuste (FR-032). Incluye **medir SC-001**: AC captura, confirma y los dos firmantes autorizan un pedido de tres líneas, cronometrado; el resultado se anota en el guion y en "Exploración y cambios".
-- [ ] L2-T035 Actualizar `docs/diseno/05-arquitectura-tecnica.md` §3 a §7 (API con autenticación, listas HTTP, chatter guardado, sincronización y qué pantallas leen de la API) y `PolyConecta.Web/README.md` (pruebas `e2e/f1`, proxy de desarrollo).
+- [x] L2-T034 [US1] Guion de la revisión R1 en `docs/revisiones/R1.md`: el recorrido de US1 a US4 con los usuarios de ejemplo, qué debe confirmar la operación en cada paso y dónde anotar sus pedidos de ajuste (FR-032). Incluye **medir SC-001**: AC captura, confirma y los dos firmantes autorizan un pedido de tres líneas, cronometrado; el resultado se anota en el guion y en "Exploración y cambios". **Hecho el 9-oct**: guion en `docs/revisiones/R1.md`; la medición de SC-001 la hace la operación en la sesión de R1 (C-T009) y se anota en su tabla.
+- [x] L2-T035 Actualizar `docs/diseno/05-arquitectura-tecnica.md` §3 a §7 (API con autenticación, listas HTTP, chatter guardado, sincronización y qué pantallas leen de la API) y `PolyConecta.Web/README.md` (pruebas `e2e/f1`, proxy de desarrollo).
 
 ---
 
