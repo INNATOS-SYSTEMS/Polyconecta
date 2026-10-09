@@ -1,12 +1,12 @@
 import { Routes } from '@angular/router';
-import { proveerServiciosHttp } from '../../core/sesion/proveedor-http';
+import { proveerClienteApi } from '../../core/sesion/proveedor-api';
 import { sesionGuard } from '../../core/sesion/sesion.guard';
 
 export const PLATAFORMA_ROUTES: Routes = [
   {
     path: '',
     canActivate: [sesionGuard],
-    providers: [proveerServiciosHttp()],
+    providers: [proveerClienteApi()],
     children: [
       {
         path: 'usuarios',

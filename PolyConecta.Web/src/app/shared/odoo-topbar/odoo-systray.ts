@@ -1,4 +1,5 @@
 import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
+import { SesionAcciones } from '../../core/sesion/sesion-acciones';
 import { SesionState } from '../../core/state/sesion-state';
 
 /**
@@ -53,6 +54,7 @@ import { SesionState } from '../../core/state/sesion-state';
 export class OdooSystray {
   private readonly host = inject(ElementRef<HTMLElement>);
   protected readonly sesion = inject(SesionState);
+  private readonly acciones = inject(SesionAcciones);
   protected readonly abierto = signal(false);
 
   /** Un clic fuera o Esc cierran el menú del usuario. */
@@ -64,7 +66,7 @@ export class OdooSystray {
   protected cerrarSesion(): void {
     if (this.sesion.conSesion()) {
       this.abierto.set(false);
-      this.sesion.cerrarSesion().subscribe();
+      this.acciones.cerrarSesion().subscribe();
     }
   }
 

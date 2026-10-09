@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DialogRef } from '@angular/cdk/dialog';
 import { OdooDialog } from '../../../shared/odoo-dialog/odoo-dialog';
-import { SesionState } from '../sesion-state';
+import { SesionAcciones } from '../sesion-acciones';
 
 /**
  * Diálogo que se abre cuando la sesión expira (401) y hay captura o cambios sin guardar.
@@ -62,7 +62,7 @@ import { SesionState } from '../sesion-state';
 })
 export class DialogoLogin {
   protected readonly ref = inject<DialogRef<boolean>>(DialogRef);
-  private readonly sesion = inject(SesionState);
+  private readonly acciones = inject(SesionAcciones);
 
   protected usuario = '';
   protected contrasena = '';
@@ -76,7 +76,7 @@ export class DialogoLogin {
     }
     this.cargando.set(true);
     this.error.set(null);
-    this.sesion.iniciarSesion(this.usuario.trim(), this.contrasena).subscribe({
+    this.acciones.iniciarSesion(this.usuario.trim(), this.contrasena).subscribe({
       next: () => {
         this.ref.close(true);
       },

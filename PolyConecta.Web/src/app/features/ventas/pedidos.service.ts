@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { ErrorApi, pedirApi } from '../../core/sesion/api';
 
 export interface ReferenciaDto {
   id: number;
@@ -115,53 +116,12 @@ export interface PedidoDetalleDto {
   acciones: AccionDisponibleDto[];
 }
 
-export class ErrorApi extends Error {
-  constructor(
-    message: string,
-    public readonly status: number,
-    public readonly code?: string,
-    public readonly errores?: Array<{ campo: string; mensaje: string }>
-  ) {
-    super(message);
-    this.name = 'ErrorApi';
-  }
-}
+export { ErrorApi };
 
 @Injectable({ providedIn: 'root' })
 export class PedidosService {
-  private async peticion<T>(url: string, opciones?: RequestInit): Promise<T> {
-    const res = await fetch(url, {
-      ...opciones,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'PolyConecta',
-        ...(opciones?.headers ?? {}),
-      },
-      credentials: 'same-origin',
-    });
-
-    if (!res.ok) {
-      let mensaje = `Error HTTP ${res.status}`;
-      let codigo: string | undefined;
-      let errores: Array<{ campo: string; mensaje: string }> | undefined;
-      try {
-        const err = await res.json();
-        codigo = err.code ?? err.title;
-        errores = err.errores;
-        if (err.detail) mensaje = err.detail;
-        else if (err.title) mensaje = err.title;
-        else if (err.error) mensaje = err.error;
-      } catch {
-        // Ignorar fallo de parseo JSON
-      }
-      throw new ErrorApi(mensaje, res.status, codigo, errores);
-    }
-
-    if (res.status === 204) {
-      return undefined as unknown as T;
-    }
-
-    return (await res.json()) as T;
+  private peticion<T>(url: string, opciones?: RequestInit): Promise<T> {
+    return pedirApi<T>(url, opciones);
   }
 
   async obtener(id: number | string): Promise<PedidoDetalleDto> {

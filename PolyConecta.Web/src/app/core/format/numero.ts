@@ -15,6 +15,15 @@ export const n0 = (valor: number): string => formatN(valor, 0);
 export const n1 = (valor: number): string => formatN(valor, 1);
 export const n2 = (valor: number): string => formatN(valor, 2);
 
+/**
+ * Importe con el símbolo de su moneda, como el pipe `currency` de Angular con su locale por omisión
+ * (en-US): $1,234.50 en USD, MX$1,234.50 en MXN. Se usa en lugar del pipe para no cargar `CommonModule`.
+ */
+export function importe(valor: number | null | undefined, moneda: string, minDecimales = 2, maxDecimales = minDecimales): string {
+  if (valor === null || valor === undefined) return '';
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: moneda || 'MXN', minimumFractionDigits: minDecimales, maximumFractionDigits: maxDecimales }).format(valor);
+}
+
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sept', 'oct', 'nov', 'dic'];
 const dos = (n: number) => String(n).padStart(2, '0');
 

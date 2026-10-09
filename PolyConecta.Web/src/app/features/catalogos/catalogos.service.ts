@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { pedirApi } from '../../core/sesion/api';
 
 export interface DatosRollo {
   materialType: string;
@@ -88,35 +89,8 @@ export interface EstadoCatalogoDto {
 
 @Injectable({ providedIn: 'root' })
 export class CatalogosService {
-  private async peticion<T>(url: string, opciones?: RequestInit): Promise<T> {
-    const res = await fetch(url, {
-      ...opciones,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'PolyConecta',
-        ...(opciones?.headers ?? {}),
-      },
-      credentials: 'same-origin',
-    });
-
-    if (!res.ok) {
-      let mensaje = `Error HTTP ${res.status}`;
-      try {
-        const err = await res.json();
-        if (err.detail) mensaje = err.detail;
-        else if (err.title) mensaje = err.title;
-        else if (err.error) mensaje = err.error;
-      } catch {
-        // Ignorar error al parsear JSON
-      }
-      throw new Error(mensaje);
-    }
-
-    if (res.status === 204) {
-      return undefined as unknown as T;
-    }
-
-    return (await res.json()) as T;
+  private peticion<T>(url: string, opciones?: RequestInit): Promise<T> {
+    return pedirApi<T>(url, opciones);
   }
 
   // --- Productos e Inventario ---

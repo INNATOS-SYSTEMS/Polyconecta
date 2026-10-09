@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { importe, n2 } from '../../../core/format/numero';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Dialog } from '@angular/cdk/dialog';
@@ -33,7 +33,6 @@ export interface LineaEditable {
 @Component({
   selector: 'pc-pedido-form',
   imports: [
-    CommonModule,
     FormsModule,
     BotonNuevo,
     OdooBreadcrumb,
@@ -62,6 +61,8 @@ export interface LineaEditable {
   `,
 })
 export class PedidoForm implements OnInit {
+  protected readonly importe = importe;
+  protected readonly n2 = n2;
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly pedidosService = inject(PedidosService);

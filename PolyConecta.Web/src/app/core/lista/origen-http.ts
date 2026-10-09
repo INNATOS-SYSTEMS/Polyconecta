@@ -1,6 +1,7 @@
 import { ConsultaLista, OrigenDeLista, ResultadoLista } from './origen';
 import { OrigenEnMemoria } from './origen-en-memoria';
 import { SearchView } from '../search/search-view';
+import { respuestaApi } from '../sesion/api';
 
 export interface RespuestaConjunto<T> {
   completo: boolean;
@@ -59,15 +60,7 @@ export class OrigenHttp<T extends Record<string, unknown>> implements OrigenDeLi
 
   private async cargarConjunto(): Promise<void> {
     try {
-      const res = await fetch(`${this.baseUrl}/conjunto`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'PolyConecta',
-        },
-        body: JSON.stringify({}),
-        credentials: 'same-origin',
-      });
+      const res = await respuestaApi(`${this.baseUrl}/conjunto`, { method: 'POST', body: JSON.stringify({}) });
 
       if (!res.ok) {
         this.modoServidor = true;
@@ -120,15 +113,7 @@ export class OrigenHttp<T extends Record<string, unknown>> implements OrigenDeLi
   }
 
   private async consultarEnServidor(consulta: ConsultaLista): Promise<ResultadoLista<T>> {
-    const res = await fetch(`${this.baseUrl}/consulta`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'PolyConecta',
-      },
-      body: JSON.stringify(consulta),
-      credentials: 'same-origin',
-    });
+    const res = await respuestaApi(`${this.baseUrl}/consulta`, { method: 'POST', body: JSON.stringify(consulta) });
 
     if (!res.ok) {
       throw new Error(`Error en consulta de lista: ${res.status} ${res.statusText}`);

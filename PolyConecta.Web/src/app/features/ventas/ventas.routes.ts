@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
 import { sesionGuard } from '../../core/sesion/sesion.guard';
-import { proveerServiciosHttp } from '../../core/sesion/proveedor-http';
+import { proveerClienteApi } from '../../core/sesion/proveedor-api';
 
 /** Módulo Ventas, bajo `/ventas` (D-155). `/ventas/inventario` es la misma pantalla de Inventario Actual. */
 export const VENTAS_ROUTES: Routes = [
   {
     path: '',
     canActivate: [sesionGuard],
-    providers: [proveerServiciosHttp()],
+    providers: [proveerClienteApi()],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'pedidos' },
       { path: 'pedidos', loadComponent: () => import('./pedidos-list/pedidos-list').then(m => m.PedidosList) },

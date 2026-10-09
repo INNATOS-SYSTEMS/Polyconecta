@@ -1,12 +1,11 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { SesionState } from '../../../core/sesion/sesion-state';
 import { CatalogosService, EstadoCatalogoDto } from '../../catalogos/catalogos.service';
 
 @Component({
   selector: 'pc-sincronizacion',
-  imports: [CommonModule, OdooBreadcrumb],
+  imports: [OdooBreadcrumb],
   templateUrl: './sincronizacion.html',
   styles: `
     :host { display: block; }

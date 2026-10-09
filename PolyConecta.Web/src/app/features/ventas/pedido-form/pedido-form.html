@@ -325,7 +325,7 @@
                         }
                       </td>
                       <td class="text-end fw-semibold">
-                        {{ (l.cantidad * (l.precioUnitario ?? 0)) | currency:monedaEditada():'symbol':'1.2-2' }}
+                        {{ importe((l.cantidad * (l.precioUnitario ?? 0)), monedaEditada()) }}
                       </td>
                     </tr>
                   }
@@ -336,11 +336,11 @@
                         <div class="fw-semibold">{{ l.clave }}</div>
                         <div class="small text-muted">{{ l.producto }}</div>
                       </td>
-                      <td class="text-end">{{ l.cantidad | number:'1.2-2' }}</td>
+                      <td class="text-end">{{ n2(l.cantidad) }}</td>
                       <td class="text-center"><span class="badge bg-light text-dark border">{{ l.unidad }}</span></td>
-                      <td class="text-end">{{ l.precioUnitario !== null ? (l.precioUnitario | currency:p.moneda:'symbol':'1.2-4') : '—' }}</td>
+                      <td class="text-end">{{ l.precioUnitario !== null ? importe(l.precioUnitario, p.moneda, 2, 4) : '—' }}</td>
                       <td class="text-end fw-semibold">
-                        {{ (l.subtotal !== null ? l.subtotal : (l.cantidad * (l.precioUnitario ?? 0))) | currency:p.moneda:'symbol':'1.2-2' }}
+                        {{ importe((l.subtotal !== null ? l.subtotal : (l.cantidad * (l.precioUnitario ?? 0))), p.moneda) }}
                       </td>
                     </tr>
                   } @empty {
@@ -357,15 +357,15 @@
             <div style="width: 280px;">
               <div class="d-flex justify-content-between py-1 border-bottom">
                 <span class="text-muted">Subtotal:</span>
-                <span class="fw-semibold">{{ subtotalCalculado() | currency:(editando() ? monedaEditada() : p.moneda):'symbol':'1.2-2' }}</span>
+                <span class="fw-semibold">{{ importe(subtotalCalculado(), (editando() ? monedaEditada() : p.moneda)) }}</span>
               </div>
               <div class="d-flex justify-content-between py-1 border-bottom">
                 <span class="text-muted">IVA (16%):</span>
-                <span>{{ ivaCalculado() | currency:(editando() ? monedaEditada() : p.moneda):'symbol':'1.2-2' }}</span>
+                <span>{{ importe(ivaCalculado(), (editando() ? monedaEditada() : p.moneda)) }}</span>
               </div>
               <div class="d-flex justify-content-between py-2 fw-bold fs-5 text-primary">
                 <span>Total:</span>
-                <span>{{ totalCalculado() | currency:(editando() ? monedaEditada() : p.moneda):'symbol':'1.2-2' }}</span>
+                <span>{{ importe(totalCalculado(), (editando() ? monedaEditada() : p.moneda)) }}</span>
               </div>
             </div>
           </div>

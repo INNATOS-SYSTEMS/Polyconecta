@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { SesionAcciones } from '../../../core/sesion/sesion-acciones';
 import { SesionState } from '../../../core/sesion/sesion-state';
 import { OdooLoginForm } from '../../../shared/odoo-login-form/odoo-login-form';
 
@@ -28,6 +29,7 @@ export class Login implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly sesion = inject(SesionState);
+  private readonly acciones = inject(SesionAcciones);
 
   protected readonly cargando = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -42,7 +44,7 @@ export class Login implements OnInit {
     this.cargando.set(true);
     this.error.set(null);
 
-    this.sesion.iniciarSesion(credenciales.usuario, credenciales.contrasena).subscribe({
+    this.acciones.iniciarSesion(credenciales.usuario, credenciales.contrasena).subscribe({
       next: () => {
         this.redireccionar();
       },

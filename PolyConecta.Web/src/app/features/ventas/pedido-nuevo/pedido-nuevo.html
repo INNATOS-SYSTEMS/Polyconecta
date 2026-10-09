@@ -253,10 +253,10 @@
                   <div class="fw-semibold">{{ l.clave }}</div>
                   <div class="small text-muted">{{ l.nombre }}</div>
                 </td>
-                <td class="text-end">{{ l.cantidad | number:'1.2-2' }}</td>
+                <td class="text-end">{{ n2(l.cantidad) }}</td>
                 <td class="text-center"><span class="badge bg-light text-dark border">{{ l.unidad }}</span></td>
-                <td class="text-end">{{ l.precioUnitario | currency:moneda():'symbol':'1.2-4' }}</td>
-                <td class="text-end fw-semibold">{{ l.subtotal | currency:moneda():'symbol':'1.2-2' }}</td>
+                <td class="text-end">{{ importe(l.precioUnitario, moneda(), 2, 4) }}</td>
+                <td class="text-end fw-semibold">{{ importe(l.subtotal, moneda()) }}</td>
                 <td class="text-center">
                   <button
                     type="button"
@@ -284,15 +284,15 @@
         <div style="width: 280px;">
           <div class="d-flex justify-content-between py-1 border-bottom">
             <span class="text-muted">Subtotal:</span>
-            <span class="fw-semibold">{{ subtotal() | currency:moneda():'symbol':'1.2-2' }}</span>
+            <span class="fw-semibold">{{ importe(subtotal(), moneda()) }}</span>
           </div>
           <div class="d-flex justify-content-between py-1 border-bottom">
             <span class="text-muted">IVA (16%):</span>
-            <span>{{ iva() | currency:moneda():'symbol':'1.2-2' }}</span>
+            <span>{{ importe(iva(), moneda()) }}</span>
           </div>
           <div class="d-flex justify-content-between py-2 fw-bold fs-5 text-primary">
             <span>Total:</span>
-            <span>{{ total() | currency:moneda():'symbol':'1.2-2' }}</span>
+            <span>{{ importe(total(), moneda()) }}</span>
           </div>
         </div>
       </div>

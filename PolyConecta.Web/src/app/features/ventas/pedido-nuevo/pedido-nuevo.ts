@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { importe, n2 } from '../../../core/format/numero';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
@@ -28,7 +28,7 @@ export interface LineaTemporal {
 
 @Component({
   selector: 'pc-pedido-nuevo',
-  imports: [CommonModule, FormsModule, OdooBreadcrumb, OdooIcon],
+  imports: [FormsModule, OdooBreadcrumb, OdooIcon],
   templateUrl: './pedido-nuevo.html',
   styles: `
     :host { display: block; }
@@ -47,6 +47,8 @@ export interface LineaTemporal {
   `,
 })
 export class PedidoNuevo implements OnInit {
+  protected readonly importe = importe;
+  protected readonly n2 = n2;
   protected readonly router = inject(Router);
   private readonly pedidosService = inject(PedidosService);
   private readonly sesion = inject(SesionState);

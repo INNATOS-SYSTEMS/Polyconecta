@@ -1,6 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OdooDialog } from '../../shared/odoo-dialog/odoo-dialog';
 import { PedidosService } from './pedidos.service';
@@ -11,7 +10,7 @@ import { PedidosService } from './pedidos.service';
  */
 @Component({
   selector: 'pc-firma-pedido',
-  imports: [CommonModule, FormsModule, OdooDialog],
+  imports: [FormsModule, OdooDialog],
   template: `
     <pc-odoo-dialog
       titulo="Autorizar pedido"

@@ -86,41 +86,4 @@ describe('SesionState', () => {
       });
     });
   });
-
-  it('iniciarSesion realiza POST /api/v1/plataforma/sesion y establece la sesión', async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => sesionEjemplo,
-    });
-
-    return new Promise<void>(resolve => {
-      sesion.iniciarSesion('ac1', 'clave123').subscribe(resultado => {
-        expect(resultado).toEqual(sesionEjemplo);
-        expect(sesion.conSesion()).toBe(true);
-        expect(globalThis.fetch).toHaveBeenCalledWith('/api/v1/plataforma/sesion', expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify({ usuario: 'ac1', contrasena: 'clave123' }),
-        }));
-        resolve();
-      });
-    });
-  });
-
-  it('cerrarSesion realiza DELETE, limpia la sesión y navega a /login', async () => {
-    sesion.establecerSesion(sesionEjemplo);
-    expect(sesion.conSesion()).toBe(true);
-
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 204,
-    });
-
-    return new Promise<void>(resolve => {
-      sesion.cerrarSesion().subscribe(() => {
-        expect(sesion.conSesion()).toBe(false);
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
-        resolve();
-      });
-    });
-  });
 });

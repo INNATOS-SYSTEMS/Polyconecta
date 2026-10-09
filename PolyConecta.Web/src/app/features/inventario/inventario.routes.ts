@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
 import { sesionGuard } from '../../core/sesion/sesion.guard';
-import { proveerServiciosHttp } from '../../core/sesion/proveedor-http';
+import { proveerClienteApi } from '../../core/sesion/proveedor-api';
 
 /** Módulo Inventario, bajo `/inventario` (D-155). Ventas tiene un alias de Inventario Actual en `/ventas/inventario`. */
 export const INVENTARIO_ROUTES: Routes = [
   {
     path: '',
     canActivate: [sesionGuard],
-    providers: [proveerServiciosHttp()],
+    providers: [proveerClienteApi()],
     children: [
       { path: '', pathMatch: 'full', loadComponent: () => import('./inventario-actual/inventario-actual').then(m => m.InventarioActual) },
       { path: 'productos', loadComponent: () => import('../catalogos/productos/productos-list/productos-list').then(m => m.ProductosList) },
