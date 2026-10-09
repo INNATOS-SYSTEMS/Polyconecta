@@ -1,0 +1,126 @@
+<div class="o_control_panel">
+  <div class="d-flex align-items-center gap-3">
+    <button
+      class="btn btn-primary"
+      [disabled]="!puedeEjecutar() || sincronizando() !== null"
+      (click)="sincronizarTodo()"
+      id="btn-sincronizar-todo"
+    >
+      @if (sincronizando() === 'todo') {
+        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        Sincronizando todo...
+      } @else {
+        Sincronizar todo
+      }
+    </button>
+    <button
+      class="btn btn-secondary"
+      [disabled]="sincronizando() !== null"
+      (click)="cargarEstados()"
+      id="btn-refrescar"
+    >
+      Actualizar
+    </button>
+    <pc-odoo-breadcrumb [items]="[{ label: 'Configuración' }, { label: 'Sincronización CONTPAQi' }]" />
+  </div>
+  <div class="d-flex align-items-center gap-2"></div>
+</div>
+
+<div class="o_form_view">
+  @if (error()) {
+    <div class="alert alert-danger mb-3" role="alert" id="alerta-error">
+      {{ error() }}
+    </div>
+  }
+  @if (exito()) {
+    <div class="alert alert-success mb-3" role="alert" id="alerta-exito">
+      {{ exito() }}
+    </div>
+  }
+
+  @if (cargando()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+  } @else {
+    <div class="o_form_sheet">
+      <div class="mb-4 border-bottom pb-3">
+        <h2 class="h4 mb-1">Catálogos sincronizados desde CONTPAQi Comercial</h2>
+        <p class="text-muted small mb-0">
+          Estado de la sincronización unidireccional automática y manual de catálogos base.
+        </p>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="tabla-sincronizacion">
+          <thead class="table-light">
+            <tr>
+              <th>Catálogo</th>
+              <th>Estado</th>
+              <th>Última corrida</th>
+              <th>Última exitosa</th>
+              <th class="text-end">Leídos</th>
+              <th class="text-end">Cambiados</th>
+              <th class="text-end">Archivados</th>
+              <th class="text-end">Duración</th>
+              <th class="text-center" style="width: 160px;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (est of estados(); track est.catalogo) {
+              <tr [attr.data-catalogo]="est.catalogo">
+                <td class="fw-semibold">
+                  {{ nombreCatalogo(est.catalogo) }}
+                </td>
+                <td>
+                  @if (est.resultado === 'Exito' || est.resultado === 'exito') {
+                    <span class="badge bg-success">Éxito</span>
+                  } @else if (est.resultado === 'Fallo' || est.resultado === 'fallo' || est.resultado === 'Error') {
+                    <span class="badge bg-danger" [title]="est.error || ''">Error</span>
+                  } @else {
+                    <span class="badge bg-secondary">Sin ejecutar</span>
+                  }
+                </td>
+                <td class="small">{{ formatearFecha(est.ultimaCorrida) }}</td>
+                <td class="small">{{ formatearFecha(est.ultimaExitosa) }}</td>
+                <td class="text-end">{{ est.leidos }}</td>
+                <td class="text-end">{{ est.cambiados }}</td>
+                <td class="text-end">{{ est.archivados }}</td>
+                <td class="text-end text-muted small">{{ est.duracionMs }} ms</td>
+                <td class="text-center">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    [disabled]="!puedeEjecutar() || sincronizando() !== null"
+                    (click)="sincronizarCatalogo(est.catalogo)"
+                    [attr.data-btn-sincronizar]="est.catalogo"
+                  >
+                    @if (sincronizando() === est.catalogo) {
+                      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                      Sincronizando...
+                    } @else {
+                      Sincronizar ahora
+                    }
+                  </button>
+                </td>
+              </tr>
+              @if (est.error) {
+                <tr class="table-danger">
+                  <td colspan="9" class="small text-danger py-1 px-3">
+                    <strong>Error:</strong> {{ est.error }}
+                  </td>
+                </tr>
+              }
+            } @empty {
+              <tr>
+                <td colspan="9" class="text-center text-muted py-4">
+                  No hay catálogos configurados.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

@@ -15,7 +15,14 @@ export interface ModuleInfo {
 const INVENTARIO: ModuleInfo = {
   name: 'Inventario',
   items: [
-    { label: 'Inventario', route: '/inventario', children: [{ label: 'Inventario Actual', route: '/inventario' }] },
+    {
+      label: 'Inventario',
+      route: '/inventario',
+      children: [
+        { label: 'Inventario Actual', route: '/inventario' },
+        { label: 'Productos', route: '/inventario/productos', permiso: 'inventario.producto.leer' },
+      ],
+    },
     {
       label: 'Operaciones',
       route: '/logistica/entregas',
@@ -33,6 +40,7 @@ const VENTAS: ModuleInfo = {
   name: 'Ventas',
   items: [
     { label: 'Pedidos', route: '/ventas/pedidos' },
+    { label: 'Clientes', route: '/ventas/clientes', permiso: 'ventas.cliente.leer' },
     { label: 'Inventario', route: '/ventas/inventario' },
   ],
 };
@@ -53,6 +61,7 @@ const CONFIGURACION: ModuleInfo = {
   items: [
     { label: 'Usuarios', route: '/plataforma/usuarios', permiso: 'plataforma.usuarios.leer' },
     { label: 'Grupos', route: '/plataforma/grupos', permiso: 'plataforma.grupos.leer' },
+    { label: 'Sincronización', route: '/plataforma/sincronizacion', permiso: 'plataforma.sincronizacion.leer' },
   ],
 };
 

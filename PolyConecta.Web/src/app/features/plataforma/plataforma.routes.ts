@@ -38,6 +38,11 @@ export const PLATAFORMA_ROUTES: Routes = [
         loadComponent: () =>
           import('./grupos/grupo-form/grupo-form').then(m => m.GrupoForm),
       },
+      {
+        path: 'sincronizacion',
+        loadComponent: () =>
+          import('./sincronizacion/sincronizacion').then(m => m.Sincronizacion),
+      },
     ],
   },
 ];
