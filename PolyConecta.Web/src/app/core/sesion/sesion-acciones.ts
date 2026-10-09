@@ -1,15 +1,33 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, from, map } from 'rxjs';
+import { Observable, defer, from, map } from 'rxjs';
 import { pedirApi, respuestaApi } from './api';
 import { EntrarRequest, Sesion } from './sesion.types';
 import { SesionState } from './sesion-state';
 
-/** Entrar y salir de la sesión (contracts/api-f1.md, Sesión). Fuera de `SesionState` para no subir la carga inicial. */
+/** Cargar, entrar y salir de la sesión (contracts/api-f1.md, Sesión). Fuera de `SesionState` para no subir la carga inicial. */
 @Injectable({ providedIn: 'root' })
 export class SesionAcciones {
   private readonly sesion = inject(SesionState);
   private readonly router = inject(Router, { optional: true });
+
+  /**
+   * Recupera la sesión de la cookie (GET /api/v1/plataforma/sesion); null si no hay. La llaman la guardia de
+   * las rutas con sesión y el menú del usuario, que carga diferido: así no entra a la carga inicial (D-143).
+   */
+  cargarSesion(): Observable<Sesion | null> {
+    return defer(async () => {
+      let sesion: Sesion | null = null;
+      try {
+        const res = await respuestaApi('/api/v1/plataforma/sesion');
+        if (res.ok) sesion = (await res.json()) as Sesion;
+      } catch {
+        // Sin API: sin sesión.
+      }
+      this.sesion.establecerSesion(sesion);
+      return sesion;
+    });
+  }
 
   /** Inicia sesión con usuario y contraseña (POST /api/v1/plataforma/sesion). */
   iniciarSesion(usuario: string, contrasena: string): Observable<Sesion> {

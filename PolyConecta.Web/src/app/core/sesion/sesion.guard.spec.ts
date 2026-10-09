@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { Observable, isObservable, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { SesionAcciones } from './sesion-acciones';
 import { SesionState } from './sesion-state';
 import { sesionGuard } from './sesion.guard';
 import { Sesion } from './sesion.types';
@@ -30,6 +31,7 @@ describe('sesionGuard', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: SesionState, useValue: mockSesion },
+        { provide: SesionAcciones, useValue: mockSesion },
         { provide: Router, useValue: mockRouter },
       ],
     });

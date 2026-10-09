@@ -28,6 +28,27 @@ describe('SesionAcciones', () => {
     vi.unstubAllGlobals();
   });
 
+  it('cargarSesion recupera la sesión de la cookie con GET /api/v1/plataforma/sesion', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(sesionEjemplo), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const resultado = await firstValueFrom(acciones.cargarSesion());
+
+    expect(resultado).toEqual(sesionEjemplo);
+    expect(sesion.usuario().usuario).toBe('ac1');
+    expect(fetchMock).toHaveBeenCalledWith('/api/v1/plataforma/sesion', expect.objectContaining({ credentials: 'same-origin' }));
+  });
+
+  it('cargarSesion devuelve null y deja sin sesión ante un 401 o sin API', async () => {
+    sesion.establecerSesion(sesionEjemplo);
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 401 })));
+    expect(await firstValueFrom(acciones.cargarSesion())).toBeNull();
+    expect(sesion.conSesion()).toBe(false);
+
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('sin red')));
+    expect(await firstValueFrom(acciones.cargarSesion())).toBeNull();
+  });
+
   it('iniciarSesion realiza POST /api/v1/plataforma/sesion y establece la sesión', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(sesionEjemplo), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);

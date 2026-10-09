@@ -55,6 +55,10 @@ export class OdooSystray {
   private readonly host = inject(ElementRef<HTMLElement>);
   protected readonly sesion = inject(SesionState);
   private readonly acciones = inject(SesionAcciones);
+
+  constructor() {
+    if (!this.sesion.conSesion()) this.acciones.cargarSesion().subscribe();
+  }
   protected readonly abierto = signal(false);
 
   /** Un clic fuera o Esc cierran el menú del usuario. */

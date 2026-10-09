@@ -51,39 +51,4 @@ describe('SesionState', () => {
     expect(sesion.tienePermiso('ventas.pedidos.crear')).toBe(true);
     expect(sesion.tienePermiso('ventas.pedidos.eliminar')).toBe(false);
   });
-
-  it('cargarSesion recupera sesión con cookie activa vía GET /api/v1/plataforma/sesion', async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => sesionEjemplo,
-    });
-
-    return new Promise<void>(resolve => {
-      sesion.cargarSesion().subscribe(resultado => {
-        expect(resultado).toEqual(sesionEjemplo);
-        expect(sesion.conSesion()).toBe(true);
-        expect(sesion.usuario().usuario).toBe('ac1');
-        expect(globalThis.fetch).toHaveBeenCalledWith('/api/v1/plataforma/sesion', expect.objectContaining({
-          headers: { 'X-Requested-With': 'PolyConecta' },
-          credentials: 'same-origin',
-        }));
-        resolve();
-      });
-    });
-  });
-
-  it('cargarSesion devuelve null y limpia estado si la respuesta no es exitosa (401)', async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 401,
-    });
-
-    return new Promise<void>(resolve => {
-      sesion.cargarSesion().subscribe(resultado => {
-        expect(resultado).toBeNull();
-        expect(sesion.conSesion()).toBe(false);
-        resolve();
-      });
-    });
-  });
 });

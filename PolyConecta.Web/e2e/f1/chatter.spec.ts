@@ -12,6 +12,8 @@ async function entrar(browser: Browser, usuario: string): Promise<Page> {
   await entrarComo(contexto, usuario);
   const page = await contexto.newPage();
   await page.goto(`${ANGULAR}/`);
+  // La sesión llega con el menú del usuario, diferido; antes se ve el usuario de respaldo de la réplica.
+  await expect(page.locator('.o_user_name')).toHaveText(/^(?!Alejandro Porras$).+/);
   return page;
 }
 

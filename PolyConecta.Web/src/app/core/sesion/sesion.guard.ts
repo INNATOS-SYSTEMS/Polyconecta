@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
+import { SesionAcciones } from './sesion-acciones';
 import { SesionState } from './sesion-state';
 
 /**
@@ -10,13 +11,14 @@ import { SesionState } from './sesion-state';
  */
 export const sesionGuard: CanActivateFn = (_route, state) => {
   const sesion = inject(SesionState);
+  const acciones = inject(SesionAcciones);
   const router = inject(Router);
 
   if (sesion.conSesion()) {
     return true;
   }
 
-  return sesion.cargarSesion().pipe(
+  return acciones.cargarSesion().pipe(
     map(s => {
       if (s) {
         return true;

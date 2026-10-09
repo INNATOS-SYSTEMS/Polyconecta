@@ -49,9 +49,7 @@ export class OdooTopbar {
   });
 
   constructor() {
-    if (!this.sesion.conSesion()) {
-      this.sesion.cargarSesion().subscribe();
-    }
+    // La sesión la carga el menú del usuario (diferido) o la guardia: los menús con permiso aparecen al llegar.
     // Al navegar se cierra cualquier menú abierto, como en OnLocationChanged.
     this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => this.menuAbierto.set(null));
   }
