@@ -113,6 +113,8 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 
 **Aspecto de todo campo capturable**: solo una **línea inferior** y fondo **transparente**, sin caja, antes y después de enfocarlo; al enfocarlo, la línea toma el color primario; con error, la línea es roja y el motivo va debajo. Lo extra del campo (signo de moneda, código de moneda, unidad, ícono del calendario) va en gris, sobre la misma línea. Es la clase `o_field` de `app.css` (y `o_inline_input` para un `input` suelto).
 
+**Espaciado (D-159):** en captura el maestro mide lo mismo que en solo lectura: el campo no agrega altura al renglón (unos 29 px), en todos los formularios.
+
 En solo lectura el campo es texto sin línea. Todos funcionan con formularios de Angular (`ngModel` o formularios reactivos).
 
 ### 1.6 bis Nombre de producto (D-141)
@@ -137,13 +139,15 @@ Todo producto se muestra como **"Clave - Nombre"**: en campos, tablas, tarjetas,
 
 - **Quién lo lleva:** solo los documentos que envían un comando del contrato `bridge-v1` (CT-13): pedido (`ALTA_PEDIDO`), orden de fabricación al cerrar (`CIERRE_PRODUCCION`), recolección, devolución, traslado y recepción (`TRASPASO`) y entrega (`REMISION`). Control de calidad e incidencias **no** lo llevan.
 - **Dónde va:** en la barra de acciones del formulario, en su extremo derecho, en la misma línea que Confirmar y Cancelar. No empuja el chatter hacia abajo.
-- **Cómo se ve:** un **ícono** redondo, con el color y el ícono del estado, sin texto. Al pulsarlo abre un popover con el título del estado, su explicación y el detalle: folio e id de CONTPAQi al confirmar, código y mensaje del contrato en error.
+- **Cómo se ve:** un **ícono** redondo, con el color y el ícono del estado, sin texto. Al pulsarlo abre un popover con el título del estado, su explicación y el detalle: folio e id de CONTPAQi al confirmar, código y mensaje del contrato en error. El id de CONTPAQi solo se ve aquí: el maestro del documento no lo muestra (D-162).
 - **Estados:** `No aplica`, `Pendiente`, `Enviado`, `Confirmado` y `Error`.
 - **Reintentar:** dentro del popover, solo en `Error` y solo para Sistemas (D-93).
 - **Uso:** F1 lo conecta; en la réplica ningún documento sincroniza.
-### 1.9 Asignación de permisos en dos paneles (`pc-odoo-dual-list`, D-148, CT-24)
+- **Implementación:** `pc-odoo-sync-status`.
 
-Selector dual en árbol para administrar permisos de grupos. Presenta dos paneles: "Permisos disponibles" (izquierda) y "Permisos asignados" (derecha), agrupados jerárquicamente en **Módulo › Documento o funcionalidad › Acción**.
+### 1.9 Asignación de permisos en dos paneles (`pc-odoo-dual-list`, D-148, D-163, CT-24)
+
+Selector dual en árbol para administrar permisos de grupos, dentro de la pestaña "Permisos" del formulario del grupo. Se compone con piezas de 07: cada panel es un `o_section_card` con su encabezado y una `o_search_bar`, y los botones de transferencia son secundarios (`btn btn-outline-secondary`). Presenta dos paneles: "Permisos disponibles" (izquierda) y "Permisos asignados" (derecha), agrupados jerárquicamente en **Módulo › Documento o funcionalidad › Acción**.
 
 **Anatomía**:
 - **Panel izquierdo (Disponibles)**: encabezado con título y contador de acciones disponibles, caja de búsqueda en tiempo real, contenedor con scroll y árbol jerárquico desplegable.
@@ -166,22 +170,6 @@ Selector dual en árbol para administrar permisos de grupos. Presenta dos panele
 - Emite la lista final completa de claves asignadas (`string[]`).
 - Implementación: `pc-odoo-dual-list`.
 
-### 1.10 Formulario de inicio de sesión (`pc-odoo-login-form`, CT-24)
-
-Tarjeta de autenticación centrada para acceder a PolyConecta.
-
-**Anatomía**:
-- Tarjeta de 400 px con radio de 10 px y sombra suave.
-- Título institucional ("PolyConecta") y subtítulo instructivo.
-- Alerta de error en rojo (`[data-login-error]`) ante credenciales incorrectas o bloqueo.
-- Campos: Usuario (texto con autocompletado `username`) y Contraseña (`password` con autocompletado `current-password`).
-- Botón primario de ancho completo: deshabilitado si faltan campos; en estado de carga muestra indicador de spinner y texto "Iniciando sesión...".
-
-**Comportamientos y accesibilidad**:
-- Tecla Enter en cualquier campo envía el formulario.
-- Entradas deshabilitadas mientras la petición de autenticación está en progreso.
-- Implementación: `pc-odoo-login-form` (utilizado en la ruta `/login` y adaptable en diálogos).
-
 ---
 
 ## 2. Piezas
@@ -192,7 +180,7 @@ Tarjeta de autenticación centrada para acceder a PolyConecta.
 
 | Botón | Clases | Uso |
 | :--- | :--- | :--- |
-| Primario | `btn btn-primary` | Una acción principal por barra. Solo texto: "Nuevo", "Confirmar" y "Agregar" no llevan ícono |
+| Primario | `btn btn-primary` | Una acción principal por barra. Solo texto: "Nuevo", "Confirmar", "Agregar" y "Guardar" no llevan ícono (D-158) |
 | Secundario | `btn btn-outline-secondary` | Cancelar, descartar y acciones secundarias |
 | Ícono | `btn o_btn_icon` + `aria-label` | Acciones de línea y de tabla |
 | Cargando | `o_btn_loading` + ícono `cargando` | Mientras la acción corre |
@@ -224,7 +212,7 @@ Tarjeta de autenticación centrada para acceder a PolyConecta.
 
 ### 2.3 bis Íconos de módulo (Inicio, D-144)
 
-Cada módulo tiene un cuadro de 88 px con radio de 18 px: fondo muy claro de su color, ícono en su tono oscuro y borde de 1 px en un tono intermedio. Ventas en verde azulado, Fabricación en el índigo de PolyConecta, Calidad en verde e Inventario en ocre. El color va en el trazo, no en un fondo saturado.
+Cada módulo tiene un cuadro de 88 px con radio de 18 px: fondo muy claro de su color, ícono en su tono oscuro y borde de 1 px en un tono intermedio. Ventas en verde azulado, Fabricación en el índigo de PolyConecta, Calidad en verde, Inventario en ocre y Configuración en gris, con el ícono `configuracion` del catálogo (D-163). El color va en el trazo, no en un fondo saturado.
 
 | Módulo | Fondo | Ícono | Borde |
 | :--- | :--- | :--- | :--- |
@@ -232,6 +220,7 @@ Cada módulo tiene un cuadro de 88 px con radio de 18 px: fondo muy claro de su 
 | Fabricación | `#E8EAF6` | `#2E3889` | `#D3D7EE` |
 | Calidad | `#E4F1EA` | `#276B47` | `#CBE4D6` |
 | Inventario | `#F4ECE1` | `#80552A` | `#E6D6C0` |
+| Configuración | `#EEF0F4` | `#374151` | `#D5D8E1` |
 
 ### 2.4 Páginas vacías
 
