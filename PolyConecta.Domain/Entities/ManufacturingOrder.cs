@@ -22,8 +22,8 @@ public class ManufacturingOrder
     public decimal ScrapQty { get; set; } = 0.0m;
 
     public string State { get; set; } = "Draft"; // "Draft", "Approved", "Progress", "To_Close", "Done", "Cancel"
-    public bool SalesApproved { get; set; } = false;
-    public bool CreditApproved { get; set; } = false;
+    public bool SalesApproved { get; set; }
+    public bool CreditApproved { get; set; }
 
     public string WorkCenterId { get; set; } = string.Empty; // Machine ID
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

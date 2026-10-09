@@ -15,3 +15,49 @@ dotnet_diagnostic.CS8600.severity = warning
 dotnet_diagnostic.CS8601.severity = warning
 dotnet_diagnostic.CS8602.severity = warning
 dotnet_diagnostic.CS8603.severity = warning
+
+# Pruebas: los nombres llevan guion bajo (Metodo_Caso_Resultado) y no se miden por rendimiento ni por
+# configuración regional. El token de cancelación de xUnit no aporta en pruebas que duran milisegundos.
+[tests/**.cs]
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.xUnit1051.severity = none
+dotnet_diagnostic.CA1051.severity = none
+dotnet_diagnostic.CA1305.severity = none
+dotnet_diagnostic.CA1816.severity = none
+dotnet_diagnostic.CA1826.severity = none
+dotnet_diagnostic.CA1852.severity = none
+dotnet_diagnostic.CA1860.severity = none
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.CA1869.severity = none
+dotnet_diagnostic.CA1875.severity = none
+
+# Migraciones: código generado por EF Core; no se edita a mano.
+[**/Migrations/**.cs]
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1861.severity = none
+
+# Configuraciones de EF: el parámetro del constructor de entidad se llama b en todo el proyecto.
+[**/Persistence/Configurations/**.cs]
+dotnet_diagnostic.CA1725.severity = none
+
+# Prototipo de referencia (D-60): no se modifica.
+[PolyConecta.Presentation/**]
+dotnet_analyzer_diagnostic.severity = none
+dotnet_diagnostic.CA1305.severity = none
+
+# Interop con el SDK de CONTPAQi: las firmas copian las del SDK (nombres, marshaling y P/Invoke públicos).
+[PolyConecta.Contpaq/Infrastructure/Sdk/ContpaqiSdkNative.cs]
+dotnet_diagnostic.CA1401.severity = none
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1838.severity = none
+dotnet_diagnostic.CA2101.severity = none
+
+# Entidades previas a F0 que aún usan el Product legado: se retiran cuando su fase las rediseñe (R-08).
+[{PolyConecta.Domain/Entities/**.cs,PolyConecta.Domain/Repositories/IMaterialRepository.cs,PolyConecta.Infrastructure/Repositories/MaterialRepository.cs}]
+dotnet_diagnostic.CS0618.severity = none
+
+# Nombres del modelo de seguridad y de eventos (04-modelo-de-dominio.md): Permission, GroupPermission y
+# Object (modulo.objeto.accion) son los del modelo; IDomainEventHandler es el nombre del patrón.
+[{PolyConecta.Domain/Plataforma/Seguridad/**.cs,PolyConecta.Domain/Events/IDomainEventPublisher.cs}]
+dotnet_diagnostic.CA1711.severity = none
+dotnet_diagnostic.CA1720.severity = none

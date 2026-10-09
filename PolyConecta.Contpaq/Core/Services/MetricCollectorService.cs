@@ -11,12 +11,12 @@ namespace Contpaq.Bridge.Core.Services
 {
     public static class PerformanceMetrics
     {
-        private static long _totalReadOps = 0;
-        private static long _totalWriteOps = 0;
-        private static long _readOpsInCurrentWindow = 0;
-        private static long _writeOpsInCurrentWindow = 0;
-        private static double _totalQueryLatencyMs = 0;
-        private static long _queryCount = 0;
+        private static long _totalReadOps;
+        private static long _totalWriteOps;
+        private static long _readOpsInCurrentWindow;
+        private static long _writeOpsInCurrentWindow;
+        private static double _totalQueryLatencyMs;
+        private static long _queryCount;
 
         public static long TotalReadOps => Interlocked.Read(ref _totalReadOps);
         public static long TotalWriteOps => Interlocked.Read(ref _totalWriteOps);
@@ -50,8 +50,8 @@ namespace Contpaq.Bridge.Core.Services
         private readonly IHubContext<DashboardHub> _dashboardHub;
 
         public static double AverageSdkLatencyMs { get; set; } = 12.5;
-        public static double ErrorRatePercent { get; set; } = 0.0;
-        public static bool IsSdkSessionActive { get; set; } = false;
+        public static double ErrorRatePercent { get; set; }
+        public static bool IsSdkSessionActive { get; set; }
         public static string CircuitState { get; set; } = "CLOSED";
 
         public MetricCollectorService(IOutboxRepository outboxRepository, IHubContext<DashboardHub> dashboardHub)

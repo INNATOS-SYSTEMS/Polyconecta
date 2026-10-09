@@ -28,12 +28,12 @@ public class ChatterHub(IUseCase<PublicarMensaje, MensajeChatterDto> publicar) :
     /// <summary>Pantallas que siguen en memoria (folio, sin guardar) hasta que su fase las conecte (R-04).</summary>
     public async Task SendMessage(string documentId, string author, string text)
     {
-        await Clients.All.SendAsync("ReceiveChatterMessage", documentId, author, text, DateTime.UtcNow.ToString("g"));
+        await Clients.All.SendAsync("ReceiveChatterMessage", documentId, author, text, DateTime.UtcNow.ToString("g", System.Globalization.CultureInfo.CurrentCulture));
     }
 }
 
 /// <summary>Transmite al grupo de su documento los mensajes encolados, después del <c>Commit</c> (R-04).</summary>
-public sealed class ChatterNotificadorSignalR(IHubContext<ChatterHub> hub, ILogger<ChatterNotificadorSignalR> log) : IChatterNotificador
+public sealed partial class ChatterNotificadorSignalR(IHubContext<ChatterHub> hub, ILogger<ChatterNotificadorSignalR> log) : IChatterNotificador
 {
     private readonly List<Domain.Plataforma.Chatter.ChatterMessage> _pendientes = [];
 
@@ -55,8 +55,11 @@ public sealed class ChatterNotificadorSignalR(IHubContext<ChatterHub> hub, ILogg
             catch (Exception e) when (e is not OperationCanceledException)
             {
                 // Ya está guardado: quien abra el documento lo verá en el historial.
-                log.LogWarning(e, "No se transmitió el mensaje {Id} del chatter", m.Id);
+                LogNoTransmitido(log, e, m.Id);
             }
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "No se transmitió el mensaje {Id} del chatter")]
+    private static partial void LogNoTransmitido(ILogger logger, Exception error, long id);
 }

@@ -144,7 +144,7 @@ public sealed class FlexibleStringListConverter : JsonConverter<IReadOnlyList<st
             }
             else if (reader.TokenType == JsonTokenType.Number)
             {
-                list.Add(reader.GetInt64().ToString());
+                list.Add(reader.GetInt64().ToString(System.Globalization.CultureInfo.InvariantCulture));
             }
         }
         return list;

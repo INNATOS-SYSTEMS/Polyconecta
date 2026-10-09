@@ -18,7 +18,7 @@ namespace Contpaq.Bridge.Tests.Sdk
     public class VigilanteTests
     {
         [Fact]
-        public void Una_llamada_que_no_regresa_dispara_el_aviso_con_la_llamada_y_la_transaccion_en_curso()
+        public async Task Una_llamada_que_no_regresa_dispara_el_aviso_con_la_llamada_y_la_transaccion_en_curso()
         {
             var nativo = new SdkNativoFalso { BloquearAbreEmpresa = new ManualResetEventSlim(false) };
             var vigilante = new VigilanteSdk(TimeSpan.FromMilliseconds(100), TimeProvider.System)
@@ -31,13 +31,14 @@ namespace Contpaq.Bridge.Tests.Sdk
 
             var llamada = Task.Run(() => vigilado.AbreEmpresa(@"C:\Empresa"));
 
-            Assert.True(aviso.Task.Wait(TimeSpan.FromSeconds(5)), "el vigilante debe avisar mientras la llamada sigue bloqueada");
+            // El vigilante debe avisar mientras la llamada sigue bloqueada.
+            var (nombre, contexto) = await aviso.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Assert.False(llamada.IsCompleted, "la llamada nativa sigue bloqueada: no se aborta");
-            Assert.Equal("AbreEmpresa", aviso.Task.Result.Llamada);
-            Assert.Equal("corr-1", aviso.Task.Result.Contexto!.CorrelationId);
+            Assert.Equal("AbreEmpresa", nombre);
+            Assert.Equal("corr-1", contexto!.CorrelationId);
 
             nativo.BloquearAbreEmpresa.Set();
-            Assert.True(llamada.Wait(TimeSpan.FromSeconds(5)));
+            await llamada.WaitAsync(TimeSpan.FromSeconds(5));
         }
 
         [Fact]

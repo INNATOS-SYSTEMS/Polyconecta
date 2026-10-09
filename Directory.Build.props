@@ -5,4 +5,8 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
+  <!-- El prototipo Blazor no se modifica (D-60): sus avisos del compilador en .razor no se corrigen. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'PolyConecta.Presentation'">
+    <NoWarn>$(NoWarn);CS0414</NoWarn>
+  </PropertyGroup>
 </Project>

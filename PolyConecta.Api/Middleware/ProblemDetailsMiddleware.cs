@@ -12,7 +12,7 @@ namespace PolyConecta.Api.Middleware;
 /// 400 VALIDACION (con <c>errores[]</c>), 403 PERMISO_DENEGADO y 409 TRANSICION_INVALIDA,
 /// DOCUMENTO_MODIFICADO o el de la regla, siempre con la <c>razon</c> que pinta la interfaz (CT-26).
 /// </summary>
-public class ProblemDetailsMiddleware(RequestDelegate next, ILogger<ProblemDetailsMiddleware> logger)
+public partial class ProblemDetailsMiddleware(RequestDelegate next, ILogger<ProblemDetailsMiddleware> logger)
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -26,9 +26,9 @@ public class ProblemDetailsMiddleware(RequestDelegate next, ILogger<ProblemDetai
         {
             var (estado, codigo, razon) = Traducir(ex);
             if (estado >= HttpStatusCode.InternalServerError)
-                logger.LogError(ex, "Excepción no controlada: {Mensaje}", ex.Message);
+                LogNoControlada(logger, ex, ex.Message);
             else
-                logger.LogInformation("Petición rechazada {Codigo}: {Mensaje}", codigo, ex.Message);
+                LogRechazada(logger, codigo, ex.Message);
             await EscribirAsync(context, ex, estado, codigo, razon);
         }
     }
@@ -73,4 +73,10 @@ public class ProblemDetailsMiddleware(RequestDelegate next, ILogger<ProblemDetai
 
         return context.Response.WriteAsync(JsonSerializer.Serialize(problem, Json));
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Excepción no controlada: {Mensaje}")]
+    private static partial void LogNoControlada(ILogger logger, Exception error, string mensaje);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Petición rechazada {Codigo}: {Mensaje}")]
+    private static partial void LogRechazada(ILogger logger, string codigo, string mensaje);
 }

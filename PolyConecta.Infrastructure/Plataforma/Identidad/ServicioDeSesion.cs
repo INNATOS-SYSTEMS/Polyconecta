@@ -29,8 +29,7 @@ public enum ResultadoEntrada
 public sealed class ServicioDeSesion(
     PolyDbContext db,
     SignInManager<CredencialUsuario> entrada,
-    UserManager<CredencialUsuario> credenciales,
-    IPermisosDelUsuario permisos)
+    UserManager<CredencialUsuario> credenciales)
 {
     public async Task<(ResultadoEntrada Resultado, long? UserId)> EntrarAsync(string usuario, string contrasena, CancellationToken ct)
     {

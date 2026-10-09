@@ -60,13 +60,13 @@ public sealed class EstadosDeSincronizacion(PolyDbContext db) : IEstadosDeSincro
 
 public sealed class CatalogSyncStateConfiguration : IEntityTypeConfiguration<CatalogSyncState>
 {
-    public void Configure(EntityTypeBuilder<CatalogSyncState> b)
+    public void Configure(EntityTypeBuilder<CatalogSyncState> builder)
     {
-        b.ToTable("catalog_sync_state", "plt");
-        b.HasKey(x => x.Catalog);
-        b.Property(x => x.Catalog).HasMaxLength(20);
-        b.Property(x => x.LastResult).HasConversion<string>().HasMaxLength(10);
-        b.Property(x => x.LastError).HasMaxLength(1000);
+        builder.ToTable("catalog_sync_state", "plt");
+        builder.HasKey(x => x.Catalog);
+        builder.Property(x => x.Catalog).HasMaxLength(20);
+        builder.Property(x => x.LastResult).HasConversion<string>().HasMaxLength(10);
+        builder.Property(x => x.LastError).HasMaxLength(1000);
     }
 }
 

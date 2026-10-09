@@ -49,7 +49,7 @@ namespace Contpaq.Bridge.Simulated
             {
                 CargaTraspaso => Documentos(comando, "salida", "entrada"),
                 CargaCierreProduccion c => Documentos(comando,
-                    new[] { "consumo", "entrada" }.Concat(c.Subproductos!.Count > 0 ? new[] { "subproducto" } : new string[0]).ToArray()),
+                    c.Subproductos!.Count > 0 ? ["consumo", "entrada", "subproducto"] : ["consumo", "entrada"]),
                 CargaAltaPedido => Unico(comando, "pedido"),
                 CargaRemision m => Remision(comando, m),
                 CargaAltaAlmacen a => AltaAlmacen(a),

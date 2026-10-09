@@ -85,7 +85,7 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
         }
 
         public async Task<ClienteContrato?> ClienteAsync(string codigo) =>
-            (await ClientesConDomiciliosAsync($"SELECT * FROM ({SqlLecturas.Clientes}) x WHERE x.Codigo = @codigo;", new { codigo })).FirstOrDefault();
+            (await ClientesConDomiciliosAsync($"SELECT * FROM ({SqlLecturas.Clientes}) x WHERE x.Codigo = @codigo;", new { codigo })) is [var primero, ..] ? primero : null;
 
         /// <summary>Lee los clientes y, en una sola consulta más, los domicilios de todos los de la página.</summary>
         private async Task<IReadOnlyList<ClienteContrato>> ClientesConDomiciliosAsync(string sql, object parametros)
@@ -130,7 +130,7 @@ namespace Contpaq.Bridge.Infrastructure.Persistence
             await ConsultarAsync<AlmacenContrato>($"{SqlLecturas.Almacenes} ORDER BY CCODIGOALMACEN;", null);
 
         public async Task<AlmacenContrato?> AlmacenAsync(string codigo) =>
-            (await ConsultarAsync<AlmacenContrato>($"{SqlLecturas.Almacenes} WHERE CCODIGOALMACEN = @codigo;", new { codigo })).FirstOrDefault();
+            (await ConsultarAsync<AlmacenContrato>($"{SqlLecturas.Almacenes} WHERE CCODIGOALMACEN = @codigo;", new { codigo })) is [var primero, ..] ? primero : null;
 
         /// <summary>
         /// Existencias de varios productos, en la unidad base: por lote para los que llevan lote (F-02) y

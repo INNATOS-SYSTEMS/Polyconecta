@@ -71,7 +71,7 @@ public sealed class GuardarFavoritoCaso(IFavoritos favoritos, ICurrentUser usuar
         SavedSearch favorito;
         try
         {
-            favorito = existentes.FirstOrDefault(f => string.Equals(f.Name, nombre, StringComparison.CurrentCultureIgnoreCase))
+            favorito = existentes.FirstOrDefault(f => string.Equals(f.Name, nombre, StringComparison.OrdinalIgnoreCase))
                 ?? new SavedSearch(usuarioId, llave, nombre, definicion, false, reloj.Now);
             favorito.Renombrar(nombre);
             favorito.CambiarDefinicion(definicion);
@@ -99,7 +99,7 @@ public sealed class BorrarFavoritoCaso(IFavoritos favoritos, ICurrentUser usuari
     public async Task<Unit> ExecuteAsync(BorrarFavorito request, CancellationToken cancellationToken = default)
     {
         var existentes = await favoritos.DelUsuarioAsync(Favorito.Usuario(usuario), Favorito.LlaveValida(request.LlaveLista), cancellationToken);
-        var favorito = existentes.FirstOrDefault(f => string.Equals(f.Name, request.Nombre?.Trim(), StringComparison.CurrentCultureIgnoreCase))
+        var favorito = existentes.FirstOrDefault(f => string.Equals(f.Name, request.Nombre?.Trim(), StringComparison.OrdinalIgnoreCase))
             ?? throw new KeyNotFoundException($"No existe el favorito {request.Nombre}.");
         favoritos.Quitar(favorito);
         await uow.SaveChangesAsync(cancellationToken);

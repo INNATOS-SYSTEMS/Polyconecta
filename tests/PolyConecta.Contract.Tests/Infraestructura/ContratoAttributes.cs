@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace PolyConecta.Contract.Tests.Infraestructura;
@@ -16,7 +17,8 @@ public static class Activacion
 
 public sealed class ContratoFactAttribute : FactAttribute
 {
-    public ContratoFactAttribute()
+    public ContratoFactAttribute([CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+        : base(sourceFilePath, sourceLineNumber)
     {
         Skip = Activacion.Motivo;
         SkipType = typeof(Activacion);
@@ -26,7 +28,8 @@ public sealed class ContratoFactAttribute : FactAttribute
 
 public sealed class ContratoTheoryAttribute : TheoryAttribute
 {
-    public ContratoTheoryAttribute()
+    public ContratoTheoryAttribute([CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+        : base(sourceFilePath, sourceLineNumber)
     {
         Skip = Activacion.Motivo;
         SkipType = typeof(Activacion);

@@ -1,7 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using PolyConecta.Application.Plataforma.Folios;
-using PolyConecta.Tests.Compartido;
 using PolyConecta.Domain.Plataforma;
 using PolyConecta.Infrastructure.Plataforma;
 using PolyConecta.Tests.Compartido;

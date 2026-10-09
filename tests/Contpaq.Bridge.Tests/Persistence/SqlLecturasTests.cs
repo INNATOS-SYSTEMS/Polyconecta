@@ -84,7 +84,7 @@ namespace Contpaq.Bridge.Tests.Persistence
         {
             Assert.Contains("BETWEEN x.CFECINIPERIODO1 AND x.CFECHAFINAL", SqlLecturas.ExistenciasPorProducto);
             Assert.DoesNotContain("ISNULL(", SqlLecturas.EjercicioVigente);
-            Assert.Equal(1, Regex.Matches(SqlLecturas.ExistenciasPorProducto, "admEjercicios").Count);
+            Assert.Single(Regex.Matches(SqlLecturas.ExistenciasPorProducto, "admEjercicios"));
         }
 
         [Fact]

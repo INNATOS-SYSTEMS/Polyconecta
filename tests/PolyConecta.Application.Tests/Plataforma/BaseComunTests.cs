@@ -1,6 +1,5 @@
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
-using PolyConecta.Tests.Compartido;
 using PolyConecta.Domain.Common;
 using PolyConecta.Tests.Compartido;
 using Xunit;

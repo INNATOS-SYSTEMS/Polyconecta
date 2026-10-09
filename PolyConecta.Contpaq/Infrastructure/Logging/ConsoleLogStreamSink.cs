@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using Contpaq.Bridge.Core.Models;
 using Contpaq.Bridge.Core.Services;
@@ -32,7 +33,7 @@ namespace Contpaq.Bridge.Infrastructure.Logging
                 };
 
                 using var writer = new StringWriter();
-                logEvent.RenderMessage(writer);
+                logEvent.RenderMessage(writer, CultureInfo.InvariantCulture);
                 var message = writer.ToString();
 
                 string? sourceContext = null;
@@ -40,7 +41,7 @@ namespace Contpaq.Bridge.Infrastructure.Logging
                 {
                     sourceContext = ctxValue.ToString().Trim('"');
                     // Shorten namespace prefix for cleaner display
-                    if (sourceContext.StartsWith("Contpaq.Bridge."))
+                    if (sourceContext.StartsWith("Contpaq.Bridge.", StringComparison.Ordinal))
                     {
                         sourceContext = sourceContext.Substring("Contpaq.Bridge.".Length);
                     }
@@ -48,7 +49,7 @@ namespace Contpaq.Bridge.Infrastructure.Logging
 
                 var entry = new ConsoleLogEntry
                 {
-                    Timestamp = logEvent.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff"),
+                    Timestamp = logEvent.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture),
                     Level = level,
                     SourceContext = sourceContext ?? "",
                     Message = message,

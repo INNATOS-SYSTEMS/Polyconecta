@@ -8,9 +8,9 @@ public sealed class PruebasDbContext(DbContextOptions<PolyDbContext> options) : 
 {
     public DbSet<DocumentoDePrueba> Documentos => Set<DocumentoDePrueba>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        modelBuilder.Entity<DocumentoDePrueba>(b =>
+        builder.Entity<DocumentoDePrueba>(b =>
         {
             b.ToTable("documento_de_prueba", "prueba");
             b.Property(x => x.Folio).HasMaxLength(50);
@@ -24,7 +24,7 @@ public sealed class PruebasDbContext(DbContextOptions<PolyDbContext> options) : 
             b.Property(x => x.ModifiedBy).HasMaxLength(100);
             b.OwnsSyncState();
         });
-        base.OnModelCreating(modelBuilder);
+        base.OnModelCreating(builder);
     }
 
     /// <summary>

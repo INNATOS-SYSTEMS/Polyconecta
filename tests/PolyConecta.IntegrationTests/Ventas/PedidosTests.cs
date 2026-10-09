@@ -648,4 +648,39 @@ public class PedidosTests(SqlServerFixture sql)
         errEditCanc["code"]!.GetValue<string>().Should().Be("TRANSICION_INVALIDA");
         errEditCanc["razon"]!.GetValue<string>().Should().Be("Un pedido Cancelado no se edita.");
     }
+
+    [Fact]
+    public async Task Archivar_en_CONTPAQi_el_producto_y_el_cliente_no_quita_lineas_ni_pedidos()
+    {
+        var ctx = await LevantarAsync(sql);
+        await using var _ = ctx.Api;
+
+        var creado = await JsonAsync(await ctx.Ac.PostAsJsonAsync("/api/v1/ventas/pedidos", new
+        {
+            clienteId = ctx.Cat.Emm,
+            fechaPedido = "2026-10-13",
+            moneda = "USD",
+            lineas = new[]
+            {
+                new { id = (long?)null, productoId = ctx.Cat.Bolsa, cantidad = 1200m, precioUnitario = (decimal?)0.85m, metaProduccionKg = (decimal?)null, toleranciaPorcentaje = (decimal?)null },
+                new { id = (long?)null, productoId = ctx.Cat.Pebd, cantidad = 50m, precioUnitario = (decimal?)1.10m, metaProduccionKg = (decimal?)null, toleranciaPorcentaje = (decimal?)null },
+            }
+        }));
+        var pedidoId = creado["id"]!.GetValue<long>();
+        var folio = creado["folio"]!.GetValue<string>();
+
+        await using (var db = ctx.Entorno.Contexto())
+        {
+            (await db.Productos.SingleAsync(p => p.Id == ctx.Cat.Bolsa)).ArchivarPorErp();
+            (await db.Clientes.SingleAsync(c => c.Id == ctx.Cat.Emm)).ArchivarPorErp();
+            await db.SaveChangesAsync();
+        }
+
+        var pedido = await JsonAsync(await ctx.Ac.GetAsync($"/api/v1/ventas/pedidos/{pedidoId}"));
+        pedido["lineas"]!.AsArray().Should().HaveCount(2);
+        pedido["cliente"]!["id"]!.GetValue<long>().Should().Be(ctx.Cat.Emm);
+
+        var conjunto = await JsonAsync(await ctx.Admin.PostAsJsonAsync("/api/v1/ventas/pedidos/conjunto", new { }));
+        conjunto["filas"]!.AsArray().Select(f => f!["folio"]!.GetValue<string>()).Should().Contain(folio);
+    }
 }

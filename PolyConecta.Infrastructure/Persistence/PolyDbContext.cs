@@ -19,7 +19,9 @@ public class PolyDbContext : IdentityUserContext<CredencialUsuario, long>
     public PolyDbContext(DbContextOptions<PolyDbContext> options) : base(options) { }
 
     // Odoo-Native Core DbSets
+#pragma warning disable CS0618 // Product legado: se retira con su fase (R-08).
     public DbSet<Product> Products => Set<Product>();
+#pragma warning restore CS0618
     public DbSet<StockLot> StockLots => Set<StockLot>();
     public DbSet<ManufacturingOrder> ManufacturingOrders => Set<ManufacturingOrder>();
     public DbSet<Bom> Boms => Set<Bom>();
@@ -62,30 +64,35 @@ public class PolyDbContext : IdentityUserContext<CredencialUsuario, long>
     public DbSet<RawMaterialCatalog> RawMaterialCatalogs => Set<RawMaterialCatalog>();
     public DbSet<SupplierProductMapping> SupplierProductMappings => Set<SupplierProductMapping>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    // Las entidades previas a F0 no fijan la precisión de sus decimales: se hace explícita la que ya tienen en
+    // la base, decimal(18,2). Cada fase fija la suya al rehacerlas (04-modelo-de-dominio.md).
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder) =>
+        configurationBuilder.Properties<decimal>().HavePrecision(18, 2);
+
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(modelBuilder);
+        base.OnModelCreating(builder);
 
         // Las transiciones pendientes viven en memoria hasta guardarse en StateTransitionLog.
-        modelBuilder.Ignore<TransicionRegistrada>();
+        builder.Ignore<TransicionRegistrada>();
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(PolyDbContext).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(PolyDbContext).Assembly);
 
         // Identity reducida a credenciales, en plt (R-01).
-        modelBuilder.Entity<IdentityUserClaim<long>>().ToTable("user_credential_claim", "plt");
-        modelBuilder.Entity<IdentityUserLogin<long>>().ToTable("user_credential_login", "plt");
-        modelBuilder.Entity<IdentityUserToken<long>>().ToTable("user_credential_token", "plt");
+        builder.Entity<IdentityUserClaim<long>>().ToTable("user_credential_claim", "plt");
+        builder.Entity<IdentityUserLogin<long>>().ToTable("user_credential_login", "plt");
+        builder.Entity<IdentityUserToken<long>>().ToTable("user_credential_token", "plt");
 
         // Un esquema por módulo (CT-12). Las entidades previas a F0 se ubican en su módulo sin
         // rediseñarlas; cada fase las rehace con el modelo de 04-modelo-de-dominio.md.
-        foreach (var entity in modelBuilder.Model.GetEntityTypes())
+        foreach (var entity in builder.Model.GetEntityTypes())
         {
             if (entity.GetSchema() is null && SchemaPorEntidad.TryGetValue(entity.ClrType, out var schema))
                 entity.SetSchema(schema);
 
             // Mixins (04 §1): versión de fila para concurrencia y lo archivado oculto por omisión.
             if (typeof(AuditableEntity).IsAssignableFrom(entity.ClrType) && entity.BaseType is null)
-                modelBuilder.Entity(entity.ClrType).Property(nameof(AuditableEntity.RowVersion)).IsRowVersion();
+                builder.Entity(entity.ClrType).Property(nameof(AuditableEntity.RowVersion)).IsRowVersion();
             if (typeof(ArchivableEntity).IsAssignableFrom(entity.ClrType) && entity.BaseType is null)
                 entity.SetQueryFilter(SoloActivos(entity.ClrType));
 
@@ -108,7 +115,9 @@ public class PolyDbContext : IdentityUserContext<CredencialUsuario, long>
 
     private static readonly Dictionary<Type, string> SchemaPorEntidad = new()
     {
+#pragma warning disable CS0618 // Product legado (R-08).
         [typeof(Product)] = "inv",
+#pragma warning restore CS0618
         [typeof(StockLot)] = "inv",
         [typeof(StockLocation)] = "inv",
         [typeof(StockPicking)] = "inv",

@@ -30,8 +30,8 @@ var logStreamService = new ConsoleLogStreamService();
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("logs/bridge-.log", rollingInterval: RollingInterval.Day, flushToDiskInterval: TimeSpan.FromSeconds(1))
+    .WriteTo.Console(formatProvider: System.Globalization.CultureInfo.InvariantCulture)
+    .WriteTo.File("logs/bridge-.log", rollingInterval: RollingInterval.Day, formatProvider: System.Globalization.CultureInfo.InvariantCulture, flushToDiskInterval: TimeSpan.FromSeconds(1))
     .WriteTo.Sink(new ConsoleLogStreamSink(logStreamService))
     .CreateLogger();
 
@@ -165,7 +165,7 @@ app.MapScalarApiReference(options =>
     options.WithTitle("CONTPAQi Integration Bridge API")
            .WithTheme(ScalarTheme.Moon)
            .WithOpenApiRoutePattern("/swagger/v1/swagger.json")
-           .WithCdnUrl("https://cdn.jsdelivr.net/npm/@scalar/api-reference");
+           .WithBundleUrl("https://cdn.jsdelivr.net/npm/@scalar/api-reference");
 });
 
 app.MapGet("/health", (ISdkGateway gateway) => Results.Ok(new

@@ -14,7 +14,7 @@ namespace Contpaq.Bridge.Core.Models
         public string PayloadJson { get; set; } = string.Empty;
         public string? CallbackUrl { get; set; }
         public string Status { get; set; } = Contpaq.Bridge.Core.Contract.Estados.Pending;
-        public int RetryCount { get; set; } = 0;
+        public int RetryCount { get; set; }
         public int MaxRetries { get; set; } = 5;
         public string NextAttemptAt { get; set; } = DateTime.UtcNow.ToString("o");
         public int? ContpaqiDocId { get; set; }

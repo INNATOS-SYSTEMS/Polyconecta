@@ -16,12 +16,12 @@ namespace Contpaq.Bridge.Api.Controllers
         private const int LimiteMaximo = 500;
 
         [HttpGet("catalogs/products")]
-        public Task<IActionResult> Productos(string? search, DateTimeOffset? modified_since, int limit = 100, string? cursor = null) =>
-            Leer(limit, () => lecturas.ProductosAsync(search, modified_since, limit, cursor));
+        public Task<IActionResult> Productos(string? search, [FromQuery(Name = "modified_since")] DateTimeOffset? modifiedSince, int limit = 100, string? cursor = null) =>
+            Leer(limit, () => lecturas.ProductosAsync(search, modifiedSince, limit, cursor));
 
         [HttpGet("catalogs/clients")]
-        public Task<IActionResult> Clientes(string? search, DateTimeOffset? modified_since, int limit = 100, string? cursor = null) =>
-            Leer(limit, () => lecturas.ClientesAsync(search, modified_since, limit, cursor));
+        public Task<IActionResult> Clientes(string? search, [FromQuery(Name = "modified_since")] DateTimeOffset? modifiedSince, int limit = 100, string? cursor = null) =>
+            Leer(limit, () => lecturas.ClientesAsync(search, modifiedSince, limit, cursor));
 
         [HttpGet("catalogs/agents")]
         public Task<IActionResult> Agentes(int limit = 100, string? cursor = null) =>
@@ -41,8 +41,8 @@ namespace Contpaq.Bridge.Api.Controllers
         }
 
         [HttpGet("inventory/purchases")]
-        public Task<IActionResult> RecepcionesCompra(DateTimeOffset? modified_since, int limit = 100, string? cursor = null) =>
-            Leer(limit, () => lecturas.RecepcionesCompraAsync(modified_since, limit, cursor));
+        public Task<IActionResult> RecepcionesCompra([FromQuery(Name = "modified_since")] DateTimeOffset? modifiedSince, int limit = 100, string? cursor = null) =>
+            Leer(limit, () => lecturas.RecepcionesCompraAsync(modifiedSince, limit, cursor));
 
         private async Task<IActionResult> Leer<T>(int limit, Func<Task<T>> lectura)
         {

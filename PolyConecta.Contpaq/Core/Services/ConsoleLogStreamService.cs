@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,7 +46,7 @@ namespace Contpaq.Bridge.Core.Services
             return fileLogs.Concat(inMemory).TakeLast(limit);
         }
 
-        private List<ConsoleLogEntry> ReadLatestLogFileTail(int count)
+        private static List<ConsoleLogEntry> ReadLatestLogFileTail(int count)
         {
             var result = new List<ConsoleLogEntry>();
             try
@@ -110,13 +111,13 @@ namespace Contpaq.Bridge.Core.Services
                         remaining = remaining.Substring(endLevel + 1).Trim();
                     }
 
-                    if (remaining.StartsWith("["))
+                    if (remaining.StartsWith('['))
                     {
                         var endCtx = remaining.IndexOf(']');
                         if (endCtx > 0)
                         {
                             sourceContext = remaining.Substring(1, endCtx - 1).Trim();
-                            if (sourceContext.StartsWith("Contpaq.Bridge."))
+                            if (sourceContext.StartsWith("Contpaq.Bridge.", StringComparison.Ordinal))
                             {
                                 sourceContext = sourceContext.Substring("Contpaq.Bridge.".Length);
                             }
@@ -140,7 +141,7 @@ namespace Contpaq.Bridge.Core.Services
 
             return new ConsoleLogEntry
             {
-                Timestamp = string.IsNullOrWhiteSpace(timestamp) ? DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff") : timestamp,
+                Timestamp = string.IsNullOrWhiteSpace(timestamp) ? DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture) : timestamp,
                 Level = level,
                 SourceContext = sourceContext,
                 Message = message

@@ -46,7 +46,7 @@ public static class VistasDeF1
             ["id"] = o.Id,
             ["folio"] = o.Name,
             ["cliente"] = o.Customer != null ? o.Customer.Etiqueta : "",
-            ["fechaPromesa"] = o.PromiseDate?.ToString("yyyy-MM-dd"),
+            ["fechaPromesa"] = o.PromiseDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
             ["estado"] = o.State.ToString(),
         },
     };

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PolyConecta.Application.Common;
@@ -24,8 +25,12 @@ public static class DependencyInjection
                 "Falta ConnectionStrings:PolyConecta. Defínela en la variable de entorno ConnectionStrings__PolyConecta.");
 
         services.AddScoped<AuditoriaInterceptor>();
+        // El pedido se lee siempre con lo archivado (ObtenerAsync): la línea de un producto archivado en CONTPAQi
+        // no desaparece, aunque EF avise que el filtro de archivados y la navegación requerida podrían chocar.
         services.AddDbContext<PolyDbContext>((sp, options) =>
-            options.UseSqlServer(conexion).AddInterceptors(sp.GetRequiredService<AuditoriaInterceptor>()));
+            options.UseSqlServer(conexion)
+                .ConfigureWarnings(w => w.Ignore(CoreEventId.PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning))
+                .AddInterceptors(sp.GetRequiredService<AuditoriaInterceptor>()));
         services.AddScoped<IReferenceSequenceService, ReferenceSequenceService>();
 
         // Identity solo para credenciales (R-01): contraseña de 8 con mayúscula y número, bloqueo de 15

@@ -44,7 +44,10 @@ public class CicloCompletoTests(SqlServerFixture sql)
             // simulador conserva sus transacciones entre corridas: con el mismo id, el comando llegaría
             // como reenvío y devolvería el resultado anterior. Un id inicial al azar evita el choque.
             var inicio = Random.Shared.NextInt64(1_000_000, 1_000_000_000_000);
-            await db.Database.ExecuteSqlRawAsync($"DBCC CHECKIDENT ('prueba.documento_de_prueba', RESEED, {inicio}) WITH NO_INFOMSGS;");
+            // DBCC no admite parámetros en todas sus formas; el valor es un número generado aquí, no una entrada.
+            var resiembra = string.Create(System.Globalization.CultureInfo.InvariantCulture,
+                $"DBCC CHECKIDENT ('prueba.documento_de_prueba', RESEED, {inicio}) WITH NO_INFOMSGS;");
+            await db.Database.ExecuteSqlRawAsync(resiembra);
         }
         // El reloj del documento es real: el bridge firma el callback con su propia hora.
         entorno.Reloj.Now = DateTimeOffset.UtcNow;

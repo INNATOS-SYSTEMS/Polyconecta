@@ -15,7 +15,7 @@ public sealed class RelojFijo(DateTimeOffset ahora) : IClock
 
 public sealed class UsuarioFijo(string nombre, string? rol = null, long? id = null) : ICurrentUser
 {
-    public string UserName => nombre;
+    public string UserName { get; } = nombre;
 
     public long? UserId { get; set; } = id;
 

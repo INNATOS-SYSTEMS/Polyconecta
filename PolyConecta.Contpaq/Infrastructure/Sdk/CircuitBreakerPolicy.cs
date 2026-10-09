@@ -6,8 +6,8 @@ namespace Contpaq.Bridge.Infrastructure.Sdk
     {
         private readonly int _threshold;
         private readonly TimeSpan _cooldown;
-        private int _consecutiveFailures = 0;
-        private DateTime? _circuitOpenedAt = null;
+        private int _consecutiveFailures;
+        private DateTime? _circuitOpenedAt;
 
         public string State { get; private set; } = "CLOSED"; // CLOSED, OPEN, HALF_OPEN
 

@@ -76,7 +76,7 @@ try
 }
 catch (Exception ex) when (ex is Microsoft.Data.SqlClient.SqlException or InvalidOperationException)
 {
-    app.Logger.LogError(ex, "No se pudieron sembrar los datos iniciales: {Mensaje}", ex.Message);
+    LogSiembraFallida(app.Logger, ex, ex.Message);
 }
 
 app.UseMiddleware<CorrelationIdMiddleware>();
@@ -99,4 +99,7 @@ await app.RunAsync();
 public partial class Program
 {
     private const string PoliticaChatter = "chatter";
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "No se pudieron sembrar los datos iniciales: {Mensaje}")]
+    private static partial void LogSiembraFallida(ILogger logger, Exception error, string mensaje);
 }

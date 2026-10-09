@@ -72,7 +72,7 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
             {
                 if (reinicio?.Debido() == true)
                 {
-                    LogReinicio(logger, reinicio.Hora.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture));
+                    LogReinicio(logger, reinicio.Hora);
                     reiniciar = true;
                     break;
                 }
@@ -264,8 +264,8 @@ namespace Contpaq.Bridge.Infrastructure.Outbox
         [LoggerMessage(Level = LogLevel.Error, Message = "El SDK no se pudo iniciar al arrancar; se reintenta con cada lote")]
         private static partial void LogSdkNoIniciado(ILogger logger);
 
-        [LoggerMessage(Level = LogLevel.Information, Message = "Reinicio diario ({Hora}): ya no se toman transacciones; se cierra el SDK y el proceso sale con código 0")]
-        private static partial void LogReinicio(ILogger logger, string hora);
+        [LoggerMessage(Level = LogLevel.Information, Message = "Reinicio diario ({Hora:HH:mm}): ya no se toman transacciones; se cierra el SDK y el proceso sale con código 0")]
+        private static partial void LogReinicio(ILogger logger, TimeOnly hora);
 
         [LoggerMessage(Level = LogLevel.Critical, Message = "SDK_TIMEOUT: la llamada {Llamada} no regresó en {Segundos} s (correlation_id {CorrelationId}); el proceso sale para que lo relance el supervisor del VPS")]
         private static partial void LogTimeout(ILogger logger, string llamada, string correlationId, double segundos);
