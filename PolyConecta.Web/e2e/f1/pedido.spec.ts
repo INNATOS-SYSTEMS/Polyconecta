@@ -462,6 +462,7 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
   });
 
   test('Pasos 5, 6 y 7: Firma suplente, revocación manual y kanban', async ({ page }) => {
+    let motivoRevocacion: string | undefined;
     let firmasActuales: any[] = [
       {
         rol: 'Comercial',
@@ -544,6 +545,7 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
           }),
         });
       } else if (url.endsWith('/revocar') && method === 'POST') {
+        motivoRevocacion = JSON.parse(route.request().postData() || '{}').motivo;
         firmasActuales = [];
         await route.fulfill({
           status: 200,
@@ -595,8 +597,14 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
     const btnRevocar = page.locator('#btn-revocar-pedido');
     await expect(btnRevocar).toBeVisible();
     await btnRevocar.click();
+    // FR-025: el motivo lo escribe quien revoca; sin él no se puede confirmar.
+    const confirmarRevocacion = page.locator('#dialogo-motivo .btn-primary');
+    await expect(confirmarRevocacion).toBeDisabled();
+    await page.fill('#campo-motivo', 'Cambio de precio');
+    await confirmarRevocacion.click();
 
     await expect(page.locator('#alerta-exito')).toContainText('Autorización revocada');
+    expect(motivoRevocacion).toBe('Cambio de precio');
     await expect(page.locator('.o_statusbar_pipeline .arrow-step.active')).toHaveText('Confirmado');
   });
 });

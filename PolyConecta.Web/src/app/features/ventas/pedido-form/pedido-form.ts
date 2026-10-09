@@ -69,6 +69,9 @@ export class PedidoForm implements OnInit {
   // Edición y D-147
   protected readonly editando = signal(false);
   protected readonly mostrarDialogoD147 = signal(false);
+  /** Revocar y cancelar exigen el motivo del usuario (FR-025, FR-026, D-33): queda en el chatter. */
+  protected readonly dialogoMotivo = signal<'revocar' | 'cancelar' | null>(null);
+  protected readonly motivo = signal('');
   protected readonly ordenCompraEditada = signal('');
   protected readonly fechaPromesaEditada = signal('');
   protected readonly domicilioEntregaIdEditado = signal<number | null>(null);
@@ -197,14 +200,27 @@ export class PedidoForm implements OnInit {
     }
   }
 
-  protected async revocar(): Promise<void> {
+  protected pedirMotivo(accion: 'revocar' | 'cancelar'): void {
+    this.motivo.set('');
+    this.dialogoMotivo.set(accion);
+  }
+
+  protected async confirmarMotivo(): Promise<void> {
+    const accion = this.dialogoMotivo();
+    const motivo = this.motivo().trim();
+    if (!accion || !motivo) return;
+    this.dialogoMotivo.set(null);
+    await (accion === 'revocar' ? this.revocar(motivo) : this.cancelar(motivo));
+  }
+
+  private async revocar(motivo: string): Promise<void> {
     const p = this.pedido();
     if (!p) return;
     this.guardando.set(true);
     this.error.set(null);
     this.exito.set(null);
     try {
-      const res = await this.pedidosService.revocar(p.id, p.rowVersion, 'Revocación manual');
+      const res = await this.pedidosService.revocar(p.id, p.rowVersion, motivo);
       this.pedido.set(res);
       this.exito.set('Autorización revocada.');
     } catch (e: unknown) {
@@ -214,14 +230,14 @@ export class PedidoForm implements OnInit {
     }
   }
 
-  protected async cancelar(): Promise<void> {
+  private async cancelar(motivo: string): Promise<void> {
     const p = this.pedido();
     if (!p) return;
     this.guardando.set(true);
     this.error.set(null);
     this.exito.set(null);
     try {
-      const res = await this.pedidosService.cancelar(p.id, p.rowVersion, 'Cancelación manual');
+      const res = await this.pedidosService.cancelar(p.id, p.rowVersion, motivo);
       this.pedido.set(res);
       this.exito.set('Pedido cancelado.');
     } catch (e: unknown) {

@@ -78,7 +78,7 @@
             <button
               class="btn btn-outline-danger btn-sm px-3"
               [disabled]="guardando()"
-              (click)="revocar()"
+              (click)="pedirMotivo('revocar')"
               id="btn-revocar-pedido"
             >
               Revocar autorización
@@ -89,7 +89,7 @@
             <button
               class="btn btn-outline-secondary btn-sm px-3"
               [disabled]="guardando()"
-              (click)="cancelar()"
+              (click)="pedirMotivo('cancelar')"
               id="btn-cancelar-pedido"
             >
               Cancelar
@@ -402,6 +402,28 @@
       <pc-odoo-chatter-drawer [documento]="documentoChatter()" />
     </div>
   </div>
+
+  @if (dialogoMotivo(); as accion) {
+    <pc-odoo-dialog
+      [titulo]="accion === 'revocar' ? 'Revocar autorización' : 'Cancelar pedido'"
+      [textoPrimario]="accion === 'revocar' ? 'Revocar' : 'Cancelar pedido'"
+      textoSecundario="Volver"
+      [primarioDeshabilitado]="!motivo().trim() || guardando()"
+      (confirmar)="confirmarMotivo()"
+      (cancelar)="dialogoMotivo.set(null)"
+      id="dialogo-motivo"
+    >
+      <div class="py-2">
+        <p class="mb-2 small text-muted">
+          {{ accion === 'revocar' ? 'Las firmas se borran y el pedido regresa a Confirmado.' : 'El pedido pasa a Cancelado y ya no se edita.' }}
+          El motivo queda en la bitácora.
+        </p>
+        <label for="campo-motivo" class="form-label small fw-semibold mb-1">Motivo</label>
+        <textarea id="campo-motivo" class="form-control form-control-sm" rows="3" maxlength="500"
+                  [value]="motivo()" (input)="motivo.set($any($event.target).value)"></textarea>
+      </div>
+    </pc-odoo-dialog>
+  }
 
   @if (mostrarDialogoD147()) {
     <pc-odoo-dialog
