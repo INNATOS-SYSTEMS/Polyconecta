@@ -1,6 +1,9 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { Dialog } from '@angular/cdk/dialog';
+import { firstValueFrom } from 'rxjs';
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
@@ -8,18 +11,37 @@ import { OdooSmartButtons, SmartButtonModel, botonInteligente } from '../../../s
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
 import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
 import { PaginaNoEncontrada } from '../../../shared/pagina-no-encontrada/pagina-no-encontrada';
-import { PedidosService, PedidoDetalleDto } from '../pedidos.service';
+import { OdooDialog } from '../../../shared/odoo-dialog/odoo-dialog';
+import { FirmaPedido } from '../firma-pedido';
+import {
+  PedidosService,
+  PedidoDetalleDto,
+  EditarPedidoInputDto,
+  AgenteVentaDto,
+  ErrorApi,
+} from '../pedidos.service';
+
+export interface LineaEditable {
+  productoId: number;
+  clave: string;
+  producto: string;
+  unidad: string;
+  cantidad: number;
+  precioUnitario: number | null;
+}
 
 @Component({
   selector: 'pc-pedido-form',
   imports: [
     CommonModule,
+    FormsModule,
     BotonNuevo,
     OdooBreadcrumb,
     OdooSmartButtons,
     OdooStatusPipeline,
     OdooChatterDrawer,
     OdooIcon,
+    OdooDialog,
     PaginaNoEncontrada,
   ],
   templateUrl: './pedido-form.html',
@@ -43,6 +65,7 @@ export class PedidoForm implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly pedidosService = inject(PedidosService);
+  private readonly dialog = inject(Dialog);
 
   protected readonly id = signal<string>(this.route.snapshot.paramMap.get('id') ?? '');
   protected readonly cargando = signal(true);
@@ -50,12 +73,29 @@ export class PedidoForm implements OnInit {
   protected readonly noEncontrado = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly exito = signal<string | null>(null);
+  protected readonly erroresCampos = signal<Record<string, string>>({});
 
   protected readonly pedido = signal<PedidoDetalleDto | null>(null);
+
+  // Edición y D-147
+  protected readonly editando = signal(false);
+  protected readonly mostrarDialogoD147 = signal(false);
+  protected readonly ordenCompraEditada = signal('');
+  protected readonly fechaPromesaEditada = signal('');
+  protected readonly domicilioEntregaIdEditado = signal<number | null>(null);
+  protected readonly monedaEditada = signal('MXN');
+  protected readonly tipoCambioEditado = signal<number | null>(1);
+  protected readonly agenteIdEditado = signal<number | null>(null);
+  protected readonly lineasEditables = signal<LineaEditable[]>([]);
+  protected readonly domiciliosDisponibles = signal<Array<{ id: number; texto: string }>>([]);
+  protected readonly agentes = signal<AgenteVentaDto[]>([]);
 
   protected readonly stages = ['Borrador', 'Confirmado', 'Autorizado', 'Cancelado'];
 
   protected readonly subtotalCalculado = computed(() => {
+    if (this.editando()) {
+      return this.lineasEditables().reduce((acc, l) => acc + (l.cantidad * (l.precioUnitario ?? 0)), 0);
+    }
     const p = this.pedido();
     if (!p) return 0;
     return p.lineas.reduce((acc, l) => acc + (l.subtotal ?? (l.cantidad * (l.precioUnitario ?? 0))), 0);
@@ -84,6 +124,9 @@ export class PedidoForm implements OnInit {
   );
   protected readonly accionCancelar = computed(() =>
     this.pedido()?.acciones.find(a => a.accion === 'cancelar')
+  );
+  protected readonly accionEditar = computed(() =>
+    this.pedido()?.acciones.find(a => a.accion === 'editar')
   );
 
   protected readonly avisoEdicion = computed(() => {
@@ -151,6 +194,16 @@ export class PedidoForm implements OnInit {
   protected async autorizar(rol?: string | null): Promise<void> {
     const p = this.pedido();
     if (!p) return;
+
+    if (!rol && p.rolesPorFirmar.length > 1) {
+      const ref = this.dialog.open<string | boolean>(FirmaPedido, {
+        data: { fila: { id: p.id, folio: p.folio } },
+      });
+      const resultado = await firstValueFrom(ref.closed);
+      if (!resultado) return;
+      rol = typeof resultado === 'string' ? resultado : undefined;
+    }
+
     this.guardando.set(true);
     this.error.set(null);
     this.exito.set(null);
@@ -196,6 +249,153 @@ export class PedidoForm implements OnInit {
       this.error.set((e as Error).message || 'Error al cancelar el pedido.');
     } finally {
       this.guardando.set(false);
+    }
+  }
+
+  // --- Modo edición y D-147 ---
+
+  protected async iniciarEdicion(): Promise<void> {
+    const p = this.pedido();
+    if (!p) return;
+    this.ordenCompraEditada.set(p.ordenCompraCliente ?? '');
+    this.fechaPromesaEditada.set(p.fechaPromesa ?? '');
+    this.domicilioEntregaIdEditado.set(p.domicilioEntrega?.id ?? null);
+    this.monedaEditada.set(p.moneda);
+    this.tipoCambioEditado.set(p.tipoCambio ?? 1);
+    this.agenteIdEditado.set(p.agente?.id ?? null);
+    this.lineasEditables.set(p.lineas.map(l => ({
+      productoId: l.productoId,
+      clave: l.clave,
+      producto: l.producto,
+      unidad: l.unidad,
+      cantidad: l.cantidad,
+      precioUnitario: l.precioUnitario,
+    })));
+    if (p.domicilioEntrega) {
+      this.domiciliosDisponibles.set([{ id: p.domicilioEntrega.id, texto: p.domicilioEntrega.texto }]);
+    } else {
+      this.domiciliosDisponibles.set([]);
+    }
+    void this.pedidosService.buscarClientes(p.cliente.clave).then(clis => {
+      const cli = clis.find(c => c.id === p.cliente.id) ?? clis[0];
+      if (cli?.domiciliosEnvio?.length) {
+        this.domiciliosDisponibles.set(cli.domiciliosEnvio);
+      }
+    }).catch(() => {});
+    this.erroresCampos.set({});
+    this.error.set(null);
+    this.exito.set(null);
+    this.editando.set(true);
+
+    if (this.agentes().length === 0) {
+      try {
+        const ags = await this.pedidosService.listarAgentes();
+        this.agentes.set(ags);
+      } catch {
+        // Ignorar
+      }
+    }
+  }
+
+  protected cancelarEdicion(): void {
+    this.editando.set(false);
+    this.error.set(null);
+    this.erroresCampos.set({});
+  }
+
+  protected intentarGuardarEdicion(): void {
+    const p = this.pedido();
+    if (!p) return;
+    if (p.firmas.length > 0) {
+      this.mostrarDialogoD147.set(true);
+    } else {
+      void this.ejecutarGuardarEdicion(false);
+    }
+  }
+
+  protected async confirmarD147(): Promise<void> {
+    this.mostrarDialogoD147.set(false);
+    await this.ejecutarGuardarEdicion(true);
+  }
+
+  protected cancelarD147(): void {
+    this.mostrarDialogoD147.set(false);
+  }
+
+  protected async ejecutarGuardarEdicion(revocarAutorizacion: boolean): Promise<void> {
+    const p = this.pedido();
+    if (!p) return;
+    this.guardando.set(true);
+    this.error.set(null);
+    this.erroresCampos.set({});
+
+    const payload: EditarPedidoInputDto = {
+      rowVersion: p.rowVersion,
+      revocarAutorizacion,
+      clienteId: p.cliente.id,
+      ordenCompraCliente: this.ordenCompraEditada().trim() || null,
+      agenteId: this.agenteIdEditado(),
+      fechaPedido: p.fechaPedido,
+      fechaPromesa: this.fechaPromesaEditada() || null,
+      domicilioEntregaId: this.domicilioEntregaIdEditado(),
+      moneda: this.monedaEditada(),
+      tipoCambio: this.monedaEditada() === 'MXN' ? 1 : this.tipoCambioEditado(),
+      lineas: this.lineasEditables().map(l => ({
+        productoId: l.productoId,
+        cantidad: l.cantidad,
+        precioUnitario: l.precioUnitario,
+        metaProduccionKg: null,
+        toleranciaPorcentaje: null,
+      })),
+    };
+
+    try {
+      const res = await this.pedidosService.editar(p.id, payload);
+      this.pedido.set(res);
+      this.editando.set(false);
+      this.exito.set('Pedido actualizado exitosamente.');
+    } catch (e: unknown) {
+      if (e instanceof ErrorApi) {
+        if (e.code === 'EDICION_REVOCA_AUTORIZACION') {
+          this.mostrarDialogoD147.set(true);
+          return;
+        }
+        this.error.set(e.message);
+        if (e.errores) {
+          const mapa: Record<string, string> = {};
+          for (const err of e.errores) {
+            mapa[err.campo] = err.mensaje;
+          }
+          this.erroresCampos.set(mapa);
+        }
+      } else {
+        this.error.set((e as Error).message || 'Error al actualizar el pedido.');
+      }
+    } finally {
+      this.guardando.set(false);
+    }
+  }
+
+  protected actualizarCantidadLinea(index: number, valor: string | number): void {
+    const cant = Number(valor) || 0;
+    this.lineasEditables.update(ls =>
+      ls.map((l, i) => (i === index ? { ...l, cantidad: cant } : l))
+    );
+  }
+
+  protected actualizarPrecioLinea(index: number, valor: string | number | null): void {
+    const precio = valor !== null && valor !== '' && !isNaN(Number(valor)) ? Number(valor) : null;
+    this.lineasEditables.update(ls =>
+      ls.map((l, i) => (i === index ? { ...l, precioUnitario: precio } : l))
+    );
+  }
+
+  protected alCambiarMonedaEdicion(m: string): void {
+    this.monedaEditada.set(m);
+    if (m === 'MXN') {
+      this.tipoCambioEditado.set(1);
+    } else if (this.tipoCambioEditado() === 1 || !this.tipoCambioEditado()) {
+      this.tipoCambioEditado.set(18.5);
     }
   }
 

@@ -11,6 +11,7 @@ export interface SmartButtonModel {
   deshabilitado?: boolean;
   /** Tipo del documento al que lleva: fija el nombre en singular o plural y el lugar del botón (D-141). */
   tipo?: TipoBotonInteligente;
+  tooltip?: string;
 }
 
 /**
@@ -31,9 +32,9 @@ export const BOTONES_INTELIGENTES = {
 export type TipoBotonInteligente = keyof typeof BOTONES_INTELIGENTES;
 
 /** Arma el botón de un tipo con su nombre según el conteo. */
-export function botonInteligente(tipo: TipoBotonInteligente, conteo: number, ruta: string, deshabilitado = false): SmartButtonModel {
+export function botonInteligente(tipo: TipoBotonInteligente, conteo: number, ruta: string, deshabilitado = false, tooltip?: string): SmartButtonModel {
   const b = BOTONES_INTELIGENTES[tipo];
-  return { tipo, label: conteo === 1 ? b.singular : b.plural, countBadge: conteo, iconClass: b.icono, targetRoute: ruta, deshabilitado };
+  return { tipo, label: conteo === 1 ? b.singular : b.plural, countBadge: conteo, iconClass: b.icono, targetRoute: ruta, deshabilitado, tooltip };
 }
 
 /** Réplica de Components/Forms/OdooSmartButtons.razor, con el orden y los nombres de D-141. */
@@ -43,7 +44,7 @@ export function botonInteligente(tipo: TipoBotonInteligente, conteo: number, rut
   template: `
     <div class="d-flex gap-1 flex-wrap">
       @for (btn of ordenados(); track btn.label) {
-        <div class="o_smart_button" [class.opacity-50]="btn.deshabilitado" [attr.title]="btn.deshabilitado ? 'Documento libre: sin documento de origen' : null" (click)="btn.deshabilitado || smartNavigate.emit(btn.targetRoute)">
+        <div class="o_smart_button" [class.opacity-50]="btn.deshabilitado" [attr.title]="btn.deshabilitado ? (btn.tooltip ?? 'Documento libre: sin documento de origen') : null" (click)="btn.deshabilitado || smartNavigate.emit(btn.targetRoute)">
           <div class="d-flex align-items-center gap-1">
             <pc-odoo-icon [nombre]="btn.iconClass" contexto="inteligente" />
             <span class="stat-label">{{ btn.label }}</span>

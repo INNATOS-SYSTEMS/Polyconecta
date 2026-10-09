@@ -93,21 +93,3 @@ guion({
   ],
 });
 
-/** Pedido: ficha técnica (abrir, editar, aceptar, volver a abrir) y smart buttons. */
-guion({
-  nombre: 'ficha técnica y smart buttons del pedido',
-  pasos: [
-    { ir: '/pedidos/IV310-26' },
-    { pulsar: 'main button[title="Ficha técnica"]' },
-    { control: 'ficha', en: 'div.position-fixed' },
-    { capturar: 'div.position-fixed input', valor: 'PEBD' },
-    { pulsar: 'div.position-fixed button', texto: 'Aceptar' },
-    { pulsar: 'main button[title="Ficha técnica"]' },
-    { control: 'ficha tras editar', en: 'div.position-fixed' },
-    { pulsar: 'div.position-fixed button', texto: 'Cancelar' },
-    { pulsar: '.o_smart_button', texto: 'Entrega' },
-    { control: 'entrega desde el pedido', en: 'main' },
-    { pulsar: '.o_smart_button', texto: 'Pedido' },
-    { control: 'regreso al pedido', en: 'main' },
-  ],
-});

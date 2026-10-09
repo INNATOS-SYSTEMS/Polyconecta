@@ -1,105 +1,264 @@
-import { Component, inject, signal } from '@angular/core';
-import { etiquetaProducto } from '../../../core/format/producto-etiqueta';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { n1, n2 } from '../../../core/format/numero';
-import { SalesOrderLine, subtotal } from '../../../core/models/ventas';
-import { InventoryState } from '../../../core/state/inventory-state';
-import { PedidoLibre } from '../../../core/state/libre/pedido-libre';
-import { HojaNueva } from '../../../shared/hoja-nueva/hoja-nueva';
+import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
-import { emptyDraft, LineDraft, OdooLineCapture } from '../../../shared/odoo-line-capture/odoo-line-capture';
-import { OdooTabs, PcPestana } from '../../../shared/odoo-tabs/odoo-tabs';
-import { ETAPAS_PEDIDO } from '../pedidos-acciones';
+import { SesionState } from '../../../core/sesion/sesion-state';
+import {
+  AgenteVentaDto,
+  ClienteBusquedaDto,
+  DatosPedidoInputDto,
+  DomicilioEnvioDto,
+  ErrorApi,
+  LineaPedidoInputDto,
+  PedidosService,
+  ProductoBusquedaDto,
+} from '../pedidos.service';
 
-/**
- * "Nuevo" pedido de venta (FR-012, D-53) con la estructura completa del documento ligado (D-136):
- * etapas, maestro, pestaña Detalle con la captura de líneas y chatter, que se activa al guardar.
- * Maestro y líneas se guardan juntos.
- */
+export interface LineaTemporal {
+  productoId: number;
+  clave: string;
+  nombre: string;
+  unidad: string;
+  cantidad: number;
+  precioUnitario: number | null;
+  subtotal: number;
+}
+
 @Component({
   selector: 'pc-pedido-nuevo',
-  imports: [HojaNueva, OdooTabs, PcPestana, OdooLineCapture, OdooIcon],
-  template: `
-    <pc-hoja-nueva lista="Pedidos" ruta="/ventas/pedidos" titulo="Pedido" [stages]="stages" [error]="error()" [conChatter]="true"
-                   (guardar)="guardar()" (descartar)="router.navigateByUrl('/ventas/pedidos')">
-      <div class="row g-4 mb-2">
-        <div class="col-md-6">
-          <div class="o_form_label_row"><span class="o_form_label">Cliente</span><input class="form-control form-control-sm o_inline_input" name="cliente" [value]="cliente()" (input)="cliente.set($any($event.target).value)" /></div>
-        </div>
-        <div class="col-md-6">
-          <div class="o_form_label_row"><span class="o_form_label">Orden de Compra</span><input class="form-control form-control-sm o_inline_input" name="ordenCompra" [value]="ordenCompra()" (input)="ordenCompra.set($any($event.target).value)" /></div>
-          <div class="o_form_label_row"><span class="o_form_label">Contpaq ID</span><span class="o_form_value text-muted">— (se asigna al confirmar)</span></div>
-        </div>
-      </div>
-      <pc-odoo-tabs [pestanas]="pestanas">
-        <ng-template pcPestana="detalle">
-          <pc-odoo-line-capture [(draft)]="borrador" [catalogo]="inv.catalogo" [unidadFija]="true" [conPrecio]="true" (submitted)="agregar($event)" />
-          @if (errorLinea()) {
-            <div class="alert alert-danger py-2 px-3 small mb-3"><pc-odoo-icon nombre="hard-stop" />{{ errorLinea() }}</div>
-          }
-          <table class="table align-middle mb-0" data-lineas-nuevas>
-            <thead>
-              <tr class="text-muted small">
-                <th>Producto</th><th class="text-center" style="width:110px;">Cantidad</th>
-                <th class="text-center">Unidad</th><th class="text-end">Precio Unitario</th><th class="text-end">Subtotal</th><th></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (l of lineas(); track $index) {
-                <tr>
-                  <td>{{ producto(l.clave, l.producto) }}</td>
-                  <td class="text-center">{{ n1(l.cantidad) }}</td>
-                  <td class="text-center small text-muted">{{ l.unidad }}</td>
-                  <td class="text-end text-muted">\${{ n2(l.precioUnitario) }} {{ l.moneda }}</td>
-                  <td class="text-end fw-semibold">\${{ n2(subtotal(l)) }}</td>
-                  <td class="text-center"><button type="button" class="btn o_btn_icon" title="Eliminar" (click)="quitar($index)"><pc-odoo-icon nombre="quitar-linea" contexto="icono" /></button></td>
-                </tr>
-              } @empty {
-                <tr><td colspan="6" class="small text-muted">Sin líneas. Se pueden agregar ahora o después de guardar.</td></tr>
-              }
-            </tbody>
-          </table>
-          <p class="small text-muted mt-2 mb-0">IVA, descuentos y totales los calcula CONTPAQi al dar de alta el pedido (D-74).</p>
-        </ng-template>
-      </pc-odoo-tabs>
-    </pc-hoja-nueva>
+  imports: [CommonModule, FormsModule, OdooBreadcrumb, OdooIcon],
+  templateUrl: './pedido-nuevo.html',
+  styles: `
+    :host { display: block; }
+    .o_form_view {
+      padding: 1.5rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .o_form_sheet {
+      background: white;
+      border: 1px solid var(--border-color, #e2e8f0);
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
   `,
-  styles: ':host { display: contents; }',
 })
-export class PedidoNuevo {
-  protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
-  private readonly libre = inject(PedidoLibre);
-  protected readonly inv = inject(InventoryState);
+export class PedidoNuevo implements OnInit {
   protected readonly router = inject(Router);
-  protected readonly stages = ETAPAS_PEDIDO;
-  protected readonly pestanas = [{ id: 'detalle', titulo: 'Detalle' }];
-  protected readonly cliente = signal('');
+  private readonly pedidosService = inject(PedidosService);
+  private readonly sesion = inject(SesionState);
+
+  protected readonly guardando = signal(false);
+  protected readonly error = signal<string | null>(null);
+  protected readonly erroresCampos = signal<Record<string, string>>({});
+
+  // Catálogos
+  protected readonly clientes = signal<ClienteBusquedaDto[]>([]);
+  protected readonly productos = signal<ProductoBusquedaDto[]>([]);
+  protected readonly agentes = signal<AgenteVentaDto[]>([]);
+
+  // Campos maestro
+  protected readonly clienteId = signal<number | null>(null);
+  protected readonly clienteSeleccionado = signal<ClienteBusquedaDto | null>(null);
   protected readonly ordenCompra = signal('');
-  protected readonly error = signal<string | undefined>(undefined);
-  protected readonly errorLinea = signal<string | undefined>(undefined);
-  protected readonly lineas = signal<SalesOrderLine[]>([]);
-  protected borrador: LineDraft = emptyDraft();
-  protected readonly n1 = n1;
-  protected readonly n2 = n2;
-  protected readonly subtotal = subtotal;
+  protected readonly agenteId = signal<number | null>(null);
+  protected readonly fechaPedido = signal(new Date().toISOString().substring(0, 10));
+  protected readonly fechaPromesa = signal('');
+  protected readonly moneda = signal('MXN');
+  protected readonly tipoCambio = signal<number | null>(1);
+  protected readonly domiciliosDisponibles = signal<DomicilioEnvioDto[]>([]);
+  protected readonly domicilioEntregaId = signal<number | null>(null);
 
-  /** Valida la línea con las mismas reglas del pedido libre y la guarda en el borrador (todavía no hay pedido). */
-  protected agregar(d: LineDraft): void {
-    const { linea, error } = this.libre.validarLinea(d.clave, d.cantidad, d.precioUnitario ?? 0, d.moneda ?? 'MXN');
-    this.errorLinea.set(error);
-    if (!linea) return;
-    this.lineas.update(ls => [...ls, linea]);
-    this.borrador = emptyDraft();
+  // Líneas
+  protected readonly lineas = signal<LineaTemporal[]>([]);
+
+  // Captura línea actual
+  protected readonly productoIdSeleccionado = signal<number | null>(null);
+  protected readonly productoSeleccionado = signal<ProductoBusquedaDto | null>(null);
+  protected readonly cantidadLinea = signal<number | null>(null);
+  protected readonly precioUnitarioLinea = signal<number | null>(null);
+
+  // Totales
+  protected readonly subtotal = computed(() =>
+    this.lineas().reduce((acc, l) => acc + l.subtotal, 0)
+  );
+  protected readonly iva = computed(() => this.subtotal() * 0.16);
+  protected readonly total = computed(() => this.subtotal() + this.iva());
+
+  async ngOnInit(): Promise<void> {
+    try {
+      const [clis, prods, agts] = await Promise.all([
+        this.pedidosService.buscarClientes().catch(() => []),
+        this.pedidosService.buscarProductos().catch(() => []),
+        this.pedidosService.listarAgentes().catch(() => []),
+      ]);
+      this.clientes.set(clis);
+      this.productos.set(prods);
+      this.agentes.set(agts);
+
+      // Proponer agente del usuario autenticado si existe
+      const user = this.sesion.usuario();
+      if (user && (user as any).agenteId) {
+        this.agenteId.set((user as any).agenteId);
+      } else if (agts.length > 0) {
+        // Buscar por coincidencia de usuario/nombre
+        const coincidente = agts.find(a =>
+          a.nombre.toLowerCase().includes(user.nombre.toLowerCase()) ||
+          user.nombre.toLowerCase().includes(a.nombre.toLowerCase())
+        );
+        if (coincidente) this.agenteId.set(coincidente.id);
+      }
+    } catch (e: unknown) {
+      this.error.set((e as Error).message || 'Error al cargar catálogos.');
+    }
   }
 
-  protected quitar(i: number): void {
-    this.lineas.update(ls => ls.filter((_, j) => j !== i));
+  protected alCambiarCliente(val: unknown): void {
+    const id = val ? Number(val) : null;
+    this.clienteId.set(id);
+    const cli = this.clientes().find(c => c.id === id) ?? null;
+    this.clienteSeleccionado.set(cli);
+
+    if (cli) {
+      // Proponer moneda del cliente
+      const m = cli.moneda || 'MXN';
+      this.moneda.set(m);
+      if (m === 'MXN') {
+        this.tipoCambio.set(1);
+      } else if (this.tipoCambio() === 1 || !this.tipoCambio()) {
+        this.tipoCambio.set(18.5); // Sugerencia inicial para USD
+      }
+
+      // Proponer domicilios de envío
+      const doms = cli.domiciliosEnvio ?? [];
+      this.domiciliosDisponibles.set(doms);
+      if (doms.length === 1) {
+        this.domicilioEntregaId.set(doms[0].id);
+      } else {
+        this.domicilioEntregaId.set(null);
+      }
+    } else {
+      this.domiciliosDisponibles.set([]);
+      this.domicilioEntregaId.set(null);
+    }
   }
 
-  protected guardar(): void {
-    const { pedido, error } = this.libre.crearConLineas(this.cliente(), this.ordenCompra(),
-      this.lineas().map(l => ({ clave: l.clave, cantidad: l.cantidad, precioUnitario: l.precioUnitario, moneda: l.moneda ?? 'MXN' })));
-    this.error.set(error);
-    if (pedido) void this.router.navigateByUrl(`/ventas/pedidos/${pedido.folio}`);
+  protected alCambiarMoneda(m: string): void {
+    this.moneda.set(m);
+    if (m === 'MXN') {
+      this.tipoCambio.set(1);
+    } else if (this.tipoCambio() === 1 || !this.tipoCambio()) {
+      this.tipoCambio.set(18.5);
+    }
+  }
+
+  protected alCambiarProducto(val: unknown): void {
+    const id = val ? Number(val) : null;
+    this.productoIdSeleccionado.set(id);
+    const prod = this.productos().find(p => p.id === id) ?? null;
+    this.productoSeleccionado.set(prod);
+  }
+
+  protected agregarLinea(): void {
+    this.error.set(null);
+    const prod = this.productoSeleccionado();
+    const cant = this.cantidadLinea();
+    const precio = this.precioUnitarioLinea();
+
+    if (!prod) {
+      this.error.set('Seleccione un producto.');
+      return;
+    }
+    if (!cant || cant <= 0) {
+      this.error.set('La cantidad debe ser mayor a 0.');
+      return;
+    }
+
+    const precioFinal = precio !== null && precio !== undefined && precio > 0 ? precio : null;
+    const nueva: LineaTemporal = {
+      productoId: prod.id,
+      clave: prod.clave,
+      nombre: prod.nombre,
+      unidad: prod.unidad,
+      cantidad: cant,
+      precioUnitario: precioFinal,
+      subtotal: cant * (precioFinal ?? 0),
+    };
+
+    this.lineas.update(ls => [...ls, nueva]);
+
+    // Limpiar campos de captura de línea
+    this.productoIdSeleccionado.set(null);
+    this.productoSeleccionado.set(null);
+    this.cantidadLinea.set(null);
+    this.precioUnitarioLinea.set(null);
+  }
+
+  protected quitarLinea(index: number): void {
+    this.lineas.update(ls => ls.filter((_, i) => i !== index));
+  }
+
+  protected async guardar(): Promise<void> {
+    this.guardando.set(true);
+    this.error.set(null);
+    this.erroresCampos.set({});
+
+    const cid = this.clienteId();
+    if (!cid) {
+      this.error.set('Seleccione un cliente.');
+      this.guardando.set(false);
+      return;
+    }
+
+    if (this.lineas().length === 0) {
+      this.error.set('Agregue al menos una línea al pedido.');
+      this.guardando.set(false);
+      return;
+    }
+
+    const payload: DatosPedidoInputDto = {
+      clienteId: cid,
+      ordenCompraCliente: this.ordenCompra().trim() || null,
+      agenteId: this.agenteId(),
+      fechaPedido: this.fechaPedido() || null,
+      fechaPromesa: this.fechaPromesa() || null,
+      domicilioEntregaId: this.domicilioEntregaId(),
+      moneda: this.moneda(),
+      tipoCambio: this.moneda() === 'MXN' ? 1 : this.tipoCambio(),
+      lineas: this.lineas().map(l => ({
+        productoId: l.productoId,
+        cantidad: l.cantidad,
+        precioUnitario: l.precioUnitario,
+        metaProduccionKg: null,
+        toleranciaPorcentaje: null,
+      })),
+    };
+
+    try {
+      const res = await this.pedidosService.crear(payload);
+      void this.router.navigateByUrl(`/ventas/pedidos/${res.id}`);
+    } catch (e: unknown) {
+      if (e instanceof ErrorApi) {
+        this.error.set(e.message);
+        if (e.errores) {
+          const mapa: Record<string, string> = {};
+          for (const err of e.errores) {
+            mapa[err.campo] = err.mensaje;
+          }
+          this.erroresCampos.set(mapa);
+        }
+      } else {
+        this.error.set((e as Error).message || 'Error al guardar el pedido.');
+      }
+    } finally {
+      this.guardando.set(false);
+    }
+  }
+
+  protected volver(): void {
+    void this.router.navigateByUrl('/ventas/pedidos');
   }
 }

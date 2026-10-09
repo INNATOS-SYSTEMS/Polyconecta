@@ -112,11 +112,10 @@ export class FabricacionForm {
   protected readonly smartButtons = computed<SmartButtonModel[]>(() => {
     this.version();
     const folio = this.folioOf();
-    // Primarias y secundarias llegan al pedido directamente; la jerarquía se navega en la lista.
-    // FR-014: una OF libre no tiene pedido; el botón queda vacío y deshabilitado, nunca con un origen falso.
-    const list: SmartButtonModel[] = this.of()?.libre
-      ? [botonInteligente('pedido', 0, '', true)]
-      : [botonInteligente('pedido', 1, `/ventas/pedidos/${this.of()?.pedidoFolio}`)];
+    // En F1 el pedido vive en la API: la OF en memoria se conecta en F2 (L2-T025).
+    const list: SmartButtonModel[] = [
+      botonInteligente('pedido', 0, '', true, 'Se conecta en F2'),
+    ];
     // El traslado interplanta cuelga de la orden que tiene secundarias (la que genera el envío).
     if (this.flow.getSecondaries(folio).length > 0)
       list.push(botonInteligente('traslado', 1, `/logistica/traslados/${this.flow.traslado().folio}`));

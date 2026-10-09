@@ -66,6 +66,33 @@ export interface DomicilioEnvioDto {
   texto: string;
 }
 
+export interface ClienteBusquedaDto {
+  id: number;
+  clave: string;
+  nombre: string;
+  etiqueta: string;
+  moneda?: string | null;
+  domiciliosEnvio: DomicilioEnvioDto[];
+}
+
+export interface ProductoBusquedaDto {
+  id: number;
+  clave: string;
+  nombre: string;
+  etiqueta: string;
+  unidad: string;
+  unidadId: number;
+  llevaLote: boolean;
+}
+
+export interface AgenteVentaDto {
+  id: number;
+  clave: string;
+  nombre: string;
+  etiqueta: string;
+  tipo: string;
+}
+
 export interface PedidoDetalleDto {
   id: number;
   folio: string;
@@ -88,6 +115,18 @@ export interface PedidoDetalleDto {
   acciones: AccionDisponibleDto[];
 }
 
+export class ErrorApi extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly code?: string,
+    public readonly errores?: Array<{ campo: string; mensaje: string }>
+  ) {
+    super(message);
+    this.name = 'ErrorApi';
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class PedidosService {
   private async peticion<T>(url: string, opciones?: RequestInit): Promise<T> {
@@ -103,15 +142,19 @@ export class PedidosService {
 
     if (!res.ok) {
       let mensaje = `Error HTTP ${res.status}`;
+      let codigo: string | undefined;
+      let errores: Array<{ campo: string; mensaje: string }> | undefined;
       try {
         const err = await res.json();
+        codigo = err.code ?? err.title;
+        errores = err.errores;
         if (err.detail) mensaje = err.detail;
         else if (err.title) mensaje = err.title;
         else if (err.error) mensaje = err.error;
       } catch {
         // Ignorar fallo de parseo JSON
       }
-      throw new Error(mensaje);
+      throw new ErrorApi(mensaje, res.status, codigo, errores);
     }
 
     if (res.status === 204) {
@@ -158,6 +201,22 @@ export class PedidosService {
       method: 'POST',
       body: JSON.stringify({ rowVersion, motivo: motivo || null }),
     });
+  }
+
+  async buscarClientes(texto = ''): Promise<ClienteBusquedaDto[]> {
+    return this.peticion<ClienteBusquedaDto[]>(
+      `/api/v1/ventas/clientes/buscar?texto=${encodeURIComponent(texto)}`
+    );
+  }
+
+  async buscarProductos(texto = ''): Promise<ProductoBusquedaDto[]> {
+    return this.peticion<ProductoBusquedaDto[]>(
+      `/api/v1/inventario/productos/buscar?texto=${encodeURIComponent(texto)}`
+    );
+  }
+
+  async listarAgentes(): Promise<AgenteVentaDto[]> {
+    return this.peticion<AgenteVentaDto[]>('/api/v1/ventas/agentes');
   }
 
   async cancelar(id: number | string, rowVersion: string, motivo?: string | null): Promise<PedidoDetalleDto> {
