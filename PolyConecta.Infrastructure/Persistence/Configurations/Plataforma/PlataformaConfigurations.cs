@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PolyConecta.Domain.Plataforma;
+using PolyConecta.Domain.Plataforma.Chatter;
+using PolyConecta.Domain.Plataforma.Listas;
 
 namespace PolyConecta.Infrastructure.Persistence.Configurations.Plataforma;
 
@@ -78,5 +80,36 @@ public sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outbox
         builder.Property(x => x.BridgeTransactionId).HasMaxLength(64);
         builder.Property(x => x.LastErrorCode).HasMaxLength(60);
         builder.Property(x => x.LastErrorMessage).HasMaxLength(500);
+    }
+}
+
+public sealed class ChatterMessageConfiguration : IEntityTypeConfiguration<ChatterMessage>
+{
+    public void Configure(EntityTypeBuilder<ChatterMessage> builder)
+    {
+        builder.ToTable("chatter_message", "plt");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.DocumentType).HasMaxLength(60).IsRequired();
+        builder.Property(x => x.Kind).HasConversion<string>().HasMaxLength(10);
+        builder.Property(x => x.Body).HasMaxLength(ChatterMessage.LargoMaximo).IsRequired();
+        builder.Property(x => x.AuthorName).HasMaxLength(100).IsRequired();
+        builder.Property(x => x.GroupExercised).HasMaxLength(80);
+        builder.HasIndex(x => new { x.DocumentType, x.DocumentId, x.CreatedAt }).IsDescending(false, false, true);
+    }
+}
+
+public sealed class SavedSearchConfiguration : IEntityTypeConfiguration<SavedSearch>
+{
+    public void Configure(EntityTypeBuilder<SavedSearch> builder)
+    {
+        builder.ToTable("saved_search", "plt");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.ListKey).HasMaxLength(60).IsRequired();
+        builder.Property(x => x.Name).HasMaxLength(SavedSearch.LargoNombre).IsRequired();
+        builder.Property(x => x.Definition).IsRequired();
+        builder.HasOne<Domain.Plataforma.Seguridad.User>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasIndex(x => new { x.UserId, x.ListKey, x.Name }).IsUnique();
+        // Uno por omisión por usuario y lista.
+        builder.HasIndex(x => new { x.UserId, x.ListKey }).IsUnique().HasFilter("[IsDefault] = 1").HasDatabaseName("IX_saved_search_por_omision");
     }
 }

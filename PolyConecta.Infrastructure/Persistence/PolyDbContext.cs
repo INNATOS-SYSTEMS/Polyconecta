@@ -51,6 +51,10 @@ public class PolyDbContext : IdentityUserContext<CredencialUsuario, long>
     // Pedido de venta (F1)
     public DbSet<Domain.Ventas.SalesOrder> Pedidos => Set<Domain.Ventas.SalesOrder>();
 
+    // Chatter y favoritos (F1, R-04)
+    public DbSet<Domain.Plataforma.Chatter.ChatterMessage> MensajesChatter => Set<Domain.Plataforma.Chatter.ChatterMessage>();
+    public DbSet<Domain.Plataforma.Listas.SavedSearch> Favoritos => Set<Domain.Plataforma.Listas.SavedSearch>();
+
     // Additional Entities
     public DbSet<PolyLocation> Locations => Set<PolyLocation>();
     public DbSet<LotGenealogy> LotGenealogies => Set<LotGenealogy>();
