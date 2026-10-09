@@ -272,4 +272,43 @@ test.describe('formulario, avisos y sincronización', () => {
     const anchos = await page.locator('[data-catalogo="kanban"] .o_kanban_column:not(.o_kanban_plegada)').evaluateAll(cs => cs.map(c => c.getBoundingClientRect().width));
     expect(new Set(anchos)).toEqual(new Set([338]));
   });
+
+  test('dual-list: dos paneles en árbol, filtrado y transferencia de permisos', async ({ page }) => {
+    const d = page.locator('[data-catalogo="dual-list"]');
+    await expect(d).toBeVisible();
+    await expect(d.locator('[data-conteo-disponibles]')).toContainText('8');
+    await expect(d.locator('[data-conteo-asignados]')).toContainText('2');
+
+    // Filtrar en panel izquierdo
+    await d.locator('[data-buscar-disponibles]').fill('clasificar');
+    await expect(d.locator('[data-dual-panel="disponibles"]')).toContainText('Clasificar');
+
+    // Limpiar filtro
+    await d.locator('[data-buscar-disponibles]').fill('');
+
+    // Marcar permiso en disponibles y transferir con >
+    await d.locator('[data-check-permiso="ventas.pedido.editar"]').check();
+    await d.locator('[data-btn-asignar]').click();
+
+    await expect(d.locator('[data-conteo-disponibles]')).toContainText('7');
+    await expect(d.locator('[data-conteo-asignados]')).toContainText('3');
+    await expect(d.locator('[data-dual-panel="asignados"]')).toContainText('Editar');
+  });
+
+  test('login-form: inputs usuario y contraseña con botón deshabilitado hasta llenarlo', async ({ page }) => {
+    const l = page.locator('[data-catalogo="login-form"]');
+    await expect(l).toBeVisible();
+
+    const submit = l.locator('[data-login-submit]');
+    await expect(submit).toBeDisabled();
+
+    await l.locator('[data-login-usuario]').fill('operador1');
+    await expect(submit).toBeDisabled();
+
+    await l.locator('[data-login-contrasena]').fill('secreto');
+    await expect(submit).toBeEnabled();
+
+    await submit.click();
+    await expect(page.locator('[data-aviso="exito"]')).toContainText('Autenticado como operador1');
+  });
 });

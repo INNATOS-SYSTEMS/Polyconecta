@@ -12,7 +12,8 @@
     <a href="/catalogo#formulario">Formulario de documento</a>
     <a href="/catalogo#campos">Campos</a>
     <a href="/catalogo#avisos">Avisos y bloqueos</a>
-    <a href="/catalogo#sincronizacion">Estado de sincronización</a>
+    <a href="/catalogo#dual-list">Lista dual de permisos</a>
+    <a href="/catalogo#login-form">Inicio de sesión</a>
     <strong class="d-block mt-2 mb-1">Piezas</strong>
     <a href="/catalogo#botones">Botones e íconos</a>
     <a href="/catalogo#navegacion">Barra, migas y vistas</a>
@@ -245,6 +246,30 @@
       <h2>Páginas vacías</h2>
       <div class="border rounded mb-3"><pc-pagina-pendiente titulo="Módulo en construcción" /></div>
       <div class="border rounded"><pc-pagina-no-encontrada /></div>
+    </section>
+
+    <!-- ============================================================ Lista dual de permisos -->
+    <section class="o_catalogo_seccion" id="dual-list" data-catalogo="dual-list">
+      <h2>Asignación de permisos · <code>pc-odoo-dual-list</code></h2>
+      <p>Dos paneles en árbol Módulo › Objeto/Funcionalidad › Acción con filtrado en tiempo real, selección y transferencias con teclado o botones.</p>
+      <pc-odoo-dual-list
+        [arbol]="arbolPermisosEjemplo"
+        [(seleccionados)]="permisosSeleccionados" />
+      <div class="small text-muted mt-2" data-catalogo="dual-list-total">
+        Total asignados: {{ permisosSeleccionados().length }} ({{ permisosSeleccionados().join(', ') }})
+      </div>
+    </section>
+
+    <!-- ============================================================ Formulario de Login -->
+    <section class="o_catalogo_seccion" id="login-form" data-catalogo="login-form">
+      <h2>Inicio de sesión · <code>pc-odoo-login-form</code></h2>
+      <p>Tarjeta de autenticación centrada con entradas para usuario y contraseña, estados de carga y alerta de error.</p>
+      <div class="d-flex justify-content-center p-3 bg-light rounded">
+        <pc-odoo-login-form
+          [cargando]="loginEjemploCargando()"
+          [error]="loginEjemploError()"
+          (enviar)="enviarLoginEjemplo($event)" />
+      </div>
     </section>
   </div>
 </div>
