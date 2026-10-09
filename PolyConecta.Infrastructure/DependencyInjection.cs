@@ -93,6 +93,7 @@ public static class DependencyInjection
         services.AddSingleton<Application.Ventas.IConfiguracionDeMonedas, Plataforma.Sincronizacion.ConfiguracionDeMonedas>();
         services.AddScoped<Application.Plataforma.Sincronizacion.ICandadoDeSincronizacion, Plataforma.Sincronizacion.CandadoSqlServer>();
         services.AddScoped<Application.Plataforma.Sincronizacion.IEstadosDeSincronizacion, Plataforma.Sincronizacion.EstadosDeSincronizacion>();
+        services.AddScoped<Application.Plataforma.Listas.IFavoritos, Plataforma.Listas.FavoritosEf>();
         services.AddListas();
         return services;
     }

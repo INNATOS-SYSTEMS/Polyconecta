@@ -20,6 +20,9 @@ public static class DependencyInjection
         services.AddScoped<Plataforma.Sincronizacion.Sincronizador>();
         services.AddUseCase<Plataforma.Sincronizacion.SincronizarCatalogo, Plataforma.Sincronizacion.EstadoCatalogo, Plataforma.Sincronizacion.SincronizarCatalogoCaso>();
         services.AddUseCase<Plataforma.Sincronizacion.SincronizarTodo, IReadOnlyList<Plataforma.Sincronizacion.EstadoCatalogo>, Plataforma.Sincronizacion.SincronizarTodoCaso>();
+        services.AddUseCase<Plataforma.Listas.ListarFavoritos, IReadOnlyList<Plataforma.Listas.FavoritoDto>, Plataforma.Listas.ListarFavoritosCaso>();
+        services.AddUseCase<Plataforma.Listas.GuardarFavorito, Plataforma.Listas.FavoritoDto, Plataforma.Listas.GuardarFavoritoCaso>();
+        services.AddUseCase<Plataforma.Listas.BorrarFavorito, Unit, Plataforma.Listas.BorrarFavoritoCaso>();
         services.AddUseCase<Plataforma.Sincronizacion.EstadoDeSincronizacion, IReadOnlyList<Plataforma.Sincronizacion.EstadoCatalogo>, Plataforma.Sincronizacion.EstadoDeSincronizacionCaso>();
         return services;
     }
