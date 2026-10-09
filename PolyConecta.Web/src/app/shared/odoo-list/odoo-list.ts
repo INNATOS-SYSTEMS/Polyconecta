@@ -198,7 +198,7 @@ export class OdooList<T> implements OnInit {
     this.total.set(r.total);
     this.totales.set(r.totales);
     this.expandidas.set({});
-    this.filas.set(r.grupos ? r.grupos.map(g => this.filaGrupo(g, [], 0)) : r.filas.map(d => this.filaDato(d)));
+    this.filas.set(r.grupos ? r.grupos.map(g => this.filaGrupo(g, [], 0)) : (r.filas ?? []).map(d => this.filaDato(d)));
   }
 
   /** Vuelve a pedir la vista actual: después de que un documento cambió de estado. */

@@ -1,6 +1,6 @@
 <div class="o_control_panel">
     <div class="d-flex align-items-center gap-3">
-        <pc-boton-nuevo [ruta]="'/ventas/pedidos'" />
+        <pc-boton-nuevo [ruta]="'/ventas/pedidos/nuevo'" />
         <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos' }]" />
     </div>
     <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" [(agrupacionesActivas)]="agrupaciones"
@@ -22,8 +22,9 @@
                 <span class="badge badge-brand">{{ f.estado }}</span>
             </div>
             <div class="text-muted small">{{ f.cliente }}</div>
-            <div class="o_kanban_card_dato"><pc-odoo-icon nombre="paquete" />{{ producto(f.producto) }}</div>
-            @if (f.entrega) {
+            @if (f.fechaPromesa) {
+                <div class="o_kanban_card_dato"><pc-odoo-icon nombre="calendario" />Entrega estimada: {{ f.fechaPromesa }}</div>
+            } @else if (f.entrega) {
                 <div class="o_kanban_card_dato"><pc-odoo-icon nombre="calendario" />Entrega estimada: {{ fechaCampo(f.entrega) }}</div>
             }
         </ng-template>

@@ -1,78 +1,202 @@
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
-import { Component, computed, inject, input, signal } from '@angular/core';
-import { Router } from '@angular/router';
-import { PEDIDO_FOLIO } from '../../../core/seed/flujo';
-import { OperationalFlowState } from '../../../core/state/operational-flow-state';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
-import { PedidosAcciones } from '../pedidos-acciones';
-import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
 import { OdooSmartButtons, SmartButtonModel, botonInteligente } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
-import { PocSalesOrderForm } from '../../../shared/poc-sales-order-form/poc-sales-order-form';
+import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
+import { PaginaNoEncontrada } from '../../../shared/pagina-no-encontrada/pagina-no-encontrada';
+import { PedidosService, PedidoDetalleDto } from '../pedidos.service';
 
-/** Réplica de Pages/PedidoFormView.razor. */
 @Component({
   selector: 'pc-pedido-form',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, PocSalesOrderForm, OdooChatterDrawer, OdooIcon],
+  imports: [
+    CommonModule,
+    BotonNuevo,
+    OdooBreadcrumb,
+    OdooSmartButtons,
+    OdooStatusPipeline,
+    OdooChatterDrawer,
+    OdooIcon,
+    PaginaNoEncontrada,
+  ],
   templateUrl: './pedido-form.html',
-  styles: ':host { display: contents; }',
+  styles: `
+    :host { display: block; }
+    .o_form_view {
+      padding: 1.5rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .o_form_sheet {
+      background: white;
+      border: 1px solid var(--border-color, #e2e8f0);
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+  `,
 })
-export class PedidoForm {
-  protected readonly flow = inject(OperationalFlowState);
-  protected readonly router = inject(Router);
-  private readonly acciones = inject(PedidosAcciones);
-  protected readonly error = signal<string | undefined>(undefined);
+export class PedidoForm implements OnInit {
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly pedidosService = inject(PedidosService);
 
-  /** Llega de la ruta /pedidos/:folio. */
-  readonly folio = input(PEDIDO_FOLIO);
+  protected readonly id = signal<string>(this.route.snapshot.paramMap.get('id') ?? '');
+  protected readonly cargando = signal(true);
+  protected readonly guardando = signal(false);
+  protected readonly noEncontrado = signal(false);
+  protected readonly error = signal<string | null>(null);
+  protected readonly exito = signal<string | null>(null);
 
-  protected readonly stages = ['Borrador', 'Confirmado', 'Autorizado', 'En progreso', 'Hecho'];
+  protected readonly pedido = signal<PedidoDetalleDto | null>(null);
 
-  /** Devuelve el mismo objeto mutado: sin equal:false no avisaría a sus dependientes. */
-  protected readonly pedido = computed(() => {
-    this.flow.cambios();
-    return this.flow.pedido(this.folio());
-  }, { equal: () => false });
+  protected readonly stages = ['Borrador', 'Confirmado', 'Autorizado', 'Cancelado'];
 
-  protected readonly firmas = computed(() => {
-    this.flow.cambios();
-    return this.flow.firmasRecogidas(this.pedido().folio);
+  protected readonly subtotalCalculado = computed(() => {
+    const p = this.pedido();
+    if (!p) return 0;
+    return p.lineas.reduce((acc, l) => acc + (l.subtotal ?? (l.cantidad * (l.precioUnitario ?? 0))), 0);
   });
 
+  protected readonly ivaCalculado = computed(() => this.subtotalCalculado() * 0.16);
+  protected readonly totalCalculado = computed(() => this.subtotalCalculado() + this.ivaCalculado());
+
   protected readonly smartButtons = computed<SmartButtonModel[]>(() => {
-    this.flow.cambios();
-    if (this.pedido().libre) {
-      // FR-014: un pedido libre no tiene entrega ni OF hasta que se generen; nunca un origen falso.
-      const ofs = this.flow.ordenesDePedido(this.pedido().folio).length;
-      return [
-        botonInteligente('entrega', 0, '', true),
-        botonInteligente('orden', ofs, `/produccion/fabricacion?pedido=${this.pedido().folio}`, ofs === 0),
-      ];
-    }
+    const p = this.pedido();
+    if (!p) return [];
     return [
-      botonInteligente('entrega', 1, `/logistica/entregas/${this.flow.entrega().folio}`),
-      botonInteligente('orden', this.flow.ordenesDePedido(this.folio()).length, `/produccion/fabricacion?pedido=${this.folio()}`),
+      botonInteligente('entrega', 0, '', true),
+      botonInteligente('orden', 0, `/produccion/fabricacion?pedido=${p.folio}`, true),
     ];
   });
 
+  protected readonly accionConfirmar = computed(() =>
+    this.pedido()?.acciones.find(a => a.accion === 'confirmar')
+  );
+  protected readonly accionAutorizar = computed(() =>
+    this.pedido()?.acciones.find(a => a.accion === 'autorizar')
+  );
+  protected readonly accionRevocar = computed(() =>
+    this.pedido()?.acciones.find(a => a.accion === 'revocar')
+  );
+  protected readonly accionCancelar = computed(() =>
+    this.pedido()?.acciones.find(a => a.accion === 'cancelar')
+  );
+
+  protected readonly avisoEdicion = computed(() => {
+    const ed = this.pedido()?.acciones.find(a => a.accion === 'editar');
+    return ed?.aviso ?? null;
+  });
+
   protected readonly chatterEntries = computed<ChatterEntry[]>(() => {
-    this.flow.cambios();
-    const entradas: ChatterEntry[] = this.pedido().libre
-      ? [{ author: 'Sistema', timestamp: 'hoy', text: 'Pedido creado con Nuevo, sin sincronización de origen.' }]
-      : [{ author: 'Sistema', timestamp: '17 Sep 26', text: 'Creación del pedido por Alejandro' }];
-    for (const [rol, quien] of this.pedido().firmas) entradas.push({ author: 'Sistema', timestamp: 'hoy', text: `Autorización de ${rol} firmada por ${quien}` });
+    const p = this.pedido();
+    if (!p) return [];
+    const entradas: ChatterEntry[] = [
+      { author: 'Sistema', timestamp: p.fechaPedido, text: `Pedido ${p.folio} creado en Borrador.` },
+    ];
+    for (const f of p.firmas) {
+      entradas.push({
+        author: 'Sistema',
+        timestamp: f.fecha,
+        text: `Autorización de ${f.rol} firmada por ${f.usuario}${f.suplente ? ' (suplente)' : ''}.`,
+      });
+    }
     return entradas;
   });
 
-  /** Las mismas acciones que el kanban (PedidosAcciones): una sola regla por transición. */
-  protected confirmar(): void {
-    this.error.set(this.acciones.confirmar(this.pedido().folio));
+  async ngOnInit(): Promise<void> {
+    await this.cargarPedido();
   }
 
-  protected autorizar(): void {
-    // La firma pendiente no es un error en el formulario: el botón muestra "1/2".
-    this.acciones.autorizar(this.pedido().folio);
+  protected async cargarPedido(): Promise<void> {
+    const paramId = this.id();
+    if (!paramId || isNaN(Number(paramId))) {
+      this.noEncontrado.set(true);
+      this.cargando.set(false);
+      return;
+    }
+
+    this.cargando.set(true);
+    this.error.set(null);
+    try {
+      const p = await this.pedidosService.obtener(paramId);
+      this.pedido.set(p);
+    } catch {
+      this.noEncontrado.set(true);
+    } finally {
+      this.cargando.set(false);
+    }
+  }
+
+  protected async confirmar(): Promise<void> {
+    const p = this.pedido();
+    if (!p) return;
+    this.guardando.set(true);
+    this.error.set(null);
+    this.exito.set(null);
+    try {
+      const res = await this.pedidosService.confirmar(p.id, p.rowVersion);
+      this.pedido.set(res);
+      this.exito.set('Pedido confirmado exitosamente.');
+    } catch (e: unknown) {
+      this.error.set((e as Error).message || 'Error al confirmar el pedido.');
+    } finally {
+      this.guardando.set(false);
+    }
+  }
+
+  protected async autorizar(rol?: string | null): Promise<void> {
+    const p = this.pedido();
+    if (!p) return;
+    this.guardando.set(true);
+    this.error.set(null);
+    this.exito.set(null);
+    try {
+      const res = await this.pedidosService.autorizar(p.id, p.rowVersion, rol);
+      this.pedido.set(res);
+      this.exito.set('Firma de autorización registrada exitosamente.');
+    } catch (e: unknown) {
+      this.error.set((e as Error).message || 'Error al autorizar el pedido.');
+    } finally {
+      this.guardando.set(false);
+    }
+  }
+
+  protected async revocar(): Promise<void> {
+    const p = this.pedido();
+    if (!p) return;
+    this.guardando.set(true);
+    this.error.set(null);
+    this.exito.set(null);
+    try {
+      const res = await this.pedidosService.revocar(p.id, p.rowVersion, 'Revocación manual');
+      this.pedido.set(res);
+      this.exito.set('Autorización revocada.');
+    } catch (e: unknown) {
+      this.error.set((e as Error).message || 'Error al revocar la autorización.');
+    } finally {
+      this.guardando.set(false);
+    }
+  }
+
+  protected async cancelar(): Promise<void> {
+    const p = this.pedido();
+    if (!p) return;
+    this.guardando.set(true);
+    this.error.set(null);
+    this.exito.set(null);
+    try {
+      const res = await this.pedidosService.cancelar(p.id, p.rowVersion, 'Cancelación manual');
+      this.pedido.set(res);
+      this.exito.set('Pedido cancelado.');
+    } catch (e: unknown) {
+      this.error.set((e as Error).message || 'Error al cancelar el pedido.');
+    } finally {
+      this.guardando.set(false);
+    }
   }
 
   protected navegar(ruta: string): void {

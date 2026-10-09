@@ -47,6 +47,15 @@ test.describe('Sesión en la web (F1)', () => {
 
     // 2. Simular endpoint de guardado: la primera llamada da 401 (sesión vencida); la reanudada da 200
     await page.route('**/api/v1/ventas/pedidos**', async route => {
+      const url = route.request().url();
+      if (url.includes('/conjunto')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ completo: true, total: 0, filas: [] }) });
+        return;
+      }
+      if (url.includes('/consulta')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ total: 0, filas: [], grupos: null, totales: {} }) });
+        return;
+      }
       if (route.request().method() === 'POST') {
         intentosGuardar++;
         if (intentosGuardar === 1) {

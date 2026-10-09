@@ -140,6 +140,6 @@ export class OdooKanban<T> {
       datos = await firstValueFrom(ref.closed);
       if (datos === undefined || datos === false) return `${tr.nombre}: cancelado`;
     }
-    return tr.ejecutar(fila, datos);
+    return await tr.ejecutar(fila, datos);
   }
 }
