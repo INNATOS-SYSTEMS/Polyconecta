@@ -48,3 +48,6 @@ Thumbs.db
 auditoria-report/
 /scenario-report/
 /tablero-report/
+
+# Sesión de las pruebas de navegador (e2e/soporte/sesion-global.ts)
+/e2e/.auth/

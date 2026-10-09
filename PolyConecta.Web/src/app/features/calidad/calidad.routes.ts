@@ -1,4 +1,5 @@
 import { Routes, UrlMatchResult, UrlSegment } from '@angular/router';
+import { conSesion } from '../../core/sesion/con-sesion';
 
 /** Los controles libres (QC-2026-0001) tienen su propio formulario; el resto de folios son OF. */
 function controlLibre(segments: UrlSegment[]): UrlMatchResult | null {
@@ -7,9 +8,9 @@ function controlLibre(segments: UrlSegment[]): UrlMatchResult | null {
 }
 
 /** Módulo Calidad, bajo `/calidad` (D-155). */
-export const CALIDAD_ROUTES: Routes = [
+export const CALIDAD_ROUTES: Routes = conSesion([
   { path: '', pathMatch: 'full', loadComponent: () => import('./calidad-list/calidad-list').then(m => m.CalidadList) },
   { path: 'nuevo', loadComponent: () => import('./calidad-nuevo/calidad-nuevo').then(m => m.CalidadNuevo) },
   { matcher: controlLibre, loadComponent: () => import('./calidad-libre-form/calidad-libre-form').then(m => m.CalidadLibreForm) },
   { path: ':folioOf', loadComponent: () => import('./calidad-form/calidad-form').then(m => m.CalidadForm) },
-];
+]);

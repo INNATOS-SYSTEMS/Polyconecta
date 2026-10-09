@@ -3,6 +3,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { abrir, ANGULAR, BLAZOR, rutaComparable } from '../soporte/apps';
 import { rutasSeleccionadas } from '../soporte/rutas';
+import { SESION_GUARDADA } from '../soporte/sesion-global';
 
 /**
  * Auditoría de comportamiento de primer nivel: en cada ruta, para cada botón o enlace visible,
@@ -45,7 +46,7 @@ for (const ruta of rutasSeleccionadas()) {
   test(`auditoría ${ruta}`, async ({ browser }) => {
     test.setTimeout(600_000);
     const pb = await browser.newPage();
-    const pa = await browser.newPage();
+    const pa = await (await browser.newContext({ storageState: SESION_GUARDADA })).newPage();
     await abrir(pb, BLAZOR, ruta);
     await abrir(pa, ANGULAR, ruta);
     const nb = await pb.locator(CLICKABLES).count();

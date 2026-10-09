@@ -33,7 +33,8 @@ export const FLUJOS: readonly Flujo[] = [
     descripcion: 'Captura, confirmación y autorización con dos firmas.',
     pantallas: [
       { ruta: '/ventas/pedidos', titulo: 'Pedidos', tipo: 'Lista', siguiente: 'Abrir un pedido' },
-      { ruta: '/ventas/pedidos/IV310-26', titulo: 'Pedido IV310-26', tipo: 'Formulario', siguiente: 'Autorizar → genera OF' },
+      // Desde F1 el pedido sale de la API y se abre por id (D-154): necesita al menos un pedido (scripts/dev/sembrar-pedidos.sh).
+      { ruta: '/ventas/pedidos/1', titulo: 'Pedido', tipo: 'Formulario', siguiente: 'Autorizar → genera OF' },
       { ruta: '/ventas/pedidos/nuevo', titulo: 'Pedido nuevo', tipo: 'Nuevo' },
     ],
   },

@@ -47,6 +47,9 @@ const normalizar = (texto: string): string => texto.replace(/\s+/g, ' ').trim();
  *   réplica muestra "Clave - Nombre". Las dos formas quedan como «Clave».
  * - Botones inteligentes: nombre por tipo en singular o plural y orden por grupo. Cada botón queda como
  *   «tipo conteo», ordenados (ver `textoComparable`).
+ * - Botón "Pedido" de la OF y demás documentos en memoria: desde F1 el pedido vive en la API y el botón
+ *   queda deshabilitado con "Se conecta en F2" (research R-10 de la spec 003), sin conteo comparable.
+ *   Las dos formas quedan como «pedido».
  */
 const PRODUCTOS = catalogoSemilla().sort((a, b) => b.clave.length - a.clave.length || b.nombre.length - a.nombre.length);
 const escapar = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -61,7 +64,7 @@ export function canonico(texto: string): string {
     t = t.replace(new RegExp(`(?<=^|\\s)${escapar(p.nombre)}(?=\\s|$)`, 'g'), `«${p.clave}»`);
   }
   // Una línea con la clave de un producto y la descripción de otro queda «A» - «B» en la réplica.
-  return t.replace(/» - «/g, '» «');
+  return t.replace(/» - «/g, '» «').replace(/«pedido \d+»/g, '«pedido»');
 }
 
 const TIPOS_DE_BOTON: Record<string, string> = {

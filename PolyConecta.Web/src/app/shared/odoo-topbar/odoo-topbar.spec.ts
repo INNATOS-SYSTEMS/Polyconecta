@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { routes } from '../../app.routes';
+import { SesionState } from '../../core/sesion/sesion-state';
 import { OdooTopbar } from './odoo-topbar';
 import { moduleFor } from './modulos';
 
@@ -17,6 +18,8 @@ describe('OdooTopbar', () => {
   });
 
   it('muestra el menú del módulo de la ruta actual', async () => {
+    // Toda ruta exige sesión (US2 escenario 2).
+    TestBed.inject(SesionState).establecerSesion({ usuario: { id: 1, usuario: 'ac1', nombre: 'Celia Villarreal' }, asignaciones: [], permisos: [] });
     await TestBed.inject(Router).navigateByUrl('/produccion/fabricacion');
     const fixture = TestBed.createComponent(OdooTopbar);
     fixture.detectChanges();

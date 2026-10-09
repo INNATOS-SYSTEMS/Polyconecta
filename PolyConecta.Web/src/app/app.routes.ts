@@ -7,7 +7,7 @@ import { PaginaNoEncontrada } from './shared/pagina-no-encontrada/pagina-no-enco
  */
 export const routes: Routes = [
   { path: 'login', loadComponent: () => import('./features/plataforma/login/login').then(m => m.Login) },
-  { path: '', pathMatch: 'full', loadComponent: () => import('./features/plataforma/dashboard/dashboard').then(m => m.Dashboard) },
+  { path: '', pathMatch: 'full', loadChildren: () => import('./features/plataforma/inicio.routes').then(m => m.INICIO_ROUTES) },
   { path: 'catalogo', loadChildren: () => import('./features/catalogo/catalogo.routes').then(m => m.CATALOGO_ROUTES) },
   { path: 'ventas', loadChildren: () => import('./features/ventas/ventas.routes').then(m => m.VENTAS_ROUTES) },
   { path: 'inventario', loadChildren: () => import('./features/inventario/inventario.routes').then(m => m.INVENTARIO_ROUTES) },

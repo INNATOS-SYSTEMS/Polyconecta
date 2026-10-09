@@ -1,5 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import { abrir, ANGULAR, BLAZOR, rutaComparable } from '../soporte/apps';
+import { SESION_GUARDADA } from '../soporte/sesion-global';
 
 /**
  * Navegación igual en las dos aplicaciones (L2-T036): enlace directo, folio inexistente y
@@ -47,19 +48,20 @@ test('ruta inexistente: Blazor da 404 y Angular el <NotFound> de Routes.razor', 
 });
 
 test('atrás y adelante dejan la misma URL y el mismo título en las dos aplicaciones', async ({ browser }) => {
+  // Sobre la OF, que sigue en memoria en las dos aplicaciones: el pedido vive en la API desde F1 (R-10).
   const recorrido = async (base: string) => {
-    const page = await browser.newPage();
+    const page = await (await browser.newContext({ storageState: SESION_GUARDADA })).newPage();
     const pasos: { ruta: string; titulo: string }[] = [];
-    await abrir(page, base, '/pedidos');
+    await abrir(page, base, '/fabricacion');
     pasos.push(await donde(page));
-    await page.getByText('IV310-26').first().click();
-    await page.waitForURL(/\/pedidos\/IV310-26$/);
+    await page.getByText('BOL-2026-0001').first().click();
+    await page.waitForURL(/\/fabricacion\/BOL-2026-0001$/);
     pasos.push(await donde(page));
     await page.goBack();
-    await page.waitForURL(/\/pedidos$/);
+    await page.waitForURL(/\/fabricacion$/);
     pasos.push(await donde(page));
     await page.goForward();
-    await page.waitForURL(/\/pedidos\/IV310-26$/);
+    await page.waitForURL(/\/fabricacion\/BOL-2026-0001$/);
     pasos.push(await donde(page));
     const texto = await contenido(page);
     await page.close();
@@ -68,8 +70,8 @@ test('atrás y adelante dejan la misma URL y el mismo título en las dos aplicac
   const blazor = await recorrido(BLAZOR);
   const angular = await recorrido(ANGULAR);
   expect(angular.pasos).toEqual(blazor.pasos);
-  expect(angular.pasos.map(p => p.ruta)).toEqual(['/pedidos', '/pedidos/IV310-26', '/pedidos', '/pedidos/IV310-26']);
+  expect(angular.pasos.map(p => p.ruta)).toEqual(['/fabricacion', '/fabricacion/BOL-2026-0001', '/fabricacion', '/fabricacion/BOL-2026-0001']);
   // Tras volver adelante se ve el mismo documento (no una página en blanco ni la lista).
-  expect(angular.texto).toContain('IV310-26');
-  expect(blazor.texto).toContain('IV310-26');
+  expect(angular.texto).toContain('BOL-2026-0001');
+  expect(blazor.texto).toContain('BOL-2026-0001');
 });

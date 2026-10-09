@@ -38,7 +38,7 @@ Desde la raíz, `./run.sh` levanta la Web y la API, y `./run.sh --solo-web` solo
 | `npm run chatter` | Chatter en vivo de las pantallas en memoria: dos pestañas con la API corriendo (el mensaje llega en menos de 1 s) y sin conexión. Entra como `ac1`, porque el hub exige sesión |
 | `npm run tablero` | Tablero de flujo (spec 011): captura cada pantalla de `e2e/tablero/pantallas.ts` completa, a 1600 px, en `tablero-report/`. Solo levanta Angular |
 
-`scenarios` y `audit` levantan el prototipo y Angular si no están corriendo; `chatter` también levanta la API.
+`scenarios` y `audit` levantan el prototipo y Angular si no están corriendo. Desde F1 toda ruta exige sesión: `scenarios`, `audit`, `chatter`, `tablero` y la galería (`e2e/catalogo`) entran antes con un usuario de R1 (`E2E_USUARIO`, `planner-pim` por omisión) y necesitan la API arriba (`./run.sh`).
 
 ## Reglas de comparación con el prototipo
 
