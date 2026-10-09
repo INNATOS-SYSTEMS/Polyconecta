@@ -8,6 +8,7 @@
     "verificar-build": "node scripts/verificar-build.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
+    "e2e": "playwright test --config e2e/f1/playwright.config.ts",
     "scenarios": "playwright test --config e2e/playwright.config.ts scenarios/ --grep escenario",
     "audit": "playwright test --config e2e/playwright.config.ts auditoria/",
     "chatter": "playwright test --config e2e/chatter/playwright.config.ts",

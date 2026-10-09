@@ -1,12 +1,15 @@
 import { Component, computed, effect, inject, input, model, signal } from '@angular/core';
 import { OdooIcon } from '../odoo-icon/odoo-icon';
-import { ChatterService } from '../../core/chatter/chatter.service';
-import { horaCorta } from '../../core/format/numero';
+import { ChatterService, DocumentoChatter, MensajeGuardado } from '../../core/chatter/chatter.service';
+import { fechaHora, horaCorta } from '../../core/format/numero';
 
 export interface ChatterEntry {
   author: string;
   timestamp: string;
   text: string;
+  /** Solo en documentos guardados: `Nota` es interna y `Cambio` lo escribe la transición (R-04). */
+  clase?: 'Mensaje' | 'Nota' | 'Cambio';
+  grupo?: string | null;
 }
 
 /**
@@ -19,7 +22,7 @@ export interface ChatterEntry {
   selector: 'pc-odoo-chatter-drawer',
   imports: [OdooIcon],
   templateUrl: './odoo-chatter-drawer.html',
-  styles: ':host { display: contents; }',
+  styles: ':host { display: contents; } .o_chatter_nota { background: #fff8e6; }',
 })
 export class OdooChatterDrawer {
   private readonly chatter = inject(ChatterService);
@@ -29,6 +32,14 @@ export class OdooChatterDrawer {
   readonly documentId = input<string | undefined>(undefined);
   /** Documento que todavía no se guarda ("Nuevo", D-136): el chatter se ve, pero se activa al guardar. */
   readonly inactivo = input(false);
+  /**
+   * Documento con chatter guardado (R-04, L2-T032): el historial sale de la API, los mensajes se guardan
+   * con el autor de la sesión y llegan en vivo a quien tenga abierto el mismo documento.
+   */
+  readonly documento = input<DocumentoChatter | undefined>(undefined);
+  protected readonly clase = signal<'Mensaje' | 'Nota'>('Mensaje');
+  protected readonly errorEnvio = signal<string | null>(null);
+  private readonly vistos = new Set<number>();
 
   protected readonly newMsgText = signal('');
   protected readonly avisoSinConexion = signal(false);
@@ -38,6 +49,21 @@ export class OdooChatterDrawer {
 
   constructor() {
     effect(onCleanup => {
+      const d = this.documento();
+      if (!d) return;
+      this.vistos.clear();
+      this.messages.set([]);
+      const agregar = (m: MensajeGuardado) => {
+        if (this.vistos.has(m.id)) return; // el propio llega también por el grupo
+        this.vistos.add(m.id);
+        this.messages.update(lista => [...lista, entrada(m)]);
+      };
+      const dejar = this.chatter.seguir(d, agregar);
+      void this.chatter.historial(d).then(h => h.forEach(agregar)).catch(() => this.avisoSinConexion.set(true));
+      onCleanup(dejar);
+    });
+    effect(onCleanup => {
+      if (this.documento()) return;
       const id = this.documentId();
       if (!id) return;
       void this.chatter.conectar();
@@ -51,6 +77,21 @@ export class OdooChatterDrawer {
   protected async send(): Promise<void> {
     const texto = this.newMsgText();
     if (texto.trim() === '') return;
+    const d = this.documento();
+    if (d) {
+      this.errorEnvio.set(null);
+      try {
+        const m = await this.chatter.publicar(d, this.clase(), texto);
+        this.newMsgText.set('');
+        if (!this.vistos.has(m.id)) {
+          this.vistos.add(m.id);
+          this.messages.update(lista => [...lista, entrada(m)]);
+        }
+      } catch (e) {
+        this.errorEnvio.set((e as Error).message || 'No se pudo enviar el mensaje.');
+      }
+      return;
+    }
     this.newMsgText.set('');
     const id = this.documentId();
     // Con conexión, el mensaje propio llega por ReceiveChatterMessage: no se agrega dos veces.
@@ -60,8 +101,17 @@ export class OdooChatterDrawer {
   }
 
   protected inicial(author: string): string {
-    return author ? author.substring(0, 1) : 'S';
+    if (!author) return 'S';
+    return author.substring(0, 1);
   }
 }
+
+const entrada = (m: MensajeGuardado): ChatterEntry => ({
+  author: m.autor,
+  timestamp: fechaHora(new Date(m.fecha)),
+  text: m.texto,
+  clase: m.clase,
+  grupo: m.grupo,
+});
 
 export { horaCorta } from '../../core/format/numero';

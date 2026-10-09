@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { fechaCampo, fechaHora, importe, n2 } from '../../../core/format/numero';
+import { importe, n2 } from '../../../core/format/numero';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Dialog } from '@angular/cdk/dialog';
@@ -9,7 +9,7 @@ import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb'
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooSmartButtons, SmartButtonModel, botonInteligente } from '../../../shared/odoo-smart-buttons/odoo-smart-buttons';
 import { OdooStatusPipeline } from '../../../shared/odoo-status-pipeline/odoo-status-pipeline';
-import { ChatterEntry, OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
+import { OdooChatterDrawer } from '../../../shared/odoo-chatter-drawer/odoo-chatter-drawer';
 import { PaginaNoEncontrada } from '../../../shared/pagina-no-encontrada/pagina-no-encontrada';
 import { OdooDialog } from '../../../shared/odoo-dialog/odoo-dialog';
 import { FirmaPedido } from '../firma-pedido';
@@ -123,20 +123,10 @@ export class PedidoForm implements OnInit {
     return ed?.aviso ?? null;
   });
 
-  protected readonly chatterEntries = computed<ChatterEntry[]>(() => {
+  /** El chatter del pedido se guarda y llega en vivo (R-04, L2-T032). */
+  protected readonly documentoChatter = computed(() => {
     const p = this.pedido();
-    if (!p) return [];
-    const entradas: ChatterEntry[] = [
-      { author: 'Sistema', timestamp: fechaCampo(new Date(`${p.fechaPedido}T00:00:00`)), text: `Pedido ${p.folio} creado en Borrador.` },
-    ];
-    for (const f of p.firmas) {
-      entradas.push({
-        author: f.usuario,
-        timestamp: fechaHora(new Date(f.fecha)),
-        text: `Autorización de ${f.rol} firmada por ${f.usuario}${f.suplente ? ' (suplente)' : ''}.`,
-      });
-    }
-    return entradas;
+    return p ? { tipo: 'ventas.pedido', id: p.id } : undefined;
   });
 
   async ngOnInit(): Promise<void> {

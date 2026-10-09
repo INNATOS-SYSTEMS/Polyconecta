@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 
 /**
  * Vistas de búsqueda tal como las declara la API (`GET …/vista`, contracts/api-listas.md), copiadas de
- * la API real, y favoritos vacíos: las listas HTTP los piden al abrir. Se registra después de las
+ * la API real, y favoritos y chatter vacíos: las listas y los formularios HTTP los piden al abrir. Se registra después de las
  * simulaciones de la prueba, para que gane sobre sus rutas más generales.
  */
 export const VISTAS: Record<string, unknown> = {
@@ -195,6 +195,8 @@ export const VISTAS: Record<string, unknown> = {
 };
 
 export async function simularListas(page: Page): Promise<void> {
+  // El chatter de los documentos guardados pide su historial al abrir el formulario (L2-T032).
+  await page.route(/\/api\/v1\/plataforma\/chatter\//, route => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
   await page.route(/\/api\/v1\/plataforma\/favoritos\/[^/]+$/, route =>
     route.request().method() === 'GET' ? route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }) : route.fallback(),
   );
