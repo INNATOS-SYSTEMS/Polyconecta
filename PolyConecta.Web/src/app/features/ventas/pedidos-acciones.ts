@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { TransicionKanban } from '../../core/kanban/kanban';
 import { OrigenHttp } from '../../core/lista/origen-http';
-import { SearchView } from '../../core/search/search-view';
 import { PedidosService, PedidoDetalleDto } from './pedidos.service';
 import { FirmaPedido } from './firma-pedido';
 
@@ -22,23 +21,6 @@ export interface FilaPedido {
 
 export const ETAPAS_PEDIDO = ['Borrador', 'Confirmado', 'Autorizado', 'Cancelado'];
 
-export const VISTA_PEDIDOS: SearchView<FilaPedido> = {
-  referencia: p => p.folio,
-  campos: [
-    { etiqueta: 'Folio', valor: p => p.folio },
-    { etiqueta: 'Cliente', valor: p => p.cliente },
-  ],
-  filtros: [
-    { nombre: 'Borrador', campo: 'Estado', condicion: p => p.estado === 'Borrador' },
-    { nombre: 'Confirmado', campo: 'Estado', condicion: p => p.estado === 'Confirmado' },
-    { nombre: 'Autorizado', campo: 'Estado', condicion: p => p.estado === 'Autorizado' },
-    { nombre: 'Cancelado', campo: 'Estado', condicion: p => p.estado === 'Cancelado' },
-  ],
-  agrupaciones: [
-    { etiqueta: 'Estado', clave: p => p.estado },
-    { etiqueta: 'Cliente', clave: p => p.cliente },
-  ],
-};
 
 /**
  * Acciones del pedido sobre la API (spec 003, L2-T024):
@@ -54,8 +36,6 @@ export class PedidosAcciones {
       modulo: 'ventas',
       lista: 'pedidos',
       id: f => String(f.id),
-      buscables: ['folio', 'cliente'],
-      vista: VISTA_PEDIDOS,
     });
   }
 

@@ -5,7 +5,8 @@ import { OdooList } from '../../../../shared/odoo-list/odoo-list';
 import { ColumnaLista } from '../../../../shared/odoo-list/columnas';
 import { OdooSearchPanel } from '../../../../shared/odoo-search-panel/odoo-search-panel';
 import { SearchView } from '../../../../core/search/search-view';
-import { OrigenHttp } from '../../../../core/lista/origen-http';
+import { OrigenHttp, vistaVacia } from '../../../../core/lista/origen-http';
+import { FavoritosHttp } from '../../../../core/lista/favoritos-http';
 
 export interface FilaProducto {
   id: number;
@@ -18,21 +19,6 @@ export interface FilaProducto {
   [key: string]: unknown;
 }
 
-const VISTA_PRODUCTOS: SearchView<FilaProducto> = {
-  campos: [
-    { etiqueta: 'Código', valor: f => f.codigo },
-    { etiqueta: 'Nombre', valor: f => f.nombre },
-    { etiqueta: 'Clasificación', valor: f => f.clasificacion },
-  ],
-  filtros: [
-    { nombre: 'Activos', campo: 'Estado', condicion: f => f.activo },
-    { nombre: 'Archivados', campo: 'Estado', condicion: f => !f.activo },
-  ],
-  agrupaciones: [
-    { etiqueta: 'Clasificación', clave: f => f.clasificacion ?? 'Sin clasificar' },
-    { etiqueta: 'Estado', clave: f => (f.activo ? 'Activo' : 'Archivado') },
-  ],
-};
 
 @Component({
   selector: 'pc-productos-list',
@@ -43,7 +29,8 @@ const VISTA_PRODUCTOS: SearchView<FilaProducto> = {
 export class ProductosList {
   private readonly router = inject(Router);
 
-  protected readonly vista = VISTA_PRODUCTOS;
+  protected readonly vista = signal<SearchView<FilaProducto>>(vistaVacia());
+  protected readonly favoritos = new FavoritosHttp();
   protected readonly idProducto = (f: FilaProducto) => String(f.id);
 
   protected readonly columnas: ColumnaLista<FilaProducto>[] = [
@@ -58,9 +45,11 @@ export class ProductosList {
     modulo: 'inventario',
     lista: 'productos',
     id: f => String(f.id),
-    buscables: ['codigo', 'nombre', 'clasificacion'],
-    vista: VISTA_PRODUCTOS,
   });
+
+  constructor() {
+    void this.origen.vista().then(v => this.vista.set(v));
+  }
 
   protected readonly searchText = signal('');
   protected readonly filtros = signal<string[]>(['Activos']);

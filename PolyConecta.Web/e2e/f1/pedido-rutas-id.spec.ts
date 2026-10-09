@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { ANGULAR, abrir } from '../soporte/apps';
+import { simularListas } from '../soporte/listas';
 
 /**
  * Escenarios de rutas por id y acciones del pedido de venta (F1 / US1, L2-T024, D-154, FR-031a):
@@ -100,6 +101,8 @@ test.describe('Pedidos de venta: rutas por id y acciones (F1 / US1 / L2-T024)', 
       }
     });
 
+    await simularListas(page);
+
     await abrir(page, ANGULAR, '/ventas/pedidos');
     await expect(page.getByText('PV-2026-0015')).toBeVisible();
 
@@ -123,6 +126,8 @@ test.describe('Pedidos de venta: rutas por id y acciones (F1 / US1 / L2-T024)', 
     await page.route(/\/api\/v1\/ventas\/pedidos\/999999/, async route => {
       await route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ error: 'No existe el pedido' }) });
     });
+
+    await simularListas(page);
 
     await abrir(page, ANGULAR, '/ventas/pedidos/999999');
 
@@ -187,6 +192,8 @@ test.describe('Pedidos de venta: rutas por id y acciones (F1 / US1 / L2-T024)', 
         await route.fallback();
       }
     });
+
+    await simularListas(page);
 
     await abrir(page, ANGULAR, '/ventas/pedidos/15');
 

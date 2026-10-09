@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { ANGULAR, abrir } from '../soporte/apps';
+import { simularListas } from '../soporte/listas';
 
 /**
  * Suite E2E de Pedidos de Venta F1 / US1 (quickstart §4, L2-T025):
@@ -174,6 +175,8 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
         await route.fallback();
       }
     });
+
+    await simularListas(page);
 
     await abrir(page, ANGULAR, '/ventas/pedidos/nuevo');
 
@@ -417,6 +420,8 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
       }
     });
 
+    await simularListas(page);
+
     await abrir(page, ANGULAR, '/ventas/pedidos/101');
 
     // 1. Paso 2: Intentar confirmar sin precio -> mensaje de error
@@ -575,6 +580,8 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
         await route.fallback();
       }
     });
+
+    await simularListas(page);
 
     await abrir(page, ANGULAR, '/ventas/pedidos/101');
 

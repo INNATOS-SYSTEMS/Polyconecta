@@ -3,7 +3,7 @@
         <pc-boton-nuevo [ruta]="'/ventas/pedidos/nuevo'" />
         <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos' }]" />
     </div>
-    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" [(agrupacionesActivas)]="agrupaciones"
+    <pc-odoo-search-panel [view]="vista()" [(texto)]="searchText" [(filtrosActivos)]="filtros" [(agrupacionesActivas)]="agrupaciones"
                           [permiteAgrupar]="viewState.viewMode() !== 'Kanban'" [conFavoritos]="viewState.viewMode() !== 'Kanban'"
                           [favoritos]="lista()?.favoritos() ?? []" (guardarFavorito)="lista()?.guardarFavorito($event.nombre, $event.porOmision)"
                           (aplicarFavorito)="lista()?.aplicarFavorito($event)" (borrarFavorito)="lista()?.borrarFavorito($event)" />
@@ -15,7 +15,8 @@
 <div class="p-4">
     @if (viewState.viewMode() === 'Kanban') {
         <pc-odoo-kanban #kanban [origen]="origen" campoEtapa="estado" [etapas]="etapas" [transiciones]="transiciones" [tarjeta]="tarjeta"
-                        [idDe]="idPedido" [etapaDe]="etapaPedido" [nombrados]="filtros()" [busqueda]="searchText()" (abrir)="abrir($event)" />
+                        [idDe]="idPedido" [etapaDe]="etapaPedido" [nombrados]="filtros()" [busqueda]="searchText()" (abrir)="abrir($event)"
+                        (movida)="origen.invalidar()" />
         <ng-template #tarjeta let-f>
             <div class="o_kanban_card_cabecera">
                 <div class="fw-semibold text-dark small">{{ f.folio }}</div>
@@ -30,7 +31,7 @@
         </ng-template>
         <pc-odoo-pager [count]="kanban.total()" />
     } @else {
-        <pc-odoo-list lista="ventas.pedidos" [origen]="origen" [columnas]="columnas" [idDe]="idPedido" mensajeVacio=""
+        <pc-odoo-list [almacenFavoritos]="favoritos" [estadoEnUrl]="true" lista="ventas.pedidos" [origen]="origen" [columnas]="columnas" [idDe]="idPedido" mensajeVacio=""
                       [(busqueda)]="searchText" [(nombrados)]="filtros" [(agruparPor)]="agrupaciones" (abrir)="abrir($event)" />
     }
 </div>

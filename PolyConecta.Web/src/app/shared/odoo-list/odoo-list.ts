@@ -17,7 +17,8 @@ import {
   type RowSelectionState,
   type SortingState,
 } from '@tanstack/angular-table';
-import { Favorito, FavoritosEnNavegador } from '../../core/lista/favoritos';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AlmacenDeFavoritos, Favorito, FavoritosEnNavegador } from '../../core/lista/favoritos';
 import { ConsultaLista, consultaInicial, FiltroLista, GrupoLista, OrigenDeLista, TAMANOS_PAGINA } from '../../core/lista/origen';
 import { AvisosService } from '../odoo-dialog/avisos';
 import { OdooIcon } from '../odoo-icon/odoo-icon';
@@ -71,6 +72,13 @@ export class OdooList<T> implements OnInit {
   readonly conPaginador = input(true);
   /** Filas que abren un formulario al pulsarlas. Sin formulario (incidencias), `false`. */
   readonly filasPulsables = input(true);
+  /** Dónde viven los favoritos: en el navegador (réplica en memoria) o por usuario en la base (listas HTTP). */
+  readonly almacenFavoritos = input<AlmacenDeFavoritos>(new FavoritosEnNavegador());
+  /**
+   * Refleja búsqueda, filtros con nombre, agrupación, orden, página y tamaño en la URL y los restaura al
+   * abrirla, recargar o compartir el enlace (02 §7, US4 escenario 1). Un favorito aplicado también se ve.
+   */
+  readonly estadoEnUrl = input(false);
 
   /** Estado de la barra de búsqueda, enlazado en dos sentidos para que un favorito lo pueda cambiar. */
   readonly busqueda = model('');
@@ -94,8 +102,13 @@ export class OdooList<T> implements OnInit {
   readonly menuTamano = signal(false);
   readonly favoritos = signal<Favorito[]>([]);
   protected readonly tamanos = TAMANOS_PAGINA;
-  private readonly almacen = new FavoritosEnNavegador();
   private peticion = 0;
+  private readonly router = inject(Router, { optional: true });
+  private readonly ruta = inject(ActivatedRoute, { optional: true });
+  /** La página que trae la URL: el primer reinicio de página la respeta en lugar de volver a 0. */
+  private paginaDeUrl: number | null = null;
+  /** No se escribe la URL hasta haber leído la que trajo la ruta. */
+  private readonly urlLeida = signal(false);
 
   readonly columnasVisibles = computed(() => {
     const vis = this.visibilidad();
@@ -166,11 +179,18 @@ export class OdooList<T> implements OnInit {
       this.nombrados();
       this.busqueda();
       this.agruparPor();
-      untracked(() => this.pagina.set(0));
+      untracked(() => {
+        this.pagina.set(this.paginaDeUrl ?? 0);
+        this.paginaDeUrl = null;
+      });
     });
     effect(() => {
       const c = this.consulta();
       untracked(() => void this.cargar(c));
+    });
+    effect(() => {
+      const c = this.consulta();
+      if (this.estadoEnUrl() && this.urlLeida()) untracked(() => this.escribirUrl(c));
     });
   }
 
@@ -179,9 +199,51 @@ export class OdooList<T> implements OnInit {
     this.visibilidad.set(Object.fromEntries(this.columnas().filter(c => c.visible === false).map(c => [c.campo, false])));
     this.sorting.set(this.ordenInicial());
     this.tamano.set(this.tamanoInicial());
-    this.favoritos.set(await this.almacen.listar(this.lista()));
+    // Un enlace con estado manda sobre el favorito por omisión.
+    const desdeUrl = this.estadoEnUrl() && this.leerUrl();
+    this.urlLeida.set(true);
+    try {
+      this.favoritos.set(await this.almacenFavoritos().listar(this.lista()));
+    } catch {
+      this.favoritos.set([]); // sin favoritos, la lista sigue funcionando
+    }
     const porOmision = this.favoritos().find(f => f.porOmision);
-    if (porOmision) this.aplicarFavorito(porOmision);
+    if (porOmision && !desdeUrl) this.aplicarFavorito(porOmision);
+  }
+
+  // --- Estado en la URL (02 §7) ---
+
+  /** Aplica el estado que trae la URL; `false` si no trae ninguno. */
+  private leerUrl(): boolean {
+    const p = this.ruta?.snapshot.queryParamMap;
+    if (!p || !['q', 'filtro', 'agrupar', 'orden', 'pagina', 'tamano'].some(k => p.has(k))) return false;
+    this.busqueda.set(p.get('q') ?? '');
+    this.nombrados.set(p.getAll('filtro'));
+    this.agruparPor.set(p.getAll('agrupar'));
+    this.sorting.set(p.getAll('orden').map(o => (o.startsWith('-') ? { id: o.slice(1), desc: true } : { id: o, desc: false })));
+    const tamano = Number(p.get('tamano'));
+    if ((TAMANOS_PAGINA as readonly number[]).includes(tamano)) this.tamano.set(tamano);
+    const pagina = Number(p.get('pagina'));
+    this.paginaDeUrl = Number.isInteger(pagina) && pagina > 1 ? pagina - 1 : null;
+    return true;
+  }
+
+  private escribirUrl(c: ConsultaLista): void {
+    if (!this.router || !this.ruta) return;
+    const vacio = <V>(v: V[]) => (v.length ? v : null);
+    void this.router.navigate([], {
+      relativeTo: this.ruta,
+      queryParams: {
+        q: c.busqueda,
+        filtro: vacio(c.nombrados),
+        agrupar: vacio(c.agruparPor),
+        orden: vacio(c.orden.map(o => (o.desc ? `-${o.campo}` : o.campo))),
+        pagina: c.pagina > 0 ? c.pagina + 1 : null,
+        tamano: c.tamano !== this.tamanoInicial() ? c.tamano : null,
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   private aplicar<V>(s: { (): V; set(v: V): void }, u: unknown): void {
@@ -277,12 +339,12 @@ export class OdooList<T> implements OnInit {
   async guardarFavorito(nombre: string, porOmision: boolean): Promise<void> {
     const c = this.consulta();
     try {
-      await this.almacen.guardar({
+      await this.almacenFavoritos().guardar({
         id: `${Date.now()}`, lista: this.lista(), nombre, porOmision,
-        filtros: c.filtros, busqueda: c.busqueda, agruparPor: c.agruparPor, orden: c.orden, tamano: c.tamano,
+        filtros: c.filtros, nombrados: c.nombrados, busqueda: c.busqueda, agruparPor: c.agruparPor, orden: c.orden, tamano: c.tamano,
         columnas: this.ordenColumnas().map(campo => ({ campo, visible: this.visibilidad()[campo] !== false })),
       });
-      this.favoritos.set(await this.almacen.listar(this.lista()));
+      this.favoritos.set(await this.almacenFavoritos().listar(this.lista()));
       this.avisos.exito(`Favorito "${nombre.trim()}" guardado.`);
     } catch (e) {
       this.avisos.error((e as Error).message);
@@ -291,6 +353,7 @@ export class OdooList<T> implements OnInit {
 
   aplicarFavorito(f: Favorito): void {
     this.busqueda.set(f.busqueda ?? '');
+    if (f.nombrados) this.nombrados.set(f.nombrados);
     this.agruparPor.set(f.agruparPor);
     this.sorting.set(f.orden.map(o => ({ id: o.campo, desc: o.desc })));
     this.tamano.set(f.tamano);
@@ -303,8 +366,8 @@ export class OdooList<T> implements OnInit {
   }
 
   async borrarFavorito(id: string): Promise<void> {
-    await this.almacen.borrar(this.lista(), id);
-    this.favoritos.set(await this.almacen.listar(this.lista()));
+    await this.almacenFavoritos().borrar(this.lista(), id);
+    this.favoritos.set(await this.almacenFavoritos().listar(this.lista()));
   }
 
   // --- Presentación ---

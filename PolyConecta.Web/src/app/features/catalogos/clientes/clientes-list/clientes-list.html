@@ -3,7 +3,7 @@
     <pc-odoo-breadcrumb [items]="[{ label: 'Ventas' }, { label: 'Clientes' }]" />
   </div>
   <pc-odoo-search-panel
-    [view]="vista"
+    [view]="vista()"
     [(texto)]="searchText"
     [(filtrosActivos)]="filtros"
     [(agrupacionesActivas)]="agrupaciones"
@@ -14,7 +14,7 @@
 </div>
 
 <div class="p-4">
-  <pc-odoo-list
+  <pc-odoo-list [almacenFavoritos]="favoritos" [estadoEnUrl]="true"
     lista="ventas.clientes"
     [origen]="origen"
     [columnas]="columnas"

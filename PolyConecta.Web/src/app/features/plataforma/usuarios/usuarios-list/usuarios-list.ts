@@ -6,7 +6,8 @@ import { OdooList } from '../../../../shared/odoo-list/odoo-list';
 import { ColumnaLista } from '../../../../shared/odoo-list/columnas';
 import { OdooSearchPanel } from '../../../../shared/odoo-search-panel/odoo-search-panel';
 import { SearchView } from '../../../../core/search/search-view';
-import { OrigenHttp } from '../../../../core/lista/origen-http';
+import { OrigenHttp, vistaVacia } from '../../../../core/lista/origen-http';
+import { FavoritosHttp } from '../../../../core/lista/favoritos-http';
 
 export interface FilaUsuario {
   id: number;
@@ -18,20 +19,6 @@ export interface FilaUsuario {
   [key: string]: unknown;
 }
 
-const VISTA_USUARIOS: SearchView<FilaUsuario> = {
-  campos: [
-    { etiqueta: 'Usuario', valor: f => f.usuario },
-    { etiqueta: 'Nombre', valor: f => f.nombre },
-    { etiqueta: 'Correo', valor: f => f.email },
-  ],
-  filtros: [
-    { nombre: 'Activos', campo: 'Estado', condicion: f => f.activo },
-    { nombre: 'Archivados', campo: 'Estado', condicion: f => !f.activo },
-  ],
-  agrupaciones: [
-    { etiqueta: 'Estado', clave: f => (f.activo ? 'Activo' : 'Archivado') },
-  ],
-};
 
 @Component({
   selector: 'pc-usuarios-list',
@@ -42,7 +29,8 @@ const VISTA_USUARIOS: SearchView<FilaUsuario> = {
 export class UsuariosList {
   private readonly router = inject(Router);
 
-  protected readonly vista = VISTA_USUARIOS;
+  protected readonly vista = signal<SearchView<FilaUsuario>>(vistaVacia());
+  protected readonly favoritos = new FavoritosHttp();
   protected readonly idUsuario = (f: FilaUsuario) => String(f.id);
 
   protected readonly columnas: ColumnaLista<FilaUsuario>[] = [
@@ -56,9 +44,11 @@ export class UsuariosList {
     modulo: 'plataforma',
     lista: 'usuarios',
     id: f => String(f.id),
-    buscables: ['usuario', 'nombre', 'email'],
-    vista: VISTA_USUARIOS,
   });
+
+  constructor() {
+    void this.origen.vista().then(v => this.vista.set(v));
+  }
 
   protected readonly searchText = signal('');
   protected readonly filtros = signal<string[]>(['Activos']);

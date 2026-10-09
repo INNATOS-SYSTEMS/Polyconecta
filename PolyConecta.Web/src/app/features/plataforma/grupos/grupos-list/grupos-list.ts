@@ -6,7 +6,8 @@ import { OdooList } from '../../../../shared/odoo-list/odoo-list';
 import { ColumnaLista } from '../../../../shared/odoo-list/columnas';
 import { OdooSearchPanel } from '../../../../shared/odoo-search-panel/odoo-search-panel';
 import { SearchView } from '../../../../core/search/search-view';
-import { OrigenHttp } from '../../../../core/lista/origen-http';
+import { OrigenHttp, vistaVacia } from '../../../../core/lista/origen-http';
+import { FavoritosHttp } from '../../../../core/lista/favoritos-http';
 
 export interface FilaGrupo {
   id: number;
@@ -19,20 +20,6 @@ export interface FilaGrupo {
   [key: string]: unknown;
 }
 
-const VISTA_GRUPOS: SearchView<FilaGrupo> = {
-  campos: [
-    { etiqueta: 'Código', valor: f => f.codigo },
-    { etiqueta: 'Nombre', valor: f => f.nombre },
-    { etiqueta: 'Descripción', valor: f => f.descripcion },
-  ],
-  filtros: [
-    { nombre: 'Activos', campo: 'Estado', condicion: f => f.activo },
-    { nombre: 'Archivados', campo: 'Estado', condicion: f => !f.activo },
-  ],
-  agrupaciones: [
-    { etiqueta: 'Estado', clave: f => (f.activo ? 'Activo' : 'Archivado') },
-  ],
-};
 
 @Component({
   selector: 'pc-grupos-list',
@@ -43,7 +30,8 @@ const VISTA_GRUPOS: SearchView<FilaGrupo> = {
 export class GruposList {
   private readonly router = inject(Router);
 
-  protected readonly vista = VISTA_GRUPOS;
+  protected readonly vista = signal<SearchView<FilaGrupo>>(vistaVacia());
+  protected readonly favoritos = new FavoritosHttp();
   protected readonly idGrupo = (f: FilaGrupo) => String(f.id);
 
   protected readonly columnas: ColumnaLista<FilaGrupo>[] = [
@@ -57,9 +45,11 @@ export class GruposList {
     modulo: 'plataforma',
     lista: 'grupos',
     id: f => String(f.id),
-    buscables: ['codigo', 'nombre', 'descripcion'],
-    vista: VISTA_GRUPOS,
   });
+
+  constructor() {
+    void this.origen.vista().then(v => this.vista.set(v));
+  }
 
   protected readonly searchText = signal('');
   protected readonly filtros = signal<string[]>(['Activos']);

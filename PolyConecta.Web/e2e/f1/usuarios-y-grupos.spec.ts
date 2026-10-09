@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { ANGULAR, abrir } from '../soporte/apps';
+import { simularListas } from '../soporte/listas';
 
 /**
  * Escenarios de Usuarios y Grupos (spec 003, L2-T012, US2, quickstart §2):
@@ -115,6 +116,8 @@ test.describe('Usuarios y grupos (F1 / US2)', () => {
       });
     });
 
+    await simularListas(page);
+
     await abrir(page, ANGULAR, '/plataforma/grupos');
 
     // Barra superior: nombre del módulo
@@ -186,6 +189,8 @@ test.describe('Usuarios y grupos (F1 / US2)', () => {
 
       await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
     });
+
+    await simularListas(page);
 
     await abrir(page, ANGULAR, '/plataforma/grupos/1');
 
@@ -269,6 +274,8 @@ test.describe('Usuarios y grupos (F1 / US2)', () => {
 
       await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
     });
+
+    await simularListas(page);
 
     await abrir(page, ANGULAR, '/plataforma/grupos/nuevo');
 
@@ -360,6 +367,8 @@ test.describe('Usuarios y grupos (F1 / US2)', () => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
     });
 
+    await simularListas(page);
+
     await abrir(page, ANGULAR, '/plataforma/usuarios/nuevo');
 
     await page.locator('#campo-usuario').fill('atrevino');
@@ -393,6 +402,8 @@ test.describe('Usuarios y grupos (F1 / US2)', () => {
         }),
       });
     });
+
+    await simularListas(page);
 
     await abrir(page, ANGULAR, '/');
 

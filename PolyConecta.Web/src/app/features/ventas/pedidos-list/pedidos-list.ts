@@ -11,7 +11,10 @@ import { OdooList } from '../../../shared/odoo-list/odoo-list';
 import { OdooPager } from '../../../shared/odoo-pager/odoo-pager';
 import { OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-panel';
 import { OdooViewSwitcher } from '../../../shared/odoo-view-switcher/odoo-view-switcher';
-import { ETAPAS_PEDIDO, FilaPedido, PedidosAcciones, VISTA_PEDIDOS } from '../pedidos-acciones';
+import { ETAPAS_PEDIDO, FilaPedido, PedidosAcciones } from '../pedidos-acciones';
+import { SearchView } from '../../../core/search/search-view';
+import { vistaVacia } from '../../../core/lista/origen-http';
+import { FavoritosHttp } from '../../../core/lista/favoritos-http';
 
 /** Lista y kanban de pedidos de venta conectados a la API HTTP (contracts/api-listas.md, D-154). */
 @Component({
@@ -24,10 +27,15 @@ export class PedidosList {
   private readonly router = inject(Router);
   private readonly acciones = inject(PedidosAcciones);
   protected readonly viewState = inject(UiViewState);
-  protected readonly vista = VISTA_PEDIDOS;
+  protected readonly vista = signal<SearchView<FilaPedido>>(vistaVacia());
+  protected readonly favoritos = new FavoritosHttp();
   protected readonly lista = viewChild(OdooList<FilaPedido>);
 
   protected readonly origen = this.acciones.origen();
+
+  constructor() {
+    void this.origen.vista().then(v => this.vista.set(v));
+  }
   protected readonly transiciones = this.acciones.transiciones();
   protected readonly fechaCampo = fechaCampo;
   protected readonly etapas = ETAPAS_PEDIDO.map(e => ({ valor: e, titulo: e }));

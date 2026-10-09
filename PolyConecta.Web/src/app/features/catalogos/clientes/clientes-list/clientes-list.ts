@@ -5,7 +5,8 @@ import { OdooList } from '../../../../shared/odoo-list/odoo-list';
 import { ColumnaLista } from '../../../../shared/odoo-list/columnas';
 import { OdooSearchPanel } from '../../../../shared/odoo-search-panel/odoo-search-panel';
 import { SearchView } from '../../../../core/search/search-view';
-import { OrigenHttp } from '../../../../core/lista/origen-http';
+import { OrigenHttp, vistaVacia } from '../../../../core/lista/origen-http';
+import { FavoritosHttp } from '../../../../core/lista/favoritos-http';
 
 export interface FilaCliente {
   id: number;
@@ -18,21 +19,6 @@ export interface FilaCliente {
   [key: string]: unknown;
 }
 
-const VISTA_CLIENTES: SearchView<FilaCliente> = {
-  campos: [
-    { etiqueta: 'Código', valor: f => f.codigo },
-    { etiqueta: 'Razón social', valor: f => f.razonSocial },
-    { etiqueta: 'RFC', valor: f => f.rfc },
-  ],
-  filtros: [
-    { nombre: 'Activos', campo: 'Estado', condicion: f => f.activo },
-    { nombre: 'Archivados', campo: 'Estado', condicion: f => !f.activo },
-  ],
-  agrupaciones: [
-    { etiqueta: 'Moneda', clave: f => f.moneda ?? 'Sin moneda' },
-    { etiqueta: 'Estado', clave: f => (f.activo ? 'Activo' : 'Archivado') },
-  ],
-};
 
 @Component({
   selector: 'pc-clientes-list',
@@ -43,7 +29,8 @@ const VISTA_CLIENTES: SearchView<FilaCliente> = {
 export class ClientesList {
   private readonly router = inject(Router);
 
-  protected readonly vista = VISTA_CLIENTES;
+  protected readonly vista = signal<SearchView<FilaCliente>>(vistaVacia());
+  protected readonly favoritos = new FavoritosHttp();
   protected readonly idCliente = (f: FilaCliente) => String(f.id);
 
   protected readonly columnas: ColumnaLista<FilaCliente>[] = [
@@ -58,9 +45,11 @@ export class ClientesList {
     modulo: 'ventas',
     lista: 'clientes',
     id: f => String(f.id),
-    buscables: ['codigo', 'razonSocial', 'rfc'],
-    vista: VISTA_CLIENTES,
   });
+
+  constructor() {
+    void this.origen.vista().then(v => this.vista.set(v));
+  }
 
   protected readonly searchText = signal('');
   protected readonly filtros = signal<string[]>(['Activos']);

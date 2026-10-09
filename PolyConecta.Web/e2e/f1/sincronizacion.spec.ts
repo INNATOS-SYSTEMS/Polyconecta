@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { ANGULAR, abrir } from '../soporte/apps';
+import { simularListas } from '../soporte/listas';
 
 /**
  * Escenarios de Sincronización, Productos y Clientes (F1 / US3, quickstart §3, L2-T018):
@@ -99,6 +100,8 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
       }
     });
 
+    await simularListas(page);
+
     await abrir(page, ANGULAR, '/plataforma/sincronizacion');
 
     await expect(page.locator('#tabla-sincronizacion')).toBeVisible();
@@ -151,6 +154,8 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
       });
     });
 
+    await simularListas(page);
+
     await abrir(page, ANGULAR, '/plataforma/sincronizacion');
 
     const btnProd = page.locator('button[data-btn-sincronizar="productos"]');
@@ -190,6 +195,8 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
         ]),
       });
     });
+
+    await simularListas(page);
 
     await abrir(page, ANGULAR, '/plataforma/sincronizacion');
 
@@ -314,6 +321,7 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
     });
 
     // 1. Abrir lista de productos
+    await simularListas(page);
     await abrir(page, ANGULAR, '/inventario/productos');
     await expect(page.getByText('PROD-PT-001')).toBeVisible();
 
@@ -422,6 +430,7 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
     });
 
     // 1. Abrir lista de clientes
+    await simularListas(page);
     await abrir(page, ANGULAR, '/ventas/clientes');
     await expect(page.getByText('Empaques del Norte S.A. de C.V.')).toBeVisible();
 
