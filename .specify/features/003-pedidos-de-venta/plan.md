@@ -222,7 +222,7 @@ tests/
 
 ### 1.7 · R1
 
-- `scripts/sql/f1-datos-r1.sql` o un sembrador de desarrollo con los usuarios de la [tabla de R1](quickstart.md#tabla-de-usuarios-de-r1), `scripts/dev/sembrar-pedidos.sh` y el guion de la revisión (FR-032).
+- `scripts/sql/f1-datos-r1.sql` o un sembrador de desarrollo con los usuarios de la [tabla de R1](quickstart.md#tabla-de-usuarios-de-r1), el pedido representativo IV310-26 (`PedidoRepresentativo`) y el guion de la revisión (FR-032).
 
 ---
 

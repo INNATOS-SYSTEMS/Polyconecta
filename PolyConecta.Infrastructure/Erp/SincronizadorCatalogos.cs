@@ -42,6 +42,9 @@ public sealed partial class SincronizadorCatalogos(
                     .ExecuteAsync(new SincronizarTodo(), stoppingToken);
                 foreach (var e in estados)
                     LogCatalogo(logger, e.Catalogo, e.Resultado ?? "-", e.Leidos, e.Cambiados, e.Archivados, e.DuracionMs, e.Error);
+                // El pedido representativo de R1 espera a que existan su cliente y su producto.
+                foreach (var s in scope.ServiceProvider.GetServices<Persistence.IDataSeeder>().OfType<Persistence.Sembradores.PedidoRepresentativo>())
+                    await s.SeedAsync(stoppingToken);
             }
             catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {

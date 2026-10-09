@@ -119,7 +119,7 @@ cd PolyConecta.Web && npm ci && npm start   # solo la aplicación Angular (:9000
 
 Sin `ConnectionStrings__PolyConecta`, `run.sh` levanta un SQL Server 2022 local en Docker (`polyconecta-sql`, puerto 14333), crea los logins de `scripts/sql/logins-desarrollo.sql` con contraseñas generadas en `.env.local` y aplica las migraciones con `dotnet ef` (herramienta local en `dotnet-tools.json`).
 
-En `.env.local` también genera la contraseña del Administrador inicial (`LOCAL_ADMIN_PASSWORD`, que exporta como `Seguridad__AdministradorInicial__Contrasena`) y la de los usuarios de ejemplo de R1 (`LOCAL_R1_PASSWORD`, como `Seguridad__DatosR1__Contrasena`). En desarrollo, la API crea al arrancar los usuarios de R1 (`ac1`, `comercial1`, `cobranza1`, `cobranza-suplente`, `doble`, `planner-pim` y `sistemas`); fuera de desarrollo, solo con `Seguridad__SembrarDatosR1=true`. `scripts/dev/sembrar-pedidos.sh N` crea N pedidos por la API en estados variados. El guion de la revisión con la operación está en [`docs/revisiones/R1.md`](../revisiones/R1.md).
+En `.env.local` también genera la contraseña del Administrador inicial (`LOCAL_ADMIN_PASSWORD`, que exporta como `Seguridad__AdministradorInicial__Contrasena`) y la de los usuarios de ejemplo de R1 (`LOCAL_R1_PASSWORD`, como `Seguridad__DatosR1__Contrasena`). En desarrollo, la API crea al arrancar los usuarios de R1 (`ac1`, `comercial1`, `cobranza1`, `cobranza-suplente`, `doble`, `planner-pim` y `sistemas`); fuera de desarrollo, solo con `Seguridad__SembrarDatosR1=true`. Con ellos siembra un solo pedido de ejemplo, el caso representativo IV310-26 del prototipo (`PedidoRepresentativo`), en cuanto están sincronizados su cliente y su producto. El guion de la revisión con la operación está en [`docs/revisiones/R1.md`](../revisiones/R1.md).
 
 La suite de contrato y el ciclo completo corren contra un bridge levantado:
 
@@ -133,7 +133,6 @@ BRIDGE_URL=http://localhost:9030 BRIDGE_CALLBACK_SECRET=<el de BridgeConfig__Cal
 | `scripts/build.sh` | Empaqueta el bridge para Windows x86 |
 | `scripts/deploy.sh` | **Obsoleto**: publicaba en IIS, que ya no se usa en el VPS |
 | `scripts/vps/` | Publicar, arrancar sin ventana, depurar y medir el bridge en el VPS ([README](../../scripts/vps/README.md)) |
-| `scripts/dev/sembrar-pedidos.sh` | Crea pedidos de ejemplo por la API como `ac1`, en estados variados (necesita la API y los usuarios de R1) |
 | `scripts/screenshots.sh` | Recorre el prototipo con Playwright y guarda capturas en `docs/screenshots/` |
 | `scripts/sql/logins-desarrollo.sql` | Base y logins de PolyConecta para desarrollo y CI (CT-30) |
 

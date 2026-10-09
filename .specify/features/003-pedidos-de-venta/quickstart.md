@@ -53,9 +53,7 @@ Esperado: la suite de contrato al 100 %, incluidas las lecturas de F1 (FR-002), 
 
 ## 5. Listas, favoritos y chatter (US4)
 
-```bash
-scripts/dev/sembrar-pedidos.sh 500   # crea 500 pedidos por la API como ac1, con estados variados
-```
+En desarrollo solo existe el pedido representativo IV310-26; la medición con volumen (SC-005) la cubre `ConsultaListaTests`, que crea sus propios pedidos.
 
 1. Lista de Pedidos: filtrar Confirmado y Borrador (O) y un cliente (Y). Agrupar por cliente y luego por estado. Cada cambio responde en menos de 1 s (SC-005). La prueba `ConsultaListaTests` cuenta las consultas.
 2. Guardar el favorito "Por autorizar" por omisión. Entrar como otro usuario: no lo ve. Volver a entrar como el primero en otro navegador: se aplica solo.

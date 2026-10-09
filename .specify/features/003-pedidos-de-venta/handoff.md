@@ -41,7 +41,7 @@ npx playwright test --config e2e/catalogo/playwright.config.ts   # 26
 npx playwright test --config e2e/tablero/playwright.config.ts    # 28
 ```
 
-Escenarios, auditor, tablero, galería, chatter y `npm run e2e` necesitan la API arriba: desde F1 toda ruta salvo `/login` exige sesión y entran con un usuario de R1 (`e2e/soporte/sesion-global.ts`, contraseña `LOCAL_R1_PASSWORD` de `.env.local`). Antes del tablero y de las pruebas reales hay que sincronizar catálogos (como `sistemas`) y tener pedidos (`scripts/dev/sembrar-pedidos.sh 30`).
+Escenarios, auditor, tablero, galería, chatter y `npm run e2e` necesitan la API arriba: desde F1 toda ruta salvo `/login` exige sesión y entran con un usuario de R1 (`e2e/soporte/sesion-global.ts`, contraseña `LOCAL_R1_PASSWORD` de `.env.local`). Antes del tablero y de las pruebas reales hay que sincronizar catálogos (como `sistemas`) : con eso se siembra el pedido representativo IV310-26, el único de ejemplo (`PedidoRepresentativo`).
 
 ## Cosas que no son obvias
 
