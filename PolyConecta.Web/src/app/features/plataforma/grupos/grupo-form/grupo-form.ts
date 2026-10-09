@@ -1,154 +1,158 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { OdooBreadcrumb } from '../../../../shared/odoo-breadcrumb/odoo-breadcrumb';
+import { OrigenEnMemoria } from '../../../../core/lista/origen-en-memoria';
+import { HojaRegistro } from '../../../../shared/hoja-registro/hoja-registro';
+import { AccionMenu } from '../../../../shared/odoo-action-menu/odoo-action-menu';
+import { AvisosService } from '../../../../shared/odoo-dialog/avisos';
 import { OdooDualList } from '../../../../shared/odoo-dual-list/odoo-dual-list';
 import { ModuloPermisoItem } from '../../../../shared/odoo-dual-list/odoo-dual-list.types';
+import { OdooMaestro } from '../../../../shared/odoo-maestro/odoo-maestro';
+import { OdooMany2one } from '../../../../shared/odoo-many2one/odoo-many2one';
+import { SmartButtonModel } from '../../../../shared/odoo-smart-buttons/odoo-smart-buttons';
+import { OdooTabs, PcPestana } from '../../../../shared/odoo-tabs/odoo-tabs';
 import { GrupoDetalleDto, SeguridadService } from '../../seguridad.service';
 
+interface GrupoItem { id: number; codigo: string; nombre: string }
+
+/**
+ * Grupo y sus permisos en dos paneles (D-148, P-07 y P-08 de la propuesta aprobada): el selector dual vive
+ * en la pestaña "Permisos". En el alta, "Copiar permisos de" llena el panel de asignados. Se edita en su
+ * lugar (D-164).
+ */
 @Component({
   selector: 'pc-grupo-form',
-  imports: [FormsModule, OdooBreadcrumb, OdooDualList],
+  imports: [FormsModule, HojaRegistro, OdooMaestro, OdooMany2one, OdooTabs, PcPestana, OdooDualList],
   templateUrl: './grupo-form.html',
-  styles: `
-    :host { display: block; }
-    .o_form_view {
-      padding: 1.5rem 2rem;
-      max-width: 1080px;
-      margin: 0 auto;
-    }
-    .o_form_sheet {
-      background: white;
-      border: 1px solid var(--border-color, #e2e8f0);
-      border-radius: 8px;
-      padding: 2rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-  `,
+  styles: ':host { display: block; }',
 })
 export class GrupoForm implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly seguridad = inject(SeguridadService);
+  private readonly avisos = inject(AvisosService);
 
-  protected readonly id = signal<string>(this.route.snapshot.paramMap.get('id') ?? 'nuevo');
-  protected readonly esNuevo = computed(() => this.id() === 'nuevo');
+  protected readonly idRuta = this.route.snapshot.paramMap.get('id') ?? 'nuevo';
+  protected readonly nuevo = this.idRuta === 'nuevo';
 
   protected readonly cargando = signal(true);
   protected readonly guardando = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly exito = signal<string | null>(null);
+  protected readonly sucio = signal(false);
+  protected readonly guardado = signal<GrupoDetalleDto | null>(null);
 
-  // Campos del grupo
   protected readonly codigo = signal('');
   protected readonly nombre = signal('');
   protected readonly descripcion = signal('');
-  protected readonly activo = signal(true);
-  protected readonly rowVersion = signal('');
-  protected readonly miembros = signal(0);
-  protected readonly permisosAsignados = signal<string[]>([]);
+  protected readonly permisos = signal<string[]>([]);
+  protected readonly copiarDe = signal<GrupoItem | null>(null);
 
-  // Para modo nuevo
-  protected readonly copiarDe = signal<number | null>(null);
-  protected readonly gruposDisponibles = signal<{ id: number; codigo: string; nombre: string }[]>([]);
+  protected readonly arbol = signal<ModuloPermisoItem[]>([]);
+  protected readonly grupos = signal<GrupoItem[]>([]);
 
-  protected actualizarCopiarDe(valor: unknown): void {
-    this.copiarDe.set(valor ? Number(valor) : null);
-  }
+  protected readonly pestanas = [{ id: 'permisos', titulo: 'Permisos' }];
+  protected readonly origenGrupos = computed(() => { const l = this.grupos(); return new OrigenEnMemoria<GrupoItem>({ datos: () => l, id: g => String(g.id), buscables: ['codigo', 'nombre'] }); });
+  protected readonly textoGrupo = (g: GrupoItem) => g.nombre;
+  protected readonly idGrupo = (g: GrupoItem) => String(g.id);
 
-  // Catálogo completo de permisos
-  protected readonly arbolPermisos = signal<ModuloPermisoItem[]>([]);
+  protected readonly acciones = computed<AccionMenu[]>(() => {
+    const g = this.guardado();
+    return g ? [{ nombre: g.activo ? 'Archivar' : 'Restaurar', icono: 'archivar', ejecutar: () => void this.cambiarEstado(g.activo) }] : [];
+  });
 
-  protected readonly tituloMiga = computed(() => {
-    if (this.esNuevo()) return 'Nuevo grupo';
-    return this.nombre() || this.codigo() || 'Grupo';
+  protected readonly botones = computed<SmartButtonModel[]>(() => {
+    const g = this.guardado();
+    return g ? [{ label: g.miembros === 1 ? 'Usuario' : 'Usuarios', countBadge: g.miembros, iconClass: 'usuario', targetRoute: '' }] : [];
   });
 
   async ngOnInit(): Promise<void> {
-    this.cargando.set(true);
-    this.error.set(null);
     try {
-      const [permisos, catalogoGrupos] = await Promise.all([
-        this.seguridad.obtenerPermisos(),
-        this.seguridad.listarGruposCatalogo(),
-      ]);
-      this.arbolPermisos.set(permisos);
-      this.gruposDisponibles.set(catalogoGrupos);
-
-      if (!this.esNuevo()) {
-        const g = await this.seguridad.obtenerGrupo(this.id());
-        this.cargarDatosGrupo(g);
-      }
+      const [arbol, grupos] = await Promise.all([this.seguridad.obtenerPermisos(), this.seguridad.listarGruposCatalogo()]);
+      this.arbol.set(arbol);
+      this.grupos.set(grupos);
+      if (!this.nuevo) this.cargar(await this.seguridad.obtenerGrupo(this.idRuta));
     } catch (e: unknown) {
-      this.error.set((e as Error).message || 'Error al cargar grupo');
+      this.error.set((e as Error).message || 'No se pudo cargar el grupo.');
     } finally {
       this.cargando.set(false);
     }
   }
 
-  private cargarDatosGrupo(g: GrupoDetalleDto): void {
+  private cargar(g: GrupoDetalleDto): void {
+    this.guardado.set(g);
     this.codigo.set(g.codigo);
     this.nombre.set(g.nombre);
     this.descripcion.set(g.descripcion ?? '');
-    this.activo.set(g.activo);
-    this.rowVersion.set(g.rowVersion);
-    this.miembros.set(g.miembros);
-    this.permisosAsignados.set([...g.permisos]);
+    this.permisos.set([...g.permisos]);
+    this.sucio.set(false);
+  }
+
+  protected cambiar<T>(campo: { set(v: T): void }, valor: T): void {
+    campo.set(valor);
+    this.sucio.set(true);
+  }
+
+  /** En el alta, copiar los permisos de otro grupo llena el panel de asignados (US2, escenario 7). */
+  protected async copiar(g: GrupoItem | null): Promise<void> {
+    this.copiarDe.set(g);
+    if (!g) return;
+    try {
+      this.permisos.set([...((await this.seguridad.obtenerGrupo(g.id)).permisos ?? [])]);
+    } catch (e: unknown) {
+      this.error.set((e as Error).message || 'No se pudieron copiar los permisos.');
+    }
   }
 
   protected async guardar(): Promise<void> {
     this.error.set(null);
-    this.exito.set(null);
-
     if (!this.codigo().trim() || !this.nombre().trim()) {
       this.error.set('El código y el nombre del grupo son obligatorios.');
       return;
     }
-
     this.guardando.set(true);
     try {
-      if (this.esNuevo()) {
+      if (this.nuevo) {
         const creado = await this.seguridad.crearGrupo({
-          codigo: this.codigo().trim().toUpperCase(),
-          nombre: this.nombre().trim(),
-          descripcion: this.descripcion().trim() || null,
-          copiarDe: this.copiarDe() ? Number(this.copiarDe()) : null,
+          codigo: this.codigo().trim().toUpperCase(), nombre: this.nombre().trim(),
+          descripcion: this.descripcion().trim() || null, copiarDe: this.copiarDe()?.id ?? null,
         });
+        const copiados = creado.permisos ?? [];
+        const iguales = copiados.length === this.permisos().length && copiados.every(p => this.permisos().includes(p));
+        if (!iguales) {
+          await this.seguridad.editarGrupo(creado.id, {
+            rowVersion: creado.rowVersion, nombre: creado.nombre, descripcion: creado.descripcion, permisos: this.permisos(),
+          });
+        }
         void this.router.navigateByUrl(`/plataforma/grupos/${creado.id}`);
-      } else {
-        const actualizado = await this.seguridad.editarGrupo(this.id(), {
-          rowVersion: this.rowVersion(),
-          nombre: this.nombre().trim(),
-          descripcion: this.descripcion().trim() || null,
-          permisos: this.permisosAsignados(),
-        });
-        this.cargarDatosGrupo(actualizado);
-        this.exito.set('Grupo guardado exitosamente.');
+        return;
       }
+      const g = this.guardado()!;
+      this.cargar(await this.seguridad.editarGrupo(g.id, {
+        rowVersion: g.rowVersion, nombre: this.nombre().trim(), descripcion: this.descripcion().trim() || null, permisos: this.permisos(),
+      }));
+      this.avisos.exito('Grupo guardado.');
     } catch (e: unknown) {
-      this.error.set((e as Error).message || 'Error al guardar el grupo.');
-    } finally {
-      this.guardando.set(false);
-    }
-  }
-
-  protected async cambiarEstado(archivar: boolean): Promise<void> {
-    this.guardando.set(true);
-    this.error.set(null);
-    try {
-      const g = archivar
-        ? await this.seguridad.archivarGrupo(this.id())
-        : await this.seguridad.restaurarGrupo(this.id());
-      this.cargarDatosGrupo(g);
-      this.exito.set(archivar ? 'Grupo archivado.' : 'Grupo restaurado.');
-    } catch (e: unknown) {
-      this.error.set((e as Error).message || 'Error al cambiar estado.');
+      this.error.set((e as Error).message || 'No se pudo guardar el grupo.');
     } finally {
       this.guardando.set(false);
     }
   }
 
   protected descartar(): void {
-    void this.router.navigateByUrl('/plataforma/grupos');
+    this.error.set(null);
+    const g = this.guardado();
+    if (g) this.cargar(g);
+    else void this.router.navigateByUrl('/plataforma/grupos');
+  }
+
+  private async cambiarEstado(archivar: boolean): Promise<void> {
+    const g = this.guardado();
+    if (!g) return;
+    try {
+      this.cargar(archivar ? await this.seguridad.archivarGrupo(g.id) : await this.seguridad.restaurarGrupo(g.id));
+      this.avisos.exito(archivar ? 'Grupo archivado.' : 'Grupo restaurado.');
+    } catch (e: unknown) {
+      this.error.set((e as Error).message || 'No se pudo cambiar el estado.');
+    }
   }
 }

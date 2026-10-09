@@ -12,6 +12,11 @@ public sealed class GroupAssignment
 
     public long PlantId { get; private set; }
 
+    /// <summary>Solo para leer los nombres en la lista de usuarios.</summary>
+    public Group? Group { get; private set; }
+
+    public Plant? Plant { get; private set; }
+
     /// <summary>Suplente designado del grupo en esa planta (D-38).</summary>
     public bool IsSubstitute { get; internal set; }
 

@@ -1,7 +1,8 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { importe, n2 } from '../../../core/format/numero';
 import { nombreProducto } from '../../../core/format/producto';
+import { OrigenBusqueda } from '../../../core/lista/origen-busqueda';
 import { OrigenEnMemoria } from '../../../core/lista/origen-en-memoria';
 import { ProductRef } from '../../../core/models/inventario';
 import { OdooDate } from '../../../shared/odoo-date/odoo-date';
@@ -10,7 +11,7 @@ import { emptyDraft, LineDraft, OdooLineCapture } from '../../../shared/odoo-lin
 import { OdooMaestro } from '../../../shared/odoo-maestro/odoo-maestro';
 import { OdooMany2one } from '../../../shared/odoo-many2one/odoo-many2one';
 import { OdooTabs, PcPestana } from '../../../shared/odoo-tabs/odoo-tabs';
-import { AgenteVentaDto, ClienteBusquedaDto, FirmaDetalleDto, ProductoBusquedaDto } from '../pedidos.service';
+import { AgenteVentaDto, ClienteBusquedaDto, FirmaDetalleDto, PedidosService, ProductoBusquedaDto } from '../pedidos.service';
 import { BorradorPedido, MONEDAS_PEDIDO } from './borrador-pedido';
 
 interface Moneda { codigo: string }
@@ -51,11 +52,11 @@ export class PedidoHoja {
 
   protected readonly pestanas = [{ id: 'detalle', titulo: 'Detalle' }, { id: 'firmas', titulo: 'Firmas' }];
 
-  /** Un origen nuevo por cada catálogo que llega: el many2one vuelve a consultar (lee la lista aquí, no en el cierre). */
-  protected readonly origenClientes = computed(() => {
-    const lista = this.clientes();
-    return new OrigenEnMemoria<ClienteBusquedaDto>({ datos: () => lista, id: c => String(c.id), buscables: ['clave', 'nombre'] });
-  });
+  private readonly pedidos = inject(PedidosService);
+
+  /** El cliente se busca en el servidor mientras se escribe: cualquier cliente activo, no solo los primeros. */
+  protected readonly origenClientes = new OrigenBusqueda<ClienteBusquedaDto>(t => this.pedidos.buscarClientes(t));
+  /** Un origen nuevo cuando llega el catálogo: el many2one vuelve a consultar (lee la lista aquí, no en el cierre). */
   protected readonly origenAgentes = computed(() => {
     const lista = this.agentes();
     return new OrigenEnMemoria<AgenteVentaDto>({ datos: () => lista, id: a => String(a.id), buscables: ['clave', 'nombre'] });
@@ -71,7 +72,24 @@ export class PedidoHoja {
 
   /** Catálogo de la captura: la unidad es la base del producto y no se edita (D-127). */
   protected readonly catalogo = computed<ProductRef[]>(() =>
-    this.productos().map(p => ({ clave: p.clave, nombre: p.nombre, unidad: p.unidad, clasificacion: 'Bolsa' as const })));
+    this.todosLosProductos().map(p => ({ clave: p.clave, nombre: p.nombre, unidad: p.unidad, clasificacion: 'Bolsa' as const })));
+
+  /** Lo que la búsqueda trajo del servidor, además de lo que se cargó al abrir. */
+  private readonly encontrados = signal<ProductoBusquedaDto[]>([]);
+  private readonly todosLosProductos = computed(() => {
+    const vistos = new Set<number>();
+    return [...this.productos(), ...this.encontrados()].filter(p => !vistos.has(p.id) && vistos.add(p.id));
+  });
+  private esperaBusqueda: ReturnType<typeof setTimeout> | undefined;
+
+  protected buscarProductos(texto: string): void {
+    clearTimeout(this.esperaBusqueda);
+    const t = texto.split(' — ')[0].trim();
+    if (t.length < 2) return;
+    this.esperaBusqueda = setTimeout(() => {
+      void this.pedidos.buscarProductos(t).then(r => this.encontrados.update(e => [...e, ...r])).catch(() => undefined);
+    }, 250);
+  }
 
   protected readonly draft = signal<LineDraft>(emptyDraft());
   protected readonly editandoLinea = signal<number | null>(null);
@@ -87,7 +105,7 @@ export class PedidoHoja {
 
   protected agregar(d: LineDraft): void {
     this.errorLinea.set(null);
-    const prod = this.productos().find(p => p.clave === d.clave);
+    const prod = this.todosLosProductos().find(p => p.clave === d.clave);
     if (!prod) {
       this.errorLinea.set(`El producto ${d.clave} no está en el catálogo de CONTPAQi.`);
       return;

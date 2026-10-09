@@ -1,4 +1,5 @@
 using PolyConecta.Application.Common;
+using PolyConecta.Application.Plataforma.Chatter;
 using PolyConecta.Domain.Common;
 using PolyConecta.Domain.Inventario;
 using PolyConecta.Domain.Plataforma.Seguridad;
@@ -104,6 +105,8 @@ public sealed class ClasificarProductoCaso(IAlmacen<Product> productos, IAlmacen
         var p = await productos.ObtenerAsync(request.Id, "el producto", cancellationToken);
         if (request.ClasificacionId is { } c && !await clasificaciones.ExisteAsync(x => x.Id == c, cancellationToken: cancellationToken))
             throw new ValidacionException([new ErrorValidacion("clasificacionId", "La clasificación no existe.")]);
+        var nombre = async (long? id) => id is { } x ? (await clasificaciones.PorIdAsync(x, true, cancellationToken))?.Name : null;
+        p.AnotarCambio(Bitacora.Cambio("Clasificación", await nombre(p.ClassificationId), await nombre(request.ClasificacionId)) ?? string.Empty);
         p.Clasificar(request.ClasificacionId);
         await uow.SaveChangesAsync(cancellationToken);
         return await detalle.ArmarAsync(p, cancellationToken);
@@ -122,7 +125,13 @@ public sealed class GuardarFichaTecnicaCaso(IAlmacen<Product> productos, Detalle
             var otro = await productos.ObtenerAsync(otroId, "el producto del rollo ligado", cancellationToken);
             ligado = otro.Roll ?? throw new ReglaDeNegocioException("FICHA_SIN_ROLLO", $"{otro.Etiqueta} no tiene bloque Rollo en su ficha técnica.");
         }
+        var antes = (await detalle.ArmarAsync(p, cancellationToken)).Ficha;
         p.GuardarFichaTecnica(request.Rollo, request.Pt, ligado);
+        var despues = (await detalle.ArmarAsync(p, cancellationToken)).Ficha;
+        foreach (var c in Bitacora.Propiedades(antes?.Rollo, despues?.Rollo, EtiquetasFicha.Rollo, "Rollo")
+                     .Concat(Bitacora.Propiedades(antes?.Pt, despues?.Pt, EtiquetasFicha.Pt, "PT")))
+            p.AnotarCambio(c);
+        p.AnotarCambio(Bitacora.Cambio("Rollo ligado", antes?.RolloLigadoProducto, despues?.RolloLigadoProducto) ?? string.Empty);
         await uow.SaveChangesAsync(cancellationToken);
         return await detalle.ArmarAsync(p, cancellationToken);
     }
@@ -146,11 +155,15 @@ public sealed class GuardarClasificacionCaso(IAlmacen<ProductClassification> cla
         if (request.Id is { } id)
         {
             c = await clasificaciones.ObtenerAsync(id, "la clasificación", cancellationToken);
+            var (codigoAntes, nombreAntes) = (c.Code, c.Name);
             c.Editar(codigo, request.Nombre);
+            c.AnotarCambio(Bitacora.Cambio("Código", codigoAntes, c.Code) ?? string.Empty);
+            c.AnotarCambio(Bitacora.Cambio("Nombre", nombreAntes, c.Name) ?? string.Empty);
         }
         else
         {
             c = new ProductClassification(codigo, request.Nombre);
+            c.AnotarCambio("Creó la clasificación.");
             clasificaciones.Agregar(c);
         }
         await uow.SaveChangesAsync(cancellationToken);
@@ -163,4 +176,24 @@ public sealed class ListarAlmacenesCaso(IAlmacen<ErpWarehouse> almacenes) : IUse
     public async Task<IReadOnlyList<AlmacenDto>> ExecuteAsync(ListarAlmacenes request, CancellationToken cancellationToken = default) =>
         (await almacenes.ListarAsync(cancellationToken: cancellationToken)).OrderBy(a => a.ErpCode)
             .Select(a => new AlmacenDto(a.Id, a.ErpCode, a.Name, a.ErpWarehouseId)).ToList();
+}
+
+/// <summary>Etiquetas de la ficha técnica en la bitácora, como en el formulario del producto (FR-018).</summary>
+public static class EtiquetasFicha
+{
+    public static readonly IReadOnlyDictionary<string, string> Rollo = new Dictionary<string, string>
+    {
+        [nameof(DatosRollo.MaterialType)] = "Tipo de material", [nameof(DatosRollo.RollTypeSize)] = "Medida rollo",
+        [nameof(DatosRollo.GaugeMicrons)] = "Calibre (micrones)", [nameof(DatosRollo.KgPerRoll)] = "Kilos por rollo",
+        [nameof(DatosRollo.TreatmentDynes)] = "Tratamiento (dynas)", [nameof(DatosRollo.Pigment)] = "Pigmento",
+        [nameof(DatosRollo.Additive)] = "Aditivo", [nameof(DatosRollo.Perforation)] = "Perforación",
+        [nameof(DatosRollo.PreliminaryPrint)] = "Impresión preliminar",
+    };
+
+    public static readonly IReadOnlyDictionary<string, string> Pt = new Dictionary<string, string>
+    {
+        [nameof(DatosPt.CustomerPartNumber)] = "No. parte cliente", [nameof(DatosPt.FinalSize)] = "Medida final",
+        [nameof(DatosPt.Inks)] = "Tintas", [nameof(DatosPt.Pantones)] = "Pantones", [nameof(DatosPt.DieCut)] = "Suaje",
+        [nameof(DatosPt.Packaging)] = "Empaque", [nameof(DatosPt.SealType)] = "Tipo de sello", [nameof(DatosPt.KgPerThousand)] = "Kilos por millar",
+    };
 }

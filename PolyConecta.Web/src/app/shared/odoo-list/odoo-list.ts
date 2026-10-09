@@ -184,8 +184,10 @@ export class OdooList<T> implements OnInit {
         this.paginaDeUrl = null;
       });
     });
+    // Vuelve a consultar al cambiar la consulta y también al cambiar el origen (datos que llegan después de pintar).
     effect(() => {
       const c = this.consulta();
+      this.origen();
       untracked(() => void this.cargar(c));
     });
     effect(() => {

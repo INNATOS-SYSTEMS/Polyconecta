@@ -8,6 +8,7 @@ namespace PolyConecta.Domain.Common;
 public abstract class AuditableEntity
 {
     private readonly List<TransicionRegistrada> _transiciones = [];
+    private readonly List<string> _cambios = [];
 
     public long Id { get; protected set; }
 
@@ -27,6 +28,20 @@ public abstract class AuditableEntity
     internal void AgregarTransicion(TransicionRegistrada transicion) => _transiciones.Add(transicion);
 
     public void LimpiarTransicionesPendientes() => _transiciones.Clear();
+
+    /// <summary>
+    /// Cambios descriptivos pendientes de escribir en la bitácora del registro ("Agregó Comercial · PIM",
+    /// "Kilos por millar: 8.10 → 8.40"). Los registros sin estados (catálogos) los usan en lugar de transiciones.
+    /// </summary>
+    public IReadOnlyList<string> CambiosPendientes => _cambios;
+
+    /// <summary>Anota un cambio para la bitácora; la persistencia lo escribe al guardar (D-157, decisión del 9-oct).</summary>
+    public void AnotarCambio(string texto)
+    {
+        if (!string.IsNullOrWhiteSpace(texto)) _cambios.Add(texto.Trim());
+    }
+
+    public void LimpiarCambiosPendientes() => _cambios.Clear();
 
     public void MarcarCreado(DateTimeOffset cuando, string quien)
     {

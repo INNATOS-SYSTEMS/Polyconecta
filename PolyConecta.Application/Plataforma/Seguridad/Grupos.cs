@@ -1,4 +1,5 @@
 using PolyConecta.Application.Common;
+using PolyConecta.Application.Plataforma.Chatter;
 using PolyConecta.Domain.Common;
 using PolyConecta.Domain.Plataforma.Seguridad;
 
@@ -52,6 +53,10 @@ public sealed class DetalleDeGrupo(IAlmacen<User> usuarios, IAlmacen<Permission>
         return new GrupoDetalle(g.Id, g.Code, g.Name, g.Description, g.IsActive, g.RowVersion, miembros, claves);
     }
 
+    /// <summary>Los permisos como se leen en la bitácora: "Ventas › Pedido › Confirmar" (D-148).</summary>
+    public async Task<IReadOnlyList<string>> EtiquetasAsync(IReadOnlyCollection<long> ids, CancellationToken ct) =>
+        (await permisos.ListarAsync(p => ids.Contains(p.Id), cancellationToken: ct)).Select(p => $"{p.ModuleLabel} › {p.ObjectLabel} › {p.Label}").ToList();
+
     public async Task<IReadOnlyList<long>> IdsAsync(IReadOnlyList<string> claves, CancellationToken ct)
     {
         var todos = await permisos.ListarAsync(cancellationToken: ct);
@@ -101,6 +106,7 @@ public sealed class CrearGrupoCaso(IAlmacen<Group> grupos, DetalleDeGrupo detall
         var grupo = request.CopiarDe is { } origenId
             ? Group.CopiarDe(await grupos.ObtenerAsync(origenId, "el grupo", cancellationToken), codigo, nombre, request.Descripcion)
             : new Group(codigo, nombre, request.Descripcion);
+        grupo.AnotarCambio(request.CopiarDe is null ? "Creó el grupo." : "Creó el grupo copiando los permisos de otro.");
         grupos.Agregar(grupo);
         await uow.SaveChangesAsync(cancellationToken);
         return await detalle.ArmarAsync(grupo, cancellationToken);
@@ -114,8 +120,15 @@ public sealed class EditarGrupoCaso(IAlmacen<Group> grupos, DetalleDeGrupo detal
     {
         var grupo = await grupos.ObtenerAsync(request.Id, "el grupo", cancellationToken);
         grupos.ExigirVersion(grupo, request.RowVersion ?? []);
+        var (nombre, descripcion) = (grupo.Name, grupo.Description);
+        var antes = await detalle.EtiquetasAsync(grupo.Permissions.Select(p => p.PermissionId).ToList(), cancellationToken);
         grupo.Editar(request.Nombre, request.Descripcion);
-        grupo.AsignarPermisos(await detalle.IdsAsync(request.Permisos ?? [], cancellationToken));
+        var nuevos = await detalle.IdsAsync(request.Permisos ?? [], cancellationToken);
+        grupo.AsignarPermisos(nuevos);
+        grupo.AnotarCambio(Bitacora.Cambio("Nombre", nombre, grupo.Name) ?? string.Empty);
+        grupo.AnotarCambio(Bitacora.Cambio("Descripción", descripcion, grupo.Description) ?? string.Empty);
+        foreach (var c in Bitacora.Conjunto(antes, await detalle.EtiquetasAsync(nuevos.ToList(), cancellationToken)))
+            grupo.AnotarCambio(c);
         await uow.SaveChangesAsync(cancellationToken);
         return await detalle.ArmarAsync(grupo, cancellationToken);
     }
@@ -130,6 +143,7 @@ public sealed class ArchivarGrupoCaso(IAlmacen<Group> grupos, IAlmacen<User> usu
         if (request.Archivar)
             grupo.Archivar(await usuarios.ContarAsync(u => u.Assignments.Any(a => a.GroupId == grupo.Id), cancellationToken: cancellationToken));
         else grupo.Restore();
+        grupo.AnotarCambio(request.Archivar ? "Archivó el grupo." : "Restauró el grupo.");
         await uow.SaveChangesAsync(cancellationToken);
         return await detalle.ArmarAsync(grupo, cancellationToken);
     }

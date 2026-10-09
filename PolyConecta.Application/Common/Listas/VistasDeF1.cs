@@ -62,7 +62,7 @@ public static class VistasDeF1
             new() { Campo = "codigo", Etiqueta = "Clave", Ordenable = true, Sumable = false, Selector = p => p.ErpCode },
             new() { Campo = "nombre", Etiqueta = "Nombre", Ordenable = true, Sumable = false, Selector = p => p.Name },
             new() { Campo = "unidadBase", Etiqueta = "Unidad base", Ordenable = true, Sumable = false, Selector = p => p.ErpUom },
-            new() { Campo = "clasificacion", Etiqueta = "Clasificación", Ordenable = true, Sumable = false, Selector = p => p.ClassificationId },
+            new() { Campo = "clasificacion", Etiqueta = "Clasificación", Ordenable = true, Sumable = false, Selector = p => p.Classification != null ? p.Classification.Name : null },
             new() { Campo = "activo", Etiqueta = "Activo", Ordenable = true, Sumable = false, Selector = p => p.IsActive },
         ],
         Campos =
@@ -80,7 +80,7 @@ public static class VistasDeF1
         Agrupaciones =
         [
             new() { Campo = "unidadBase", Etiqueta = "Unidad base", Clave = p => p.ErpUom },
-            new() { Campo = "clasificacion", Etiqueta = "Clasificación", Clave = p => p.ClassificationId != null ? p.ClassificationId.ToString()! : "Sin clasificación" },
+            new() { Campo = "clasificacion", Etiqueta = "Clasificación", Clave = p => p.Classification != null ? p.Classification.Name : "Sin clasificación" },
         ],
         AgrupacionesPorDefecto = [],
         OrdenPorDefecto = [new("codigo", Desc: false)],
@@ -90,7 +90,7 @@ public static class VistasDeF1
             ["codigo"] = p.ErpCode,
             ["nombre"] = p.Name,
             ["unidadBase"] = p.ErpUom,
-            ["clasificacion"] = p.ClassificationId,
+            ["clasificacion"] = p.Classification?.Name,
             ["activo"] = p.IsActive,
         },
     };
@@ -173,6 +173,9 @@ public static class VistasDeF1
             ["usuario"] = u.UserName,
             ["nombre"] = u.DisplayName,
             ["email"] = u.Email ?? "",
+            ["grupos"] = string.Join(", ", u.Assignments
+                .Select(a => $"{a.Group?.Name} · {a.Plant?.Code}{(a.IsSubstitute ? " (suplente)" : "")}")
+                .Order(StringComparer.Ordinal)),
             ["activo"] = u.IsActive,
         },
     };

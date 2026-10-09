@@ -34,10 +34,10 @@ describe('SesionState', () => {
     vi.restoreAllMocks();
   });
 
-  it('inicia sin sesión activa pero con usuario por omisión para compatibilidad', () => {
+  it('inicia sin sesión activa y sin usuario: la barra no muestra a nadie mientras llega', () => {
     expect(sesion.conSesion()).toBe(false);
-    expect(sesion.usuario().nombre).toBe('Alejandro Porras');
-    expect(sesion.inicial()).toBe('A');
+    expect(sesion.usuario().nombre).toBe('');
+    expect(sesion.inicial()).toBe('U');
     expect(sesion.tienePermiso('ventas.pedidos.crear')).toBe(false);
   });
 

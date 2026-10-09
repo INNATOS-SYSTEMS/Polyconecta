@@ -1,31 +1,67 @@
 using PolyConecta.Application.Common;
 using PolyConecta.Domain.Plataforma.Chatter;
 using PolyConecta.Domain.Plataforma.Seguridad;
+using PolyConecta.Domain.Inventario;
 using PolyConecta.Domain.Ventas;
 
 namespace PolyConecta.Application.Plataforma.Chatter;
 
 /// <summary>
-/// Documentos cuyo chatter se guarda (R-04). Un tipo que no está aquí no se persiste: las pantallas
-/// que siguen en memoria conservan el hub sin guardar hasta que su fase las conecte.
+/// Documentos y registros cuyo chatter se guarda (R-04). Los catálogos (usuarios, grupos, productos, clientes
+/// y clasificaciones) también llevan bitácora, con sus cambios anotados (D-157). Un tipo que no está aquí no se
+/// persiste: las pantallas que siguen en memoria conservan el hub sin guardar hasta que su fase las conecte.
 /// </summary>
-public sealed class DocumentosConChatter(IAlmacen<SalesOrder> pedidos)
+public sealed class DocumentosConChatter(
+    IAlmacen<SalesOrder> pedidos, IAlmacen<User> usuarios, IAlmacen<Group> grupos, IAlmacen<Product> productos,
+    IAlmacen<Customer> clientes, IAlmacen<ProductClassification> clasificaciones)
 {
     public const string Pedido = "ventas.pedido";
+    public const string Usuario = "plataforma.usuario";
+    public const string Grupo = "plataforma.grupo";
+    public const string Producto = "inventario.producto";
+    public const string Cliente = "ventas.cliente";
+    public const string Clasificacion = "inventario.clasificacion";
 
-    private static readonly Dictionary<Type, string> PorEntidad = new() { [typeof(SalesOrder)] = Pedido };
+    private static readonly Dictionary<Type, string> PorEntidad = new()
+    {
+        [typeof(SalesOrder)] = Pedido,
+        [typeof(User)] = Usuario,
+        [typeof(Group)] = Grupo,
+        [typeof(Product)] = Producto,
+        [typeof(Customer)] = Cliente,
+        [typeof(ProductClassification)] = Clasificacion,
+    };
 
-    /// <summary>El tipo de documento de una entidad con transiciones, o null si su chatter no se guarda.</summary>
+    private static readonly Dictionary<string, string> Lectura = new()
+    {
+        [Pedido] = Permisos.PedidoLeer,
+        [Usuario] = Permisos.UsuariosLeer,
+        [Grupo] = Permisos.GruposLeer,
+        [Producto] = Permisos.ProductoLeer,
+        [Cliente] = Permisos.ClienteLeer,
+        [Clasificacion] = Permisos.ProductoLeer,
+    };
+
+    /// <summary>El tipo de documento de una entidad con bitácora, o null si su chatter no se guarda.</summary>
     public static string? TipoDe(Type entidad) => PorEntidad.GetValueOrDefault(entidad);
 
     /// <summary>Leer el chatter exige el permiso de lectura del documento (contracts/api-f1.md, Chatter).</summary>
-    public static string PermisoDeLectura(string tipo) => tipo == Pedido ? Permisos.PedidoLeer : $"{tipo}.leer";
+    public static string PermisoDeLectura(string tipo) => Lectura.GetValueOrDefault(tipo) ?? $"{tipo}.leer";
 
     /// <summary>404 si el documento no existe o las reglas de fila no lo dejan ver (D-154).</summary>
     public async Task ExigirVisibleAsync(string tipo, long id, CancellationToken cancellationToken)
     {
-        if (tipo != Pedido) throw new KeyNotFoundException($"El documento {tipo} no tiene chatter guardado.");
-        await pedidos.ObtenerAsync(id, "el pedido", cancellationToken);
+        bool existe = tipo switch
+        {
+            Pedido => await pedidos.ObtenerAsync(id, "el pedido", cancellationToken) is not null,
+            Usuario => await usuarios.PorIdAsync(id, true, cancellationToken) is not null,
+            Grupo => await grupos.PorIdAsync(id, true, cancellationToken) is not null,
+            Producto => await productos.PorIdAsync(id, true, cancellationToken) is not null,
+            Cliente => await clientes.PorIdAsync(id, true, cancellationToken) is not null,
+            Clasificacion => await clasificaciones.PorIdAsync(id, true, cancellationToken) is not null,
+            _ => false,
+        };
+        if (!existe) throw new KeyNotFoundException($"El documento {tipo} {id} no tiene chatter guardado.");
     }
 }
 

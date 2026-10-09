@@ -1,3 +1,4 @@
+using PolyConecta.Application.Plataforma.Chatter;
 using PolyConecta.Application.Common;
 using PolyConecta.Domain.Common;
 using PolyConecta.Domain.Plataforma.Seguridad;
@@ -83,6 +84,9 @@ public sealed class CatalogoDeSeguridad(IAlmacen<Group> grupos, IAlmacen<Plant> 
                 .ToList());
     }
 
+    /// <summary>Una asignación como se lee en la bitácora: "Comercial · PIM (suplente)".</summary>
+    public static string Texto(AsignacionDetalle a) => $"{a.Grupo} · {a.Planta}{(a.Suplente ? " (suplente)" : string.Empty)}";
+
     public async Task<IReadOnlyList<AsignacionSolicitada>> VerificarAsync(IReadOnlyList<AsignacionDto> asignaciones, CancellationToken ct)
     {
         var gs = (await grupos.ListarAsync(cancellationToken: ct)).Select(g => g.Id).ToHashSet();
@@ -114,6 +118,7 @@ public sealed class CrearUsuarioCaso(IAlmacen<User> usuarios, CatalogoDeSegurida
         if (await usuarios.ExisteAsync(u => u.UserName == nombre, incluirArchivados: true, cancellationToken))
             throw new ReglaDeNegocioException("USUARIO_DUPLICADO", $"Ya existe el usuario {nombre}.");
         var usuario = new User(nombre, request.Nombre, request.Email, await catalogo.VerificarAsync(request.Asignaciones, cancellationToken));
+        usuario.AnotarCambio("Creó el usuario.");
         usuarios.Agregar(usuario);
         await uow.SaveChangesAsync(cancellationToken);
         await credenciales.CrearAsync(usuario.Id, usuario.UserName, request.Contrasena, cancellationToken);
@@ -128,8 +133,14 @@ public sealed class EditarUsuarioCaso(IAlmacen<User> usuarios, CatalogoDeSegurid
     {
         var usuario = await usuarios.ObtenerAsync(request.Id, "el usuario", cancellationToken);
         usuarios.ExigirVersion(usuario, request.RowVersion);
+        var antes = await catalogo.DetalleAsync(usuario, cancellationToken);
         usuario.Editar(request.Nombre, request.Email);
         usuario.AsignarGrupos(await catalogo.VerificarAsync(request.Asignaciones ?? [], cancellationToken));
+        var despues = await catalogo.DetalleAsync(usuario, cancellationToken);
+        usuario.AnotarCambio(Bitacora.Cambio("Nombre", antes.Nombre, despues.Nombre) ?? string.Empty);
+        usuario.AnotarCambio(Bitacora.Cambio("Correo", antes.Email, despues.Email) ?? string.Empty);
+        foreach (var c in Bitacora.Conjunto(antes.Asignaciones.Select(CatalogoDeSeguridad.Texto), despues.Asignaciones.Select(CatalogoDeSeguridad.Texto)))
+            usuario.AnotarCambio(c);
         await uow.SaveChangesAsync(cancellationToken);
         return await catalogo.DetalleAsync(usuario, cancellationToken);
     }
@@ -143,17 +154,20 @@ public sealed class ArchivarUsuarioCaso(IAlmacen<User> usuarios, CatalogoDeSegur
         var usuario = await usuarios.ObtenerAsync(request.Id, "el usuario", cancellationToken);
         if (request.Archivar) usuario.Archivar();
         else usuario.Restaurar();
+        usuario.AnotarCambio(request.Archivar ? "Archivó el usuario." : "Restauró el usuario.");
         await uow.SaveChangesAsync(cancellationToken);
         return await catalogo.DetalleAsync(usuario, cancellationToken);
     }
 }
 
-public sealed class RestablecerContrasenaCaso(IAlmacen<User> usuarios, ICredenciales credenciales) : IUseCase<RestablecerContrasena, Unit>
+public sealed class RestablecerContrasenaCaso(IAlmacen<User> usuarios, ICredenciales credenciales, IUnitOfWork uow) : IUseCase<RestablecerContrasena, Unit>
 {
     public async Task<Unit> ExecuteAsync(RestablecerContrasena request, CancellationToken cancellationToken = default)
     {
         var usuario = await usuarios.ObtenerAsync(request.Id, "el usuario", cancellationToken);
         await credenciales.RestablecerAsync(usuario.Id, request.Contrasena ?? string.Empty, cancellationToken);
+        usuario.AnotarCambio("Restableció la contraseña.");
+        await uow.SaveChangesAsync(cancellationToken);
         return Unit.Value;
     }
 }
@@ -172,6 +186,8 @@ public sealed class LigarAgenteCaso(IAlmacen<User> usuarios, IAlmacen<Domain.Ven
         var usuario = await usuarios.ObtenerAsync(request.Id, "el usuario", cancellationToken);
         if (request.AgenteId is { } id && !await agentes.ExisteAsync(a => a.Id == id, cancellationToken: cancellationToken))
             throw new ValidacionException([new ErrorValidacion("agenteId", "El agente no existe o ya no está en CONTPAQi.")]);
+        var nombreAgente = async (long? id) => id is { } x ? (await agentes.PorIdAsync(x, true, cancellationToken))?.Name : null;
+        usuario.AnotarCambio(Bitacora.Cambio("Agente de CONTPAQi", await nombreAgente(usuario.ErpAgentId), await nombreAgente(request.AgenteId)) ?? string.Empty);
         usuario.LigarAgente(request.AgenteId);
         await uow.SaveChangesAsync(cancellationToken);
         return await catalogo.DetalleAsync(usuario, cancellationToken);

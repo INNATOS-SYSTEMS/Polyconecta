@@ -83,8 +83,8 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             a.ToTable("group_assignment", "plt");
             a.WithOwner().HasForeignKey("UserId");
             a.HasKey("UserId", nameof(GroupAssignment.GroupId), nameof(GroupAssignment.PlantId));
-            a.HasOne<Group>().WithMany().HasForeignKey(x => x.GroupId);
-            a.HasOne<Plant>().WithMany().HasForeignKey(x => x.PlantId);
+            a.HasOne(x => x.Group).WithMany().HasForeignKey(x => x.GroupId);
+            a.HasOne(x => x.Plant).WithMany().HasForeignKey(x => x.PlantId);
         });
         builder.Navigation(x => x.Assignments).HasField("_asignaciones").UsePropertyAccessMode(PropertyAccessMode.Field);
     }

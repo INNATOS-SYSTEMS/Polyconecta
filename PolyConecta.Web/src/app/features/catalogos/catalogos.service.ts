@@ -28,21 +28,37 @@ export interface ClasificacionDto {
   id: number;
   codigo: string;
   nombre: string;
+  /** El valor de "TIPO DE PRODUCTOS" de CONTPAQi del que nació, si lo hay (D-86). */
+  valorErp?: string | null;
 }
 
+/** Ficha técnica del producto: los dos bloques y, si el PT usa el rollo de otro producto, cuál (FR-018). */
+export interface FichaTecnicaDto {
+  rollo: DatosRollo;
+  pt: DatosPt;
+  rolloLigadoProductoId: number | null;
+  rolloLigadoProducto: string | null;
+}
+
+export interface AccionProductoDto {
+  accion: string;
+  disponible: boolean;
+  razon?: string | null;
+}
+
+/** `ProductoDetalle` de la API (contracts/api-f1.md, Catálogos). */
 export interface ProductoDetalleDto {
   id: number;
-  codigo: string;
+  clave: string;
   nombre: string;
-  unidadBase: string;
-  controlaLote: boolean;
+  etiqueta: string;
+  unidad: string;
+  llevaLote: boolean;
+  activo: boolean;
   clasificacionId: number | null;
   clasificacion: string | null;
-  activo: boolean;
-  rollo: DatosRollo | null;
-  pt: DatosPt | null;
-  rolloLigadoProductoId: number | null;
-  rowVersion: string;
+  ficha: FichaTecnicaDto | null;
+  acciones: AccionProductoDto[];
 }
 
 export interface DomicilioDto {
@@ -117,6 +133,13 @@ export class CatalogosService {
 
   async listarClasificaciones(): Promise<ClasificacionDto[]> {
     return this.peticion<ClasificacionDto[]>('/api/v1/inventario/clasificaciones');
+  }
+
+  async guardarClasificacion(id: number | null, datos: { codigo: string; nombre: string }): Promise<ClasificacionDto> {
+    return this.peticion<ClasificacionDto>(id ? `/api/v1/inventario/clasificaciones/${id}` : '/api/v1/inventario/clasificaciones', {
+      method: id ? 'PUT' : 'POST',
+      body: JSON.stringify(datos),
+    });
   }
 
   // --- Clientes y Ventas ---

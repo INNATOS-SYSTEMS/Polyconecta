@@ -1,339 +1,93 @@
-<div class="o_control_panel">
-  <div class="d-flex align-items-center gap-3">
-    <button class="btn btn-secondary" (click)="volver()" id="btn-volver-productos">
-      Volver
-    </button>
-    @if (pestanaActiva() === 'general' && puedeClasificar()) {
-      <button class="btn btn-primary" [disabled]="guardando()" (click)="guardarClasificacion()" id="btn-guardar-clasificacion">
-        Guardar clasificación
-      </button>
-    }
-    @if (pestanaActiva() === 'ficha' && puedeEditarFicha()) {
-      <button class="btn btn-primary" [disabled]="guardando()" (click)="guardarFicha()" id="btn-guardar-ficha">
-        Guardar ficha técnica
-      </button>
-    }
-    <pc-odoo-breadcrumb [items]="[{ label: 'Inventario' }, { label: 'Productos', url: '/inventario/productos' }, { label: codigo() || 'Detalle' }]" />
-  </div>
-  <div class="d-flex align-items-center gap-2">
-    <span class="badge" [class.bg-success]="activo()" [class.bg-secondary]="!activo()">
-      {{ activo() ? 'Activo' : 'Archivado' }}
-    </span>
-  </div>
-</div>
-
-<div class="o_form_view">
-  @if (error()) {
-    <div class="alert alert-danger mb-3" role="alert" id="alerta-error">
-      {{ error() }}
-    </div>
-  }
-  @if (exito()) {
-    <div class="alert alert-success mb-3" role="alert" id="alerta-exito">
-      {{ exito() }}
-    </div>
-  }
-
-  @if (cargando()) {
-    <div class="text-center py-5">
-      <div class="spinner-border text-primary" role="status"></div>
-    </div>
-  } @else {
-    <div class="o_form_sheet">
-      <div class="d-flex justify-content-between align-items-start mb-4 border-bottom pb-3">
-        <div>
-          <h2 class="h4 mb-1" id="producto-nombre">{{ nombre() }}</h2>
-          <span class="text-muted fw-semibold" id="producto-codigo">{{ codigo() }}</span>
+@if (!cargando()) {
+  <pc-hoja-registro lista="Productos" ruta="/inventario/productos" titulo="Producto" tipo="inventario.producto" [conNuevo]="false"
+                    [nombre]="producto()?.etiqueta ?? ''" [sucio]="sucio()" [guardando]="guardando()" [error]="error()" [id]="producto()?.id ?? null"
+                    (guardar)="guardar()" (descartar)="descartar()">
+    @if (producto(); as p) {
+      <pc-odoo-maestro>
+        <div izquierda>
+          <div class="o_form_label_row"><span class="o_form_label">Clave</span><span class="o_form_value fw-semibold">{{ p.clave }}</span></div>
+          <div class="o_form_label_row"><span class="o_form_label">Unidad base</span><span class="o_form_value">{{ p.unidad }}</span></div>
+          <div class="o_form_label_row"><span class="o_form_label">Controla lote</span><span class="o_form_value">{{ p.llevaLote ? 'Sí' : 'No' }}</span></div>
         </div>
-      </div>
-
-      <ul class="nav nav-tabs mb-4">
-        <li class="nav-item">
-          <button
-            type="button"
-            class="nav-link"
-            [class.active]="pestanaActiva() === 'general'"
-            (click)="pestanaActiva.set('general')"
-            id="tab-general"
-          >
-            Información general
-          </button>
-        </li>
-        <li class="nav-item">
-          <button
-            type="button"
-            class="nav-link"
-            [class.active]="pestanaActiva() === 'ficha'"
-            (click)="pestanaActiva.set('ficha')"
-            id="tab-ficha"
-          >
-            Ficha técnica
-          </button>
-        </li>
-      </ul>
-
-      @if (pestanaActiva() === 'general') {
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label small fw-semibold text-muted">Código CONTPAQi</label>
-            <input type="text" class="form-control" [value]="codigo()" disabled />
-          </div>
-          <div class="col-md-6">
-            <label class="form-label small fw-semibold text-muted">Nombre</label>
-            <input type="text" class="form-control" [value]="nombre()" disabled />
-          </div>
-          <div class="col-md-6">
-            <label class="form-label small fw-semibold text-muted">Unidad base</label>
-            <input type="text" class="form-control" [value]="unidadBase()" disabled />
-          </div>
-          <div class="col-md-6">
-            <label class="form-label small fw-semibold text-muted">Controla lote</label>
-            <input type="text" class="form-control" [value]="controlaLote() ? 'Sí' : 'No'" disabled />
-          </div>
-          <div class="col-md-6">
-            <label class="form-label small fw-semibold text-muted">Clasificación PolyConecta</label>
-            <select
-              class="form-select"
-              [disabled]="!puedeClasificar()"
-              [ngModel]="clasificacionId()"
-              (ngModelChange)="actualizarClasificacion($event)"
-              id="campo-clasificacion"
-            >
-              <option [ngValue]="null">Sin clasificar</option>
-              @for (c of clasificaciones(); track c.id) {
-                <option [ngValue]="c.id">{{ c.codigo }} - {{ c.nombre }}</option>
-              }
-            </select>
-            @if (!puedeClasificar()) {
-              <small class="text-muted">Requiere permiso inventario.producto.clasificar para editar.</small>
+        <div derecha>
+          <div class="o_form_label_row">
+            <span class="o_form_label">Clasificación</span>
+            @if (puedeClasificar()) {
+              <pc-odoo-many2one nombre="Clasificación" [origen]="origenClasificaciones()" [aTexto]="textoClasificacion" [idDe]="idPorId"
+                                [ngModel]="clasificacion()" (ngModelChange)="elegirClasificacion($event)" />
+            } @else {
+              <span class="o_form_value">{{ p.clasificacion ?? '—' }}</span>
             }
           </div>
+          <div class="o_form_label_row"><span class="o_form_label">Estado</span><span class="o_form_value">{{ p.activo ? 'Activo' : 'Archivado' }}</span></div>
         </div>
-      }
+      </pc-odoo-maestro>
 
-      @if (pestanaActiva() === 'ficha') {
-        <div class="ficha-tecnica-contenedor">
-          @if (!puedeEditarFicha()) {
-            <div class="alert alert-warning py-2 mb-3">
-              Solo lectura. Requiere permiso inventario.ficha.editar para modificar.
+      <pc-odoo-tabs [pestanas]="pestanas">
+        <ng-template pcPestana="pt">
+          <pc-odoo-maestro>
+            <div izquierda>
+              <div class="o_form_label_row">
+                <span class="o_form_label">Rollo</span>
+                @if (puedeEditarFicha()) {
+                  <pc-odoo-many2one nombre="Rollo" placeholder="El propio producto" [origen]="origenProductos" [aTexto]="textoProducto" [idDe]="idPorId"
+                                    [ngModel]="rolloLigado()" (ngModelChange)="elegirRolloLigado($event)" />
+                } @else {
+                  <span class="o_form_value">{{ p.ficha?.rolloLigadoProducto ?? 'El propio producto' }}</span>
+                }
+              </div>
+              @for (c of camposPt[0]; track c.campo) {
+                <ng-container *ngTemplateOutlet="campoPt; context: { $implicit: c }" />
+              }
             </div>
-          }
+            <div derecha>
+              @for (c of camposPt[1]; track c.campo) {
+                <ng-container *ngTemplateOutlet="campoPt; context: { $implicit: c }" />
+              }
+            </div>
+          </pc-odoo-maestro>
+        </ng-template>
+        <ng-template pcPestana="rollo">
+          <pc-odoo-maestro>
+            <div izquierda>
+              @for (c of camposRollo[0]; track c.campo) {
+                <ng-container *ngTemplateOutlet="campoRollo; context: { $implicit: c }" />
+              }
+            </div>
+            <div derecha>
+              @for (c of camposRollo[1]; track c.campo) {
+                <ng-container *ngTemplateOutlet="campoRollo; context: { $implicit: c }" />
+              }
+            </div>
+          </pc-odoo-maestro>
+        </ng-template>
+      </pc-odoo-tabs>
+    }
+  </pc-hoja-registro>
+}
 
-          <h5 class="h6 fw-bold text-primary mb-3">Bloque Rollo</h5>
-          <div class="row g-3 mb-4">
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Tipo de material *</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="materialType()"
-                (ngModelChange)="materialType.set($event)"
-                placeholder="ej. Polietileno BD"
-                id="campo-material-type"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Medida rollo *</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="rollTypeSize()"
-                (ngModelChange)="rollTypeSize.set($event)"
-                placeholder="ej. 50 cm"
-                id="campo-roll-type-size"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Calibre (micrones)</label>
-              <input
-                type="number"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="gaugeMicrons()"
-                (ngModelChange)="gaugeMicrons.set($event)"
-                placeholder="ej. 50"
-                id="campo-gauge-microns"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Kilos por rollo</label>
-              <input
-                type="number"
-                step="0.01"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="kgPerRoll()"
-                (ngModelChange)="kgPerRoll.set($event)"
-                placeholder="ej. 25.5"
-                id="campo-kg-per-roll"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Tratamiento (dynas)</label>
-              <input
-                type="number"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="treatmentDynes()"
-                (ngModelChange)="treatmentDynes.set($event)"
-                placeholder="ej. 38"
-                id="campo-treatment-dynes"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Pigmento</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="pigment()"
-                (ngModelChange)="pigment.set($event)"
-                placeholder="ej. Blanco lechoso"
-                id="campo-pigment"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Aditivo</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="additive()"
-                (ngModelChange)="additive.set($event)"
-                placeholder="ej. Deslizante"
-                id="campo-additive"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Perforación</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="perforation()"
-                (ngModelChange)="perforation.set($event)"
-                placeholder="ej. Circular 6mm"
-                id="campo-perforation"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Impresión preliminar</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="preliminaryPrint()"
-                (ngModelChange)="preliminaryPrint.set($event)"
-                placeholder="ej. Logo 1 tinta"
-                id="campo-preliminary-print"
-              />
-            </div>
-          </div>
+<ng-template #campoPt let-c>
+  <div class="o_form_label_row" [attr.data-campo]="c.campo">
+    <span class="o_form_label">{{ c.etiqueta }}</span>
+    @if (!puedeEditarFicha()) {
+      <span class="o_form_value">{{ valorPt(c.campo) ?? '—' }}{{ c.unidad && valorPt(c.campo) !== null ? ' ' + c.unidad : '' }}</span>
+    } @else if (c.tipo === 'numero') {
+      <pc-odoo-number [nombre]="c.etiqueta" [unidad]="c.unidad ?? null" [decimales]="c.decimales ?? 2" [ngModel]="valorPt(c.campo)" (ngModelChange)="cambiarPt(c.campo, $event)" />
+    } @else {
+      <input class="form-control form-control-sm o_inline_input" [attr.aria-label]="c.etiqueta" [value]="valorPt(c.campo) ?? ''" (input)="cambiarPt(c.campo, $any($event.target).value)" />
+    }
+  </div>
+</ng-template>
 
-          <h5 class="h6 fw-bold text-primary mb-3">Bloque Producto Terminado (PT)</h5>
-          <div class="row g-3">
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">No. parte cliente</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="customerPartNumber()"
-                (ngModelChange)="customerPartNumber.set($event)"
-                placeholder="ej. PT-ABC-01"
-                id="campo-customer-part"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Medida final</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="finalSize()"
-                (ngModelChange)="finalSize.set($event)"
-                placeholder="ej. 50x70+10cm"
-                id="campo-final-size"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Tintas</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="inks()"
-                (ngModelChange)="inks.set($event)"
-                placeholder="ej. 4 tintas"
-                id="campo-inks"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Pantones</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="pantones()"
-                (ngModelChange)="pantones.set($event)"
-                placeholder="ej. Pantone 286 C, 485 C"
-                id="campo-pantones"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Suaje</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="dieCut()"
-                (ngModelChange)="dieCut.set($event)"
-                placeholder="ej. Tipo riñón"
-                id="campo-die-cut"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Empaque</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="packaging()"
-                (ngModelChange)="packaging.set($event)"
-                placeholder="ej. Caja con 500 pzas"
-                id="campo-packaging"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Tipo de sello</label>
-              <input
-                type="text"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="sealType()"
-                (ngModelChange)="sealType.set($event)"
-                placeholder="ej. Fondo plano"
-                id="campo-seal-type"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-muted">Kilos por millar</label>
-              <input
-                type="number"
-                step="0.01"
-                class="form-control"
-                [disabled]="!puedeEditarFicha()"
-                [ngModel]="kgPerThousand()"
-                (ngModelChange)="kgPerThousand.set($event)"
-                placeholder="ej. 12.34"
-                id="campo-kg-per-thousand"
-              />
-            </div>
-          </div>
-        </div>
-      }
-    </div>
-  }
-</div>
+<ng-template #campoRollo let-c>
+  <div class="o_form_label_row" [attr.data-campo]="c.campo">
+    <span class="o_form_label">{{ c.etiqueta }}</span>
+    @if (!puedeEditarFicha()) {
+      <span class="o_form_value">{{ valorRollo(c.campo) ?? '—' }}{{ c.unidad && valorRollo(c.campo) !== null ? ' ' + c.unidad : '' }}</span>
+    } @else if (c.tipo === 'numero') {
+      <pc-odoo-number [nombre]="c.etiqueta" [unidad]="c.unidad ?? null" [decimales]="c.decimales ?? 2" [ngModel]="valorRollo(c.campo)" (ngModelChange)="cambiarRollo(c.campo, $event)" />
+    } @else {
+      <input class="form-control form-control-sm o_inline_input" [attr.aria-label]="c.etiqueta" [value]="valorRollo(c.campo) ?? ''" (input)="cambiarRollo(c.campo, $any($event.target).value)" />
+    }
+  </div>
+</ng-template>

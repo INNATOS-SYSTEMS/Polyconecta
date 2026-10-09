@@ -77,7 +77,7 @@ public sealed class AuditoriaInterceptor(
             else if (entry.State == EntityState.Modified)
                 entry.Entity.MarcarModificado(ahora, user.UserName);
 
-            if (entry.Entity.TransicionesPendientes.Count > 0 && !_conTransiciones.Contains(entry.Entity))
+            if ((entry.Entity.TransicionesPendientes.Count > 0 || entry.Entity.CambiosPendientes.Count > 0) && !_conTransiciones.Contains(entry.Entity))
                 _conTransiciones.Add(entry.Entity);
         }
     }
@@ -101,6 +101,16 @@ public sealed class AuditoriaInterceptor(
                 }
             }
             entidad.LimpiarTransicionesPendientes();
+            if (DocumentosConChatter.TipoDe(entidad.GetType()) is { } tipoRegistro)
+            {
+                foreach (var texto in entidad.CambiosPendientes)
+                {
+                    var cambio = ChatterMessage.RegistrarCambioAnotado(tipoRegistro, entidad.Id, texto, user.NombreVisible, user.GrupoEjercido, ahora);
+                    db.Set<ChatterMessage>().Add(cambio);
+                    notificador?.Encolar(cambio);
+                }
+            }
+            entidad.LimpiarCambiosPendientes();
         }
         _conTransiciones.Clear();
         _guardandoBitacora = true;

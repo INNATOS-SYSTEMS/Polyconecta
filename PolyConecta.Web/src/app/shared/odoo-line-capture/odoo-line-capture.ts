@@ -40,6 +40,8 @@ export class OdooLineCapture {
   readonly conPrecio = input(false);
   readonly submitted = output<LineDraft>();
   readonly cancelled = output<void>();
+  /** Lo que se escribe en el producto, para que la pantalla busque en el servidor y amplíe el catálogo. */
+  readonly buscar = output<string>();
 
   protected readonly listId = `cat-${(++siguienteId).toString(16).padStart(8, '0')}`;
   protected readonly unidadPrecargada = signal(false);

@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { SesionState } from '../../../core/sesion/sesion-state';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 
 interface AppTile {
@@ -19,7 +20,7 @@ interface AppTile {
   template: `
 <div class="o_app_hub">
     <div class="o_app_grid">
-        @for (app of apps; track app.label) {
+        @for (app of apps(); track app.label) {
             <button class="o_app_tile" (click)="router.navigateByUrl(app.route)">
                 <span class="o_app_icon" [style.background]="app.fondo" [style.color]="app.icono" [style.border-color]="app.borde"><pc-odoo-icon [nombre]="app.icon" contexto="aplicacion" /></span>
                 <span class="o_app_label">{{ app.label }}</span>
@@ -77,12 +78,20 @@ interface AppTile {
 })
 export class Dashboard {
   protected readonly router = inject(Router);
+  private readonly sesion = inject(SesionState);
 
-  protected readonly apps: AppTile[] = [
+  /** Configuración solo aparece a quien tiene algo que hacer ahí (usuarios, grupos, clasificaciones o sincronización). */
+  private readonly conConfiguracion = computed(() =>
+    ['plataforma.usuarios.leer', 'plataforma.grupos.leer', 'inventario.producto.clasificar', 'plataforma.sincronizacion.leer'].some(p => this.sesion.tienePermiso(p)));
+
+  protected readonly apps = computed(() => (this.conConfiguracion() ? APPS : APPS.filter(a => a.label !== 'Configuración')));
+}
+
+/** Íconos de módulo (contratos visuales §2.3 bis, D-144); Configuración en gris con el ícono del catálogo (D-163). */
+const APPS: AppTile[] = [
     { label: 'Ventas', icon: 'pedido', fondo: '#E3F0F1', icono: '#17676C', borde: '#C9E2E4', route: '/ventas/pedidos' },
     { label: 'Fabricación', icon: 'fabricacion', fondo: '#E8EAF6', icono: '#2E3889', borde: '#D3D7EE', route: '/produccion/fabricacion' },
     { label: 'Calidad', icon: 'calidad', fondo: '#E4F1EA', icono: '#276B47', borde: '#CBE4D6', route: '/calidad' },
     { label: 'Inventario', icon: 'inventario', fondo: '#F4ECE1', icono: '#80552A', borde: '#E6D6C0', route: '/inventario' },
-    { label: 'Configuración', icon: 'ajustes', fondo: '#F3E5F5', icono: '#7B1FA2', borde: '#E1BEE7', route: '/plataforma/usuarios' },
-  ];
-}
+    { label: 'Configuración', icon: 'configuracion', fondo: '#EEF0F4', icono: '#374151', borde: '#D5D8E1', route: '/plataforma/usuarios' },
+];

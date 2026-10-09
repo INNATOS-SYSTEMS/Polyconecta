@@ -1,6 +1,6 @@
 namespace PolyConecta.Domain.Plataforma.Chatter;
 
-/// <summary><c>Nota</c> es interna (Odoo); <c>Cambio</c> solo lo escribe la persistencia al registrar una transición (R-04).</summary>
+/// <summary><c>Nota</c> es interna (Odoo); <c>Cambio</c> solo lo escribe la persistencia al registrar una transición o un cambio anotado (R-04).</summary>
 public enum TipoMensaje
 {
     Mensaje,
@@ -75,4 +75,9 @@ public sealed class ChatterMessage
         if (!string.IsNullOrWhiteSpace(note)) cuerpo += $": {note.Trim()}";
         return new ChatterMessage(documentType, documentId, TipoMensaje.Cambio, cuerpo, null, authorName, groupExercised, createdAt);
     }
+
+    /// <summary>Un cambio anotado en un registro sin estados ("Agregó Comercial · PIM").</summary>
+    public static ChatterMessage RegistrarCambioAnotado(
+        string documentType, long documentId, string texto, string authorName, string? groupExercised, DateTimeOffset createdAt) =>
+        new(documentType, documentId, TipoMensaje.Cambio, texto, null, authorName, groupExercised, createdAt);
 }

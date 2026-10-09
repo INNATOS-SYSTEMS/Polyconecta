@@ -7,6 +7,7 @@
              [placeholder]="placeholder()"
              [value]="texto()"
              (change)="onClaveChanged($event)"
+             (input)="buscar.emit($any($event.target).value)"
              [title]="resuelto() ? 'Producto confirmado del catálogo de CONTPAQi' : placeholder()" />
     </div>
     <div class="col-6 col-md-2">

@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { nombreProducto } from '../../../../core/format/producto';
 import { OdooBreadcrumb } from '../../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { OdooList } from '../../../../shared/odoo-list/odoo-list';
 import { ColumnaLista } from '../../../../shared/odoo-list/columnas';
@@ -34,9 +35,9 @@ export class ProductosList {
   protected readonly idProducto = (f: FilaProducto) => String(f.id);
 
   protected readonly columnas: ColumnaLista<FilaProducto>[] = [
-    { campo: 'codigo', titulo: 'Código', clase: 'fw-semibold text-primary' },
-    { campo: 'nombre', titulo: 'Nombre' },
-    { campo: 'unidadBase', titulo: 'Unidad' },
+    // "Clave - Nombre" en una sola columna (D-141); ordena por la clave.
+    { campo: 'codigo', titulo: 'Producto', texto: f => nombreProducto(f.codigo, f.nombre) },
+    { campo: 'unidadBase', titulo: 'Unidad base' },
     { campo: 'clasificacion', titulo: 'Clasificación' },
     { campo: 'activo', titulo: 'Estado', tipo: 'estado', texto: f => (f.activo ? 'Activo' : 'Archivado') },
   ];

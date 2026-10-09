@@ -9,6 +9,12 @@ Para retomar en una sesión nueva. Se retira al cerrar la spec (C-T008), como `h
 - Worktrees aún presentes: `.claude/worktrees/agent-a9fcca3e254117a41` (rama `003-pedidos-de-venta-l2`, ya integrada) y `.claude/worktrees/agent-a1428a14b041ac060` (rama `003-pedidos-de-venta-l1`, ya integrada). Se pueden quitar con `git worktree remove` cuando el usuario lo apruebe.
 - Puede seguir corriendo `./run.sh --with-bridge` lanzado desde el worktree de L2 (puertos 9000, 9020, 9030). Para detenerlo: `pkill -f scripts/run.sh; pkill -f PolyConecta.Api.csproj; pkill -f PolyConecta.Contpaq.csproj; pkill -f "ng serve"`. El contenedor `polyconecta-sql` (14333) es compartido y se deja arriba.
 
+## Tras la limpieza (9-oct, tarde)
+
+- Las ramas `003-pedidos-de-venta-l1` y `-l2` y sus worktrees se borraron (ya estaban integradas). El trabajo sigue en `003-pedidos-de-venta-limpieza`, que sale de `003-pedidos-de-venta` y se integra a ella.
+- Las pantallas de F1 se rehicieron sobre la propuesta aprobada P-01 a P-17 (D-157; tablero https://claude.ai/artifact/Vt8o8ef4t9FuziZMKrvmyw, página "F1 · Propuesta"): Pedido con `pc-pedido-hoja`; Usuarios, Grupos, Productos, Clientes y Clasificaciones con `pc-hoja-registro`; Sincronización como lista; inicio de sesión sin componente propio. Edición en su lugar (D-164) y bitácora en catálogos (D-165).
+- Ninguna pantalla nueva se implementa sin aprobar su propuesta en el tablero (D-157).
+
 ## Lo que falta de F1
 
 | Tarea | Quién | Qué |
@@ -49,6 +55,5 @@ Escenarios, auditor, tablero, galería, chatter y `npm run e2e` necesitan la API
 
 ## Pendientes menores vistos, sin tarea
 
-- La barra superior muestra el usuario de respaldo del prototipo ("Alejandro Porras") hasta que llega la sesión.
 - `OdooList.cargar` no atrapa el error de una consulta fallida (queda un "Unhandled rejection" en consola tras un `401`).
 - Hay 665 advertencias de compilación en .NET (sobre todo xUnit1051 y CA1848).

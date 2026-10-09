@@ -1,115 +1,113 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { fechaHora } from '../../../core/format/numero';
+import { OrigenEnMemoria } from '../../../core/lista/origen-en-memoria';
 import { SesionState } from '../../../core/sesion/sesion-state';
+import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
+import { AvisosService } from '../../../shared/odoo-dialog/avisos';
+import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
+import { OdooList } from '../../../shared/odoo-list/odoo-list';
+import { AccionMasiva, ColumnaLista } from '../../../shared/odoo-list/columnas';
 import { CatalogosService, EstadoCatalogoDto } from '../../catalogos/catalogos.service';
 
+const NOMBRES: Record<string, string> = { productos: 'Productos', clientes: 'Clientes', agentes: 'Agentes', almacenes: 'Almacenes' };
+const nombre = (c: string) => NOMBRES[c.toLowerCase()] ?? c;
+const fecha = (f: string | null) => (f ? fechaHora(new Date(f)) : 'Nunca');
+const entero = (n: number) => n.toLocaleString('en-US');
+
+/**
+ * Estado de la sincronización de catálogos con CONTPAQi (FR-014, P-14 de la propuesta aprobada): la lista
+ * de los contratos visuales. "Sincronizar todo" es la acción primaria; "Sincronizar ahora" es una acción de
+ * la barra de selección. Ejecutar exige Sistemas o Administrador.
+ */
 @Component({
   selector: 'pc-sincronizacion',
-  imports: [OdooBreadcrumb],
-  templateUrl: './sincronizacion.html',
-  styles: `
-    :host { display: block; }
-    .o_form_view {
-      padding: 1.5rem 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .o_form_sheet {
-      background: white;
-      border: 1px solid var(--border-color, #e2e8f0);
-      border-radius: 8px;
-      padding: 2rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
+  imports: [OdooBreadcrumb, OdooList, OdooIcon],
+  template: `
+    <div class="o_control_panel">
+      <div class="d-flex align-items-center gap-3">
+        @if (puedeEjecutar()) {
+          <button class="btn btn-primary btn-sm fw-bold px-3" [disabled]="!!sincronizando()" (click)="sincronizarTodo()" data-sincronizar-todo>
+            <pc-odoo-icon [nombre]="sincronizando() === 'todo' ? 'cargando' : 'reintentar'" /> Sincronizar todo
+          </button>
+        }
+        <pc-odoo-breadcrumb [items]="[{ label: 'Sincronización' }]" />
+      </div>
+      <div></div>
+      <div class="d-flex align-items-center gap-2"></div>
+    </div>
+    <div class="p-4">
+      @if (error()) {
+        <div class="alert alert-danger py-2 px-3 small mb-3" role="alert"><pc-odoo-icon nombre="hard-stop" />{{ error() }}</div>
+      }
+      <pc-odoo-list lista="plataforma.sincronizacion" [origen]="origen()" [columnas]="columnas" [idDe]="idDe" [acciones]="acciones()"
+                    [filasPulsables]="false" [conPaginador]="false" mensajeVacio="No hay catálogos sincronizados todavía." />
+    </div>
   `,
+  styles: ':host { display: contents; }',
 })
 export class Sincronizacion implements OnInit {
   private readonly catalogos = inject(CatalogosService);
   private readonly sesion = inject(SesionState);
-
-  protected readonly cargando = signal(true);
-  protected readonly sincronizando = signal<string | null>(null); // 'todo' o nombre de catálogo
-  protected readonly error = signal<string | null>(null);
-  protected readonly exito = signal<string | null>(null);
+  private readonly avisos = inject(AvisosService);
 
   protected readonly estados = signal<EstadoCatalogoDto[]>([]);
+  protected readonly sincronizando = signal<string | null>(null);
+  protected readonly error = signal<string | null>(null);
+  protected readonly puedeEjecutar = computed(() => this.sesion.tienePermiso('plataforma.sincronizacion.ejecutar'));
 
-  protected readonly puedeEjecutar = computed(() =>
-    this.sesion.tienePermiso('plataforma.sincronizacion.ejecutar')
-  );
+  protected readonly idDe = (e: EstadoCatalogoDto) => e.catalogo;
+  /** Un origen nuevo con cada corrida: la lista vuelve a consultar. */
+  protected readonly origen = computed(() => {
+    const l = this.estados();
+    return new OrigenEnMemoria<EstadoCatalogoDto>({ datos: () => l, id: e => e.catalogo });
+  });
+  protected readonly columnas: ColumnaLista<EstadoCatalogoDto>[] = [
+    { campo: 'catalogo', titulo: 'Catálogo', clase: 'fw-semibold text-primary', texto: e => nombre(e.catalogo) },
+    { campo: 'resultado', titulo: 'Estado', tipo: 'estado', texto: e => (e.error || e.resultado === 'Error' ? 'Error' : e.resultado ? 'Correcta' : 'Sin corridas') },
+    { campo: 'ultimaCorrida', titulo: 'Última corrida', texto: e => fecha(e.ultimaCorrida) },
+    { campo: 'ultimaExitosa', titulo: 'Última correcta', texto: e => fecha(e.ultimaExitosa) },
+    { campo: 'leidos', titulo: 'Leídos', clase: 'text-end', texto: e => entero(e.leidos) },
+    { campo: 'cambiados', titulo: 'Cambiados', clase: 'text-end', texto: e => entero(e.cambiados) },
+    { campo: 'archivados', titulo: 'Archivados', clase: 'text-end', texto: e => entero(e.archivados) },
+    { campo: 'duracionMs', titulo: 'Duración', clase: 'text-end', texto: e => `${(e.duracionMs / 1000).toFixed(1)} s` },
+    { campo: 'error', titulo: 'Último error', texto: e => e.error ?? '' },
+  ];
+  protected readonly acciones = computed<AccionMasiva[]>(() =>
+    this.puedeEjecutar() ? [{ nombre: 'Sincronizar ahora', icono: 'reintentar', ejecutar: ids => void this.sincronizar(ids) }] : []);
 
   async ngOnInit(): Promise<void> {
-    await this.cargarEstados();
-  }
-
-  protected async cargarEstados(): Promise<void> {
-    this.cargando.set(true);
-    this.error.set(null);
     try {
-      const res = await this.catalogos.obtenerEstadoSincronizacion();
-      this.estados.set(res);
+      this.estados.set(await this.catalogos.obtenerEstadoSincronizacion());
     } catch (e: unknown) {
-      this.error.set((e as Error).message || 'Error al obtener estado de sincronización.');
-    } finally {
-      this.cargando.set(false);
+      this.error.set((e as Error).message || 'No se pudo leer el estado de la sincronización.');
     }
   }
 
   protected async sincronizarTodo(): Promise<void> {
     this.sincronizando.set('todo');
     this.error.set(null);
-    this.exito.set(null);
     try {
-      const res = await this.catalogos.sincronizarTodo();
-      this.estados.set(res);
-      this.exito.set('Sincronización completa de todos los catálogos finalizada.');
+      this.estados.set(await this.catalogos.sincronizarTodo());
+      this.avisos.exito('Sincronización de todos los catálogos terminada.');
     } catch (e: unknown) {
-      this.error.set((e as Error).message || 'Error al ejecutar sincronización completa.');
+      this.error.set((e as Error).message || 'No se pudo sincronizar.');
     } finally {
       this.sincronizando.set(null);
     }
   }
 
-  protected async sincronizarCatalogo(catalogo: string): Promise<void> {
-    this.sincronizando.set(catalogo);
+  private async sincronizar(catalogos: string[]): Promise<void> {
     this.error.set(null);
-    this.exito.set(null);
-    try {
-      const res = await this.catalogos.sincronizarCatalogo(catalogo);
-      this.estados.update(lista => {
-        const idx = lista.findIndex(e => e.catalogo.toLowerCase() === catalogo.toLowerCase());
-        if (idx >= 0) {
-          const nueva = [...lista];
-          nueva[idx] = res;
-          return nueva;
-        }
-        return [...lista, res];
-      });
-      this.exito.set(`Sincronización del catálogo "${this.nombreCatalogo(catalogo)}" completada.`);
-    } catch (e: unknown) {
-      this.error.set((e as Error).message || `Error al sincronizar catálogo "${catalogo}".`);
-    } finally {
-      this.sincronizando.set(null);
+    for (const c of catalogos) {
+      this.sincronizando.set(c);
+      try {
+        const r = await this.catalogos.sincronizarCatalogo(c);
+        this.estados.update(l => l.map(e => (e.catalogo.toLowerCase() === c.toLowerCase() ? r : e)));
+        this.avisos.exito(`${nombre(c)} sincronizado.`);
+      } catch (e: unknown) {
+        this.error.set((e as Error).message || `No se pudo sincronizar ${nombre(c)}.`);
+      }
     }
-  }
-
-  protected nombreCatalogo(cat: string): string {
-    const mapa: Record<string, string> = {
-      productos: 'Productos',
-      clientes: 'Clientes',
-      agentes: 'Agentes',
-      almacenes: 'Almacenes',
-    };
-    return mapa[cat.toLowerCase()] ?? cat;
-  }
-
-  protected formatearFecha(f: string | null): string {
-    if (!f) return 'Nunca';
-    try {
-      const d = new Date(f);
-      return isNaN(d.getTime()) ? f : d.toLocaleString();
-    } catch {
-      return f;
-    }
+    this.sincronizando.set(null);
   }
 }

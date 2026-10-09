@@ -1,216 +1,165 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { OdooBreadcrumb } from '../../../../shared/odoo-breadcrumb/odoo-breadcrumb';
-import { SesionState } from '../../../../core/sesion/sesion-state';
-import {
-  CatalogosService,
-  ClasificacionDto,
-  DatosPt,
-  DatosRollo,
-  ProductoDetalleDto,
-} from '../../catalogos.service';
+import { ActivatedRoute } from '@angular/router';
+import { OrigenEnMemoria } from '../../../../core/lista/origen-en-memoria';
+import { HojaRegistro } from '../../../../shared/hoja-registro/hoja-registro';
+import { AvisosService } from '../../../../shared/odoo-dialog/avisos';
+import { OdooMaestro } from '../../../../shared/odoo-maestro/odoo-maestro';
+import { OdooMany2one } from '../../../../shared/odoo-many2one/odoo-many2one';
+import { OdooNumber } from '../../../../shared/odoo-number/odoo-number';
+import { OdooTabs, PcPestana } from '../../../../shared/odoo-tabs/odoo-tabs';
+import { OrigenHttp } from '../../../../core/lista/origen-http';
+import { FilaProducto } from '../productos-list/productos-list';
+import { CatalogosService, ClasificacionDto, DatosPt, DatosRollo, ProductoDetalleDto } from '../../catalogos.service';
 
+interface CampoFicha<T> { campo: keyof T; etiqueta: string; tipo: 'texto' | 'numero'; unidad?: string; decimales?: number }
+
+const CAMPOS_PT: CampoFicha<DatosPt>[] = [
+  { campo: 'customerPartNumber', etiqueta: 'No. parte cliente', tipo: 'texto' },
+  { campo: 'finalSize', etiqueta: 'Medida final', tipo: 'texto' },
+  { campo: 'inks', etiqueta: 'Tintas', tipo: 'texto' },
+  { campo: 'pantones', etiqueta: 'Pantones', tipo: 'texto' },
+  { campo: 'dieCut', etiqueta: 'Suaje', tipo: 'texto' },
+  { campo: 'packaging', etiqueta: 'Empaque', tipo: 'texto' },
+  { campo: 'sealType', etiqueta: 'Tipo de sello', tipo: 'texto' },
+  { campo: 'kgPerThousand', etiqueta: 'Kilos por millar', tipo: 'numero', unidad: 'kg', decimales: 2 },
+];
+
+const CAMPOS_ROLLO: CampoFicha<DatosRollo>[] = [
+  { campo: 'materialType', etiqueta: 'Tipo de material', tipo: 'texto' },
+  { campo: 'rollTypeSize', etiqueta: 'Medida rollo', tipo: 'texto' },
+  { campo: 'gaugeMicrons', etiqueta: 'Calibre (micrones)', tipo: 'numero', decimales: 0 },
+  { campo: 'kgPerRoll', etiqueta: 'Kilos por rollo', tipo: 'numero', unidad: 'kg', decimales: 2 },
+  { campo: 'treatmentDynes', etiqueta: 'Tratamiento (dynas)', tipo: 'numero', decimales: 0 },
+  { campo: 'pigment', etiqueta: 'Pigmento', tipo: 'texto' },
+  { campo: 'additive', etiqueta: 'Aditivo', tipo: 'texto' },
+  { campo: 'perforation', etiqueta: 'Perforación', tipo: 'texto' },
+  { campo: 'preliminaryPrint', etiqueta: 'Impresión preliminar', tipo: 'texto' },
+];
+
+const mitad = <T>(l: T[]): [T[], T[]] => [l.slice(0, Math.ceil(l.length / 2)), l.slice(Math.ceil(l.length / 2))];
+
+/**
+ * Producto sincronizado de CONTPAQi (FR-015 a FR-018, P-10 de la propuesta aprobada): lo de CONTPAQi es
+ * texto de solo lectura; la clasificación y la ficha técnica son de PolyConecta y se editan en su lugar
+ * (D-164). Sin "Nuevo": los productos se dan de alta en CONTPAQi.
+ */
 @Component({
   selector: 'pc-producto-form',
-  imports: [FormsModule, OdooBreadcrumb],
+  imports: [FormsModule, NgTemplateOutlet, HojaRegistro, OdooMaestro, OdooMany2one, OdooNumber, OdooTabs, PcPestana],
   templateUrl: './producto-form.html',
-  styles: `
-    :host { display: block; }
-    .o_form_view {
-      padding: 1.5rem 2rem;
-      max-width: 1080px;
-      margin: 0 auto;
-    }
-    .o_form_sheet {
-      background: white;
-      border: 1px solid var(--border-color, #e2e8f0);
-      border-radius: 8px;
-      padding: 2rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .nav-tabs .nav-link {
-      color: var(--text-muted, #64748b);
-      cursor: pointer;
-    }
-    .nav-tabs .nav-link.active {
-      color: var(--brand-primary, #714B67);
-      font-weight: 600;
-      border-bottom: 2px solid var(--brand-primary, #714B67);
-    }
-  `,
+  styles: ':host { display: block; }',
 })
 export class ProductoForm implements OnInit {
-  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly catalogos = inject(CatalogosService);
-  private readonly sesion = inject(SesionState);
-
-  protected readonly id = signal<string>(this.route.snapshot.paramMap.get('id') ?? '1');
+  private readonly avisos = inject(AvisosService);
 
   protected readonly cargando = signal(true);
   protected readonly guardando = signal(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly exito = signal<string | null>(null);
+  protected readonly producto = signal<ProductoDetalleDto | null>(null);
 
-  protected readonly pestanaActiva = signal<'general' | 'ficha'>('general');
+  protected readonly clasificacion = signal<ClasificacionDto | null>(null);
+  protected readonly pt = signal<DatosPt>({});
+  protected readonly rollo = signal<DatosRollo>({ materialType: '', rollTypeSize: '' });
+  protected readonly rolloLigado = signal<FilaProducto | null>(null);
+  protected readonly cambioClasificacion = signal(false);
+  protected readonly cambioFicha = signal(false);
+  protected readonly sucio = computed(() => this.cambioClasificacion() || this.cambioFicha());
 
-  // Datos de solo lectura de CONTPAQi
-  protected readonly codigo = signal('');
-  protected readonly nombre = signal('');
-  protected readonly unidadBase = signal('');
-  protected readonly controlaLote = signal(false);
-  protected readonly activo = signal(true);
-  protected readonly rowVersion = signal('');
-
-  // Clasificación
   protected readonly clasificaciones = signal<ClasificacionDto[]>([]);
-  protected readonly clasificacionId = signal<number | null>(null);
 
-  // Ficha técnica - Rollo
-  protected readonly materialType = signal('');
-  protected readonly rollTypeSize = signal('');
-  protected readonly gaugeMicrons = signal<number | null>(null);
-  protected readonly kgPerRoll = signal<number | null>(null);
-  protected readonly treatmentDynes = signal<number | null>(null);
-  protected readonly pigment = signal('');
-  protected readonly additive = signal('');
-  protected readonly perforation = signal('');
-  protected readonly preliminaryPrint = signal('');
+  protected readonly camposPt = mitad(CAMPOS_PT);
+  protected readonly camposRollo = mitad(CAMPOS_ROLLO);
+  protected readonly pestanas = [{ id: 'pt', titulo: 'Ficha técnica · PT' }, { id: 'rollo', titulo: 'Ficha técnica · Rollo' }];
 
-  // Ficha técnica - PT
-  protected readonly customerPartNumber = signal('');
-  protected readonly finalSize = signal('');
-  protected readonly inks = signal('');
-  protected readonly pantones = signal('');
-  protected readonly dieCut = signal('');
-  protected readonly packaging = signal('');
-  protected readonly sealType = signal('');
-  protected readonly kgPerThousand = signal<number | null>(null);
+  protected readonly puedeClasificar = computed(() => !!this.producto()?.acciones.find(a => a.accion === 'clasificar')?.disponible);
+  protected readonly puedeEditarFicha = computed(() => !!this.producto()?.acciones.find(a => a.accion === 'editar_ficha')?.disponible);
 
-  // Permisos
-  protected readonly puedeClasificar = computed(() =>
-    this.sesion.tienePermiso('inventario.producto.clasificar')
-  );
-  protected readonly puedeEditarFicha = computed(() =>
-    this.sesion.tienePermiso('inventario.ficha.editar')
-  );
+  protected readonly origenClasificaciones = computed(() => { const l = this.clasificaciones(); return new OrigenEnMemoria<ClasificacionDto>({ datos: () => l, id: c => String(c.id), buscables: ['codigo', 'nombre'] }); });
+  /** El rollo ligado se busca en todo el catálogo, en el servidor (lista de productos, permiso de lectura). */
+  protected readonly origenProductos = new OrigenHttp<FilaProducto>({ modulo: 'inventario', lista: 'productos', id: f => String(f.id) });
+  protected readonly textoClasificacion = (c: ClasificacionDto) => c.nombre;
+  protected readonly textoProducto = (p: FilaProducto) => (p.codigo ? `${p.codigo} - ${p.nombre}` : p.nombre);
+  protected readonly idPorId = (r: { id: number }) => String(r.id);
 
   async ngOnInit(): Promise<void> {
-    this.cargando.set(true);
-    this.error.set(null);
     try {
-      const [clasifs, prod] = await Promise.all([
+      const id = this.route.snapshot.paramMap.get('id') ?? '';
+      const [p, clas] = await Promise.all([
+        this.catalogos.obtenerProducto(id),
         this.catalogos.listarClasificaciones().catch(() => []),
-        this.catalogos.obtenerProducto(this.id()),
       ]);
-      this.clasificaciones.set(clasifs);
-      this.cargarProducto(prod);
+      this.clasificaciones.set(clas);
+      this.cargar(p);
     } catch (e: unknown) {
-      this.error.set((e as Error).message || 'Error al cargar el producto.');
+      this.error.set((e as Error).message || 'No se pudo cargar el producto.');
     } finally {
       this.cargando.set(false);
     }
   }
 
-  private cargarProducto(p: ProductoDetalleDto): void {
-    this.codigo.set(p.codigo);
-    this.nombre.set(p.nombre);
-    this.unidadBase.set(p.unidadBase);
-    this.controlaLote.set(p.controlaLote);
-    this.activo.set(p.activo);
-    this.rowVersion.set(p.rowVersion);
-    this.clasificacionId.set(p.clasificacionId);
-
-    if (p.rollo) {
-      this.materialType.set(p.rollo.materialType ?? '');
-      this.rollTypeSize.set(p.rollo.rollTypeSize ?? '');
-      this.gaugeMicrons.set(p.rollo.gaugeMicrons ?? null);
-      this.kgPerRoll.set(p.rollo.kgPerRoll ?? null);
-      this.treatmentDynes.set(p.rollo.treatmentDynes ?? null);
-      this.pigment.set(p.rollo.pigment ?? '');
-      this.additive.set(p.rollo.additive ?? '');
-      this.perforation.set(p.rollo.perforation ?? '');
-      this.preliminaryPrint.set(p.rollo.preliminaryPrint ?? '');
-    }
-
-    if (p.pt) {
-      this.customerPartNumber.set(p.pt.customerPartNumber ?? '');
-      this.finalSize.set(p.pt.finalSize ?? '');
-      this.inks.set(p.pt.inks ?? '');
-      this.pantones.set(p.pt.pantones ?? '');
-      this.dieCut.set(p.pt.dieCut ?? '');
-      this.packaging.set(p.pt.packaging ?? '');
-      this.sealType.set(p.pt.sealType ?? '');
-      this.kgPerThousand.set(p.pt.kgPerThousand ?? null);
-    }
+  private cargar(p: ProductoDetalleDto): void {
+    this.producto.set(p);
+    this.clasificacion.set(this.clasificaciones().find(c => c.id === p.clasificacionId) ?? null);
+    this.pt.set({ ...(p.ficha?.pt ?? {}) });
+    this.rollo.set({ ...(p.ficha?.rollo ?? { materialType: '', rollTypeSize: '' }) });
+    const ligadoId = p.ficha?.rolloLigadoProductoId ?? null;
+    this.rolloLigado.set(ligadoId ? { id: ligadoId, codigo: '', nombre: p.ficha?.rolloLigadoProducto ?? '', activo: true } : null);
+    this.cambioClasificacion.set(false);
+    this.cambioFicha.set(false);
   }
 
-  protected async guardarClasificacion(): Promise<void> {
+  protected valorPt(c: keyof DatosPt): string | number | null { return (this.pt()[c] ?? null) as string | number | null; }
+  protected valorRollo(c: keyof DatosRollo): string | number | null { return (this.rollo()[c] ?? null) as string | number | null; }
+
+  protected cambiarPt(c: keyof DatosPt, v: unknown): void {
+    this.pt.update(d => ({ ...d, [c]: v === '' ? null : v }));
+    this.cambioFicha.set(true);
+  }
+
+  protected cambiarRollo(c: keyof DatosRollo, v: unknown): void {
+    this.rollo.update(d => ({ ...d, [c]: v === '' ? null : v }));
+    this.cambioFicha.set(true);
+  }
+
+  protected elegirClasificacion(c: ClasificacionDto | null): void {
+    this.clasificacion.set(c);
+    this.cambioClasificacion.set(true);
+  }
+
+  protected elegirRolloLigado(p: FilaProducto | null): void {
+    this.rolloLigado.set(p);
+    this.cambioFicha.set(true);
+  }
+
+  protected async guardar(): Promise<void> {
+    const p = this.producto();
+    if (!p) return;
     this.guardando.set(true);
     this.error.set(null);
-    this.exito.set(null);
     try {
-      const prod = await this.catalogos.clasificarProducto(this.id(), this.clasificacionId());
-      this.cargarProducto(prod);
-      this.exito.set('Clasificación guardada exitosamente.');
+      let actual = p;
+      if (this.cambioClasificacion()) actual = await this.catalogos.clasificarProducto(p.id, this.clasificacion()?.id ?? null);
+      if (this.cambioFicha()) {
+        actual = await this.catalogos.guardarFichaTecnica(p.id, {
+          rollo: this.rollo(), pt: this.pt(), rolloLigadoProductoId: this.rolloLigado()?.id ?? null,
+        });
+      }
+      this.cargar(actual);
+      this.avisos.exito('Producto guardado.');
     } catch (e: unknown) {
-      this.error.set((e as Error).message || 'Error al guardar la clasificación.');
+      this.error.set((e as Error).message || 'No se pudo guardar el producto.');
     } finally {
       this.guardando.set(false);
     }
   }
 
-  protected async guardarFicha(): Promise<void> {
-    this.guardando.set(true);
+  protected descartar(): void {
     this.error.set(null);
-    this.exito.set(null);
-
-    if (!this.materialType().trim() || !this.rollTypeSize().trim()) {
-      this.error.set('El bloque Rollo requiere Tipo de material y Medida de rollo.');
-      this.guardando.set(false);
-      return;
-    }
-
-    const rollo: DatosRollo = {
-      materialType: this.materialType().trim(),
-      rollTypeSize: this.rollTypeSize().trim(),
-      gaugeMicrons: this.gaugeMicrons(),
-      kgPerRoll: this.kgPerRoll(),
-      treatmentDynes: this.treatmentDynes(),
-      pigment: this.pigment().trim() || null,
-      additive: this.additive().trim() || null,
-      perforation: this.perforation().trim() || null,
-      preliminaryPrint: this.preliminaryPrint().trim() || null,
-    };
-
-    const pt: DatosPt = {
-      customerPartNumber: this.customerPartNumber().trim() || null,
-      finalSize: this.finalSize().trim() || null,
-      inks: this.inks().trim() || null,
-      pantones: this.pantones().trim() || null,
-      dieCut: this.dieCut().trim() || null,
-      packaging: this.packaging().trim() || null,
-      sealType: this.sealType().trim() || null,
-      kgPerThousand: this.kgPerThousand(),
-    };
-
-    try {
-      const prod = await this.catalogos.guardarFichaTecnica(this.id(), { rollo, pt });
-      this.cargarProducto(prod);
-      this.exito.set('Ficha técnica guardada exitosamente.');
-    } catch (e: unknown) {
-      this.error.set((e as Error).message || 'Error al guardar la ficha técnica.');
-    } finally {
-      this.guardando.set(false);
-    }
-  }
-
-  protected volver(): void {
-    void this.router.navigateByUrl('/inventario/productos');
-  }
-
-  protected actualizarClasificacion(val: unknown): void {
-    this.clasificacionId.set(val ? Number(val) : null);
+    const p = this.producto();
+    if (p) this.cargar(p);
   }
 }

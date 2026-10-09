@@ -37,6 +37,7 @@ export class UsuariosList {
     { campo: 'usuario', titulo: 'Usuario', clase: 'fw-semibold text-primary' },
     { campo: 'nombre', titulo: 'Nombre' },
     { campo: 'email', titulo: 'Correo' },
+    { campo: 'grupos', titulo: 'Grupos y plantas' },
     { campo: 'activo', titulo: 'Estado', tipo: 'estado', texto: f => (f.activo ? 'Activo' : 'Archivado') },
   ];
 

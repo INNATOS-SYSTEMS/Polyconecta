@@ -13,7 +13,6 @@
     <a href="/catalogo#campos">Campos</a>
     <a href="/catalogo#avisos">Avisos y bloqueos</a>
     <a href="/catalogo#dual-list">Lista dual de permisos</a>
-    <a href="/catalogo#login-form">Inicio de sesión</a>
     <strong class="d-block mt-2 mb-1">Piezas</strong>
     <a href="/catalogo#botones">Botones e íconos</a>
     <a href="/catalogo#navegacion">Barra, migas y vistas</a>
@@ -260,16 +259,5 @@
       </div>
     </section>
 
-    <!-- ============================================================ Formulario de Login -->
-    <section class="o_catalogo_seccion" id="login-form" data-catalogo="login-form">
-      <h2>Inicio de sesión · <code>pc-odoo-login-form</code></h2>
-      <p>Tarjeta de autenticación centrada con entradas para usuario y contraseña, estados de carga y alerta de error.</p>
-      <div class="d-flex justify-content-center p-3 bg-light rounded">
-        <pc-odoo-login-form
-          [cargando]="loginEjemploCargando()"
-          [error]="loginEjemploError()"
-          (enviar)="enviarLoginEjemplo($event)" />
-      </div>
-    </section>
   </div>
 </div>

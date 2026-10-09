@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { ANGULAR, abrir } from '../soporte/apps';
 import { simularListas } from '../soporte/listas';
+import { aviso, elegir, pestana } from '../soporte/pedido';
+
+const fila = (page: import('@playwright/test').Page, texto: string) => page.locator('pc-odoo-list tbody tr', { hasText: texto });
 
 /**
  * Escenarios de Sincronización, Productos y Clientes (F1 / US3, quickstart §3, L2-T018):
@@ -104,15 +107,15 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
 
     await abrir(page, ANGULAR, '/plataforma/sincronizacion');
 
-    await expect(page.locator('#tabla-sincronizacion')).toBeVisible();
-    await expect(page.locator('tr[data-catalogo="productos"]')).toContainText('Productos');
-    await expect(page.locator('tr[data-catalogo="clientes"]')).toContainText('Clientes');
+    // La lista de los contratos visuales (P-14): "Sincronizar todo" es la acción primaria.
+    await expect(fila(page, 'Productos')).toBeVisible();
+    await expect(fila(page, 'Clientes')).toBeVisible();
 
-    const btnTodo = page.locator('#btn-sincronizar-todo');
+    const btnTodo = page.locator('[data-sincronizar-todo]');
     await expect(btnTodo).toBeEnabled();
     await btnTodo.click();
 
-    await expect(page.locator('#alerta-exito')).toContainText('Sincronización completa');
+    await expect(aviso(page)).toContainText('Sincronización de todos los catálogos terminada');
     expect(sincronizadoTodo).toBe(true);
   });
 
@@ -158,13 +161,13 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
 
     await abrir(page, ANGULAR, '/plataforma/sincronizacion');
 
-    const btnProd = page.locator('button[data-btn-sincronizar="productos"]');
-    await expect(btnProd).toBeVisible();
-    await btnProd.click();
+    // "Sincronizar ahora" es una acción de la barra de selección (07 §1.1).
+    await fila(page, 'Productos').locator('input[type="checkbox"]').check();
+    await page.locator('[data-lista="seleccion"] button', { hasText: 'Sincronizar ahora' }).click();
 
-    await expect(page.locator('#alerta-exito')).toContainText('Productos');
+    await expect(aviso(page)).toContainText('Productos sincronizado');
     expect(catalogoSincronizado).toBe('productos');
-    await expect(page.locator('tr[data-catalogo="productos"]')).toContainText('155');
+    await expect(fila(page, 'Productos')).toContainText('155');
   });
 
   test('Fallo de sincronización muestra badge y detalle de error', async ({ page }) => {
@@ -200,27 +203,30 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
 
     await abrir(page, ANGULAR, '/plataforma/sincronizacion');
 
-    await expect(page.locator('.badge.bg-danger')).toContainText('Error');
-    await expect(page.locator('tr.table-danger')).toContainText('Bridge no responde (SDK_TIMEOUT)');
+    await expect(fila(page, 'Productos')).toContainText('Error');
+    await expect(fila(page, 'Productos')).toContainText('Bridge no responde (SDK_TIMEOUT)');
   });
 
   test('Lista de productos, clasificación y captura de ficha técnica', async ({ page }) => {
     let clasificacionGuardada: number | null = null;
     let fichaGuardada: any = null;
 
+    // `ProductoDetalle` de la API: la ficha técnica viaja en `ficha` (FR-018).
     const productoMock = {
       id: 42,
-      codigo: 'PROD-PT-001',
+      clave: 'PROD-PT-001',
       nombre: 'Bolsa Polietileno Impresa 50x70',
-      unidadBase: 'MILLAR',
-      controlaLote: true,
-      clasificacionId: null,
-      clasificacion: null,
+      etiqueta: 'PROD-PT-001 - Bolsa Polietileno Impresa 50x70',
+      unidad: 'MILLAR',
+      llevaLote: true,
+      clasificacionId: null as number | null,
+      clasificacion: null as string | null,
       activo: true,
-      rollo: null,
-      pt: null,
-      rolloLigadoProductoId: null,
-      rowVersion: 'AAAAAAAAB+0=',
+      ficha: null as unknown,
+      acciones: [
+        { accion: 'clasificar', disponible: true, razon: null },
+        { accion: 'editar_ficha', disponible: true, razon: null },
+      ],
     };
 
     const clasificacionesMock = [
@@ -300,8 +306,7 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
           body: JSON.stringify({
             ...productoMock,
             clasificacionId: clasificacionGuardada,
-            rollo: fichaGuardada.rollo,
-            pt: fichaGuardada.pt,
+            ficha: { rollo: fichaGuardada.rollo, pt: fichaGuardada.pt, rolloLigadoProductoId: null, rolloLigadoProducto: null },
           }),
         });
       } else if (url.match(/\/productos\/42$/)) {
@@ -311,8 +316,7 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
           body: JSON.stringify({
             ...productoMock,
             clasificacionId: clasificacionGuardada,
-            rollo: fichaGuardada ? fichaGuardada.rollo : null,
-            pt: fichaGuardada ? fichaGuardada.pt : null,
+            ficha: fichaGuardada ? { rollo: fichaGuardada.rollo, pt: fichaGuardada.pt, rolloLigadoProductoId: null, rolloLigadoProducto: null } : null,
           }),
         });
       } else {
@@ -327,25 +331,27 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
 
     // 2. Abrir detalle del producto
     await page.getByText('PROD-PT-001').click();
-    await expect(page.locator('#producto-nombre')).toContainText('Bolsa Polietileno Impresa 50x70');
+    await expect(page.locator('[data-nombre-registro]')).toContainText('Bolsa Polietileno Impresa 50x70');
 
-    // 3. Cambiar clasificación y guardar
-    await page.locator('#campo-clasificacion').selectOption({ label: 'PT - Producto Terminado' });
-    await page.locator('#btn-guardar-clasificacion').click();
-    await expect(page.locator('#alerta-exito')).toContainText('Clasificación guardada');
+    // 3. Cambiar la clasificación en su lugar y guardar (D-164)
+    await elegir(page, 'Clasificación', 'Terminado');
+    await page.locator('[data-guardar]').click();
+    await expect(aviso(page)).toContainText('Producto guardado');
     expect(clasificacionGuardada).toBe(2);
 
-    // 4. Cambiar a pestaña Ficha técnica
-    await page.locator('#tab-ficha').click();
-    await page.locator('#campo-material-type').fill('Polietileno BD');
-    await page.locator('#campo-roll-type-size').fill('50 cm');
-    await page.locator('#campo-gauge-microns').fill('60');
-    await page.locator('#campo-customer-part').fill('PARTE-CLIENTE-123');
-    await page.locator('#campo-final-size').fill('50x70 cm');
+    // 4. Ficha técnica en sus pestañas Rollo y PT
+    await pestana(page, 'rollo');
+    await page.locator('[data-campo="materialType"] input').fill('Polietileno BD');
+    await page.locator('[data-campo="rollTypeSize"] input').fill('50 cm');
+    await page.locator('[data-campo="gaugeMicrons"] input').fill('60');
+    await page.locator('[data-campo="gaugeMicrons"] input').press('Tab');
+    await pestana(page, 'pt');
+    await page.locator('[data-campo="customerPartNumber"] input').fill('PARTE-CLIENTE-123');
+    await page.locator('[data-campo="finalSize"] input').fill('50x70 cm');
 
-    // 5. Guardar ficha técnica
-    await page.locator('#btn-guardar-ficha').click();
-    await expect(page.locator('#alerta-exito')).toContainText('Ficha técnica guardada');
+    // 5. Guardar la ficha técnica
+    await page.locator('[data-guardar]').click();
+    await expect(aviso(page)).toContainText('Producto guardado');
     expect(fichaGuardada).not.toBeNull();
     expect(fichaGuardada.rollo.materialType).toBe('Polietileno BD');
     expect(fichaGuardada.pt.customerPartNumber).toBe('PARTE-CLIENTE-123');
@@ -436,8 +442,8 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
 
     // 2. Abrir detalle de cliente
     await page.getByText('Empaques del Norte S.A. de C.V.').click();
-    await expect(page.locator('#cliente-razon-social')).toContainText('Empaques del Norte');
-    await expect(page.locator('#cliente-codigo')).toContainText('CLI-001');
+    await expect(page.locator('[data-nombre-registro]')).toContainText('Empaques del Norte');
+    await expect(page.locator('pc-odoo-maestro')).toContainText('CLI-001');
 
     // 3. Verificar domicilio fiscal y domicilio de envío
     await expect(page.getByText('Av. Industrial 123')).toBeVisible();

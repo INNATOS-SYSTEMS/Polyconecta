@@ -61,6 +61,7 @@ const CONFIGURACION: ModuleInfo = {
   items: [
     { label: 'Usuarios', route: '/plataforma/usuarios', permiso: 'plataforma.usuarios.leer' },
     { label: 'Grupos', route: '/plataforma/grupos', permiso: 'plataforma.grupos.leer' },
+    { label: 'Clasificaciones', route: '/plataforma/clasificaciones', permiso: 'inventario.producto.leer' },
     { label: 'Sincronización', route: '/plataforma/sincronizacion', permiso: 'plataforma.sincronizacion.leer' },
   ],
 };

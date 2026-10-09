@@ -151,16 +151,28 @@ public sealed class Sincronizador(
             else
             {
                 var cambio = p.ActualizarDesdeErp(l.Datos, ahora);
-                if (l.Datos.Activo) cambio |= p.RestaurarPorErp();
-                else if (p.ArchivarPorErp()) archivados++;
+                if (cambio) p.AnotarCambio(ActualizadoDesdeErp);
+                if (l.Datos.Activo && p.RestaurarPorErp()) { cambio = true; p.AnotarCambio(RestauradoPorErp); }
+                else if (!l.Datos.Activo && p.ArchivarPorErp()) { archivados++; p.AnotarCambio(ArchivadoPorErp); }
                 if (cambio) cambiados++;
             }
             if (l.Clasificacion is not null && p.ClassificationId is null)
                 p.ClasificarSiVacia(porValor[l.Clasificacion.Codigo].Id);
         }
         var vigentes = leidos.Select(l => l.Datos.IdErp).ToHashSet();
-        archivados += actuales.Values.Where(p => !vigentes.Contains(p.ErpProductId)).Count(p => p.ArchivarPorErp());
+        archivados += actuales.Values.Where(p => !vigentes.Contains(p.ErpProductId)).Count(p => Anotar(p, p.ArchivarPorErp(), ArchivadoPorErp));
         return new Conteo(leidos.Count, cambiados, archivados);
+    }
+
+    // Lo que la sincronización anota en la bitácora de productos y clientes (D-157). El alta no se anota.
+    private const string ActualizadoDesdeErp = "Actualizado desde CONTPAQi.";
+    private const string RestauradoPorErp = "Restaurado: volvió a estar activo en CONTPAQi.";
+    private const string ArchivadoPorErp = "Archivado: ya no está activo en CONTPAQi.";
+
+    private static bool Anotar(Domain.Common.AuditableEntity registro, bool ocurrio, string texto)
+    {
+        if (ocurrio) registro.AnotarCambio(texto);
+        return ocurrio;
     }
 
     private async Task<Conteo> ClientesAsync(CancellationToken ct)
@@ -180,12 +192,13 @@ public sealed class Sincronizador(
                 continue;
             }
             var cambio = c.ActualizarDesdeErp(l);
-            if (l.Activo) cambio |= c.RestaurarPorErp();
-            else if (c.ArchivarPorErp()) archivados++;
+            if (cambio) c.AnotarCambio(ActualizadoDesdeErp);
+            if (l.Activo && c.RestaurarPorErp()) { cambio = true; c.AnotarCambio(RestauradoPorErp); }
+            else if (!l.Activo && c.ArchivarPorErp()) { archivados++; c.AnotarCambio(ArchivadoPorErp); }
             if (cambio) cambiados++;
         }
         var vigentes = leidos.Select(l => l.IdErp).ToHashSet();
-        archivados += actuales.Values.Where(c => !vigentes.Contains(c.ErpCustomerId)).Count(c => c.ArchivarPorErp());
+        archivados += actuales.Values.Where(c => !vigentes.Contains(c.ErpCustomerId)).Count(c => Anotar(c, c.ArchivarPorErp(), ArchivadoPorErp));
         return new Conteo(leidos.Count, cambiados, archivados);
     }
 

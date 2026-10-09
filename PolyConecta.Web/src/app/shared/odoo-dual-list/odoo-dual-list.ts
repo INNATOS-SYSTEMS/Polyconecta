@@ -30,21 +30,18 @@ interface NodoVisibleModulo {
   template: `
     <div class="o_dual_list d-flex flex-column flex-md-row gap-3 align-items-stretch" [class.o_disabled]="deshabilitado()">
       <!-- Panel Izquierdo: Disponibles -->
-      <div class="o_dual_panel card flex-fill border shadow-sm" data-dual-panel="disponibles">
-        <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
-          <span class="fw-semibold small text-secondary">{{ tituloDisponibles() }}</span>
-          <span class="badge bg-secondary-subtle text-secondary border small" data-conteo-disponibles>
+      <div class="o_dual_panel o_section_card flex-fill p-0" data-dual-panel="disponibles">
+        <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light">
+          <span class="fw-bold small text-uppercase text-muted">{{ tituloDisponibles() }}</span>
+          <span class="small text-muted" data-conteo-disponibles>
             {{ totalDisponibles() }}
           </span>
         </div>
-        <div class="p-2 border-bottom bg-white">
-          <div class="input-group input-group-sm">
-            <span class="input-group-text bg-transparent border-end-0 text-muted">
-              <pc-odoo-icon nombre="buscar" />
-            </span>
+        <div class="p-2 border-bottom">
+          <div class="o_search_bar">
+            <pc-odoo-icon nombre="buscar" />
             <input
               type="text"
-              class="form-control border-start-0"
               placeholder="Buscar en disponibles..."
               [ngModel]="filtroIzq()"
               (ngModelChange)="filtroIzq.set($event)"
@@ -52,7 +49,7 @@ interface NodoVisibleModulo {
               data-buscar-disponibles />
           </div>
         </div>
-        <div class="card-body p-2 o_tree_container overflow-auto" style="height: 340px;" tabindex="0" (keydown)="tecladoPanel($event, 'izq')">
+        <div class="p-2 o_tree_container overflow-auto" style="height: 340px;" tabindex="0" (keydown)="tecladoPanel($event, 'izq')">
           @if (arbolDisponibles().length === 0) {
             <div class="text-muted text-center py-4 small">No hay permisos disponibles</div>
           } @else {
@@ -64,7 +61,7 @@ interface NodoVisibleModulo {
                        (dblclick)="moverModulo(mod, true)">
                     <button type="button" class="btn btn-sm btn-link p-0 text-muted border-0 text-decoration-none"
                             (click)="toggleExpandir('izq-mod-' + mod.modulo, 'izq')">
-                      <pc-odoo-icon [nombre]="estaExpandido('izq-mod-' + mod.modulo, 'izq') ? 'chevron-down' : 'chevron-right'" />
+                      <pc-odoo-icon [nombre]="estaExpandido('izq-mod-' + mod.modulo, 'izq') ? 'contraer' : 'expandir'" />
                     </button>
                     <input type="checkbox" class="form-check-input mt-0 me-1"
                            [checked]="estaModuloMarcado(mod, 'izq')"
@@ -84,7 +81,7 @@ interface NodoVisibleModulo {
                                (dblclick)="moverObjeto(obj, true)">
                             <button type="button" class="btn btn-sm btn-link p-0 text-muted border-0 text-decoration-none"
                                     (click)="toggleExpandir('izq-obj-' + mod.modulo + '-' + obj.objeto, 'izq')">
-                              <pc-odoo-icon [nombre]="estaExpandido('izq-obj-' + mod.modulo + '-' + obj.objeto, 'izq') ? 'chevron-down' : 'chevron-right'" />
+                              <pc-odoo-icon [nombre]="estaExpandido('izq-obj-' + mod.modulo + '-' + obj.objeto, 'izq') ? 'contraer' : 'expandir'" />
                             </button>
                             <input type="checkbox" class="form-check-input mt-0 me-1"
                                    [checked]="estaObjetoMarcado(obj, 'izq')"
@@ -127,23 +124,23 @@ interface NodoVisibleModulo {
       <div class="d-flex flex-md-column justify-content-center align-items-center gap-2 o_dual_actions py-2">
         <button
           type="button"
-          class="btn btn-sm btn-outline-primary o_btn_transfer"
+          class="btn btn-sm btn-outline-secondary o_btn_transfer"
           (click)="asignarMarcados()"
           [disabled]="deshabilitado() || marcadosIzq().size === 0"
           title="Asignar seleccionados"
           aria-label="Asignar seleccionados"
           data-btn-asignar>
-          <pc-odoo-icon nombre="chevron-right" />
+          <span class="fw-bold">&gt;</span>
         </button>
         <button
           type="button"
-          class="btn btn-sm btn-outline-primary o_btn_transfer"
+          class="btn btn-sm btn-outline-secondary o_btn_transfer"
           (click)="desasignarMarcados()"
           [disabled]="deshabilitado() || marcadosDer().size === 0"
           title="Quitar seleccionados"
           aria-label="Quitar seleccionados"
           data-btn-quitar>
-          <pc-odoo-icon nombre="chevron-left" />
+          <span class="fw-bold">&lt;</span>
         </button>
         <button
           type="button"
@@ -168,21 +165,18 @@ interface NodoVisibleModulo {
       </div>
 
       <!-- Panel Derecho: Asignados -->
-      <div class="o_dual_panel card flex-fill border shadow-sm" data-dual-panel="asignados">
-        <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
-          <span class="fw-semibold small text-secondary">{{ tituloSeleccionados() }}</span>
-          <span class="badge bg-primary-subtle text-primary border small" data-conteo-asignados>
+      <div class="o_dual_panel o_section_card flex-fill p-0" data-dual-panel="asignados">
+        <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light">
+          <span class="fw-bold small text-uppercase text-muted">{{ tituloSeleccionados() }}</span>
+          <span class="small text-muted" data-conteo-asignados>
             {{ totalAsignados() }}
           </span>
         </div>
-        <div class="p-2 border-bottom bg-white">
-          <div class="input-group input-group-sm">
-            <span class="input-group-text bg-transparent border-end-0 text-muted">
-              <pc-odoo-icon nombre="buscar" />
-            </span>
+        <div class="p-2 border-bottom">
+          <div class="o_search_bar">
+            <pc-odoo-icon nombre="buscar" />
             <input
               type="text"
-              class="form-control border-start-0"
               placeholder="Buscar en asignados..."
               [ngModel]="filtroDer()"
               (ngModelChange)="filtroDer.set($event)"
@@ -190,7 +184,7 @@ interface NodoVisibleModulo {
               data-buscar-asignados />
           </div>
         </div>
-        <div class="card-body p-2 o_tree_container overflow-auto" style="height: 340px;" tabindex="0" (keydown)="tecladoPanel($event, 'der')">
+        <div class="p-2 o_tree_container overflow-auto" style="height: 340px;" tabindex="0" (keydown)="tecladoPanel($event, 'der')">
           @if (arbolAsignados().length === 0) {
             <div class="text-muted text-center py-4 small">No hay permisos asignados</div>
           } @else {
@@ -202,7 +196,7 @@ interface NodoVisibleModulo {
                        (dblclick)="moverModulo(mod, false)">
                     <button type="button" class="btn btn-sm btn-link p-0 text-muted border-0 text-decoration-none"
                             (click)="toggleExpandir('der-mod-' + mod.modulo, 'der')">
-                      <pc-odoo-icon [nombre]="estaExpandido('der-mod-' + mod.modulo, 'der') ? 'chevron-down' : 'chevron-right'" />
+                      <pc-odoo-icon [nombre]="estaExpandido('der-mod-' + mod.modulo, 'der') ? 'contraer' : 'expandir'" />
                     </button>
                     <input type="checkbox" class="form-check-input mt-0 me-1"
                            [checked]="estaModuloMarcado(mod, 'der')"
@@ -222,7 +216,7 @@ interface NodoVisibleModulo {
                                (dblclick)="moverObjeto(obj, false)">
                             <button type="button" class="btn btn-sm btn-link p-0 text-muted border-0 text-decoration-none"
                                     (click)="toggleExpandir('der-obj-' + mod.modulo + '-' + obj.objeto, 'der')">
-                              <pc-odoo-icon [nombre]="estaExpandido('der-obj-' + mod.modulo + '-' + obj.objeto, 'der') ? 'chevron-down' : 'chevron-right'" />
+                              <pc-odoo-icon [nombre]="estaExpandido('der-obj-' + mod.modulo + '-' + obj.objeto, 'der') ? 'contraer' : 'expandir'" />
                             </button>
                             <input type="checkbox" class="form-check-input mt-0 me-1"
                                    [checked]="estaObjetoMarcado(obj, 'der')"

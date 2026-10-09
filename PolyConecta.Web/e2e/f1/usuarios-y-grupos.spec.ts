@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { ANGULAR, abrir } from '../soporte/apps';
 import { simularListas } from '../soporte/listas';
+import { aviso, elegir } from '../soporte/pedido';
 
 /**
  * Escenarios de Usuarios y Grupos (spec 003, L2-T012, US2, quickstart §2):
@@ -195,8 +196,9 @@ test.describe('Usuarios y grupos (F1 / US2)', () => {
     await abrir(page, ANGULAR, '/plataforma/grupos/1');
 
     // El formulario abre con datos del grupo
-    await expect(page.locator('#campo-codigo')).toHaveValue('COMERCIAL');
-    await expect(page.locator('#campo-nombre')).toHaveValue('Comercial');
+    // El código no cambia después del alta: es texto; el nombre se edita en su lugar (D-164).
+    await expect(page.locator('pc-odoo-maestro')).toContainText('COMERCIAL');
+    await expect(page.locator('[data-campo="nombre"]')).toHaveValue('Comercial');
 
     // El dual-list muestra los dos paneles
     await expect(page.locator('[data-dual-panel="disponibles"]')).toBeVisible();
@@ -211,10 +213,10 @@ test.describe('Usuarios y grupos (F1 / US2)', () => {
     await expect(page.locator('[data-conteo-disponibles]')).toHaveText('0');
 
     // Guardar
-    await page.locator('#btn-guardar-grupo').click();
+    await page.locator('[data-guardar]').click();
 
     // Verificamos que se guardó exitosamente
-    await expect(page.locator('.alert-success')).toContainText('Grupo guardado');
+    await expect(aviso(page)).toContainText('Grupo guardado');
     expect(grupoEditado).not.toBeNull();
     expect(grupoEditado.permisos.length).toBeGreaterThan(0);
   });
@@ -231,6 +233,15 @@ test.describe('Usuarios y grupos (F1 / US2)', () => {
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({ completo: true, total: 2, filas: gruposMock }),
+        });
+        return;
+      }
+
+      if (url.endsWith('/grupos/2') && method === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ id: 2, codigo: 'SUPERVISOR', nombre: 'Supervisor de turno', descripcion: null, activo: true, rowVersion: 'BBBB', miembros: 2, permisos: ['ventas.pedido.crear'] }),
         });
         return;
       }
@@ -279,12 +290,14 @@ test.describe('Usuarios y grupos (F1 / US2)', () => {
 
     await abrir(page, ANGULAR, '/plataforma/grupos/nuevo');
 
-    await page.locator('#campo-codigo').fill('PROD_SUPERVISOR');
-    await page.locator('#campo-nombre').fill('Producción · Supervisor');
-    await page.locator('#campo-descripcion').fill('Copia de Supervisor de turno');
-    await page.locator('#campo-copiar-de').selectOption({ label: 'Supervisor de turno (SUPERVISOR)' });
+    await page.locator('[data-campo="codigo"]').fill('PROD_SUPERVISOR');
+    await page.locator('[data-campo="nombre"]').fill('Producción · Supervisor');
+    await page.locator('[data-campo="descripcion"]').fill('Copia de Supervisor de turno');
+    // "Copiar permisos de" llena el panel de asignados con los del grupo elegido (US2, escenario 7).
+    await elegir(page, 'Copiar permisos de', 'Supervisor');
+    await expect(page.locator('[data-conteo-asignados]')).toHaveText('1');
 
-    await page.locator('#btn-guardar-grupo').click();
+    await page.locator('[data-guardar]').click();
 
     // Redirige a /plataforma/grupos/99
     await expect(page).toHaveURL(/.*\/plataforma\/grupos\/99/);
@@ -371,16 +384,18 @@ test.describe('Usuarios y grupos (F1 / US2)', () => {
 
     await abrir(page, ANGULAR, '/plataforma/usuarios/nuevo');
 
-    await page.locator('#campo-usuario').fill('atrevino');
-    await page.locator('#campo-nombre').fill('Ana Treviño');
-    await page.locator('#campo-email').fill('ana@polyconecta.com');
-    await page.locator('#campo-contrasena').fill('Comercial2026');
-    await page.locator('#campo-agente').selectOption({ label: 'AG-01 - Juan Agente' });
-
-    // Marcar suplente en la asignación por defecto
-    await page.locator('tbody input[type="checkbox"]').first().check();
-
-    await page.locator('button:has-text("Guardar")').click();
+    await page.locator('[data-campo="usuario"]').fill('atrevino');
+    await page.locator('[data-campo="nombre"]').fill('Ana Treviño');
+    await page.locator('[data-campo="email"]').fill('ana@polyconecta.com');
+    await page.locator('[data-campo="contrasena"]').fill('Comercial2026');
+    await elegir(page, 'Agente de CONTPAQi', 'Juan');
+    // Grupos y plantas: se capturan arriba de la tabla, como las líneas de un documento (07 §1.5).
+    await elegir(page, 'Grupo', 'Comercial');
+    await elegir(page, 'Planta');
+    await elegir(page, 'Tipo', 'Suplente');
+    await page.locator('[data-captura-asignacion] button', { hasText: 'Agregar' }).click();
+    await expect(page.locator('[data-asignaciones] tbody tr')).toContainText(['Suplente']);
+    await page.locator('[data-guardar]').click();
 
     await expect(page).toHaveURL(/.*\/plataforma\/usuarios\/55/);
     expect(peticionCrearUsuario).not.toBeNull();

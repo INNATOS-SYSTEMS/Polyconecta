@@ -36,7 +36,6 @@ import { OdooViewSwitcher } from '../../shared/odoo-view-switcher/odoo-view-swit
 import { PaginaNoEncontrada } from '../../shared/pagina-no-encontrada/pagina-no-encontrada';
 import { PaginaPendiente } from '../../shared/pagina-pendiente/pagina-pendiente';
 import { OdooDualList, ModuloPermisoItem } from '../../shared/odoo-dual-list/odoo-dual-list';
-import { OdooLoginForm } from '../../shared/odoo-login-form/odoo-login-form';
 import { PedidoEjemplo, pedidosEjemplo, PRODUCTOS_EJEMPLO, ProductoEjemplo } from './datos';
 
 /** Firma de la transición Confirmado → Autorizado en el kanban de ejemplo: devuelve el nombre de quien firma. */
@@ -76,7 +75,7 @@ const VISTA: SearchView<PedidoEjemplo> = {
   imports: [FormsModule, OdooList, OdooKanban, OdooSearchPanel, OdooMany2one, OdooDate, OdooNumber, OdooTabs, PcPestana,
     OdooActionMenu, OdooSyncStatus, OdooIcon, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooLineCapture,
     OdooChatterDrawer, BotonNuevo, OdooViewSwitcher, OdooPager, PaginaPendiente, PaginaNoEncontrada, LotPickerModal, LotQuantityPickerModal,
-    OdooDualList, OdooLoginForm],
+    OdooDualList],
   templateUrl: './catalogo.html',
   styles: `
     :host { display: block; }
@@ -261,16 +260,4 @@ export class Catalogo {
     'ventas.pedido.leer',
     'ventas.pedido.crear',
   ]);
-
-  protected readonly loginEjemploCargando = signal(false);
-  protected readonly loginEjemploError = signal<string | null>(null);
-
-  protected enviarLoginEjemplo(c: { usuario: string; contrasena: string }): void {
-    this.loginEjemploCargando.set(true);
-    this.loginEjemploError.set(null);
-    setTimeout(() => {
-      this.loginEjemploCargando.set(false);
-      this.avisos.exito(`Autenticado como ${c.usuario}`);
-    }, 600);
-  }
 }

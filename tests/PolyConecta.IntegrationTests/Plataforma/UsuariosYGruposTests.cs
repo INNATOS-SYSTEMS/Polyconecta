@@ -191,4 +191,45 @@ public class UsuariosYGruposTests(SqlServerFixture sql)
         var ac = await api.ClienteAsync("ac1");
         (await ac.PutAsJsonAsync($"/api/v1/plataforma/usuarios/{id}/agente", new { agenteId = agente })).StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    /// <summary>La bitácora de un catálogo registra quién cambió qué (D-157, decisión del 9-oct): grupos de un usuario y permisos de un grupo.</summary>
+    [Fact]
+    public async Task La_bitacora_de_usuarios_y_grupos_anota_sus_cambios()
+    {
+        var (_, api, admin, ids) = await LevantarAsync(sql);
+        await using var _ = api;
+
+        var creado = await JsonAsync(await admin.PostAsJsonAsync("/api/v1/plataforma/usuarios", new
+        {
+            usuario = "bitacora1", nombre = "Bitácora Uno", contrasena = "Bitacora2026",
+            asignaciones = new[] { new { grupoId = ids.Comercial, plantaId = ids.Pim, suplente = false } },
+        }));
+        var id = creado["id"]!.GetValue<long>();
+        await JsonAsync(await admin.PutAsJsonAsync($"/api/v1/plataforma/usuarios/{id}", new
+        {
+            rowVersion = creado["rowVersion"]!.GetValue<string>(), nombre = "Bitácora Dos", email = (string?)null,
+            asignaciones = new[]
+            {
+                new { grupoId = ids.Comercial, plantaId = ids.Pim, suplente = false },
+                new { grupoId = ids.Cobranza, plantaId = ids.Sc, suplente = true },
+            },
+        }));
+
+        var usuario = (await JsonAsync(await admin.GetAsync($"/api/v1/plataforma/chatter/plataforma.usuario/{id}"))).AsArray()
+            .Select(m => m!["texto"]!.GetValue<string>()).ToList();
+        usuario.Should().Contain("Creó el usuario.");
+        usuario.Should().Contain("Nombre: Bitácora Uno → Bitácora Dos");
+        usuario.Should().Contain(t => t.StartsWith("Agregó ", StringComparison.Ordinal) && t.EndsWith(" · SC (suplente)", StringComparison.Ordinal));
+
+        var grupo = await JsonAsync(await admin.GetAsync($"/api/v1/plataforma/grupos/{ids.Supervisor}"));
+        var permisos = grupo["permisos"]!.AsArray().Select(x => x!.GetValue<string>()).Append(Permisos.PedidoLeer).Distinct().ToArray();
+        await JsonAsync(await admin.PutAsJsonAsync($"/api/v1/plataforma/grupos/{ids.Supervisor}", new
+        {
+            rowVersion = grupo["rowVersion"]!.GetValue<string>(), nombre = grupo["nombre"]!.GetValue<string>(),
+            descripcion = (string?)null, permisos,
+        }));
+        var mensajesGrupo = (await JsonAsync(await admin.GetAsync($"/api/v1/plataforma/chatter/plataforma.grupo/{ids.Supervisor}"))).AsArray();
+        mensajesGrupo.Select(m => m!["clase"]!.GetValue<string>()).Should().OnlyContain(c => c == "Cambio");
+        mensajesGrupo.Select(m => m!["texto"]!.GetValue<string>()).Should().Contain(t => t.StartsWith("Agregó Ventas › Pedido ›", StringComparison.Ordinal));
+    }
 }

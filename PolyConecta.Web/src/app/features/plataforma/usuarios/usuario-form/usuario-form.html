@@ -1,200 +1,106 @@
-<div class="o_control_panel">
-  <div class="d-flex align-items-center gap-3">
-    <button class="btn btn-primary" [disabled]="guardando()" (click)="guardar()">
-      Guardar
-    </button>
-    <button class="btn btn-secondary" (click)="descartar()">
-      Descartar
-    </button>
-    <pc-odoo-breadcrumb [items]="[{ label: 'Configuración' }, { label: 'Usuarios', url: '/plataforma/usuarios' }, { label: tituloMiga() }]" />
-  </div>
-  <div class="d-flex align-items-center gap-2">
-    @if (!esNuevo()) {
-      <button class="btn btn-secondary btn-sm" (click)="restablecerContrasena()">
-        Restablecer contraseña
-      </button>
-      @if (activo()) {
-        <button class="btn btn-outline-danger btn-sm" (click)="cambiarEstado(true)">
-          Archivar
-        </button>
-      } @else {
-        <button class="btn btn-outline-success btn-sm" (click)="cambiarEstado(false)">
-          Restaurar
-        </button>
-      }
-    }
-  </div>
-</div>
-
-<div class="o_form_view">
-  @if (error()) {
-    <div class="alert alert-danger mb-3" role="alert">
-      {{ error() }}
-    </div>
-  }
-  @if (exito()) {
-    <div class="alert alert-success mb-3" role="alert">
-      {{ exito() }}
-    </div>
-  }
-
-  @if (cargando()) {
-    <div class="text-center py-5">
-      <div class="spinner-border text-primary" role="status"></div>
-    </div>
-  } @else {
-    <div class="o_form_sheet">
-      <div class="d-flex justify-content-between align-items-start mb-4">
-        <div>
-          <h2 class="h4 mb-1">{{ esNuevo() ? 'Nuevo usuario' : nombre() }}</h2>
-          @if (!esNuevo()) {
-            <span class="text-muted small">&#64;{{ usuario() }}</span>
+@if (!cargando()) {
+  <pc-hoja-registro lista="Usuarios" ruta="/plataforma/usuarios" titulo="Usuario" tipo="plataforma.usuario"
+                    [nombre]="guardado()?.nombre ?? ''" [nuevo]="nuevo" [sucio]="sucio()" [guardando]="guardando()" [error]="error()"
+                    [acciones]="acciones()" [id]="guardado()?.id ?? null" (guardar)="guardar()" (descartar)="descartar()">
+    <pc-odoo-maestro>
+      <div izquierda>
+        <div class="o_form_label_row">
+          <span class="o_form_label">Usuario</span>
+          @if (nuevo) {
+            <input class="form-control form-control-sm o_inline_input" aria-label="Usuario" data-campo="usuario"
+                   [value]="usuario()" (input)="cambiar(usuario, $any($event.target).value)" />
+          } @else {
+            <span class="o_form_value fw-semibold">{{ usuario() }}</span>
           }
         </div>
-        <div>
-          <span class="badge" [class.bg-success]="activo()" [class.bg-secondary]="!activo()">
-            {{ activo() ? 'Activo' : 'Archivado' }}
-          </span>
+        <div class="o_form_label_row">
+          <span class="o_form_label">Nombre visible</span>
+          <input class="form-control form-control-sm o_inline_input" aria-label="Nombre visible" data-campo="nombre"
+                 [value]="nombre()" (input)="cambiar(nombre, $any($event.target).value)" />
+        </div>
+        <div class="o_form_label_row">
+          <span class="o_form_label">Correo</span>
+          <input class="form-control form-control-sm o_inline_input" aria-label="Correo" data-campo="email"
+                 [value]="email()" (input)="cambiar(email, $any($event.target).value)" />
         </div>
       </div>
-
-      <div class="row g-3 mb-4">
-        <div class="col-md-6">
-          <label class="form-label small fw-semibold text-muted">Usuario</label>
-          <input
-            type="text"
-            class="form-control"
-            [disabled]="!esNuevo()"
-            [ngModel]="usuario()"
-            (ngModelChange)="usuario.set($event)"
-            placeholder="ej. jperez"
-            id="campo-usuario"
-          />
+      <div derecha>
+        <div class="o_form_label_row">
+          <span class="o_form_label">Agente de CONTPAQi</span>
+          <pc-odoo-many2one nombre="Agente de CONTPAQi" [origen]="origenAgentes()" [aTexto]="textoAgente" [idDe]="idPorId"
+                            [ngModel]="agente()" (ngModelChange)="cambiar(agente, $event)" />
         </div>
-        <div class="col-md-6">
-          <label class="form-label small fw-semibold text-muted">Nombre visible</label>
-          <input
-            type="text"
-            class="form-control"
-            [ngModel]="nombre()"
-            (ngModelChange)="nombre.set($event)"
-            placeholder="ej. Juan Pérez"
-            id="campo-nombre"
-          />
-        </div>
-        <div class="col-md-6">
-          <label class="form-label small fw-semibold text-muted">Correo electrónico</label>
-          <input
-            type="email"
-            class="form-control"
-            [ngModel]="email()"
-            (ngModelChange)="email.set($event)"
-            placeholder="correo@ejemplo.com"
-            id="campo-email"
-          />
-        </div>
-        @if (esNuevo()) {
-          <div class="col-md-6">
-            <label class="form-label small fw-semibold text-muted">Contraseña</label>
-            <input
-              type="password"
-              class="form-control"
-              [ngModel]="contrasena()"
-              (ngModelChange)="contrasena.set($event)"
-              placeholder="Contraseña inicial"
-              id="campo-contrasena"
-            />
+        @if (nuevo) {
+          <div class="o_form_label_row">
+            <span class="o_form_label">Contraseña inicial</span>
+            <input type="password" class="form-control form-control-sm o_inline_input" aria-label="Contraseña inicial" data-campo="contrasena"
+                   autocomplete="new-password" [value]="contrasena()" (input)="cambiar(contrasena, $any($event.target).value)" />
           </div>
         }
-        <div class="col-md-6">
-          <label class="form-label small fw-semibold text-muted">Agente de CONTPAQi</label>
-          <select
-            class="form-select"
-            [ngModel]="agenteId()"
-            (ngModelChange)="actualizarAgente($event)"
-            id="campo-agente"
-          >
-            <option [ngValue]="null">Ninguno</option>
-            @for (a of agentes(); track a.id) {
-              <option [ngValue]="a.id">{{ a.codigo }} - {{ a.nombre }}</option>
-            }
-          </select>
-        </div>
       </div>
+    </pc-odoo-maestro>
 
-      <div class="mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h5 class="h6 mb-0 fw-bold">Asignaciones (Grupo × Planta × Suplente)</h5>
-          <button type="button" class="btn btn-sm btn-outline-primary" (click)="agregarAsignacion()" id="btn-agregar-asignacion">
-            + Agregar asignación
-          </button>
-        </div>
-
-        <div class="table-responsive">
-          <table class="table table-sm table-bordered">
-            <thead class="table-light">
-              <tr>
+    <pc-odoo-tabs [pestanas]="pestanas">
+      <ng-template pcPestana="grupos">
+        <div class="mb-4">
+          <div class="o_line_capture mb-3" data-captura-asignacion>
+            <div class="o_line_capture_title">Captura</div>
+            <div class="row g-2 align-items-end">
+              <div class="col-12 col-md-5">
+                <pc-odoo-many2one nombre="Grupo" placeholder="Grupo" [origen]="origenGrupos()" [aTexto]="textoGrupo" [idDe]="idPorId"
+                                  [ngModel]="capGrupo()" (ngModelChange)="capGrupo.set($event)" />
+              </div>
+              <div class="col-6 col-md-3">
+                <pc-odoo-many2one nombre="Planta" placeholder="Planta" [origen]="origenPlantas()" [aTexto]="textoPlanta" [idDe]="idPorId"
+                                  [ngModel]="capPlanta()" (ngModelChange)="capPlanta.set($event)" />
+              </div>
+              <div class="col-6 col-md-2">
+                <pc-odoo-many2one nombre="Tipo" [origen]="origenTipos" [aTexto]="textoTipo" [idDe]="idTipo"
+                                  [ngModel]="capTipo()" (ngModelChange)="capTipo.set($event ?? capTipo())" />
+              </div>
+              <div class="col-12 col-md-2 d-flex gap-1">
+                <button class="btn btn-sm btn-primary flex-grow-1" [disabled]="!capValida()" (click)="agregarAsignacion()">Agregar</button>
+              </div>
+            </div>
+          </div>
+          <table class="table align-middle mb-0" data-asignaciones>
+            <thead>
+              <tr class="text-muted small">
                 <th>Grupo</th>
-                <th>Planta</th>
-                <th class="text-center" style="width: 120px;">¿Es Suplente?</th>
-                <th style="width: 50px;"></th>
+                <th class="text-center" style="width: 110px;">Planta</th>
+                <th class="text-center" style="width: 140px;">Tipo</th>
+                <th class="text-center" style="width: 88px;">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              @for (asig of asignaciones(); track $index; let i = $index) {
+              @for (a of asignaciones(); track $index; let i = $index) {
                 <tr>
-                  <td>
-                    <select
-                      class="form-select form-select-sm"
-                      [value]="asig.grupoId"
-                      (change)="actualizarAsignacionGrupo(i, +$any($event.target).value)"
-                    >
-                      @for (g of grupos(); track g.id) {
-                        <option [value]="g.id">{{ g.nombre }} ({{ g.codigo }})</option>
-                      }
-                    </select>
-                  </td>
-                  <td>
-                    <select
-                      class="form-select form-select-sm"
-                      [value]="asig.plantaId"
-                      (change)="actualizarAsignacionPlanta(i, +$any($event.target).value)"
-                    >
-                      @for (p of plantas(); track p.id) {
-                        <option [value]="p.id">{{ p.codigo }} - {{ p.nombre }}</option>
-                      }
-                    </select>
-                  </td>
-                  <td class="text-center">
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      [checked]="asig.suplente"
-                      (change)="actualizarAsignacionSuplente(i, $any($event.target).checked)"
-                    />
-                  </td>
-                  <td class="text-center">
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-link text-danger p-0"
-                      (click)="quitarAsignacion(i)"
-                      title="Eliminar"
-                    >
-                      <pc-odoo-icon nombre="basura" />
-                    </button>
+                  <td>{{ grupoDe(a.grupoId) }}</td>
+                  <td class="text-center">{{ plantaDe(a.plantaId) }}</td>
+                  <td class="text-center">{{ a.suplente ? 'Suplente' : 'Titular' }}</td>
+                  <td class="text-center text-nowrap">
+                    <button type="button" class="btn o_btn_icon" title="Quitar" aria-label="Quitar asignación" (click)="quitarAsignacion(i)"><pc-odoo-icon nombre="quitar-linea" contexto="icono" /></button>
                   </td>
                 </tr>
               } @empty {
-                <tr>
-                  <td colspan="4" class="text-center text-muted py-3">
-                    No hay grupos asignados. Debe agregar al menos uno.
-                  </td>
-                </tr>
+                <tr><td colspan="4" class="small text-muted">Sin grupos. Un usuario activo necesita al menos uno.</td></tr>
               }
             </tbody>
           </table>
         </div>
+      </ng-template>
+    </pc-odoo-tabs>
+  </pc-hoja-registro>
+
+  @if (dialogoContrasena()) {
+    <pc-odoo-dialog titulo="Restablecer contraseña" textoPrimario="Restablecer contraseña" textoSecundario="Volver"
+                    [primarioDeshabilitado]="!nuevaContrasena().trim()" (confirmar)="restablecer()" (cancelar)="dialogoContrasena.set(false)" id="dialogo-contrasena">
+      <div class="py-2">
+        <p class="mb-2 small text-muted">El usuario entra con la nueva contraseña desde su siguiente inicio de sesión. Queda en la bitácora.</p>
+        <label for="campo-contrasena" class="form-label small fw-semibold mb-1">Nueva contraseña</label>
+        <input id="campo-contrasena" type="password" class="form-control form-control-sm o_inline_input" autocomplete="new-password"
+               [value]="nuevaContrasena()" (input)="nuevaContrasena.set($any($event.target).value)" />
       </div>
-    </div>
+    </pc-odoo-dialog>
   }
-</div>
+}

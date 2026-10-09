@@ -29,6 +29,9 @@ public sealed class Product : ArchivableEntity
 
     public long? ClassificationId { get; private set; }
 
+    /// <summary>Solo para leer su nombre en la lista y al agrupar (D-141).</summary>
+    public ProductClassification? Classification { get; private set; }
+
     /// <summary>Última vez que la sincronización lo cambió.</summary>
     public DateTimeOffset? ErpSyncedAt { get; private set; }
 

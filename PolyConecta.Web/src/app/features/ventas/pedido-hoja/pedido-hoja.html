@@ -1,20 +1,19 @@
-@let b = borrador();
 <pc-odoo-maestro>
   <div izquierda>
     <div class="o_form_label_row" data-campo="cliente">
       <span class="o_form_label">Cliente</span>
       @if (editable()) {
         <div class="o_form_campo">
-          <pc-odoo-many2one nombre="Cliente" [origen]="origenClientes()" [aTexto]="textoCliente" [idDe]="idPorId"
-                            [ngModel]="b.cliente()" (ngModelChange)="b.elegirCliente($event)" />
-          @if (b.domicilio(); as d) {
+          <pc-odoo-many2one nombre="Cliente" [origen]="origenClientes" [aTexto]="textoCliente" [idDe]="idPorId"
+                            [ngModel]="borrador().cliente()" (ngModelChange)="borrador().elegirCliente($event)" />
+          @if (borrador().domicilio(); as d) {
             <span class="o_form_nota" data-entregar-en><span class="fw-semibold text-dark">Entregar en:</span> {{ d.texto }}</span>
           }
         </div>
       } @else {
         <span class="o_form_value fw-semibold">
-          {{ b.cliente()?.nombre }}
-          @if (b.domicilio(); as d) {
+          {{ borrador().cliente()?.nombre }}
+          @if (borrador().domicilio(); as d) {
             <span class="d-block small text-muted fw-normal mt-1" data-entregar-en><span class="fw-semibold text-dark">Entregar en:</span> {{ d.texto }}</span>
           }
         </span>
@@ -24,9 +23,9 @@
       <span class="o_form_label">Agente</span>
       @if (editable()) {
         <pc-odoo-many2one nombre="Agente" placeholder="El del usuario que captura" [origen]="origenAgentes()" [aTexto]="textoAgente" [idDe]="idPorId"
-                          [ngModel]="b.agente()" (ngModelChange)="b.agente.set($event); b.marcar()" />
+                          [ngModel]="borrador().agente()" (ngModelChange)="borrador().agente.set($event); borrador().marcar()" />
       } @else {
-        <span class="o_form_value">{{ b.agente()?.nombre ?? '—' }}</span>
+        <span class="o_form_value">{{ borrador().agente()?.nombre ?? '—' }}</span>
       }
     </div>
   </div>
@@ -34,35 +33,35 @@
     <div class="o_form_label_row" data-campo="fecha">
       <span class="o_form_label">Fecha</span>
       @if (editable()) {
-        <pc-odoo-date nombre="Fecha" [ngModel]="b.fechaPedido()" (ngModelChange)="b.fechaPedido.set($event); b.marcar()" />
+        <pc-odoo-date nombre="Fecha" [ngModel]="borrador().fechaPedido()" (ngModelChange)="borrador().fechaPedido.set($event); borrador().marcar()" />
       } @else {
-        <span class="o_form_value">{{ fechaTexto(b.fechaPedido()) }}</span>
+        <span class="o_form_value">{{ fechaTexto(borrador().fechaPedido()) }}</span>
       }
     </div>
     <div class="o_form_label_row" data-campo="fecha-promesa">
       <span class="o_form_label">Fecha Est. Entrega</span>
       @if (editable()) {
-        <pc-odoo-date nombre="Fecha Est. Entrega" [min]="b.fechaPedido()" [ngModel]="b.fechaPromesa()" (ngModelChange)="b.fechaPromesa.set($event); b.marcar()" />
+        <pc-odoo-date nombre="Fecha Est. Entrega" [min]="borrador().fechaPedido()" [ngModel]="borrador().fechaPromesa()" (ngModelChange)="borrador().fechaPromesa.set($event); borrador().marcar()" />
       } @else {
-        <span class="o_form_value">{{ fechaTexto(b.fechaPromesa()) }}</span>
+        <span class="o_form_value">{{ fechaTexto(borrador().fechaPromesa()) }}</span>
       }
     </div>
     <div class="o_form_label_row" data-campo="orden-compra">
       <span class="o_form_label">Orden de Compra</span>
       @if (editable()) {
-        <input class="form-control form-control-sm o_inline_input" aria-label="Orden de Compra" [value]="b.ordenCompra()"
-               (input)="campoTexto($any($event.target).value, b.ordenCompra.set)" />
+        <input class="form-control form-control-sm o_inline_input" aria-label="Orden de Compra" [value]="borrador().ordenCompra()"
+               (input)="campoTexto($any($event.target).value, borrador().ordenCompra.set)" />
       } @else {
-        <span class="o_form_value">{{ b.ordenCompra() || '—' }}</span>
+        <span class="o_form_value">{{ borrador().ordenCompra() || '—' }}</span>
       }
     </div>
     <div class="o_form_label_row" data-campo="moneda">
       <span class="o_form_label">Moneda</span>
       @if (editable()) {
         <pc-odoo-many2one nombre="Moneda" [origen]="origenMonedas" [aTexto]="textoMoneda" [idDe]="idMoneda"
-                          [ngModel]="moneda()" (ngModelChange)="b.moneda.set($event?.codigo ?? 'MXN'); b.marcar()" />
+                          [ngModel]="moneda()" (ngModelChange)="borrador().moneda.set($event?.codigo ?? 'MXN'); borrador().marcar()" />
       } @else {
-        <span class="o_form_value">{{ b.moneda() }}</span>
+        <span class="o_form_value">{{ borrador().moneda() }}</span>
       }
     </div>
   </div>
@@ -73,7 +72,7 @@
     <div class="mb-4">
       @if (editable()) {
         <pc-odoo-line-capture [(draft)]="draft" [catalogo]="catalogo()" [unidadFija]="true" [conPrecio]="true"
-                              [enEdicion]="editandoLinea() !== null" (submitted)="agregar($event)" (cancelled)="cancelarLinea()" />
+                              [enEdicion]="editandoLinea() !== null" (submitted)="agregar($event)" (cancelled)="cancelarLinea()" (buscar)="buscarProductos($event)" />
       }
       @if (errorLinea()) {
         <div class="alert alert-danger py-2 px-3 small mb-3"><pc-odoo-icon nombre="hard-stop" />{{ errorLinea() }}</div>
@@ -92,13 +91,13 @@
           </tr>
         </thead>
         <tbody>
-          @for (l of b.lineas(); track $index; let i = $index) {
+          @for (l of borrador().lineas(); track $index; let i = $index) {
             <tr [class.table-active]="editandoLinea() === i">
               <td class="small">{{ producto(l.clave, l.producto) }}</td>
               <td class="text-center">{{ n2(l.cantidad) }}</td>
               <td class="text-center small text-muted">{{ l.unidad }}</td>
-              <td class="text-end text-muted">{{ l.precioUnitario !== null ? importe(l.precioUnitario, b.moneda(), 2, 4) : '—' }}</td>
-              <td class="text-end fw-semibold">{{ importe(l.cantidad * (l.precioUnitario ?? 0), b.moneda()) }}</td>
+              <td class="text-end text-muted">{{ l.precioUnitario !== null ? importe(l.precioUnitario, borrador().moneda(), 2, 4) : '—' }}</td>
+              <td class="text-end fw-semibold">{{ importe(l.cantidad * (l.precioUnitario ?? 0), borrador().moneda()) }}</td>
               @if (editable()) {
                 <td class="text-center text-nowrap">
                   <button type="button" class="btn o_btn_icon" title="Editar" aria-label="Editar línea" (click)="editarLinea(i)"><pc-odoo-icon nombre="editar" contexto="icono" /></button>
@@ -115,9 +114,9 @@
         <div class="row">
           <div class="col-md-8"></div>
           <div class="col-md-4">
-            <div class="o_form_label_row"><span class="o_form_label">Subtotal</span><span class="o_form_value">{{ importe(b.subtotal(), b.moneda()) }}</span></div>
-            <div class="o_form_label_row"><span class="o_form_label">IVA</span><span class="o_form_value">{{ importe(iva(), b.moneda()) }}</span></div>
-            <div class="o_form_label_row"><span class="o_form_label fw-bold">Total</span><span class="o_form_value fw-bold">{{ importe(total(), b.moneda()) }}</span></div>
+            <div class="o_form_label_row"><span class="o_form_label">Subtotal</span><span class="o_form_value">{{ importe(borrador().subtotal(), borrador().moneda()) }}</span></div>
+            <div class="o_form_label_row"><span class="o_form_label">IVA</span><span class="o_form_value">{{ importe(iva(), borrador().moneda()) }}</span></div>
+            <div class="o_form_label_row"><span class="o_form_label fw-bold">Total</span><span class="o_form_value fw-bold">{{ importe(total(), borrador().moneda()) }}</span></div>
           </div>
         </div>
       }

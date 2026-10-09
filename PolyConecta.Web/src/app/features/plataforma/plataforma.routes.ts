@@ -33,6 +33,21 @@ export const PLATAFORMA_ROUTES: Routes = conSesion([
       import('./grupos/grupo-form/grupo-form').then(m => m.GrupoForm),
   },
   {
+    path: 'clasificaciones',
+    loadComponent: () =>
+      import('../catalogos/clasificaciones/clasificaciones-list').then(m => m.ClasificacionesList),
+  },
+  {
+    path: 'clasificaciones/nuevo',
+    loadComponent: () =>
+      import('../catalogos/clasificaciones/clasificacion-form').then(m => m.ClasificacionForm),
+  },
+  {
+    path: 'clasificaciones/:id',
+    loadComponent: () =>
+      import('../catalogos/clasificaciones/clasificacion-form').then(m => m.ClasificacionForm),
+  },
+  {
     path: 'sincronizacion',
     loadComponent: () =>
       import('./sincronizacion/sincronizacion').then(m => m.Sincronizacion),

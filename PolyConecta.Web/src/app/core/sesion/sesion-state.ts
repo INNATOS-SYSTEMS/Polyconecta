@@ -12,10 +12,8 @@ export type { UsuarioSesion, AsignacionSesion, Sesion, EntrarRequest } from './s
 export class SesionState {
   readonly sesion = signal<Sesion | null>(null);
 
-  /** Datos del usuario autenticado; si no hay sesión, entrega usuario por omisión. */
-  readonly usuario = computed<UsuarioSesion>(() =>
-    this.sesion()?.usuario ?? { id: 0, usuario: 'porras', nombre: 'Alejandro Porras' }
-  );
+  /** Datos del usuario autenticado; sin sesión, vacío: la barra no muestra a nadie mientras llega. */
+  readonly usuario = computed<UsuarioSesion>(() => this.sesion()?.usuario ?? { id: 0, usuario: '', nombre: '' });
 
   /** True si hay una sesión activa en la API. */
   readonly conSesion = computed(() => this.sesion() !== null);

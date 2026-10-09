@@ -82,6 +82,8 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 - Los botones inteligentes sin origen se ven atenuados y no navegan (documento libre).
 - La acción primaria es una sola.
 - Las secundarias poco frecuentes (duplicar, imprimir, archivar…) van en el menú del engranaje. No hay botón "Acciones" con texto en la barra.
+- **Registro sin estados** (usuario, grupo, producto, cliente, clasificación): la misma estructura sin etapas, con `pc-hoja-registro`; los catálogos de CONTPAQi no llevan "Nuevo" y lo de CONTPAQi es texto de solo lectura (D-157).
+- **Edición en su lugar** (D-164): mientras el estado lo permite, el maestro y las líneas se editan en el formulario; "Guardar" y "Descartar" aparecen en la barra solo con cambios.
 - El control de calidad conserva la estructura del prototipo: su estado (Planeado, Parcial, Aprobado) es una insignia en la barra de acciones, no etapas en la hoja, porque sale de sus lotes.
 
 ### 1.4 "Nuevo" (modo libre)
@@ -113,7 +115,7 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 
 **Aspecto de todo campo capturable**: solo una **línea inferior** y fondo **transparente**, sin caja, antes y después de enfocarlo; al enfocarlo, la línea toma el color primario; con error, la línea es roja y el motivo va debajo. Lo extra del campo (signo de moneda, código de moneda, unidad, ícono del calendario) va en gris, sobre la misma línea. Es la clase `o_field` de `app.css` (y `o_inline_input` para un `input` suelto).
 
-**Espaciado (D-159):** en captura el maestro mide lo mismo que en solo lectura: el campo no agrega altura al renglón (unos 29 px), en todos los formularios.
+**Espaciado (D-159):** en captura el maestro mide lo mismo que en solo lectura: el campo no agrega altura al renglón (unos 29 px), en todos los formularios. El maestro en dos columnas se arma con `pc-odoo-maestro`, que trae ese espaciado.
 
 En solo lectura el campo es texto sin línea. Todos funcionan con formularios de Angular (`ngModel` o formularios reactivos).
 
@@ -267,6 +269,8 @@ Viven en `src/app/core/lista/` y `core/kanban/`. La tabla y el kanban **nunca** 
 
 - **`OrigenEnMemoria<T>`** (hasta F1): sobre la colección de un servicio de estado, con su vista de búsqueda, columnas sumables y, si se declara `unidad`, totales solo cuando el grupo comparte unidad (D-140).
 - **`OrigenHttp<T>`** (F1): manda la misma consulta a la API; la ruta y el formato quedan en P-28.
+- **`OrigenBusqueda<T>`** (F1): para un many2one sobre una búsqueda de la API (`…/buscar?texto=`): cada consulta busca en el servidor con lo escrito.
+- La lista y el many2one vuelven a consultar cuando cambia su origen, no solo su consulta: un catálogo que llega después de pintar se ve sin teclear.
 
 ### 4.2 Favoritos
 

@@ -26,7 +26,7 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         b.HasIndex(x => x.ErpCode).IsUnique();
         b.Property(x => x.Name).HasMaxLength(255).IsRequired();
         b.Property(x => x.ErpUom).HasMaxLength(10).IsRequired();
-        b.HasOne<ProductClassification>().WithMany().HasForeignKey(x => x.ClassificationId);
+        b.HasOne(x => x.Classification).WithMany().HasForeignKey(x => x.ClassificationId);
         b.HasMany(x => x.PackagingUnits).WithOne().HasForeignKey(u => u.ProductId);
         b.Navigation(x => x.PackagingUnits).HasField("_unidades").UsePropertyAccessMode(PropertyAccessMode.Field);
         b.HasOne(x => x.Roll).WithOne().HasForeignKey<RollSpecification>(r => r.ProductId);

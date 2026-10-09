@@ -294,21 +294,4 @@ test.describe('formulario, avisos y sincronización', () => {
     await expect(d.locator('[data-conteo-asignados]')).toContainText('3');
     await expect(d.locator('[data-dual-panel="asignados"]')).toContainText('Editar');
   });
-
-  test('login-form: inputs usuario y contraseña con botón deshabilitado hasta llenarlo', async ({ page }) => {
-    const l = page.locator('[data-catalogo="login-form"]');
-    await expect(l).toBeVisible();
-
-    const submit = l.locator('[data-login-submit]');
-    await expect(submit).toBeDisabled();
-
-    await l.locator('[data-login-usuario]').fill('operador1');
-    await expect(submit).toBeDisabled();
-
-    await l.locator('[data-login-contrasena]').fill('secreto');
-    await expect(submit).toBeEnabled();
-
-    await submit.click();
-    await expect(page.locator('[data-aviso="exito"]')).toContainText('Autenticado como operador1');
-  });
 });

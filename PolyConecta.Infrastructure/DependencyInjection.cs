@@ -105,6 +105,8 @@ public static class DependencyInjection
     {
         services.AddScoped(typeof(Plataforma.Listas.ConsultaDeListaEf<>));
         services.AddScoped<Plataforma.Listas.IIncluirEnLista<Domain.Ventas.SalesOrder>, Plataforma.Listas.IncluirPedidoEnLista>();
+        services.AddScoped<Plataforma.Listas.IIncluirEnLista<Domain.Inventario.Product>, Plataforma.Listas.IncluirProductoEnLista>();
+        services.AddScoped<Plataforma.Listas.IIncluirEnLista<Domain.Plataforma.Seguridad.User>, Plataforma.Listas.IncluirUsuarioEnLista>();
 
         services.AddScoped<PolyConecta.Application.Common.Listas.IConsultaDeLista>(sp =>
             ActivatorUtilities.CreateInstance<Plataforma.Listas.ConsultaDeListaEf<Domain.Ventas.SalesOrder>>(sp, PolyConecta.Application.Common.Listas.VistasDeF1.Pedidos));
