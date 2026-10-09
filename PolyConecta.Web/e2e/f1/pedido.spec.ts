@@ -207,7 +207,7 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
     // Redirige al formulario por id /ventas/pedidos/101 y muestra folio en título
     await expect(page).toHaveURL(/.*\/ventas\/pedidos\/101$/);
     await expect(page.locator('#pedido-folio')).toHaveText('PV-2026-0001');
-    await expect(page.locator('#pedido-estado-badge')).toHaveText('Borrador');
+    await expect(page.locator('.o_statusbar_pipeline .arrow-step.active')).toHaveText('Borrador');
 
     expect(pedidoGuardadoPayload).not.toBeNull();
     expect(pedidoGuardadoPayload.clienteId).toBe(3);
@@ -431,7 +431,7 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
 
     // 3. Confirmar exitosamente
     await page.click('#btn-confirmar-pedido');
-    await expect(page.locator('#pedido-estado-badge')).toHaveText('Confirmado');
+    await expect(page.locator('.o_statusbar_pipeline .arrow-step.active')).toHaveText('Confirmado');
 
     // 4. Paso 3: Autorizar como Comercial
     await page.click('#btn-autorizar-pedido');
@@ -452,7 +452,7 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
 
     // Verificación: la firma se borró y regresa a Confirmado para autorizar de nuevo
     await expect(page.locator('#alerta-exito')).toContainText('Pedido actualizado');
-    await expect(page.locator('#pedido-estado-badge')).toHaveText('Confirmado');
+    await expect(page.locator('.o_statusbar_pipeline .arrow-step.active')).toHaveText('Confirmado');
     await expect(page.locator('#badge-firmas-pedido')).toContainText('0/2 firmas');
   });
 
@@ -579,7 +579,7 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
     await abrir(page, ANGULAR, '/ventas/pedidos/101');
 
     // 1. Estado Autorizado y firma de suplente
-    await expect(page.locator('#pedido-estado-badge')).toHaveText('Autorizado');
+    await expect(page.locator('.o_statusbar_pipeline .arrow-step.active')).toHaveText('Autorizado');
     const tablaFirmas = page.locator('table', { hasText: 'Firmante' });
     await expect(tablaFirmas).toContainText('Suplente');
     await expect(tablaFirmas).toContainText('Cobranza');
@@ -590,6 +590,6 @@ test.describe('Flujo completo de pedidos de venta (F1 / US1 / quickstart §4)', 
     await btnRevocar.click();
 
     await expect(page.locator('#alerta-exito')).toContainText('Autorización revocada');
-    await expect(page.locator('#pedido-estado-badge')).toHaveText('Confirmado');
+    await expect(page.locator('.o_statusbar_pipeline .arrow-step.active')).toHaveText('Confirmado');
   });
 });

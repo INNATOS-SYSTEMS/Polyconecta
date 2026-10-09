@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { importe, n2 } from '../../../core/format/numero';
+import { fechaCampo, fechaHora, importe, n2 } from '../../../core/format/numero';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Dialog } from '@angular/cdk/dialog';
@@ -46,18 +46,6 @@ export interface LineaEditable {
   templateUrl: './pedido-form.html',
   styles: `
     :host { display: block; }
-    .o_form_view {
-      padding: 1.5rem 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .o_form_sheet {
-      background: white;
-      border: 1px solid var(--border-color, #e2e8f0);
-      border-radius: 8px;
-      padding: 2rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
   `,
 })
 export class PedidoForm implements OnInit {
@@ -139,12 +127,12 @@ export class PedidoForm implements OnInit {
     const p = this.pedido();
     if (!p) return [];
     const entradas: ChatterEntry[] = [
-      { author: 'Sistema', timestamp: p.fechaPedido, text: `Pedido ${p.folio} creado en Borrador.` },
+      { author: 'Sistema', timestamp: fechaCampo(new Date(`${p.fechaPedido}T00:00:00`)), text: `Pedido ${p.folio} creado en Borrador.` },
     ];
     for (const f of p.firmas) {
       entradas.push({
-        author: 'Sistema',
-        timestamp: f.fecha,
+        author: f.usuario,
+        timestamp: fechaHora(new Date(f.fecha)),
         text: `Autorización de ${f.rol} firmada por ${f.usuario}${f.suplente ? ' (suplente)' : ''}.`,
       });
     }

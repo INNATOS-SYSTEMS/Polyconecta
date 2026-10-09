@@ -112,7 +112,7 @@ test.describe('Pedidos de venta: rutas por id y acciones (F1 / US1 / L2-T024)', 
     // Miga y encabezado muestran el folio, no el id
     await expect(page.locator('#pedido-folio')).toHaveText('PV-2026-0015');
     await expect(page.locator('.o_breadcrumb')).toContainText('PV-2026-0015');
-    await expect(page.locator('#pedido-estado-badge')).toHaveText('Borrador');
+    await expect(page.locator('.o_statusbar_pipeline .arrow-step.active')).toHaveText('Borrador');
   });
 
   test('Id inexistente muestra Página no encontrada', async ({ page }) => {
@@ -197,7 +197,7 @@ test.describe('Pedidos de venta: rutas por id y acciones (F1 / US1 / L2-T024)', 
     await btnConfirmar.click();
 
     await expect(page.locator('#alerta-exito')).toContainText('Pedido confirmado');
-    await expect(page.locator('#pedido-estado-badge')).toHaveText('Confirmado');
+    await expect(page.locator('.o_statusbar_pipeline .arrow-step.active')).toHaveText('Confirmado');
 
     // 2. Autorizar pedido confirmado
     const btnAutorizar = page.locator('#btn-autorizar-pedido');

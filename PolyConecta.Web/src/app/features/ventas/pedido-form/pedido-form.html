@@ -98,7 +98,6 @@
         }
       </div>
 
-      <pc-odoo-status-pipeline [stages]="stages" [currentStage]="p.estado" />
     </div>
 
     @if (error()) {
@@ -119,293 +118,284 @@
 
     <div class="d-flex gap-3 align-items-start">
       <div class="o_form_sheet flex-grow-1">
-        <div class="d-flex justify-content-between align-items-start mb-4 border-bottom pb-3">
-          <div>
-            <h1 class="h3 mb-1" id="pedido-folio">{{ p.folio }}</h1>
-            <span class="text-muted fw-semibold">
-              Cliente: {{ p.cliente.clave }} - {{ p.cliente.nombre }}
-            </span>
-          </div>
-          <div>
-            <span
-              class="badge fs-6"
-              [class.bg-warning]="p.estado === 'Borrador'"
-              [class.bg-info]="p.estado === 'Confirmado'"
-              [class.bg-success]="p.estado === 'Autorizado'"
-              [class.bg-secondary]="p.estado === 'Cancelado'"
-              id="pedido-estado-badge"
-            >
-              {{ p.estado }}
-            </span>
-          </div>
-        </div>
-
-        <div class="row g-3 mb-4">
-          <div class="col-md-6">
-            <label class="form-label small fw-semibold text-muted">Cliente</label>
-            <input type="text" class="form-control" [value]="p.cliente.clave + ' - ' + p.cliente.nombre" disabled />
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label small fw-semibold text-muted" for="campo-orden-compra">Orden de compra del cliente</label>
-            @if (editando()) {
-              <input
-                type="text"
-                class="form-control"
-                [ngModel]="ordenCompraEditada()"
-                (ngModelChange)="ordenCompraEditada.set($event)"
-                id="campo-orden-compra-edit"
-              />
-              @if (erroresCampos()['ordenCompraCliente']) {
-                <div class="text-danger small mt-1">{{ erroresCampos()['ordenCompraCliente'] }}</div>
-              }
-            } @else {
-              <input type="text" class="form-control" [value]="p.ordenCompraCliente || 'Sin orden'" disabled />
-            }
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label small fw-semibold text-muted" for="campo-agente">Agente de ventas</label>
-            @if (editando()) {
-              <select
-                class="form-select"
-                [ngModel]="agenteIdEditado()"
-                (ngModelChange)="agenteIdEditado.set($event ? +$event : null)"
-                id="campo-agente-edit"
-              >
-                <option [ngValue]="null">Sin asignar</option>
-                @for (a of agentes(); track a.id) {
-                  <option [ngValue]="a.id">{{ a.clave }} - {{ a.nombre }}</option>
-                }
-              </select>
-            } @else {
-              <input type="text" class="form-control" [value]="p.agente ? (p.agente.clave + ' - ' + p.agente.nombre) : 'Sin asignar'" disabled />
-            }
-          </div>
-
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold text-muted">Fecha del pedido</label>
-            <input type="text" class="form-control" [value]="p.fechaPedido" disabled />
-          </div>
-
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold text-muted" for="campo-fecha-promesa">Entrega estimada</label>
-            @if (editando()) {
-              <input
-                type="date"
-                class="form-control"
-                [ngModel]="fechaPromesaEditada()"
-                (ngModelChange)="fechaPromesaEditada.set($event)"
-                id="campo-fecha-promesa-edit"
-              />
-              @if (erroresCampos()['fechaPromesa']) {
-                <div class="text-danger small mt-1">{{ erroresCampos()['fechaPromesa'] }}</div>
-              }
-            } @else {
-              <input type="text" class="form-control" [value]="p.fechaPromesa || 'Sin definir'" disabled />
-            }
-          </div>
-
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold text-muted" for="campo-moneda">Moneda</label>
-            @if (editando()) {
-              <select
-                class="form-select"
-                [ngModel]="monedaEditada()"
-                (ngModelChange)="alCambiarMonedaEdicion($event)"
-                id="campo-moneda-edit"
-              >
-                <option value="MXN">MXN - Peso Mexicano</option>
-                <option value="USD">USD - Dólar Estadounidense</option>
-              </select>
-              @if (erroresCampos()['moneda']) {
-                <div class="text-danger small mt-1">{{ erroresCampos()['moneda'] }}</div>
-              }
-            } @else {
-              <input type="text" class="form-control" [value]="p.moneda" disabled />
-            }
-          </div>
-
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold text-muted" for="campo-tipo-cambio">Tipo de cambio</label>
-            @if (editando()) {
-              <input
-                type="number"
-                step="0.0001"
-                class="form-control"
-                [disabled]="monedaEditada() === 'MXN'"
-                [ngModel]="tipoCambioEditado()"
-                (ngModelChange)="tipoCambioEditado.set($event ? +$event : null)"
-                id="campo-tipo-cambio-edit"
-              />
-              @if (erroresCampos()['tipoCambio']) {
-                <div class="text-danger small mt-1">{{ erroresCampos()['tipoCambio'] }}</div>
-              }
-            } @else {
-              <input type="text" class="form-control" [value]="p.tipoCambio ?? 1" disabled />
-            }
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label small fw-semibold text-muted" for="campo-domicilio-entrega">Domicilio de entrega</label>
-            @if (editando()) {
-              <select
-                class="form-select"
-                [ngModel]="domicilioEntregaIdEditado()"
-                (ngModelChange)="domicilioEntregaIdEditado.set($event ? +$event : null)"
-                id="campo-domicilio-entrega-edit"
-              >
-                @if (domiciliosDisponibles().length === 0) {
-                  <option [ngValue]="null">Sin domicilios de envío disponibles</option>
-                } @else {
-                  <option [ngValue]="null">Seleccione un domicilio de envío...</option>
-                  @for (d of domiciliosDisponibles(); track d.id) {
-                    <option [ngValue]="d.id">{{ d.texto }}</option>
-                  }
-                }
-              </select>
-              @if (erroresCampos()['domicilioEntregaId']) {
-                <div class="text-danger small mt-1">{{ erroresCampos()['domicilioEntregaId'] }}</div>
-              }
-            } @else {
-              <input type="text" class="form-control" [value]="p.domicilioEntrega?.texto || 'Sin domicilio especificado'" disabled />
-            }
-          </div>
-        </div>
-
-        <div class="mb-4">
-          <h5 class="h6 fw-bold text-primary mb-3">Líneas del pedido</h5>
-          <div class="table-responsive">
-            <table class="table table-sm table-bordered align-middle" id="tabla-lineas-pedido">
-              <thead class="table-light">
-                <tr>
-                  <th>Producto</th>
-                  <th class="text-end" style="width: 140px;">Cantidad</th>
-                  <th style="width: 90px;" class="text-center">Unidad</th>
-                  <th class="text-end" style="width: 150px;">Precio Unitario</th>
-                  <th class="text-end" style="width: 150px;">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                @if (editando()) {
-                  @for (l of lineasEditables(); track l.productoId; let i = $index) {
-                    <tr>
-                      <td>
-                        <div class="fw-semibold">{{ l.clave }}</div>
-                        <div class="small text-muted">{{ l.producto }}</div>
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          step="0.01"
-                          class="form-control form-control-sm text-end"
-                          [ngModel]="l.cantidad"
-                          (ngModelChange)="actualizarCantidadLinea(i, $event)"
-                          [attr.data-input-cantidad-linea]="i"
-                          id="input-cantidad-linea-{{i}}"
-                        />
-                        @if (erroresCampos()['lineas[' + i + '].cantidad']) {
-                          <div class="text-danger small">{{ erroresCampos()['lineas[' + i + '].cantidad'] }}</div>
-                        }
-                      </td>
-                      <td class="text-center"><span class="badge bg-light text-dark border">{{ l.unidad }}</span></td>
-                      <td>
-                        <input
-                          type="number"
-                          step="0.0001"
-                          class="form-control form-control-sm text-end"
-                          [ngModel]="l.precioUnitario"
-                          (ngModelChange)="actualizarPrecioLinea(i, $event)"
-                          placeholder="0.00"
-                          [attr.data-input-precio-linea]="i"
-                          id="input-precio-linea-{{i}}"
-                        />
-                        @if (erroresCampos()['lineas[' + i + '].precioUnitario']) {
-                          <div class="text-danger small">{{ erroresCampos()['lineas[' + i + '].precioUnitario'] }}</div>
-                        }
-                      </td>
-                      <td class="text-end fw-semibold">
-                        {{ importe((l.cantidad * (l.precioUnitario ?? 0)), monedaEditada()) }}
-                      </td>
-                    </tr>
-                  }
-                } @else {
-                  @for (l of p.lineas; track l.id) {
-                    <tr>
-                      <td>
-                        <div class="fw-semibold">{{ l.clave }}</div>
-                        <div class="small text-muted">{{ l.producto }}</div>
-                      </td>
-                      <td class="text-end">{{ n2(l.cantidad) }}</td>
-                      <td class="text-center"><span class="badge bg-light text-dark border">{{ l.unidad }}</span></td>
-                      <td class="text-end">{{ l.precioUnitario !== null ? importe(l.precioUnitario, p.moneda, 2, 4) : '—' }}</td>
-                      <td class="text-end fw-semibold">
-                        {{ importe((l.subtotal !== null ? l.subtotal : (l.cantidad * (l.precioUnitario ?? 0))), p.moneda) }}
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr>
-                      <td colspan="5" class="text-center text-muted py-3">No hay líneas en este pedido.</td>
-                    </tr>
-                  }
-                }
-              </tbody>
-            </table>
-          </div>
-
-          <div class="d-flex justify-content-end mt-3">
-            <div style="width: 280px;">
-              <div class="d-flex justify-content-between py-1 border-bottom">
-                <span class="text-muted">Subtotal:</span>
-                <span class="fw-semibold">{{ importe(subtotalCalculado(), (editando() ? monedaEditada() : p.moneda)) }}</span>
-              </div>
-              <div class="d-flex justify-content-between py-1 border-bottom">
-                <span class="text-muted">IVA (16%):</span>
-                <span>{{ importe(ivaCalculado(), (editando() ? monedaEditada() : p.moneda)) }}</span>
-              </div>
-              <div class="d-flex justify-content-between py-2 fw-bold fs-5 text-primary">
-                <span>Total:</span>
-                <span>{{ importe(totalCalculado(), (editando() ? monedaEditada() : p.moneda)) }}</span>
-              </div>
+        <div class="o_sheet_body">
+          <pc-odoo-status-pipeline [stages]="stages" [currentStage]="p.estado" />
+          <div class="d-flex justify-content-between align-items-start mb-4 border-bottom pb-3">
+            <div>
+              <h1 class="h3 mb-1" id="pedido-folio">{{ p.folio }}</h1>
+              <span class="text-muted fw-semibold">
+                Cliente: {{ p.cliente.clave }} - {{ p.cliente.nombre }}
+              </span>
             </div>
           </div>
-        </div>
 
-        <div class="mb-3 border-top pt-3">
-          <h5 class="h6 fw-bold text-primary mb-2">Firmas de autorización</h5>
-          @if (p.firmas.length > 0) {
-            <div class="table-responsive mb-2">
-              <table class="table table-sm table-bordered">
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-muted">Cliente</label>
+              <input type="text" class="form-control" [value]="p.cliente.clave + ' - ' + p.cliente.nombre" disabled />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-muted" for="campo-orden-compra">Orden de compra del cliente</label>
+              @if (editando()) {
+                <input
+                  type="text"
+                  class="form-control"
+                  [ngModel]="ordenCompraEditada()"
+                  (ngModelChange)="ordenCompraEditada.set($event)"
+                  id="campo-orden-compra-edit"
+                />
+                @if (erroresCampos()['ordenCompraCliente']) {
+                  <div class="text-danger small mt-1">{{ erroresCampos()['ordenCompraCliente'] }}</div>
+                }
+              } @else {
+                <input type="text" class="form-control" [value]="p.ordenCompraCliente || 'Sin orden'" disabled />
+              }
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-muted" for="campo-agente">Agente de ventas</label>
+              @if (editando()) {
+                <select
+                  class="form-select"
+                  [ngModel]="agenteIdEditado()"
+                  (ngModelChange)="agenteIdEditado.set($event ? +$event : null)"
+                  id="campo-agente-edit"
+                >
+                  <option [ngValue]="null">Sin asignar</option>
+                  @for (a of agentes(); track a.id) {
+                    <option [ngValue]="a.id">{{ a.clave }} - {{ a.nombre }}</option>
+                  }
+                </select>
+              } @else {
+                <input type="text" class="form-control" [value]="p.agente ? (p.agente.clave + ' - ' + p.agente.nombre) : 'Sin asignar'" disabled />
+              }
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold text-muted">Fecha del pedido</label>
+              <input type="text" class="form-control" [value]="p.fechaPedido" disabled />
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold text-muted" for="campo-fecha-promesa">Entrega estimada</label>
+              @if (editando()) {
+                <input
+                  type="date"
+                  class="form-control"
+                  [ngModel]="fechaPromesaEditada()"
+                  (ngModelChange)="fechaPromesaEditada.set($event)"
+                  id="campo-fecha-promesa-edit"
+                />
+                @if (erroresCampos()['fechaPromesa']) {
+                  <div class="text-danger small mt-1">{{ erroresCampos()['fechaPromesa'] }}</div>
+                }
+              } @else {
+                <input type="text" class="form-control" [value]="p.fechaPromesa || 'Sin definir'" disabled />
+              }
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold text-muted" for="campo-moneda">Moneda</label>
+              @if (editando()) {
+                <select
+                  class="form-select"
+                  [ngModel]="monedaEditada()"
+                  (ngModelChange)="alCambiarMonedaEdicion($event)"
+                  id="campo-moneda-edit"
+                >
+                  <option value="MXN">MXN - Peso Mexicano</option>
+                  <option value="USD">USD - Dólar Estadounidense</option>
+                </select>
+                @if (erroresCampos()['moneda']) {
+                  <div class="text-danger small mt-1">{{ erroresCampos()['moneda'] }}</div>
+                }
+              } @else {
+                <input type="text" class="form-control" [value]="p.moneda" disabled />
+              }
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold text-muted" for="campo-tipo-cambio">Tipo de cambio</label>
+              @if (editando()) {
+                <input
+                  type="number"
+                  step="0.0001"
+                  class="form-control"
+                  [disabled]="monedaEditada() === 'MXN'"
+                  [ngModel]="tipoCambioEditado()"
+                  (ngModelChange)="tipoCambioEditado.set($event ? +$event : null)"
+                  id="campo-tipo-cambio-edit"
+                />
+                @if (erroresCampos()['tipoCambio']) {
+                  <div class="text-danger small mt-1">{{ erroresCampos()['tipoCambio'] }}</div>
+                }
+              } @else {
+                <input type="text" class="form-control" [value]="p.tipoCambio ?? 1" disabled />
+              }
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold text-muted" for="campo-domicilio-entrega">Domicilio de entrega</label>
+              @if (editando()) {
+                <select
+                  class="form-select"
+                  [ngModel]="domicilioEntregaIdEditado()"
+                  (ngModelChange)="domicilioEntregaIdEditado.set($event ? +$event : null)"
+                  id="campo-domicilio-entrega-edit"
+                >
+                  @if (domiciliosDisponibles().length === 0) {
+                    <option [ngValue]="null">Sin domicilios de envío disponibles</option>
+                  } @else {
+                    <option [ngValue]="null">Seleccione un domicilio de envío...</option>
+                    @for (d of domiciliosDisponibles(); track d.id) {
+                      <option [ngValue]="d.id">{{ d.texto }}</option>
+                    }
+                  }
+                </select>
+                @if (erroresCampos()['domicilioEntregaId']) {
+                  <div class="text-danger small mt-1">{{ erroresCampos()['domicilioEntregaId'] }}</div>
+                }
+              } @else {
+                <input type="text" class="form-control" [value]="p.domicilioEntrega?.texto || 'Sin domicilio especificado'" disabled />
+              }
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h5 class="h6 fw-bold text-primary mb-3">Líneas del pedido</h5>
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered align-middle" id="tabla-lineas-pedido">
                 <thead class="table-light">
                   <tr>
-                    <th>Rol</th>
-                    <th>Firmante</th>
-                    <th>Tipo</th>
-                    <th>Fecha y hora</th>
+                    <th>Producto</th>
+                    <th class="text-end" style="width: 140px;">Cantidad</th>
+                    <th style="width: 90px;" class="text-center">Unidad</th>
+                    <th class="text-end" style="width: 150px;">Precio Unitario</th>
+                    <th class="text-end" style="width: 150px;">Subtotal</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @for (f of p.firmas; track f.rol) {
-                    <tr>
-                      <td class="fw-semibold">{{ f.rol }}</td>
-                      <td>{{ f.usuario }}</td>
-                      <td>
-                        <span class="badge" [class.bg-warning]="f.suplente" [class.bg-info]="!f.suplente">
-                          {{ f.suplente ? 'Suplente' : 'Titular' }}
-                        </span>
-                      </td>
-                      <td class="small">{{ f.fecha }}</td>
-                    </tr>
+                  @if (editando()) {
+                    @for (l of lineasEditables(); track l.productoId; let i = $index) {
+                      <tr>
+                        <td>
+                          <div class="fw-semibold">{{ l.clave }}</div>
+                          <div class="small text-muted">{{ l.producto }}</div>
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            step="0.01"
+                            class="form-control form-control-sm text-end"
+                            [ngModel]="l.cantidad"
+                            (ngModelChange)="actualizarCantidadLinea(i, $event)"
+                            [attr.data-input-cantidad-linea]="i"
+                            id="input-cantidad-linea-{{i}}"
+                          />
+                          @if (erroresCampos()['lineas[' + i + '].cantidad']) {
+                            <div class="text-danger small">{{ erroresCampos()['lineas[' + i + '].cantidad'] }}</div>
+                          }
+                        </td>
+                        <td class="text-center"><span class="badge bg-light text-dark border">{{ l.unidad }}</span></td>
+                        <td>
+                          <input
+                            type="number"
+                            step="0.0001"
+                            class="form-control form-control-sm text-end"
+                            [ngModel]="l.precioUnitario"
+                            (ngModelChange)="actualizarPrecioLinea(i, $event)"
+                            placeholder="0.00"
+                            [attr.data-input-precio-linea]="i"
+                            id="input-precio-linea-{{i}}"
+                          />
+                          @if (erroresCampos()['lineas[' + i + '].precioUnitario']) {
+                            <div class="text-danger small">{{ erroresCampos()['lineas[' + i + '].precioUnitario'] }}</div>
+                          }
+                        </td>
+                        <td class="text-end fw-semibold">
+                          {{ importe((l.cantidad * (l.precioUnitario ?? 0)), monedaEditada()) }}
+                        </td>
+                      </tr>
+                    }
+                  } @else {
+                    @for (l of p.lineas; track l.id) {
+                      <tr>
+                        <td>
+                          <div class="fw-semibold">{{ l.clave }}</div>
+                          <div class="small text-muted">{{ l.producto }}</div>
+                        </td>
+                        <td class="text-end">{{ n2(l.cantidad) }}</td>
+                        <td class="text-center"><span class="badge bg-light text-dark border">{{ l.unidad }}</span></td>
+                        <td class="text-end">{{ l.precioUnitario !== null ? importe(l.precioUnitario, p.moneda, 2, 4) : '—' }}</td>
+                        <td class="text-end fw-semibold">
+                          {{ importe((l.subtotal !== null ? l.subtotal : (l.cantidad * (l.precioUnitario ?? 0))), p.moneda) }}
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="5" class="text-center text-muted py-3">No hay líneas en este pedido.</td>
+                      </tr>
+                    }
                   }
                 </tbody>
               </table>
             </div>
-          }
-          @if (p.firmasPendientes.length > 0) {
-            <p class="text-muted small fst-italic mb-0" id="texto-firmas-pendientes">
-              Falta la firma de: <strong>{{ p.firmasPendientes.join(', ') }}</strong>.
-            </p>
-          }
+
+            <div class="d-flex justify-content-end mt-3">
+              <div style="width: 280px;">
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                  <span class="text-muted">Subtotal:</span>
+                  <span class="fw-semibold">{{ importe(subtotalCalculado(), (editando() ? monedaEditada() : p.moneda)) }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                  <span class="text-muted">IVA (16%):</span>
+                  <span>{{ importe(ivaCalculado(), (editando() ? monedaEditada() : p.moneda)) }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 fw-bold fs-5 text-primary">
+                  <span>Total:</span>
+                  <span>{{ importe(totalCalculado(), (editando() ? monedaEditada() : p.moneda)) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3 border-top pt-3">
+            <h5 class="h6 fw-bold text-primary mb-2">Firmas de autorización</h5>
+            @if (p.firmas.length > 0) {
+              <div class="table-responsive mb-2">
+                <table class="table table-sm table-bordered">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Rol</th>
+                      <th>Firmante</th>
+                      <th>Tipo</th>
+                      <th>Fecha y hora</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (f of p.firmas; track f.rol) {
+                      <tr>
+                        <td class="fw-semibold">{{ f.rol }}</td>
+                        <td>{{ f.usuario }}</td>
+                        <td>
+                          <span class="badge" [class.bg-warning]="f.suplente" [class.bg-info]="!f.suplente">
+                            {{ f.suplente ? 'Suplente' : 'Titular' }}
+                          </span>
+                        </td>
+                        <td class="small">{{ f.fecha }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+            @if (p.firmasPendientes.length > 0) {
+              <p class="text-muted small fst-italic mb-0" id="texto-firmas-pendientes">
+                Falta la firma de: <strong>{{ p.firmasPendientes.join(', ') }}</strong>.
+              </p>
+            }
+          </div>
         </div>
       </div>
 
