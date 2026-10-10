@@ -22,12 +22,13 @@ export class OdooTopbar {
   private readonly router = inject(Router);
   private readonly sesion = inject(SesionState);
 
-  private readonly path = toSignal(
+  protected readonly path = toSignal(
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
       map(e => e.urlAfterRedirects.split(/[?#]/)[0]),
     ),
-    { initialValue: this.router.url.split(/[?#]/)[0] },
+    // Antes de la primera navegación, la ruta del navegador: en /login la barra no se pinta mientras carga.
+    { initialValue: (this.router.navigated ? this.router.url : location.pathname).split(/[?#]/)[0] },
   );
 
   protected readonly currentModule = computed(() => moduleFor(this.path()));

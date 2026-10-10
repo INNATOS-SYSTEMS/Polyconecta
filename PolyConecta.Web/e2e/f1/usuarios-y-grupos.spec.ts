@@ -104,6 +104,70 @@ test.describe('Usuarios y grupos (F1 / US2)', () => {
     });
   });
 
+  test('la selección va junto a la búsqueda y archiva grupos desde "Acciones" (07 §1.1, D-167)', async ({ page }) => {
+    const archivados: string[] = [];
+    await simularListas(page);
+    await page.route(/\/api\/v1\/plataforma\/grupos/, async route => {
+      const url = route.request().url();
+      if (url.includes('/conjunto')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ completo: true, total: 2, filas: gruposMock }) });
+        return;
+      }
+      const m = /\/grupos\/(\d+)\/archivar$/.exec(url);
+      if (m && route.request().method() === 'POST') {
+        archivados.push(m[1]);
+        const g = gruposMock.find(x => String(x.id) === m[1])!;
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...g, activo: false, rowVersion: 'X', permisos: [] }) });
+        return;
+      }
+      await route.fallback();
+    });
+
+    await abrir(page, ANGULAR, '/plataforma/grupos');
+    const filas = page.locator('table[data-lista="plataforma.grupos"] tbody tr');
+    await filas.nth(0).locator('input').check();
+    await filas.nth(1).locator('input').check();
+    const panel = page.locator('.o_control_panel');
+    await expect(panel.locator('[data-lista="seleccion"]')).toContainText('2 seleccionados');
+    await expect(page.locator('pc-odoo-list [data-lista="seleccion"]')).toHaveCount(0);
+
+    await panel.locator('[data-lista="acciones"]').click();
+    await expect(page.locator('[data-accion-masiva="Restaurar"]')).toHaveAttribute('aria-disabled', 'true');
+    await page.locator('[data-accion-masiva="Archivar"]').click();
+    await expect(aviso(page)).toContainText('2 grupos archivados');
+    expect(archivados).toEqual(['1', '2']);
+    await expect(panel.locator('[data-lista="seleccion"]')).toHaveCount(0);
+  });
+
+  test('"Nuevo" abre /nuevo desde las listas y desde un grupo guardado, sin repetir el tramo', async ({ page }) => {
+    await simularListas(page);
+    await page.route(/\/api\/v1\/plataforma\/(grupos|usuarios)/, async route => {
+      const url = route.request().url();
+      if (url.includes('/conjunto')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ completo: true, total: 0, filas: [] }) });
+      } else if (url.endsWith('/grupos/2') && route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ id: 2, codigo: 'SUPERVISOR', nombre: 'Supervisor de turno', descripcion: null, activo: true, rowVersion: 'BBBB', miembros: 2, permisos: [] }),
+        });
+      } else {
+        await route.fallback();
+      }
+    });
+
+    for (const ruta of ['/plataforma/usuarios', '/plataforma/grupos']) {
+      await abrir(page, ANGULAR, ruta);
+      await page.locator('.o_control_panel button', { hasText: 'Nuevo' }).click();
+      await expect(page).toHaveURL(new RegExp(`${ruta}/nuevo$`));
+      await expect(page.locator('[data-nombre-registro]')).toHaveText('Nuevo');
+    }
+
+    await abrir(page, ANGULAR, '/plataforma/grupos/2');
+    await expect(page.locator('[data-nombre-registro]')).toHaveText('Supervisor de turno');
+    await page.locator('.o_control_panel button', { hasText: 'Nuevo' }).click();
+    await expect(page).toHaveURL(/\/plataforma\/grupos\/nuevo$/);
+  });
+
   test('administrador ve menús de Configuración y lista de grupos', async ({ page }) => {
     await page.route(/\/api\/v1\/plataforma\/grupos/, async route => {
       await route.fulfill({

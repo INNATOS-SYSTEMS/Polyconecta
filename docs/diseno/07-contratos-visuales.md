@@ -14,7 +14,7 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 
 **Anatomía**:
 - panel de control: "Nuevo" y migas a la izquierda; al centro, la barra de búsqueda con facetas y el menú de filtros, agrupaciones y favoritos; el cambio de vista (lista y kanban), en la **extrema derecha**, lejos de la búsqueda;
-- barra de selección, solo con filas marcadas;
+- selección, solo con filas marcadas: en el panel de control, a la derecha de la búsqueda y los filtros, el conteo con su botón para quitarla y el menú "Acciones" (D-167); la tabla no se desplaza;
 - tabla con casillas, encabezados ordenables y el botón de columnas al final;
 - filas de grupo, filas y pie con totales;
 - paginador.
@@ -28,7 +28,7 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 | Agrupar | Uno o varios niveles, desde el menú de búsqueda. Cada grupo muestra conteo y subtotales; se abre bajo pedido |
 | Columnas | Mostrar u ocultar y subir o bajar entre las visibles. El menú se abre en un popover sobre la página, nunca dentro de la tabla |
 | Paginar | 20, 40, 80 (por omisión) o 200 por página; el texto es "inicio-fin / total" |
-| Seleccionar | Casillas, con "seleccionar todo" de la página. Aparece la barra con las acciones masivas y "Exportar" |
+| Seleccionar | Casillas, con "seleccionar todo" de la página. Junto a la búsqueda aparecen el conteo y "Acciones": "Exportar" siempre, luego las acciones contextuales de la lista (archivar, restaurar…) y, al final, separadas y en rojo, las destructivas ("Eliminar"), que piden confirmación. Una acción que no aplica a la selección se ve deshabilitada y dice por qué. Al terminar, la lista vuelve a consultar y se quita la selección |
 | Exportar | `.xlsx` con las seleccionadas o, sin selección, todo el filtro; columnas visibles en su orden, números como números y fechas `dd/mm/yyyy` |
 | Favoritos | Guardar la búsqueda, la agrupación, el orden, las columnas y el tamaño de página con nombre; uno por omisión se aplica al abrir. Hasta F1 se guardan en el navegador |
 
@@ -40,7 +40,7 @@ Sistema de diseño (estilo, estructura del documento y modo libre): [05 §7](05-
 - **Aspecto:** la barra de búsqueda es blanca, con borde gris y radio de 6 px, como los botones (no es una píldora); al enfocarla, el borde toma el color primario. En la tabla, los encabezados van en peso medio (500) y el contenido en peso normal, a 0.85rem; ni el folio ni los totales van en negrita.
 - **Sin registros:** muestra "No hay registros que mostrar."
 
-**Implementación**: `pc-odoo-list` (TanStack Table en modo servidor) con `pc-odoo-search-panel` y `pc-odoo-pager`.
+**Implementación**: `pc-odoo-list` (TanStack Table en modo servidor) con `pc-odoo-search-panel` y `pc-odoo-pager`. La selección es `pc-odoo-seleccion`, proyectada dentro de `pc-odoo-search-panel` con la referencia a la tabla (`viewChild` si la tabla vive dentro de un `@if`); las acciones contextuales son `AccionMasiva` (`peligrosa`, `confirmar`, `razonDeshabilitada`) y "Archivar" y "Restaurar" salen de `accionesDeArchivo`.
 
 ### 1.2 Kanban
 
@@ -129,7 +129,7 @@ Todo producto se muestra como **"Clave - Nombre"**: en campos, tablas, tarjetas,
 
 | Caso | Pieza | Regla |
 | :--- | :--- | :--- |
-| Confirmación | `pc-odoo-dialog` (o `OdooConfirmacion`) | Título, mensaje, primario y "Cancelar". Esc y clic fuera cancelan; el foco queda dentro |
+| Confirmación | `pc-odoo-dialog` (o `OdooConfirmacion`) | Título, mensaje, primario y "Cancelar". Siempre modal, encima de la página y centrado, también si la pantalla lo pinta desde su plantilla (D-168). Esc y clic fuera cancelan; el foco queda dentro |
 | Hard-stop (Calidad, existencia) | `OdooHardStop` (sobre `pc-odoo-dialog`) | Explica por qué no procede y qué hacer; un solo botón, "Entendido": no ofrece continuar |
 | Acción irreversible (fallar un lote) | `OdooConfirmacion` | Dice la consecuencia y nombra el botón con la acción ("Fallar lote"), no "Aceptar" |
 | Resultado de una acción | `AvisosService` | Éxito y aviso se cierran solos a los 4 s; el error se queda hasta cerrarlo |
@@ -200,7 +200,7 @@ Selector dual en árbol para administrar permisos de grupos, dentro de la pesta�
 
 | Pieza | Componente | Reglas |
 | :--- | :--- | :--- |
-| Barra superior | `pc-odoo-topbar` en `pc-main-layout`, con `pc-odoo-systray` a la derecha | Izquierda: el hub, el nombre del módulo o "PolyConecta" si no hay módulo, y el menú del módulo. Derecha: mensajes, el nombre del usuario y su avatar. **Solo el avatar es interactivo; el nombre es texto.** El avatar es un cuadro de 28 px con la inicial; hover y abierto lo marcan con un anillo, sin cambiar su tamaño, y abre Preferencias y Cerrar sesión, alineado a la derecha. Clic fuera o Esc cierran el menú. Hasta F1 no hay inicio de sesión: las dos opciones se ven deshabilitadas |
+| Barra superior | `pc-odoo-topbar` en `pc-main-layout`, con `pc-odoo-systray` a la derecha | Izquierda: el hub, el nombre del módulo o "PolyConecta" si no hay módulo, y el menú del módulo. Derecha: mensajes, el nombre del usuario y su avatar. **Solo el avatar es interactivo; el nombre es texto.** El avatar es un cuadro de 28 px con la inicial; hover y abierto lo marcan con un anillo, sin cambiar su tamaño, y abre Preferencias y Cerrar sesión, alineado a la derecha. Clic fuera o Esc cierran el menú. No se muestra en el inicio de sesión, que ocupa toda la pantalla (D-166) |
 | Migas | `pc-odoo-breadcrumb` | Nivel actual y uno atrás; lo anterior se resume en "…" |
 | Cambio de vista | `pc-odoo-view-switcher` | Lista y kanban; sin kanban, solo lista |
 | Paginador | `pc-odoo-pager` | Con `inicio` y `fin` pagina y cambia el tamaño; sin ellos, "1-N / N" como el prototipo |

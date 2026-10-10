@@ -11,6 +11,7 @@ import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooKanban } from '../../../shared/odoo-kanban/odoo-kanban';
 import { ColumnaLista } from '../../../shared/odoo-list/columnas';
 import { OdooList } from '../../../shared/odoo-list/odoo-list';
+import { OdooSeleccion } from '../../../shared/odoo-list/odoo-seleccion';
 import { OdooPager } from '../../../shared/odoo-pager/odoo-pager';
 import { Facet, OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-panel';
 import { OdooViewSwitcher } from '../../../shared/odoo-view-switcher/odoo-view-switcher';
@@ -22,11 +23,13 @@ import { ETAPAS_OF, FabricacionAcciones, FilaOf } from '../fabricacion-acciones'
  */
 @Component({
   selector: 'pc-fabricacion-list',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager, OdooList, OdooKanban, OdooIcon],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooPager, OdooList, OdooSeleccion, OdooKanban, OdooIcon],
   templateUrl: './fabricacion-list.html',
   styles: ':host { display: contents; }',
 })
 export class FabricacionList {
+  /** La tabla vive dentro del `@if` de la vista: su selección va en el panel de control (D-167). */
+  protected readonly tabla = viewChild(OdooList);
   protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
   private readonly inv = inject(InventoryState);
   private readonly router = inject(Router);

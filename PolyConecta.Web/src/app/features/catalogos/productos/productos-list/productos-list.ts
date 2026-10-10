@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { nombreProducto } from '../../../../core/format/producto';
 import { OdooBreadcrumb } from '../../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { OdooList } from '../../../../shared/odoo-list/odoo-list';
+import { OdooSeleccion } from '../../../../shared/odoo-list/odoo-seleccion';
 import { ColumnaLista } from '../../../../shared/odoo-list/columnas';
 import { OdooSearchPanel } from '../../../../shared/odoo-search-panel/odoo-search-panel';
 import { SearchView } from '../../../../core/search/search-view';
@@ -23,7 +24,7 @@ export interface FilaProducto {
 
 @Component({
   selector: 'pc-productos-list',
-  imports: [OdooBreadcrumb, OdooSearchPanel, OdooList],
+  imports: [OdooBreadcrumb, OdooSearchPanel, OdooList, OdooSeleccion],
   templateUrl: './productos-list.html',
   styles: ':host { display: contents; }',
 })

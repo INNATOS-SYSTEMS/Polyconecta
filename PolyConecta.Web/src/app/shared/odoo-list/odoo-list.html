@@ -1,16 +1,4 @@
-@if (idsSeleccionados().length > 0) {
-  <div class="o_list_selection_bar mb-2" data-lista="seleccion">
-    <span class="fw-semibold">{{ idsSeleccionados().length }} seleccionados</span>
-    @for (a of acciones(); track a.nombre) {
-      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="a.ejecutar(idsSeleccionados())">
-        @if (a.icono) { <pc-odoo-icon [nombre]="a.icono" /> }{{ a.nombre }}
-      </button>
-    }
-    <button type="button" class="btn btn-sm btn-outline-secondary" data-lista="exportar" (click)="exportar()"><pc-odoo-icon nombre="excel" />Exportar</button>
-    <button type="button" class="btn btn-sm btn-link" (click)="limpiarSeleccion()">Quitar selección</button>
-  </div>
-}
-
+<!-- La selección y sus acciones van en el panel de control, con pc-odoo-seleccion (07 §1.1, D-167). -->
 <table class="table table-hover align-middle bg-white shadow-sm" [attr.data-lista]="lista()" [attr.aria-busy]="cargando()">
   <thead class="table-light">
     <tr>

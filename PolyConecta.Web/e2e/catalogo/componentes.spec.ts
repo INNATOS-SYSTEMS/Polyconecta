@@ -91,14 +91,41 @@ test.describe('lista', () => {
       .toEqual(['folio', 'total', 'cliente', 'estado']);
   });
 
-  test('selecciona, muestra la barra de acciones y exporta las seleccionadas a .xlsx', async ({ page }) => {
+  test('selecciona y exporta las seleccionadas a .xlsx desde "Acciones", junto a la búsqueda', async ({ page }) => {
     await filas(page).nth(0).locator('input').click();
     await filas(page).nth(2).locator('input').click();
-    await expect(lista(page).locator('[data-lista="seleccion"]')).toContainText('2 seleccionados');
-    const [descarga] = await Promise.all([page.waitForEvent('download'), lista(page).locator('[data-lista="exportar"]').click()]);
+    // La selección va en el panel de control, no encima de la tabla (07 §1.1, D-167).
+    await expect(lista(page).locator('.o_control_panel [data-lista="seleccion"]')).toContainText('2 seleccionados');
+    await expect(lista(page).locator('pc-odoo-list [data-lista="seleccion"]')).toHaveCount(0);
+    await lista(page).locator('[data-lista="acciones"]').click();
+    const [descarga] = await Promise.all([page.waitForEvent('download'), page.locator('[data-lista="exportar"]').click()]);
     expect(descarga.suggestedFilename()).toMatch(/^catalogo\.pedidos-\d{4}-\d{2}-\d{2}\.xlsx$/);
     const bytes = readFileSync((await descarga.path())!);
     expect([bytes[0], bytes[1]]).toEqual([0x50, 0x4b]); // un .xlsx es un zip
+  });
+
+  test('"Eliminar" va al final, se deshabilita con su razón y pide confirmación', async ({ page }) => {
+    const borrador = filas(page).filter({ hasText: 'Borrador' }).first();
+    const folio = (await borrador.locator('td').nth(1).textContent())!.trim();
+    await borrador.locator('input').click();
+    await lista(page).locator('[data-lista="acciones"]').click();
+    const eliminar = page.locator('[data-accion-masiva="Eliminar"]');
+    await expect(eliminar).toHaveClass(/text-danger/);
+    await eliminar.click();
+    await page.locator('[data-dialogo="cancelar"]').click();
+    await expect(tabla(page)).toContainText(folio);
+
+    await lista(page).locator('[data-lista="acciones"]').click();
+    await page.locator('[data-accion-masiva="Eliminar"]').click();
+    await page.locator('[data-dialogo="confirmar"]').click();
+    await expect(tabla(page)).not.toContainText(folio);
+    await expect(lista(page).locator('[data-lista="seleccion"]')).toHaveCount(0);
+
+    // Un pedido fuera de Borrador: la acción no aplica y dice por qué.
+    await filas(page).filter({ hasText: 'Autorizado' }).first().locator('input').click();
+    await lista(page).locator('[data-lista="acciones"]').click();
+    await expect(page.locator('[data-accion-masiva="Eliminar"]')).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.locator('[data-accion-masiva="Eliminar"]')).toHaveAttribute('title', 'Solo se eliminan pedidos en Borrador.');
   });
 
   test('muestra el total del filtro y el mensaje de lista vacía', async ({ page }) => {

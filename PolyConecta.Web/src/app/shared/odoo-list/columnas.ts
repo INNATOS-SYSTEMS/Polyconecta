@@ -22,11 +22,21 @@ export interface ColumnaLista<T> {
   ancho?: string;
 }
 
-/** Acción sobre las filas seleccionadas. Exportar a Excel siempre está. */
+/**
+ * Acción contextual sobre las filas seleccionadas (contratos visuales §1.1): va en el menú "Acciones" de la
+ * selección, después de "Exportar", que siempre está.
+ */
 export interface AccionMasiva {
   nombre: string;
   icono?: string;
-  ejecutar(ids: string[]): void;
+  /** Destructiva (Eliminar): va al final, separada y en rojo, y siempre pide confirmación. */
+  peligrosa?: boolean;
+  /** Mensaje de confirmación para `n` registros; sin él, solo las peligrosas preguntan. */
+  confirmar?: (n: number) => string;
+  /** Por qué no aplica a la selección (permiso, estado); la acción se ve deshabilitada con esa razón. */
+  razonDeshabilitada?: (filas: unknown[]) => string | null;
+  /** Recibe los ids y los registros seleccionados. Al terminar, la lista vuelve a consultar y se quita la selección. */
+  ejecutar(ids: string[], filas: unknown[]): void | Promise<void>;
 }
 
 const MONEDA = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });

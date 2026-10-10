@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { OdooBreadcrumb } from '../../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { OdooList } from '../../../../shared/odoo-list/odoo-list';
+import { OdooSeleccion } from '../../../../shared/odoo-list/odoo-seleccion';
 import { ColumnaLista } from '../../../../shared/odoo-list/columnas';
 import { OdooSearchPanel } from '../../../../shared/odoo-search-panel/odoo-search-panel';
 import { SearchView } from '../../../../core/search/search-view';
@@ -22,7 +23,7 @@ export interface FilaCliente {
 
 @Component({
   selector: 'pc-clientes-list',
-  imports: [OdooBreadcrumb, OdooSearchPanel, OdooList],
+  imports: [OdooBreadcrumb, OdooSearchPanel, OdooList, OdooSeleccion],
   templateUrl: './clientes-list.html',
   styles: ':host { display: contents; }',
 })

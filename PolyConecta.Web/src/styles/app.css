@@ -739,7 +739,35 @@ body {
 .o_group_row .o_group_name { display: inline-flex; align-items: center; gap: 0.35rem; }
 .o_list_footer td { font-weight: 600; background: #F8F9FA; }
 .o_list_vacio { padding: 2.5rem 1rem; text-align: center; color: var(--text-muted); }
-.o_list_selection_bar { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+/* Selección de la lista en el panel de control (pc-odoo-seleccion, D-167): conteo y menú "Acciones". */
+.o_selection_box {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    height: 31px;
+    padding: 0 0.35rem 0 0.75rem;
+    border-radius: 6px;
+    background: var(--brand-light);
+    color: var(--brand-primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.o_selection_clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+}
+.o_selection_clear:hover { background: rgba(46, 56, 137, 0.12); }
+.o_selection_actions { display: inline-flex; align-items: center; gap: 0.35rem; }
+.o_dropdown_divider { border-top: 1px solid var(--border-color); margin: 0.35rem 0; }
+.o_dropdown_panel .o_search_menu_item[aria-disabled="true"] { opacity: var(--btn-disabled-opacity); cursor: not-allowed; }
 .o_list_columnas_menu { min-width: 220px; }
 .o_list_columnas_menu .o_search_menu_item { justify-content: space-between; }
 

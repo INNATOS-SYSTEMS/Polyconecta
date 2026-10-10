@@ -23,7 +23,7 @@
     <!-- ============================================================ Lista -->
     <section class="o_catalogo_seccion" id="lista" data-catalogo="lista">
       <h2>Lista · <code>pc-odoo-list</code> con <code>pc-odoo-search-panel</code></h2>
-      <p>57 pedidos de ejemplo. Ordena, filtra, agrupa, pagina, elige columnas, selecciona, exporta y guarda favoritos; todo lo resuelve el origen de datos.</p>
+      <p>57 pedidos de ejemplo. Ordena, filtra, agrupa, pagina, elige columnas, selecciona, exporta y guarda favoritos; todo lo resuelve el origen de datos. Al seleccionar, el conteo y el menú "Acciones" aparecen a la derecha de la búsqueda: "Eliminar" pide confirmación y solo aplica a pedidos en Borrador.</p>
       <div class="o_control_panel px-0">
         <div class="d-flex align-items-center gap-3">
           <pc-boton-nuevo [ruta]="'/catalogo'" />
@@ -32,12 +32,14 @@
         <pc-odoo-search-panel [view]="vista" [(texto)]="busqueda" [(filtrosActivos)]="nombrados" [(agrupacionesActivas)]="agrupaciones"
                               [permiteAgrupar]="true" [conFavoritos]="true" [favoritos]="lista.favoritos()"
                               (guardarFavorito)="lista.guardarFavorito($event.nombre, $event.porOmision)"
-                              (aplicarFavorito)="lista.aplicarFavorito($event)" (borrarFavorito)="lista.borrarFavorito($event)" />
+                              (aplicarFavorito)="lista.aplicarFavorito($event)" (borrarFavorito)="lista.borrarFavorito($event)">
+          <pc-odoo-seleccion [lista]="lista" />
+        </pc-odoo-search-panel>
         <div class="d-flex align-items-center gap-2"><pc-odoo-view-switcher /></div>
       </div>
       <pc-odoo-list #lista lista="catalogo.pedidos" [tamanoInicial]="20" [origen]="origen" [columnas]="columnas" [idDe]="idPedido"
                     [(busqueda)]="busqueda" [(nombrados)]="nombrados" [(agruparPor)]="agrupaciones"
-                    [acciones]="[{ nombre: 'Archivar', icono: 'archivar', ejecutar: avisarArchivar }]"
+                    [acciones]="accionesLista"
                     (abrir)="ultimoEvento.set('Abrir ' + $event.folio)" />
       <div class="small text-muted" data-catalogo="evento">{{ ultimoEvento() }}</div>
 

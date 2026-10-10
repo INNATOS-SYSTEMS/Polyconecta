@@ -1,12 +1,14 @@
 <div class="o_control_panel">
     <div class="d-flex align-items-center gap-3">
-        <pc-boton-nuevo [ruta]="'/ventas/pedidos/nuevo'" />
+        <pc-boton-nuevo [ruta]="'/ventas/pedidos'" />
         <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos' }]" />
     </div>
     <pc-odoo-search-panel [view]="vista()" [(texto)]="searchText" [(filtrosActivos)]="filtros" [(agrupacionesActivas)]="agrupaciones"
                           [permiteAgrupar]="viewState.viewMode() !== 'Kanban'" [conFavoritos]="viewState.viewMode() !== 'Kanban'"
                           [favoritos]="lista()?.favoritos() ?? []" (guardarFavorito)="lista()?.guardarFavorito($event.nombre, $event.porOmision)"
-                          (aplicarFavorito)="lista()?.aplicarFavorito($event)" (borrarFavorito)="lista()?.borrarFavorito($event)" />
+                          (aplicarFavorito)="lista()?.aplicarFavorito($event)" (borrarFavorito)="lista()?.borrarFavorito($event)" >
+      <pc-odoo-seleccion [lista]="tabla()" />
+    </pc-odoo-search-panel>
     <div class="d-flex align-items-center gap-2">
         <pc-odoo-view-switcher />
     </div>

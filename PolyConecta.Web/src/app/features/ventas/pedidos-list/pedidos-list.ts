@@ -8,6 +8,7 @@ import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooKanban } from '../../../shared/odoo-kanban/odoo-kanban';
 import { ColumnaLista } from '../../../shared/odoo-list/columnas';
 import { OdooList } from '../../../shared/odoo-list/odoo-list';
+import { OdooSeleccion } from '../../../shared/odoo-list/odoo-seleccion';
 import { OdooPager } from '../../../shared/odoo-pager/odoo-pager';
 import { OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-panel';
 import { OdooViewSwitcher } from '../../../shared/odoo-view-switcher/odoo-view-switcher';
@@ -19,11 +20,13 @@ import { FavoritosHttp } from '../../../core/lista/favoritos-http';
 /** Lista y kanban de pedidos de venta conectados a la API HTTP (contracts/api-listas.md, D-154). */
 @Component({
   selector: 'pc-pedidos-list',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooList, OdooKanban, OdooIcon, OdooPager],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooList, OdooSeleccion, OdooKanban, OdooIcon, OdooPager],
   templateUrl: './pedidos-list.html',
   styles: ':host { display: contents; }',
 })
 export class PedidosList {
+  /** La tabla vive dentro del `@if` de la vista: su selección va en el panel de control (D-167). */
+  protected readonly tabla = viewChild(OdooList);
   private readonly router = inject(Router);
   private readonly acciones = inject(PedidosAcciones);
   protected readonly viewState = inject(UiViewState);

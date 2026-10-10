@@ -6,6 +6,7 @@ import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb'
 import { AvisosService } from '../../../shared/odoo-dialog/avisos';
 import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooList } from '../../../shared/odoo-list/odoo-list';
+import { OdooSeleccion } from '../../../shared/odoo-list/odoo-seleccion';
 import { AccionMasiva, ColumnaLista } from '../../../shared/odoo-list/columnas';
 import { CatalogosService, EstadoCatalogoDto } from '../../catalogos/catalogos.service';
 
@@ -21,7 +22,7 @@ const entero = (n: number) => n.toLocaleString('en-US');
  */
 @Component({
   selector: 'pc-sincronizacion',
-  imports: [OdooBreadcrumb, OdooList, OdooIcon],
+  imports: [OdooBreadcrumb, OdooList, OdooSeleccion, OdooIcon],
   template: `
     <div class="o_control_panel">
       <div class="d-flex align-items-center gap-3">
@@ -32,14 +33,14 @@ const entero = (n: number) => n.toLocaleString('en-US');
         }
         <pc-odoo-breadcrumb [items]="[{ label: 'Sincronización' }]" />
       </div>
-      <div></div>
+      <div class="d-flex align-items-center gap-2"><pc-odoo-seleccion [lista]="tabla" /></div>
       <div class="d-flex align-items-center gap-2"></div>
     </div>
     <div class="p-4">
       @if (error()) {
         <div class="alert alert-danger py-2 px-3 small mb-3" role="alert"><pc-odoo-icon nombre="hard-stop" />{{ error() }}</div>
       }
-      <pc-odoo-list lista="plataforma.sincronizacion" [origen]="origen()" [columnas]="columnas" [idDe]="idDe" [acciones]="acciones()"
+      <pc-odoo-list #tabla lista="plataforma.sincronizacion" [origen]="origen()" [columnas]="columnas" [idDe]="idDe" [acciones]="acciones()"
                     [filasPulsables]="false" [conPaginador]="false" mensajeVacio="No hay catálogos sincronizados todavía." />
     </div>
   `,

@@ -2,13 +2,15 @@
     <div class="d-flex align-items-center gap-3">
         <pc-odoo-breadcrumb [items]="[{ label: 'Inventario Actual' }]" />
     </div>
-    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" [(agrupacionesActivas)]="agrupaciones" [permiteAgrupar]="true" />
+    <pc-odoo-search-panel [view]="vista" [(texto)]="searchText" [(filtrosActivos)]="filtros" [(agrupacionesActivas)]="agrupaciones" [permiteAgrupar]="true" >
+      <pc-odoo-seleccion [lista]="tabla" />
+    </pc-odoo-search-panel>
     <div class="d-flex align-items-center gap-2">
         <pc-odoo-view-switcher [kanbanEnabled]="false" />
     </div>
 </div>
 
 <div class="p-4">
-    <pc-odoo-list lista="inventario.actual" [origen]="origen" [columnas]="columnas" [idDe]="idFila" mensajeVacio="" [filasPulsables]="false"
+    <pc-odoo-list #tabla lista="inventario.actual" [origen]="origen" [columnas]="columnas" [idDe]="idFila" mensajeVacio="" [filasPulsables]="false"
                   [(busqueda)]="searchText" [(nombrados)]="filtros" [(agruparPor)]="agrupaciones" />
 </div>

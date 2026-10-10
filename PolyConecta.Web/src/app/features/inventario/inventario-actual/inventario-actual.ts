@@ -9,6 +9,7 @@ import { InventoryState } from '../../../core/state/inventory-state';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { ColumnaLista } from '../../../shared/odoo-list/columnas';
 import { OdooList } from '../../../shared/odoo-list/odoo-list';
+import { OdooSeleccion } from '../../../shared/odoo-list/odoo-seleccion';
 import { OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-panel';
 import { OdooViewSwitcher } from '../../../shared/odoo-view-switcher/odoo-view-switcher';
 
@@ -30,7 +31,7 @@ interface FilaInventario {
  */
 @Component({
   selector: 'pc-inventario-actual',
-  imports: [OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooList],
+  imports: [OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooList, OdooSeleccion],
   templateUrl: './inventario-actual.html',
   styles: ':host { display: contents; }',
 })

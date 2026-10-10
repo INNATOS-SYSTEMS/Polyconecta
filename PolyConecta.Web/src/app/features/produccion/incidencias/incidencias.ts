@@ -9,6 +9,7 @@ import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooKanban } from '../../../shared/odoo-kanban/odoo-kanban';
 import { ColumnaLista } from '../../../shared/odoo-list/columnas';
 import { OdooList } from '../../../shared/odoo-list/odoo-list';
+import { OdooSeleccion } from '../../../shared/odoo-list/odoo-seleccion';
 import { OperationalFlowState } from '../../../core/state/operational-flow-state';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-panel';
@@ -25,11 +26,13 @@ interface FilaIncidencia extends Incidencia {
  */
 @Component({
   selector: 'pc-incidencias',
-  imports: [OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooList, OdooKanban, OdooIcon],
+  imports: [OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooList, OdooSeleccion, OdooKanban, OdooIcon],
   templateUrl: './incidencias.html',
   styles: ':host { display: contents; }',
 })
 export class Incidencias {
+  /** La tabla vive dentro del `@if` de la vista: su selección va en el panel de control (D-167). */
+  protected readonly tabla = viewChild(OdooList);
   private readonly flow = inject(OperationalFlowState);
   protected readonly vista = INCIDENCIAS;
   protected readonly fechaGuion = fechaGuion;

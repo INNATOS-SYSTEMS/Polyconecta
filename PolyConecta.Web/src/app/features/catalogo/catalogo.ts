@@ -24,6 +24,8 @@ import { OdooKanban } from '../../shared/odoo-kanban/odoo-kanban';
 import { emptyDraft, LineDraft, OdooLineCapture } from '../../shared/odoo-line-capture/odoo-line-capture';
 import { ColumnaLista } from '../../shared/odoo-list/columnas';
 import { OdooList } from '../../shared/odoo-list/odoo-list';
+import { OdooSeleccion } from '../../shared/odoo-list/odoo-seleccion';
+import { AccionMasiva } from '../../shared/odoo-list/columnas';
 import { OdooMany2one } from '../../shared/odoo-many2one/odoo-many2one';
 import { OdooNumber } from '../../shared/odoo-number/odoo-number';
 import { OdooPager } from '../../shared/odoo-pager/odoo-pager';
@@ -72,7 +74,7 @@ const VISTA: SearchView<PedidoEjemplo> = {
  */
 @Component({
   selector: 'pc-catalogo',
-  imports: [FormsModule, OdooList, OdooKanban, OdooSearchPanel, OdooMany2one, OdooDate, OdooNumber, OdooTabs, PcPestana,
+  imports: [FormsModule, OdooList, OdooSeleccion, OdooKanban, OdooSearchPanel, OdooMany2one, OdooDate, OdooNumber, OdooTabs, PcPestana,
     OdooActionMenu, OdooSyncStatus, OdooIcon, OdooBreadcrumb, OdooSmartButtons, OdooStatusPipeline, OdooLineCapture,
     OdooChatterDrawer, BotonNuevo, OdooViewSwitcher, OdooPager, PaginaPendiente, PaginaNoEncontrada, LotPickerModal, LotQuantityPickerModal,
     OdooDualList],
@@ -164,6 +166,18 @@ export class Catalogo {
 
   protected readonly nombresIconos = Object.keys(ICONOS);
   protected readonly avisarArchivar = (ids: string[]) => this.avisos.aviso(`Archivar ${ids.length} pedidos: lo decide cada fase.`);
+  /** Acciones contextuales de ejemplo (07 §1.1): una normal y una destructiva que solo aplica en Borrador. */
+  protected readonly accionesLista: AccionMasiva[] = [
+    { nombre: 'Archivar', icono: 'archivar', ejecutar: this.avisarArchivar },
+    {
+      nombre: 'Eliminar', icono: 'borrar', peligrosa: true,
+      razonDeshabilitada: filas => ((filas as PedidoEjemplo[]).every(p => p.estado === 'Borrador') ? null : 'Solo se eliminan pedidos en Borrador.'),
+      ejecutar: ids => {
+        this.pedidos.update(l => l.filter(p => !ids.includes(p.id)));
+        this.avisos.exito(ids.length === 1 ? 'Pedido eliminado.' : `${ids.length} pedidos eliminados.`);
+      },
+    },
+  ];
 
   protected quitarLinea(i: number): void {
     this.lineas.update(ls => ls.filter((_, j) => j !== i));

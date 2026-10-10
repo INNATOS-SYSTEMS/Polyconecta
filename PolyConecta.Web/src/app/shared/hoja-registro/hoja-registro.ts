@@ -20,7 +20,7 @@ import { OdooSmartButtons, SmartButtonModel } from '../odoo-smart-buttons/odoo-s
     <div class="o_control_panel">
       <div class="d-flex align-items-center gap-3">
         @if (conNuevo() && !nuevo()) {
-          <pc-boton-nuevo [ruta]="ruta() + '/nuevo'" />
+          <pc-boton-nuevo [ruta]="ruta()" />
         }
         <pc-odoo-breadcrumb [items]="[{ label: lista(), url: ruta() }, { label: nuevo() ? 'Nuevo' : nombre() }]" />
         @if (!nuevo() && acciones().length > 0) {

@@ -3,6 +3,10 @@ import { Router } from '@angular/router';
 import { BotonNuevo } from '../../../../shared/boton-nuevo/boton-nuevo';
 import { OdooBreadcrumb } from '../../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { OdooList } from '../../../../shared/odoo-list/odoo-list';
+import { OdooSeleccion } from '../../../../shared/odoo-list/odoo-seleccion';
+import { accionesDeArchivo } from '../../../../shared/odoo-list/acciones-archivo';
+import { AvisosService } from '../../../../shared/odoo-dialog/avisos';
+import { SeguridadService } from '../../seguridad.service';
 import { ColumnaLista } from '../../../../shared/odoo-list/columnas';
 import { OdooSearchPanel } from '../../../../shared/odoo-search-panel/odoo-search-panel';
 import { SearchView } from '../../../../core/search/search-view';
@@ -22,12 +26,22 @@ export interface FilaUsuario {
 
 @Component({
   selector: 'pc-usuarios-list',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooList],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooList, OdooSeleccion],
   templateUrl: './usuarios-list.html',
   styles: ':host { display: contents; }',
 })
 export class UsuariosList {
   private readonly router = inject(Router);
+  private readonly seguridad = inject(SeguridadService);
+  private readonly avisos = inject(AvisosService);
+
+  /** Acciones contextuales de la selección (07 §1.1). */
+  protected readonly acciones = accionesDeArchivo({
+    singular: 'usuario', plural: 'usuarios',
+    archivar: id => this.seguridad.archivarUsuario(id),
+    restaurar: id => this.seguridad.restaurarUsuario(id),
+    exito: m => this.avisos.exito(m),
+  });
 
   protected readonly vista = signal<SearchView<FilaUsuario>>(vistaVacia());
   protected readonly favoritos = new FavoritosHttp();

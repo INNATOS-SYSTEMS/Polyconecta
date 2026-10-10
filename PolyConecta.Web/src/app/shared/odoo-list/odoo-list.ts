@@ -169,6 +169,20 @@ export class OdooList<T> implements OnInit {
   /** Ids de los registros seleccionados (sin el prefijo de fila). */
   readonly idsSeleccionados = computed(() => Object.keys(this.seleccionadas()).filter(k => this.seleccionadas()[k]).map(k => k.slice(2)));
 
+  /** Registros seleccionados entre los cargados: para decidir si una acción contextual aplica. */
+  readonly filasSeleccionadas = computed(() => {
+    const marcadas = this.seleccionadas();
+    const salida: T[] = [];
+    const recorrer = (filas: Fila<T>[]) => {
+      for (const f of filas) {
+        if (f.dato && marcadas[f.id]) salida.push(f.dato);
+        if (f.hijos) recorrer(f.hijos);
+      }
+    };
+    recorrer(this.filas());
+    return salida;
+  });
+
   readonly inicio = computed(() => (this.total() === 0 ? 0 : this.pagina() * this.tamano() + 1));
   readonly fin = computed(() => Math.min(this.total(), (this.pagina() + 1) * this.tamano()));
 

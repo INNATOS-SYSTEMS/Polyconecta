@@ -9,6 +9,7 @@ import { OdooIcon } from '../../../shared/odoo-icon/odoo-icon';
 import { OdooKanban } from '../../../shared/odoo-kanban/odoo-kanban';
 import { ColumnaLista } from '../../../shared/odoo-list/columnas';
 import { OdooList } from '../../../shared/odoo-list/odoo-list';
+import { OdooSeleccion } from '../../../shared/odoo-list/odoo-seleccion';
 import { OdooPager } from '../../../shared/odoo-pager/odoo-pager';
 import { OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-panel';
 import { OdooViewSwitcher } from '../../../shared/odoo-view-switcher/odoo-view-switcher';
@@ -21,11 +22,13 @@ import { CalidadAcciones, ETAPAS_CALIDAD, FilaControl } from '../calidad-accione
  */
 @Component({
   selector: 'pc-calidad-list',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooList, OdooKanban, OdooIcon, OdooPager],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooViewSwitcher, OdooList, OdooSeleccion, OdooKanban, OdooIcon, OdooPager],
   templateUrl: './calidad-list.html',
   styles: ':host { display: contents; }',
 })
 export class CalidadList {
+  /** La tabla vive dentro del `@if` de la vista: su selección va en el panel de control (D-167). */
+  protected readonly tabla = viewChild(OdooList);
   protected readonly producto = (claveONombre?: string | null, nombre?: string) => etiquetaProducto(this.inv.catalogo, claveONombre, nombre);
   private readonly inv = inject(InventoryState);
   private readonly router = inject(Router);

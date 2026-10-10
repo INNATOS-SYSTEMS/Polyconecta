@@ -1,3 +1,5 @@
+<!-- El inicio de sesión ocupa toda la pantalla, sin barra superior (D-166). -->
+@if (path() !== '/login') {
 <header class="o_main_navbar">
   <div class="d-flex align-items-center gap-3">
     <button class="app-brand" (click)="goHome()" title="Inicio">
@@ -40,3 +42,4 @@
     <div class="o_systray_hueco"></div>
   }
 </header>
+}

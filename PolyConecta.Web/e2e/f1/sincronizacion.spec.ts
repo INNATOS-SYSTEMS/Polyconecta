@@ -161,9 +161,10 @@ test.describe('Sincronización, productos y clientes (F1 / US3)', () => {
 
     await abrir(page, ANGULAR, '/plataforma/sincronizacion');
 
-    // "Sincronizar ahora" es una acción de la barra de selección (07 §1.1).
+    // "Sincronizar ahora" es una acción contextual de la selección, en el menú "Acciones" (07 §1.1).
     await fila(page, 'Productos').locator('input[type="checkbox"]').check();
-    await page.locator('[data-lista="seleccion"] button', { hasText: 'Sincronizar ahora' }).click();
+    await page.locator('.o_control_panel [data-lista="acciones"]').click();
+    await page.locator('[data-accion-masiva="Sincronizar ahora"]').click();
 
     await expect(aviso(page)).toContainText('Productos sincronizado');
     expect(catalogoSincronizado).toBe('productos');

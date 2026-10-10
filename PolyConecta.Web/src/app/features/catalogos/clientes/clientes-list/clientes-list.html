@@ -9,12 +9,14 @@
     [(agrupacionesActivas)]="agrupaciones"
     [permiteAgrupar]="true"
     [conFavoritos]="false"
-  />
+  >
+    <pc-odoo-seleccion [lista]="tabla" />
+  </pc-odoo-search-panel>
   <div class="d-flex align-items-center gap-2"></div>
 </div>
 
 <div class="p-4">
-  <pc-odoo-list [almacenFavoritos]="favoritos" [estadoEnUrl]="true"
+  <pc-odoo-list #tabla [almacenFavoritos]="favoritos" [estadoEnUrl]="true"
     lista="ventas.clientes"
     [origen]="origen"
     [columnas]="columnas"

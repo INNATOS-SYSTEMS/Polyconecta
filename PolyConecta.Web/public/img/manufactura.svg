@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 540" role="img" aria-labelledby="t">
+  <title id="t">Línea de extrusión de película con su operador y el tablero de la planta</title>
+  <defs>
+    <linearGradient id="burbuja" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#C9CEF0" stop-opacity="0.55"/>
+      <stop offset="0.45" stop-color="#FFFFFF" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#AEB5E6" stop-opacity="0.6"/>
+    </linearGradient>
+    <linearGradient id="rollo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4A55A8"/>
+      <stop offset="1" stop-color="#2E3889"/>
+    </linearGradient>
+    <linearGradient id="rolloTeal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1C9AA0"/>
+      <stop offset="1" stop-color="#017E84"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fondo: nave industrial con techo de dientes de sierra -->
+  <circle cx="330" cy="270" r="230" fill="#EEF0FA"/>
+  <path d="M90 360 V230 l60 -40 v40 l60 -40 v40 l60 -40 v40 l60 -40 v40 l60 -40 v40 l60 -40 v40 l60 -40 V360 Z" fill="#E1E4F4"/>
+  <g fill="#F7F8FD">
+    <rect x="112" y="262" width="34" height="26" rx="3"/>
+    <rect x="172" y="262" width="34" height="26" rx="3"/>
+    <rect x="232" y="262" width="34" height="26" rx="3"/>
+    <rect x="472" y="262" width="34" height="26" rx="3"/>
+    <rect x="532" y="262" width="34" height="26" rx="3"/>
+  </g>
+  <rect x="118" y="168" width="14" height="40" fill="#D3D7EE"/>
+  <circle cx="125" cy="150" r="12" fill="#E6E9F6"/>
+  <circle cx="140" cy="132" r="9" fill="#EEF0FA"/>
+
+  <!-- Piso -->
+  <ellipse cx="330" cy="470" rx="290" ry="18" fill="#E3E6F3"/>
+  <rect x="40" y="462" width="580" height="3" rx="1.5" fill="#D5D9EC"/>
+
+  <!-- Torre de extrusión de película soplada -->
+  <g>
+    <!-- estructura -->
+    <rect x="300" y="70" width="8" height="300" fill="#9AA2CF"/>
+    <rect x="392" y="70" width="8" height="300" fill="#9AA2CF"/>
+    <rect x="292" y="62" width="116" height="16" rx="3" fill="#2E3889"/>
+    <rect x="300" y="150" width="100" height="5" fill="#B7BDE0"/>
+    <rect x="300" y="240" width="100" height="5" fill="#B7BDE0"/>
+    <!-- rodillos de presión -->
+    <circle cx="336" cy="70" r="11" fill="#F2B544" stroke="#2E3889" stroke-width="3"/>
+    <circle cx="364" cy="70" r="11" fill="#F2B544" stroke="#2E3889" stroke-width="3"/>
+    <!-- burbuja de película -->
+    <path d="M330 356 C318 320 312 260 316 200 C320 150 330 110 344 84 L356 84 C370 110 380 150 384 200 C388 260 382 320 370 356 Z"
+          fill="url(#burbuja)" stroke="#8C95D2" stroke-width="2"/>
+    <path d="M338 340 C330 300 328 240 333 190" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+    <!-- anillo de aire y dado -->
+    <rect x="318" y="352" width="64" height="12" rx="4" fill="#017E84"/>
+    <rect x="326" y="364" width="48" height="10" fill="#2E3889"/>
+  </g>
+
+  <!-- Extrusora: tolva, cañón y motor -->
+  <g>
+    <path d="M196 254 h52 l-14 40 h-24 Z" fill="#F2B544"/>
+    <rect x="200" y="246" width="44" height="10" rx="2" fill="#D99A2B"/>
+    <rect x="212" y="294" width="20" height="16" fill="#C7CBE6"/>
+    <rect x="176" y="308" width="160" height="34" rx="6" fill="#3B4699"/>
+    <g fill="#5A65B8">
+      <rect x="244" y="312" width="8" height="26" rx="2"/>
+      <rect x="260" y="312" width="8" height="26" rx="2"/>
+      <rect x="276" y="312" width="8" height="26" rx="2"/>
+      <rect x="292" y="312" width="8" height="26" rx="2"/>
+    </g>
+    <rect x="132" y="300" width="56" height="54" rx="8" fill="#2E3889"/>
+    <circle cx="160" cy="327" r="15" fill="#4A55A8"/>
+    <circle cx="160" cy="327" r="6" fill="#F2B544"/>
+    <rect x="140" y="354" width="200" height="16" rx="3" fill="#232C6B"/>
+    <rect x="150" y="370" width="10" height="92" fill="#232C6B"/>
+    <rect x="316" y="370" width="10" height="92" fill="#232C6B"/>
+    <!-- panel de control con luces -->
+    <rect x="150" y="390" width="58" height="44" rx="4" fill="#FFFFFF" stroke="#C7CBE6" stroke-width="2"/>
+    <circle cx="164" cy="404" r="4" fill="#017E84"/>
+    <circle cx="178" cy="404" r="4" fill="#F2B544"/>
+    <rect x="158" y="416" width="42" height="6" rx="3" fill="#DDE0F2"/>
+  </g>
+
+  <!-- Película hacia la bobinadora -->
+  <path d="M370 70 C430 70 452 96 452 140 L452 300" fill="none" stroke="#AEB5E6" stroke-width="6"/>
+  <circle cx="452" cy="300" r="8" fill="#9AA2CF"/>
+
+  <!-- Bobinadora con rollo en formación -->
+  <g>
+    <rect x="420" y="300" width="98" height="18" rx="4" fill="#2E3889"/>
+    <rect x="428" y="318" width="10" height="144" fill="#232C6B"/>
+    <rect x="500" y="318" width="10" height="144" fill="#232C6B"/>
+    <ellipse cx="469" cy="372" rx="40" ry="40" fill="url(#rollo)"/>
+    <ellipse cx="469" cy="372" rx="26" ry="26" fill="#4A55A8"/>
+    <circle cx="469" cy="372" r="9" fill="#F2B544"/>
+    <path d="M452 308 C452 330 440 340 432 350" fill="none" stroke="#AEB5E6" stroke-width="5"/>
+  </g>
+
+  <!-- Rollos terminados en tarima -->
+  <g>
+    <rect x="530" y="446" width="92" height="16" rx="3" fill="#C99A57"/>
+    <rect x="536" y="434" width="80" height="12" rx="2" fill="#D9AE6E"/>
+    <rect x="540" y="392" width="34" height="42" rx="4" fill="url(#rolloTeal)"/>
+    <ellipse cx="557" cy="392" rx="17" ry="6" fill="#5CC0C4"/>
+    <ellipse cx="557" cy="392" rx="5" ry="2" fill="#0B5E62"/>
+    <rect x="578" y="392" width="34" height="42" rx="4" fill="url(#rollo)"/>
+    <ellipse cx="595" cy="392" rx="17" ry="6" fill="#7C86CC"/>
+    <ellipse cx="595" cy="392" rx="5" ry="2" fill="#1B2254"/>
+    <rect x="559" y="350" width="34" height="42" rx="4" fill="url(#rollo)"/>
+    <ellipse cx="576" cy="350" rx="17" ry="6" fill="#7C86CC"/>
+    <ellipse cx="576" cy="350" rx="5" ry="2" fill="#1B2254"/>
+  </g>
+
+  <!-- Operadora con casco y tableta -->
+  <g>
+    <ellipse cx="82" cy="463" rx="38" ry="6" fill="#D5D9EC"/>
+    <rect x="66" y="392" width="14" height="70" rx="6" fill="#2B3557"/>
+    <rect x="86" y="392" width="14" height="70" rx="6" fill="#36416A"/>
+    <rect x="62" y="456" width="20" height="9" rx="4" fill="#1F2937"/>
+    <rect x="84" y="456" width="20" height="9" rx="4" fill="#1F2937"/>
+    <path d="M58 330 q25 -16 50 0 v70 h-50 Z" fill="#017E84"/>
+    <rect x="58" y="352" width="50" height="7" fill="#F2B544"/>
+    <rect x="58" y="374" width="50" height="7" fill="#F2B544"/>
+    <rect x="76" y="318" width="14" height="14" rx="4" fill="#C98E6B"/>
+    <circle cx="83" cy="305" r="16" fill="#D9A07C"/>
+    <circle cx="78" cy="306" r="1.8" fill="#1F2937"/>
+    <circle cx="89" cy="306" r="1.8" fill="#1F2937"/>
+    <path d="M78 313 q5 4 10 0" fill="none" stroke="#9A5F45" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M66 293 a17 17 0 0 1 34 0 Z" fill="#F2B544"/>
+    <rect x="62" y="291" width="42" height="5" rx="2.5" fill="#D99A2B"/>
+    <path d="M100 340 q22 14 30 30" fill="none" stroke="#017E84" stroke-width="12" stroke-linecap="round"/>
+    <rect x="118" y="352" width="34" height="26" rx="4" fill="#1F2937" transform="rotate(-18 135 365)"/>
+    <rect x="122" y="356" width="26" height="18" rx="2" fill="#8FE0E3" transform="rotate(-18 135 365)"/>
+    <path d="M128 372 q8 6 14 2" fill="none" stroke="#C98E6B" stroke-width="7" stroke-linecap="round"/>
+  </g>
+
+  <!-- Tablero conectado: lo que pasa en la planta llega al sistema -->
+  <path d="M150 360 C160 250 140 190 170 150" fill="none" stroke="#8C95D2" stroke-width="2" stroke-dasharray="5 6"/>
+  <g>
+    <rect x="34" y="70" width="210" height="96" rx="12" fill="#FFFFFF" stroke="#DDE0F2" stroke-width="2"/>
+    <rect x="52" y="88" width="70" height="8" rx="4" fill="#2E3889"/>
+    <rect x="52" y="104" width="44" height="6" rx="3" fill="#C7CBE6"/>
+    <rect x="56" y="140" width="14" height="12" rx="2" fill="#C7CBE6"/>
+    <rect x="76" y="128" width="14" height="24" rx="2" fill="#AEB5E6"/>
+    <rect x="96" y="120" width="14" height="32" rx="2" fill="#4A55A8"/>
+    <rect x="116" y="132" width="14" height="20" rx="2" fill="#AEB5E6"/>
+    <rect x="136" y="114" width="14" height="38" rx="2" fill="#2E3889"/>
+    <circle cx="206" cy="104" r="20" fill="#E6F4F4"/>
+    <path d="M196 104 l7 7 l13 -14" fill="none" stroke="#017E84" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="186" y="136" width="40" height="6" rx="3" fill="#F2B544"/>
+  </g>
+
+  <!-- Engranes -->
+  <g fill="#C7CBE6">
+    <circle cx="560" cy="160" r="22"/>
+    <circle cx="590" cy="196" r="14"/>
+  </g>
+  <circle cx="560" cy="160" r="9" fill="#EEF0FA"/>
+  <circle cx="590" cy="196" r="5" fill="#EEF0FA"/>
+</svg>

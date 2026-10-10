@@ -1,6 +1,6 @@
 <div class="o_control_panel">
   <div class="d-flex align-items-center gap-3">
-    <pc-boton-nuevo [ruta]="'/plataforma/usuarios/nuevo'" />
+    <pc-boton-nuevo [ruta]="'/plataforma/usuarios'" />
     <pc-odoo-breadcrumb [items]="[{ label: 'Usuarios' }]" />
   </div>
   <pc-odoo-search-panel
@@ -10,16 +10,19 @@
     [(agrupacionesActivas)]="agrupaciones"
     [permiteAgrupar]="true"
     [conFavoritos]="false"
-  />
+  >
+    <pc-odoo-seleccion [lista]="tabla" />
+  </pc-odoo-search-panel>
   <div class="d-flex align-items-center gap-2"></div>
 </div>
 
 <div class="p-4">
-  <pc-odoo-list [almacenFavoritos]="favoritos" [estadoEnUrl]="true"
+  <pc-odoo-list #tabla [almacenFavoritos]="favoritos" [estadoEnUrl]="true"
     lista="plataforma.usuarios"
     [origen]="origen"
     [columnas]="columnas"
     [idDe]="idUsuario"
+    [acciones]="acciones"
     mensajeVacio="No hay usuarios registrados"
     [(busqueda)]="searchText"
     [(nombrados)]="filtros"

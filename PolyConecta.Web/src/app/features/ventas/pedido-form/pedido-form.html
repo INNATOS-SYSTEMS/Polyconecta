@@ -5,7 +5,7 @@
 } @else if (pedido(); as p) {
   <div class="o_control_panel">
     <div class="d-flex align-items-center gap-3">
-      <pc-boton-nuevo [ruta]="'/ventas/pedidos/nuevo'" />
+      <pc-boton-nuevo [ruta]="'/ventas/pedidos'" />
       <pc-odoo-breadcrumb [items]="[{ label: 'Pedidos', url: '/ventas/pedidos' }, { label: p.folio }]" />
       @if (accionesMenu().length > 0) {
         <pc-odoo-action-menu [acciones]="accionesMenu()" />

@@ -5,6 +5,7 @@ import { SearchView } from '../../../core/search/search-view';
 import { BotonNuevo } from '../../../shared/boton-nuevo/boton-nuevo';
 import { OdooBreadcrumb } from '../../../shared/odoo-breadcrumb/odoo-breadcrumb';
 import { OdooList } from '../../../shared/odoo-list/odoo-list';
+import { OdooSeleccion } from '../../../shared/odoo-list/odoo-seleccion';
 import { ColumnaLista } from '../../../shared/odoo-list/columnas';
 import { OdooSearchPanel } from '../../../shared/odoo-search-panel/odoo-search-panel';
 import { CatalogosService, ClasificacionDto } from '../catalogos.service';
@@ -24,18 +25,20 @@ const VISTA: SearchView<ClasificacionDto> = {
  */
 @Component({
   selector: 'pc-clasificaciones-list',
-  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooList],
+  imports: [BotonNuevo, OdooBreadcrumb, OdooSearchPanel, OdooList, OdooSeleccion],
   template: `
     <div class="o_control_panel">
       <div class="d-flex align-items-center gap-3">
-        <pc-boton-nuevo [ruta]="'/plataforma/clasificaciones/nuevo'" />
+        <pc-boton-nuevo [ruta]="'/plataforma/clasificaciones'" />
         <pc-odoo-breadcrumb [items]="[{ label: 'Clasificaciones' }]" />
       </div>
-      <pc-odoo-search-panel [view]="vista" [(texto)]="busqueda" [(filtrosActivos)]="filtros" [conFavoritos]="false" />
+      <pc-odoo-search-panel [view]="vista" [(texto)]="busqueda" [(filtrosActivos)]="filtros" [conFavoritos]="false">
+        <pc-odoo-seleccion [lista]="tabla" />
+      </pc-odoo-search-panel>
       <div class="d-flex align-items-center gap-2"></div>
     </div>
     <div class="p-4">
-      <pc-odoo-list lista="plataforma.clasificaciones" [origen]="origen()" [columnas]="columnas" [idDe]="idDe"
+      <pc-odoo-list #tabla lista="plataforma.clasificaciones" [origen]="origen()" [columnas]="columnas" [idDe]="idDe"
                     mensajeVacio="No hay clasificaciones" [(busqueda)]="busqueda" [(nombrados)]="filtros" (abrir)="abrir($event)" />
     </div>
   `,
