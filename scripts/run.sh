@@ -186,7 +186,8 @@ fi
 
 # Step 3: Run test suites
 echo "🧪 Step 3: Running domain unit & integration test suites..."
-"$DOTNET_BIN" test --solution Polyconecta.slnx --no-build
+# Solo se detallan las pruebas que fallan: las de contrato se omiten sin BRIDGE_URL y no se listan.
+"$DOTNET_BIN" test --solution Polyconecta.slnx --no-build --show-test-results failed
 
 echo "================================================================="
 echo "✅ Build & Tests Succeeded! Launching PolyConecta Solution Layers..."
