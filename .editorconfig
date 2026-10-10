@@ -61,3 +61,7 @@ dotnet_diagnostic.CS0618.severity = none
 [{PolyConecta.Domain/Plataforma/Seguridad/**.cs,PolyConecta.Domain/Events/IDomainEventPublisher.cs}]
 dotnet_diagnostic.CA1711.severity = none
 dotnet_diagnostic.CA1720.severity = none
+
+# Windows PowerShell 5.1 lee como ANSI un .ps1 sin BOM y rompe los acentos.
+[*.ps1]
+charset = utf-8-bom

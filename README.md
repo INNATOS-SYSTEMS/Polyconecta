@@ -45,4 +45,6 @@ Requiere el SDK de .NET 10 (`global.json`), Docker (SQL Server 2022 local y prue
 ./run.sh --solo-web      # solo PolyConecta.Web (:9000), sin .NET, SQL Server ni API
 ```
 
+En Windows sin WSL, `run.ps1` hace lo mismo con las mismas opciones (`.\run.ps1 --with-bridge`). Su bridge arranca simulado, igual que con `run.sh`; para usar el SDK real de CONTPAQi se define `BridgeConfig__Mode=Real` antes de correrlo. Si la política de ejecución lo impide: `powershell -ExecutionPolicy Bypass -File .\run.ps1`.
+
 Las pruebas de la aplicación Angular (paridad con el prototipo, guiones, auditor y chatter) están en [PolyConecta.Web/README.md](PolyConecta.Web/README.md).
